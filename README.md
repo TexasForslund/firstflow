@@ -62,4 +62,23 @@ Revidera roadmapen utifrån feedback
 Bygg Pilot-MVP
 Status
 
-Projektet är i Fas 0 – Koncept, webbplats och demo. Ingen kod finns ännu.
+Projektet är i Fas 0 – Koncept, webbplats och demo. Grundstrukturen för koden finns på plats.
+
+## Kom igång
+
+Backend är skriven i Python (FastAPI) och frontend i TypeScript (React + Vite). Se [CLAUDE.md](CLAUDE.md) för struktur och konventioner.
+
+Du behöver [uv](https://docs.astral.sh/uv/), Node 22 och Docker.
+
+```
+docker compose up -d db                 # databas
+
+cd backend
+cp .env.example .env
+uv sync
+uv run uvicorn app.main:app --reload    # http://localhost:8000/docs
+
+cd ../frontend
+npm install
+npm run dev                             # http://localhost:5173
+```
