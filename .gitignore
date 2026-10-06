@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Miljövariabler (hemligheter ska aldrig in i repot)
+.env
+.env.*
+!.env.example
+
+# Editor och OS
+.idea/
+.DS_Store
