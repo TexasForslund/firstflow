@@ -27,8 +27,16 @@ export interface components {
     schemas: {
         /** HealthResponse */
         HealthResponse: {
-            /** Status */
-            status: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "ok";
+            /**
+             * Database
+             * @enum {string}
+             */
+            database: "ok" | "unavailable";
         };
     };
     responses: never;

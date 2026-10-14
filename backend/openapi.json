@@ -33,12 +33,22 @@
         "properties": {
           "status": {
             "type": "string",
+            "const": "ok",
             "title": "Status"
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Database"
           }
         },
         "type": "object",
         "required": [
-          "status"
+          "status",
+          "database"
         ],
         "title": "HealthResponse"
       }
