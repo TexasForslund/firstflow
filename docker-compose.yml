@@ -1,0 +1,15 @@
+# Lokal utvecklingsdatabas. Starta med: docker compose up -d db
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: firstflow
+      POSTGRES_PASSWORD: firstflow
+      POSTGRES_DB: firstflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
