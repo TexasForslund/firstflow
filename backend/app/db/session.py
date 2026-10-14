@@ -1,5 +1,7 @@
 from collections.abc import Iterator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -13,3 +15,7 @@ def get_db() -> Iterator[Session]:
     """FastAPI-beroende som ger en databassession per request."""
     with SessionLocal() as session:
         yield session
+
+
+# Använd i endpoints: def list_students(db: DbSession) -> ...
+DbSession = Annotated[Session, Depends(get_db)]

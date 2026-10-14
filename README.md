@@ -76,9 +76,12 @@ docker compose up -d db                 # databas
 cd backend
 cp .env.example .env
 uv sync
+uv run alembic upgrade head             # skapar tabellerna
 uv run uvicorn app.main:app --reload    # http://localhost:8000/docs
 
 cd ../frontend
 npm install
 npm run dev                             # http://localhost:5173
 ```
+
+Backend-testerna (`uv run pytest`) behöver databasen igång. De skapar en egen databas, `firstflow_test`, och rör inte dina utvecklingsdata.

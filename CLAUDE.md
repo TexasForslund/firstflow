@@ -61,7 +61,9 @@ Backend:
 - Varje endpoint har en Pydantic-modell för svar (`response_model`) och för indata.
 - Databasmodeller ärver `Base` från `app/db/base.py` och importeras i `app/db/models.py` så att Alembic hittar dem.
 - Ändra aldrig databasen utan en Alembic-migrering.
-- Varje endpoint får minst ett test i `tests/`.
+- Databassession i en endpoint: ta emot `db: DbSession` från `app/db/session.py`.
+- Varje endpoint får minst ett test i `tests/`. Använd fixturen `client` (och `db` vid behov) från `tests/conftest.py`. Testerna körs mot databasen `firstflow_test` och varje test rullas tillbaka.
+- CI kör `alembic check`, så en ändrad modell utan migrering stoppar PR:en.
 
 Frontend:
 - Mobilen först. Elever och handledare använder Firstflow ute på arbetsplatsen.
