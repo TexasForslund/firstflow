@@ -11,6 +11,8 @@ Firstflow är en plattform för APL (arbetsplatsförlagt lärande) för skolor, 
 
 Två utvecklare med var sitt Claude-konto. Hannes äger `backend/`, kollegan äger `frontend/`. Ändra inte i den andra delen utan att det framgår tydligt i PR:en.
 
+Vad som är näst på tur står i [att-gora/](att-gora/README.md): `backend.md` och `frontend.md`. Läs mappen innan du börjar en ny uppgift och uppdatera uppgiftens status i samma PR.
+
 ## Struktur
 
 ```
