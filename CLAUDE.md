@@ -11,6 +11,8 @@ Firstflow är en plattform för APL (arbetsplatsförlagt lärande) för skolor, 
 
 Två utvecklare med var sitt Claude-konto. Hannes äger `backend/`, kollegan äger `frontend/`. Ändra inte i den andra delen utan att det framgår tydligt i PR:en.
 
+Vad som är näst på tur står i [att-gora/](att-gora/README.md): `backend.md` och `frontend.md`. Läs mappen innan du börjar en ny uppgift och uppdatera uppgiftens status i samma PR.
+
 ## Struktur
 
 ```
@@ -74,5 +76,8 @@ Frontend:
 Firstflow hanterar personuppgifter om elever, ofta minderåriga.
 - Samla bara in data som funktionen faktiskt behöver.
 - Varje endpoint som rör elevdata ska kontrollera att användaren har rätt roll och rätt koppling till eleven.
+- Inloggad användare: `user: CurrentUser` från `app/api/deps.py`. Rollkrav: `Annotated[User, Depends(require_roles(UserRole.TEACHER))]`. Rollen räcker inte för elevdata, kopplingen till eleven måste också kontrolleras.
+- Inloggningen är en httpOnly-cookie (`firstflow_session`). Frontend skickar den automatiskt eftersom `/api` går via samma origin.
+- Konton skapas tills vidare med `uv run python -m scripts.create_user --email ... --name ... --role teacher|student|supervisor`.
 - Hemligheter ligger i `.env` och committas aldrig. `.env.example` visar vilka variabler som finns.
 - Logga aldrig personnummer, namn eller annan elevdata.
