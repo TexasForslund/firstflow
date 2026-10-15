@@ -5,7 +5,7 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 | Fil | Vem | Innehåll |
 | --- | --- | --- |
 | [backend.md](backend.md) | Hannes | Uppgifter i `backend/`: modeller, migreringar, endpoints, tester |
-| [frontend.md](frontend.md) | Kollegan | Uppgifter i `frontend/`: vyer, komponenter, anrop mot API:t |
+| [frontend.md](frontend.md) | Texas | Uppgifter i `frontend/`: vyer, komponenter, anrop mot API:t |
 
 Ordningen följer fas 1 i [roadmapen](../docs/produktvision-och-roadmap.md): inloggning, klasser och elever, praktikperiod och APL-plats, närvaro, frågor och redovisning.
 
