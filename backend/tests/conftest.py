@@ -7,7 +7,7 @@ en transaktion som rullas tillbaka efteråt.
 """
 
 import os
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
@@ -19,8 +19,10 @@ from sqlalchemy.orm import Session
 
 from alembic import command
 from app.core.config import settings
+from app.core.security import hash_password
 from app.db.session import get_db
 from app.main import app
+from app.models.user import User, UserRole
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
@@ -75,3 +77,40 @@ def client(db: Session) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+PASSWORD = "rätt-lösenord-123"
+
+
+@pytest.fixture
+def make_user(db: Session) -> Callable[..., User]:
+    """Skapar en användare med lösenordet PASSWORD."""
+
+    def make(
+        email: str = "larare@skola.se",
+        role: UserRole = UserRole.TEACHER,
+        is_active: bool = True,
+    ) -> User:
+        user = User(
+            email=email,
+            name="Testperson",
+            role=role,
+            password_hash=hash_password(PASSWORD),
+            is_active=is_active,
+        )
+        db.add(user)
+        db.flush()
+        return user
+
+    return make
+
+
+@pytest.fixture
+def login(client: TestClient) -> Callable[[User], None]:
+    """Loggar in testklienten som användaren."""
+
+    def do_login(user: User) -> None:
+        response = client.post("/api/auth/login", json={"email": user.email, "password": PASSWORD})
+        assert response.status_code == 200
+
+    return do_login
