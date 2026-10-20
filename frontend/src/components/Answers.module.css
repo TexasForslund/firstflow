@@ -1,0 +1,85 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--font-size-md);
+  font-weight: 450;
+}
+
+.chip[aria-disabled='true'] {
+  cursor: default;
+}
+
+.chip:not([aria-disabled='true']):hover {
+  background: var(--color-surface-hover);
+}
+
+.selected,
+.selected:not([aria-disabled='true']):hover {
+  background: var(--color-choice-selected);
+}
+
+.stars {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.stars svg {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.filled {
+  fill: var(--color-star);
+  stroke: var(--color-star);
+}
+
+.empty {
+  fill: var(--color-star-empty);
+  stroke: var(--color-star-empty);
+}
+
+.collapsible {
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.question {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+}
+
+.toggle svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.content {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+}

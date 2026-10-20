@@ -77,7 +77,8 @@ Backend:
 - CI kör `alembic check`, så en ändrad modell utan migrering stoppar PR:en.
 
 Frontend:
-- Mobilen först. Elever och handledare använder Firstflow ute på arbetsplatsen.
+- Följ [docs/design/designprofil.md](docs/design/designprofil.md) och skisserna i `docs/design/`. **Inga skuggor**, om inte Texas säger annat. Ändringar i designkonceptet beslutas av Texas.
+- Lärare och handledare: dator först med sidomeny. Elever: mobilen först, i stil med sociala medier.
 - Datahämtning sker med TanStack Query (`useQuery`, `useMutation`).
 
 ## Säkerhet och elevdata

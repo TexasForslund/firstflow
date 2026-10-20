@@ -1,29 +1,23 @@
-import type { HTMLAttributes } from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
 
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  padding?: 'sm' | 'md' | 'lg'
+import styles from './Card.module.css'
+
+/** Vit yta med 1 px ram och 12 px radie. Ingen skugga. */
+export function Card({ className, ...props }: HTMLAttributes<HTMLElement>) {
+  return <section className={`${styles.card} ${className ?? ''}`} {...props} />
 }
 
-export function Card({ padding = 'md', style, children, ...props }: CardProps) {
-  const paddingMap = {
-    sm: 'var(--space-3)',
-    md: 'var(--space-4) var(--space-5)',
-    lg: 'var(--space-6)',
-  }
+/** Rad längst ned i ett kort, avskild med en ram. */
+export function CardFooter({ children, align = 'end' }: { children: ReactNode; align?: 'end' | 'between' }) {
+  return <div className={`${styles.footer} ${align === 'between' ? styles.between : ''}`}>{children}</div>
+}
 
+/** Kortrubrik med valfri ikon. */
+export function CardTitle({ icon, children }: { icon?: ReactNode; children: ReactNode }) {
   return (
-    <div
-      {...props}
-      style={{
-        background: 'var(--color-bg)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-sm)',
-        padding: paddingMap[padding],
-        ...style,
-      }}
-    >
+    <h2 className={styles.title}>
+      {icon}
       {children}
-    </div>
+    </h2>
   )
 }

@@ -1,10 +1,11 @@
 # Frontend – att göra
 
-Ägare: kollegan. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
+Ägare: Texas + Claude (se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md)). Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
 
 Gäller alla uppgifter:
 
-- **Mobilen först.** Bygg för 375 px bredd och skala upp. Knappar minst 44 px höga. Elever och handledare använder Firstflow på arbetsplatsen.
+- **Följ [designprofilen](../docs/design/designprofil.md)** och skisserna i `docs/design/`. Inga skuggor.
+- **Lärare och handledare:** byggt för dator först, med sidomeny, men ska fungera på mobil (menyn fälls ut). **Elever:** mobilen först, 375 px bredd. Knappar minst 44 px höga.
 - All text i gränssnittet på svenska, all kod på engelska. Sökvägar i webbläsaren på engelska (`/login`, `/classes`).
 - Anropa bara backend via `api` i `src/api/client.ts`, med `useQuery` och `useMutation` från TanStack Query. Skriv aldrig egna typer för API-svar. Hämta typer från `components["schemas"]` i `src/api/schema.d.ts`.
 - Behöver du ett API som inte finns, skriv det som en ny uppgift sist i `backend.md` i stället för att hitta på det.
@@ -12,20 +13,13 @@ Gäller alla uppgifter:
 
 ---
 
-## F1. Designsystem och appskal ⬜
+## F1. Designsystem och appskal ✅ Klar (PR #6)
 
-Väntar inte på något. Kan börja direkt.
+Designtokens i `src/index.css` enligt [designprofilen](../docs/design/designprofil.md), Inter självhostat, Lucide-ikoner. Komponenter i `src/components/`: `Avatar`, `Button`/`ButtonLink`, `Card`, `CountBadge`, `Tag`, `InfoChip`, `FilterChip`, `SegmentedBar`, `ChoiceChips`, `StarRating`, `Collapsible`, `Logo`. Appskal med sidomeny i `src/layout/AppShell.tsx`, utfällbar på skärmar under 1024 px.
 
-**Mål:** En gemensam grund som alla vyer bygger på.
+Lärarens tre vyer från skisserna är byggda med demodata i `src/demo/data.ts`: översikt (`/overview`, flikarna A/B/C), veckoredovisning (`/reports/:id`) och elevhistorik (`/student-history`). Demodatan byts mot API-anrop i F2, F3 och F7.
 
-**Gör så här**
-
-1. Lägg till routing med `react-router` (v7, i "library mode" med `createBrowserRouter`).
-2. Färger, typsnitt, avstånd och radier som CSS-variabler i `src/index.css`. Håll det enkelt och lugnt, med bra kontrast.
-3. Grundkomponenter i `src/components/`: `Button`, `TextField` (med etikett och felmeddelande), `Card`, `PageHeader`, `EmptyState`, `Spinner`.
-4. Ett appskal i `src/components/AppShell.tsx`: rubrik högst upp och en bottennavigering på mobil som visar olika flikar beroende på roll. Lärare: Klasser, Närvaro. Elev: Min APL, Incheckning. Handledare: Mina elever. Flikarna kan leda till tomma sidor tills vidare.
-
-**Klart när:** appen har skalet, navigeringen fungerar på mobil och komponenterna används på minst en sida.
+`VITE_HASH_ROUTER=1 npx vite build --base=./` bygger en statisk demo som kan publiceras utan server.
 
 ---
 
@@ -96,3 +90,19 @@ Väntar på: B4.
 ## F6. Demo till fas 0 ⬜
 
 När F1–F5 fungerar mot demodatan från `scripts/seed_demo.py` är det den demo som fas 0 behöver. Lägg då till en dashboard för läraren med överblick: antal elever på APL, dagens incheckningar och frånvaro.
+
+---
+
+## F10. Elevens app ⬜
+
+Väntar på: skisser från Texas.
+
+Elevens vy är byggd för mobilen först och ska kännas som en app i stil med sociala medier: incheckning, veckoredovisning med bilder, meddelanden och den egna APL-platsen. Samma designprofil som lärarvyn.
+
+---
+
+## F11. Koppla lärarvyerna till API:t ⬜
+
+Väntar på: B5, B11 och B12.
+
+Ersätt `src/demo/data.ts` med riktiga anrop: veckoredovisningar, meddelanden, projekt och "Behöver uppmärksamhet". Ta bort demodatan när allt är kopplat.

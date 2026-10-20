@@ -106,9 +106,16 @@ Låser upp: F5.
 
 ---
 
-## B5. Frågor och redovisning ⬜
+## B5. Frågor och veckoredovisning ⬜
 
 Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar. Detaljeras när B4 är klar.
+
+Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) visar vad som behövs:
+
+- En veckoredovisning hör till en elev, en vecka och ett projekt (se B12).
+- Fyra frågetyper: bilder (uppladdning), fritext, flerval (t.ex. Ja/Nej/Vet inte) och betyg 1–5.
+- Läraren ser olästa redovisningar på översikten, så redovisningen behöver statusen läst/oläst per lärare.
+- Bilagor räknas per redovisning ("Bilagor (2)").
 
 ---
 
@@ -120,3 +127,27 @@ Behövs innan riktiga elever loggar in, men stoppar inte B2–B5:
 - Begränsning av antal inloggningsförsök per e-post och IP.
 - Administratörsroll eller skript för att skapa lärarkonton per skola.
 - Loggning av inloggningar och ändringar i elevdata, utan namn eller annan elevdata i loggen.
+
+---
+
+## B11. Meddelanden ⬜
+
+Ägare: bestäms. Tillagd från lärarskisserna ([larare-oversikt.png](../docs/design/larare-oversikt.png)).
+
+Trådar mellan lärare och elev, och mellan lärare och handledare. Antal olästa per tråd och totalt (visas i menyn). Senaste meddelandet förhandsvisas på översikten. Detaljeras innan start.
+
+---
+
+## B12. Projekt ⬜
+
+Ägare: bestäms. Tillagd från lärarskisserna.
+
+Läraren skapar projekt och tilldelar dem till elever. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
+
+---
+
+## B13. "Behöver uppmärksamhet" ⬜
+
+Ägare: bestäms. Tillagd från lärarskisserna.
+
+Ett endpoint som ger lärarens lista över saker att följa upp, viktigast först: upprepad frånvaro som inte är anmäld, saknade veckoredovisningar, närvaro som handledaren inte bekräftat och kontrakt som saknar underskrift. Bygger på B4, B5 och avtalshanteringen (B8).

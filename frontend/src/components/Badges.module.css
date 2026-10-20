@@ -1,0 +1,63 @@
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.625rem;
+  height: 1.625rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.tag,
+.info,
+.filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 2.375rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  white-space: nowrap;
+}
+
+.tag svg,
+.info svg,
+.filter svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.tag,
+.filter {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.info {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.filter {
+  gap: var(--space-2);
+  font-size: var(--font-size-base);
+}
+
+.remove {
+  display: inline-flex;
+  margin-left: var(--space-5);
+  color: var(--color-text);
+  border-radius: var(--radius-full);
+}
+
+.remove svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
