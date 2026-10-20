@@ -105,14 +105,21 @@ Låser upp: F5.
 
 ## B5. Frågor och veckoredovisning ⬜ (Texas + Claude)
 
-**Planeras tillsammans med Texas innan något byggs** (Texas, 2026-10-20). Påbörja inte utan genomgång.
+**Genomgången är gjord** (Texas och Claude, 2026-10-20). Besluten, frågetyperna och datamodellen står i [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md). Läs den innan bygget börjar. Veckoredovisning lämnas bara på vardagar.
+
+Viktigast från genomgången:
+- En fråga i taget, logik redan i första versionen och samma frågor alla redovisningsdagar.
+- Skoladmin skapar mallar för skolan. Läraren kan också börja från egna frågor eller ett förslag utifrån läroplanen (Skolverkets API och Claude).
+- Frågorna har versioner, och svaren sparas som typade värden med fasta id:n.
+- En inskickad redovisning går inte att ändra. Elev, lärare och handledare kan kommentera den.
+- Extra frågor för enskilda elever, och projektval när B12 finns.
 
 Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar.
 
 Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) visar vad som behövs:
 
 - En veckoredovisning hör till en elev, en vecka och ett projekt (se B12).
-- Fyra frågetyper: bilder (uppladdning), fritext, flerval (t.ex. Ja/Nej/Vet inte) och betyg 1–5.
+- Frågetyperna i första versionen står i [fragor-typeform.md](../docs/design/fragor-typeform.md).
 - Läraren ser olästa redovisningar på översikten, så redovisningen behöver statusen läst/oläst per lärare.
 - Bilagor räknas per redovisning ("Bilagor (2)").
 - **Frågorna sätts per klass** (Texas, 2026-10-20): i klassvyns flik Frågor väljer läraren vilka frågor eleverna i klassen får vid varje redovisningstillfälle. Klassens `report_due_weekdays` (B2) anger vilka veckodagar redovisning ska lämnas.

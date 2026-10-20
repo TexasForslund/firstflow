@@ -471,6 +471,8 @@ def test_weekdays_are_deduplicated_and_sorted(
     [
         {"apl_days_per_week": 0},
         {"apl_days_per_week": 6},
+        {"report_due_weekdays": [5]},  # lördag
+        {"report_due_weekdays": [6]},  # söndag
         {"report_due_weekdays": [7]},
         {"report_due_weekdays": [-1]},
     ],

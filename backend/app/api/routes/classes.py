@@ -72,10 +72,10 @@ class AplTerms(BaseModel):
 
     apl_days_per_week: int | None = Field(default=None, ge=1, le=5)
     check_in_required: bool = True
-    report_due_weekdays: list[Annotated[int, Field(ge=0, le=6)]] = Field(
+    report_due_weekdays: list[Annotated[int, Field(ge=0, le=4)]] = Field(
         default_factory=list,
-        max_length=7,
-        description="Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag",
+        max_length=5,
+        description="Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag",
     )
 
     @field_validator("report_due_weekdays")
