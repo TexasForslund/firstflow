@@ -96,3 +96,46 @@ Väntar på: B4.
 ## F6. Demo till fas 0 ⬜
 
 När F1–F5 fungerar mot demodatan från `scripts/seed_demo.py` är det den demo som fas 0 behöver. Lägg då till en dashboard för läraren med överblick: antal elever på APL, dagens incheckningar och frånvaro.
+
+---
+
+## F7. Skoladministratör – lärarkategorier och rapporter ⬜
+
+Väntar på: B7 (skoladmin-endpoints, backend).
+
+**Mål:** Skoladministratören kan registrera lärarkategorier och exportera rapporter.
+
+**Gör så här**
+
+1. Ny roll `school_admin` i appskalet: navigering med flikarna Lärarkategorier, Rapporter.
+2. `/admin/teacher-categories`: lista lärare med nuvarande kategori (Skolverkets kod + beskrivning). Formulär för att ändra kategori.
+3. `/admin/reports`: två knappar — "Materialsersättningsunderlag" och "Statsbidragsrapport". Datumväljare för period/läsår. Knapp triggar nedladdning av Excel-fil från backend.
+
+**Klart när:** det går att ändra en lärares kategori och ladda ner båda rapporterna.
+
+---
+
+## F8. WCAG 2.1 AA – tillgänglighetsgenomgång ⬜
+
+Väntar inte på annat. Görs löpande men formellt när F1–F5 är klara.
+
+**Mål:** Publicerat tillgänglighetsutlåtande och uppfyllt WCAG 2.1 AA.
+
+**Gör så här**
+
+1. Kör [axe DevTools](https://www.deque.com/axe/) eller Lighthouse accessibility audit på alla vyer.
+2. Säkerställ: fokushantering vid routing, alt-texter på ikoner, kontrast ≥ 4.5:1 för brödtext, formulärfält har `<label>`.
+3. Tangentbordsnavigering: alla interaktiva element nåbara med Tab, Enter och Escape.
+4. Skriv tillgänglighetsutlåtande i `docs/tillganglighetsutlatande.md` (mall: Diggs mall för DOS-lagen).
+
+**Klart när:** inga kritiska axe-fel, utlåtande publicerat.
+
+---
+
+## F9. Avtalshantering och signeringsflöde ⬜
+
+Väntar på: B8 (avtal-endpoints) och beslut om signeringstjänst (BankID/Scrive/Verified).
+
+**Mål:** Alla parter kan signera APL-kontrakt digitalt.
+
+Se [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md) för kravdetaljer.
