@@ -44,6 +44,7 @@ Webbläsare ──https──▶ Proxy (TLS, Caddy eller nginx)
 | `CORS_ORIGINS` | Produktionsdomänen |
 | `SESSION_COOKIE_SECURE` | `true` (kräver https) |
 | `SESSION_LIFETIME_DAYS` | Bestäms med skolorna, t.ex. 14 |
+| `ANTHROPIC_API_KEY` | Firstflows eget API-konto hos Anthropic för frågeförslag utifrån läroplanen (B5). Ingen elevdata skickas |
 
 Hemligheter committas aldrig. De sätts på servern eller i en hemlighetshanterare.
 
