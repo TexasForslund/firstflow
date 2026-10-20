@@ -107,3 +107,49 @@ export function useAddComment(reportId: string) {
       ),
   })
 }
+
+export type ReportSummary = components['schemas']['ReportSummary']
+
+const classKey = (classId: string) => ['classes', classId, 'reports'] as const
+
+/** Klassens inskickade redovisningar, senast inskickade först. Bara för klassens lärare. */
+export function useClassReports(
+  classId: string,
+  filter: { unreadOnly?: boolean; studentId?: string } = {},
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: [...classKey(classId), filter],
+    enabled,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/classes/{class_id}/reports', {
+        params: {
+          path: { class_id: classId },
+          query: { unread_only: filter.unreadOnly, student_id: filter.studentId, limit: 200 },
+        },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+/** Markerar redovisningen som läst av läraren. */
+export function useMarkRead(reportId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.POST('/api/reports/{report_id}/read', {
+        params: { path: { report_id: reportId } },
+      })
+      if (!response.ok) throw new ApiError(error, response.status)
+    },
+    onSuccess: () => {
+      queryClient.setQueryData<ReportDetail>(keys.report(reportId), (report) =>
+        report ? { ...report, is_read: true } : report,
+      )
+      const report = queryClient.getQueryData<ReportDetail>(keys.report(reportId))
+      if (report) queryClient.invalidateQueries({ queryKey: classKey(report.class_id) })
+    },
+  })
+}

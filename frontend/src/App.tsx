@@ -18,7 +18,7 @@ import { MyReports } from './pages/student/MyReports'
 import { ReportPost } from './pages/student/ReportPost'
 import { Overview } from './pages/teacher/Overview'
 import { StudentHistory } from './pages/teacher/StudentHistory'
-import { WeeklyReport } from './pages/teacher/WeeklyReport'
+import { ReportRoute } from './pages/teacher/TeacherReport'
 
 const staff: Role[] = ['teacher']
 const anyRole: Role[] = ['superadmin', 'school_admin', 'principal', 'syv', 'teacher', 'student', 'supervisor']
@@ -41,7 +41,7 @@ const routes: RouteObject[] = [
 
       // Lärare (demodata tills F3 och F11)
       { path: 'overview', element: only(staff, <Overview />) },
-      { path: 'reports/:reportId', element: only(staff, <WeeklyReport />) },
+      { path: 'reports/:reportId', element: only(staff, <ReportRoute />) },
       { path: 'student-history', element: only(staff, <StudentHistory />) },
       placeholder('reports', staff, 'Veckoredovisningar', 'Alla veckoredovisningar, med filter per klass, elev och vecka.'),
       placeholder('projects', staff, 'Projekt', 'Projekt som tilldelas elever och kopplas till veckoredovisningar.'),
