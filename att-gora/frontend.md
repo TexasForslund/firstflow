@@ -42,6 +42,8 @@ Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11
 - `/students/:studentId`: elevens namn, skola, klasser och lärare. Fylls på med APL och närvaro i F4 och F5.
 - API-anropen finns i `src/api/classes.ts`. `ApiError` i `src/api/errors.ts` visar API:ts felmeddelande.
 
+**Klassen är navet** (Texas, 2026-10-20). Klassvyn har flikarna Elever, APL-villkor, Frågor och Lärare (bara skoladmin). Läraren styr klassen därifrån: vilka elever som går i den, varje elevs praktikplats (B3) och projekt (B12), klassens APL-villkor (period, dagar per vecka, incheckning, närvarogräns, när veckoredovisningen ska vara inne) och frågorna vid redovisning (B5). Läraren har ingen egen elevlista. `/students` är skoladmins, rektorns och SYV:s elevregister.
+
 Översikten, veckoredovisningen och elevhistoriken har kvar demodatan tills F11.
 
 ---
@@ -128,3 +130,11 @@ Elevens vy är byggd för mobilen först och ska kännas som en app i stil med s
 Väntar på: B5, B11 och B12.
 
 Ersätt `src/demo/data.ts` med riktiga anrop: veckoredovisningar, meddelanden, projekt och "Behöver uppmärksamhet". Ta bort demodatan när allt är kopplat.
+
+---
+
+## F12. Klassvyn: praktikplats, projekt och frågor ⬜
+
+Väntar på: B3, B12 och B5.
+
+Koppla in det som redan har en plats i klassvyn: "Tilldela praktikplats" och projekt i varje elevrad under fliken Elever, och valet av frågor under fliken Frågor. Praktikplatsens period ska ha klassens APL-period som förval.

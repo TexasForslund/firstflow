@@ -9,11 +9,12 @@ Avstängda konton visas inte i klasserna och kan inte kopplas.
 En klass som användaren inte har tillgång till svarar 404, oavsett om den finns.
 """
 
-from typing import Annotated
+from datetime import date
+from typing import Annotated, Self
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import Table, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
@@ -65,12 +66,34 @@ class ClassSummary(BaseModel):
     teacher_names: list[str]
 
 
+class AplTerms(BaseModel):
+    """APL-villkor för hela klassen. null betyder att det inte är bestämt än."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    apl_start_date: date | None = None
+    apl_end_date: date | None = None
+    apl_days_per_week: int | None = Field(default=None, ge=1, le=5)
+    check_in_required: bool = True
+    attendance_min_percent: int | None = Field(default=None, ge=0, le=100)
+    report_due_weekday: int | None = Field(
+        default=None, ge=0, le=6, description="0 = måndag … 6 = söndag"
+    )
+
+    @model_validator(mode="after")
+    def end_after_start(self) -> Self:
+        if self.apl_start_date and self.apl_end_date and self.apl_end_date < self.apl_start_date:
+            raise ValueError("APL-periodens slutdatum måste vara efter startdatumet")
+        return self
+
+
 class ClassDetail(BaseModel):
     id: UUID
     name: str
     school_id: UUID
     teachers: list[PersonRead]
     students: list[PersonRead]
+    apl_terms: AplTerms
 
 
 class ClassCreate(BaseModel):
@@ -104,6 +127,7 @@ def _detail(school_class: SchoolClass) -> ClassDetail:
         school_id=school_class.school_id,
         teachers=_active(school_class.teachers),
         students=_active(school_class.students),
+        apl_terms=AplTerms.model_validate(school_class),
     )
 
 
@@ -266,3 +290,15 @@ def unassign_teacher(
     school_class.teachers.remove(teacher)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.put("/{class_id}/apl-terms", response_model=ClassDetail)
+def set_apl_terms(
+    class_id: UUID, body: AplTerms, db: DbSession, user: CanEditClasses
+) -> ClassDetail:
+    """Sätter klassens APL-villkor. Läraren för klassen eller skoladmin. Alla fält skrivs över."""
+    school_class = _get_class(db, user, class_id)
+    for field, value in body.model_dump().items():
+        setattr(school_class, field, value)
+    db.commit()
+    return _detail(school_class)

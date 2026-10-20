@@ -1,6 +1,6 @@
-import { ChevronDown, X } from 'lucide-react'
+import { BriefcaseBusiness, ChevronDown, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 
 import {
   useAddStudent,
@@ -15,12 +15,17 @@ import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, Card, SearchSelect, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
+import { AplTermsForm } from './AplTermsForm'
+import { aplSummary } from './aplTerms'
 import styles from './Classes.module.css'
+
+type TabId = 'students' | 'terms' | 'questions' | 'teachers'
 
 export function ClassPage() {
   const { classId = '' } = useParams()
   const { data: user } = useCurrentUser()
   const query = useClass(classId)
+  const [params, setParams] = useSearchParams()
 
   if (query.isPending) return <p className={styles.state}>Laddar klassen…</p>
   if (query.isError) return <NotFound what="Klassen" />
@@ -30,6 +35,15 @@ export function ClassPage() {
   const canAssignTeachers = user?.role === 'school_admin'
   const teacherNames = cls.teachers.map((t) => t.name).join(', ')
 
+  const tabs: { id: TabId; label: string; count?: number }[] = [
+    { id: 'students', label: 'Elever', count: cls.students.length },
+    { id: 'terms', label: 'APL-villkor' },
+    { id: 'questions', label: 'Frågor' },
+    ...(canAssignTeachers ? [{ id: 'teachers' as const, label: 'Lärare', count: cls.teachers.length }] : []),
+  ]
+  const requested = params.get('tab') as TabId | null
+  const tab: TabId = tabs.some((t) => t.id === requested) ? requested! : 'students'
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -37,28 +51,70 @@ export function ClassPage() {
         <p className={styles.subtitle}>
           {cls.students.length} {cls.students.length === 1 ? 'elev' : 'elever'}
           {teacherNames ? ` · ${teacherNames}` : ' · Ingen lärare kopplad'}
+          {aplSummary(cls.apl_terms) && ` · ${aplSummary(cls.apl_terms)}`}
         </p>
       </header>
 
-      <Card>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Elever</h2>
-          <span className={styles.count}>{cls.students.length}</span>
-        </div>
-        {cls.students.length === 0 ? (
-          <p className={styles.empty}>Inga elever i klassen än.{canEdit && ' Lägg till den första nedan.'}</p>
-        ) : (
-          <ul className={styles.list}>
-            {cls.students.map((student) => (
-              <StudentRow key={student.id} classId={cls.id} student={student} canEdit={canEdit} />
-            ))}
-          </ul>
-        )}
-      </Card>
+      <div className={styles.tabs} role="tablist" aria-label="Klassens delar">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`tab-${t.id}`}
+            aria-selected={tab === t.id}
+            aria-controls={`panel-${t.id}`}
+            className={`${styles.tab} ${tab === t.id ? styles.tabActive : ''}`}
+            onClick={() => setParams(t.id === 'students' ? {} : { tab: t.id }, { replace: true })}
+          >
+            {t.label}
+            {t.count !== undefined && <span className={styles.tabCount}>{t.count}</span>}
+          </button>
+        ))}
+      </div>
 
-      {canEdit && <AddStudentForm classId={cls.id} inClass={cls.students} isTeacher={user?.role === 'teacher'} />}
-      {canAssignTeachers && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
+      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className={styles.panel}>
+        {tab === 'students' && (
+          <>
+            <Card>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>Elever</h2>
+                <span className={styles.count}>{cls.students.length}</span>
+              </div>
+              {cls.students.length === 0 ? (
+                <p className={styles.empty}>Inga elever i klassen än.{canEdit && ' Lägg till den första nedan.'}</p>
+              ) : (
+                <ul className={styles.list}>
+                  {cls.students.map((student) => (
+                    <StudentRow key={student.id} classId={cls.id} student={student} canEdit={canEdit} />
+                  ))}
+                </ul>
+              )}
+            </Card>
+            {canEdit && (
+              <AddStudentForm classId={cls.id} inClass={cls.students} isTeacher={user?.role === 'teacher'} />
+            )}
+          </>
+        )}
+        {tab === 'terms' && <AplTermsForm classId={cls.id} terms={cls.apl_terms} canEdit={canEdit} />}
+        {tab === 'questions' && <QuestionsPlaceholder />}
+        {tab === 'teachers' && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
+      </div>
     </div>
+  )
+}
+
+function QuestionsPlaceholder() {
+  return (
+    <Card>
+      <div className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>Frågor vid redovisning</h2>
+      </div>
+      <p className={styles.empty}>
+        Här väljer du vilka frågor eleverna i klassen får vid varje veckoredovisning, till exempel fritext, bilder,
+        flerval och betyg. Kopplas in när frågor och redovisning finns (B5).
+      </p>
+    </Card>
   )
 }
 
@@ -74,6 +130,11 @@ function StudentRow({ classId, student, canEdit }: { classId: string; student: P
           <span className={styles.meta}>{student.email}</span>
         </span>
       </Link>
+      {/* Tilldelning av praktikplats och projekt kopplas in med B3 och B12. */}
+      <span className={styles.placement}>
+        <BriefcaseBusiness aria-hidden="true" />
+        <span>Ingen praktikplats</span>
+      </span>
       {canEdit && (
         <span className={styles.rowActions}>
           {confirming ? (

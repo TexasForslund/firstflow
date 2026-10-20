@@ -7,6 +7,7 @@ import type { components } from './schema'
 export type ClassSummary = components['schemas']['ClassSummary']
 export type ClassDetail = components['schemas']['ClassDetail']
 export type Person = components['schemas']['PersonRead']
+export type AplTerms = components['schemas']['AplTerms']
 
 const keys = {
   classes: ['classes'] as const,
@@ -132,5 +133,20 @@ export function useUnassignTeacher(classId: string) {
       if (!response.ok) throw new ApiError(error, response.status)
     },
     onSuccess: invalidate,
+  })
+}
+
+export function useSetAplTerms(classId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (terms: AplTerms) => {
+      const { data, error, response } = await api.PUT('/api/classes/{class_id}/apl-terms', {
+        params: { path: { class_id: classId } },
+        body: terms,
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: (updated) => queryClient.setQueryData(['classes', classId], updated),
   })
 }

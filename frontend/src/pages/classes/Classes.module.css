@@ -340,3 +340,102 @@
 .overflowVisible {
   overflow: visible;
 }
+
+/* ─── Flikar i klassvyn ──────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  scrollbar-width: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: var(--color-surface);
+}
+
+.tabActive,
+.tabActive:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.tabCount {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-none);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.placement {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.placement svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.terms {
+  display: grid;
+  margin: 0;
+}
+
+.terms div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+}
+
+.terms div + div {
+  border-top: 1px solid var(--color-border);
+}
+
+.terms dt {
+  color: var(--color-text-secondary);
+}
+
+.terms dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .placement span {
+    display: none;
+  }
+
+  .tab {
+    padding: 0 var(--space-3);
+    font-size: var(--font-size-sm);
+  }
+}
+
+.fieldset > .legend {
+  margin-bottom: var(--space-2);
+}

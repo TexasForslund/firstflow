@@ -252,6 +252,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes/{class_id}/apl-terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Apl Terms
+         * @description Sätter klassens APL-villkor. Läraren för klassen eller skoladmin. Alla fält skrivs över.
+         */
+        put: operations["set_apl_terms_api_classes__class_id__apl_terms_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/students": {
         parameters: {
             query?: never;
@@ -324,6 +344,30 @@ export interface components {
             /** Name */
             name: string;
         };
+        /**
+         * AplTerms
+         * @description APL-villkor för hela klassen. null betyder att det inte är bestämt än.
+         */
+        AplTerms: {
+            /** Apl Start Date */
+            apl_start_date?: string | null;
+            /** Apl End Date */
+            apl_end_date?: string | null;
+            /** Apl Days Per Week */
+            apl_days_per_week?: number | null;
+            /**
+             * Check In Required
+             * @default true
+             */
+            check_in_required: boolean;
+            /** Attendance Min Percent */
+            attendance_min_percent?: number | null;
+            /**
+             * Report Due Weekday
+             * @description 0 = måndag … 6 = söndag
+             */
+            report_due_weekday?: number | null;
+        };
         /** ClassCreate */
         ClassCreate: {
             /** Name */
@@ -347,6 +391,7 @@ export interface components {
             teachers: components["schemas"]["PersonRead"][];
             /** Students */
             students: components["schemas"]["PersonRead"][];
+            apl_terms: components["schemas"]["AplTerms"];
         };
         /** ClassSummary */
         ClassSummary: {
@@ -991,6 +1036,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_apl_terms_api_classes__class_id__apl_terms_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AplTerms"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetail"];
+                };
             };
             /** @description Validation Error */
             422: {

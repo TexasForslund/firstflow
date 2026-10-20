@@ -44,7 +44,7 @@ const routes: RouteObject[] = [
       { path: 'classes', element: only(['school_admin', 'principal'], <ClassList />) },
       { path: 'classes/new', element: only(['teacher', 'school_admin'], <NewClass />) },
       { path: 'classes/:classId', element: only(['teacher', 'school_admin', 'principal', 'superadmin'], <ClassPage />) },
-      { path: 'students', element: only(['teacher', 'school_admin', 'principal', 'syv'], <StudentList />) },
+      { path: 'students', element: only(['school_admin', 'principal', 'syv'], <StudentList />) },
       { path: 'students/:studentId', element: only(['teacher', 'school_admin', 'principal', 'syv', 'superadmin'], <StudentPage />) },
 
       // Flera roller

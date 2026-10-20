@@ -715,6 +715,65 @@
         }
       }
     },
+    "/api/classes/{class_id}/apl-terms": {
+      "put": {
+        "tags": [
+          "classes"
+        ],
+        "summary": "Set Apl Terms",
+        "description": "Sätter klassens APL-villkor. Läraren för klassen eller skoladmin. Alla fält skrivs över.",
+        "operationId": "set_apl_terms_api_classes__class_id__apl_terms_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AplTerms"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/students": {
       "get": {
         "tags": [
@@ -966,6 +1025,82 @@
         ],
         "title": "AccountCreate"
       },
+      "AplTerms": {
+        "properties": {
+          "apl_start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apl Start Date"
+          },
+          "apl_end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apl End Date"
+          },
+          "apl_days_per_week": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apl Days Per Week"
+          },
+          "check_in_required": {
+            "type": "boolean",
+            "title": "Check In Required",
+            "default": true
+          },
+          "attendance_min_percent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendance Min Percent"
+          },
+          "report_due_weekday": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 6.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Due Weekday",
+            "description": "0 = måndag … 6 = söndag"
+          }
+        },
+        "type": "object",
+        "title": "AplTerms",
+        "description": "APL-villkor för hela klassen. null betyder att det inte är bestämt än."
+      },
       "ClassCreate": {
         "properties": {
           "name": {
@@ -1010,6 +1145,9 @@
             },
             "type": "array",
             "title": "Students"
+          },
+          "apl_terms": {
+            "$ref": "#/components/schemas/AplTerms"
           }
         },
         "type": "object",
@@ -1018,7 +1156,8 @@
           "name",
           "school_id",
           "teachers",
-          "students"
+          "students",
+          "apl_terms"
         ],
         "title": "ClassDetail"
       },

@@ -48,6 +48,7 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 - **Elevregistret:** skoladmin lägger in elever (`POST /api/students` med namn, e-post, `teacher_ids` och valfria `class_ids`) och sätter elevens lärare (`PUT /api/students/{id}/teachers`). Kopplingen lagras i `teacher_students`, oberoende av klasser. `GET /api/students?q=` ger läraren hens kopplade elever och skolans personal alla elever. Lärare skapar inga elevkonton.
 - `DELETE /api/classes/{id}/students/{student_id}`: tar bort ur klassen, inte kontot.
 - `POST/DELETE /api/classes/{id}/teachers`: skoladmin kopplar lärare på samma skola.
+- `PUT /api/classes/{id}/apl-terms`: klassens APL-villkor (period, dagar per vecka, incheckning, lägsta närvaro, veckodag för veckoredovisning). Läraren för klassen och skoladmin. Villkoren finns också i `GET /api/classes/{id}` som `apl_terms`.
 - `GET /api/students/{id}`: elevsidan, med klasser och lärare. Läraren ser elever som är kopplade till hen eller går i hens klasser.
 
 Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
@@ -75,6 +76,12 @@ Låser upp: F4.
 
 **Klart när:** tester för varje roll och för en handledare som försöker se en annan handledares elev (404).
 
+**Krav från klassvyn (Texas, 2026-10-20):** klassen är navet. Läraren tilldelar praktikplats per elev direkt i klassvyns elevlista (`/classes/:id`, fliken Elever), där det redan finns en plats för det i varje elevrad. Därför:
+
+- Klassens APL-villkor (`apl_start_date`, `apl_end_date` på `SchoolClass`, se B2) är förval för placeringens `start_date` och `end_date`.
+- `GET /api/classes/{class_id}` eller `GET /api/classes/{class_id}/placements` behöver ge arbetsplatsens namn per elev, så att elevraden kan visa den.
+- Läraren ska bara kunna placera elever i klasser hen undervisar, och arbetsplatser och handledare ska höra till skolan (`require_same_school`).
+
 ---
 
 ## B4. Närvaro och incheckning ⬜
@@ -93,6 +100,7 @@ Låser upp: F5.
    - `GET /api/classes/{class_id}/attendance?from=&to=` (lärare): per elev antal dagar närvarande, frånvarande och sjuk.
    - `GET /api/supervisor/attendance?date=` (handledare): dagens incheckningar för handledarens elever.
 3. Spara ingen plats (GPS). Det är inte nödvändigt för funktionen.
+4. Använd klassens APL-villkor (B2): `check_in_required` avgör om incheckning krävs, och elever under `attendance_min_percent` ska med i "Behöver uppmärksamhet" (B13).
 
 ---
 
@@ -106,6 +114,7 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
 - Fyra frågetyper: bilder (uppladdning), fritext, flerval (t.ex. Ja/Nej/Vet inte) och betyg 1–5.
 - Läraren ser olästa redovisningar på översikten, så redovisningen behöver statusen läst/oläst per lärare.
 - Bilagor räknas per redovisning ("Bilagor (2)").
+- **Frågorna sätts per klass** (Texas, 2026-10-20): i klassvyns flik Frågor väljer läraren vilka frågor eleverna i klassen får vid varje redovisningstillfälle. Klassens `report_due_weekday` (B2) anger när redovisningen ska vara inlämnad.
 
 ---
 
@@ -213,9 +222,9 @@ Trådar mellan lärare och elev, och mellan lärare och handledare. Antal oläst
 
 ## B12. Projekt ⬜
 
-Ägare: bestäms. Tillagd från lärarskisserna.
+Ägare: bestäms. Tillagd från lärarskisserna. Ska diskuteras innan start (Texas).
 
-Läraren skapar projekt och tilldelar dem till elever. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
+Läraren skapar projekt och tilldelar dem till elever från klassvyn, på samma sätt som praktikplats. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
 
 ---
 

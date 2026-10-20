@@ -428,3 +428,69 @@ def test_admin_of_other_school_gets_404_on_every_change(
 def test_unknown_student_is_not_found(client: TestClient, login: Login, world: World) -> None:
     login(world.admin)
     assert client.get("/api/students/00000000-0000-0000-0000-000000000000").status_code == 404
+
+
+# ─── APL-villkor ───────────────────────────────────────────────
+
+TERMS = {
+    "apl_start_date": "2027-01-11",
+    "apl_end_date": "2027-03-19",
+    "apl_days_per_week": 2,
+    "check_in_required": True,
+    "attendance_min_percent": 90,
+    "report_due_weekday": 4,
+}
+
+
+def test_new_class_has_empty_terms(client: TestClient, login: Login, world: World) -> None:
+    login(world.teacher)
+    assert client.get(f"/api/classes/{world.ee22.id}").json()["apl_terms"] == {
+        "apl_start_date": None,
+        "apl_end_date": None,
+        "apl_days_per_week": None,
+        "check_in_required": True,
+        "attendance_min_percent": None,
+        "report_due_weekday": None,
+    }
+
+
+@pytest.mark.parametrize("who", ["teacher", "admin"])
+def test_set_apl_terms(client: TestClient, login: Login, world: World, who: str) -> None:
+    login(getattr(world, who))
+    response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=TERMS)
+    assert response.status_code == 200
+    assert response.json()["apl_terms"] == TERMS
+    assert client.get(f"/api/classes/{world.ee22.id}").json()["apl_terms"] == TERMS
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"apl_end_date": "2027-01-01"},  # före start
+        {"apl_days_per_week": 0},
+        {"apl_days_per_week": 6},
+        {"attendance_min_percent": 101},
+        {"report_due_weekday": 7},
+    ],
+)
+def test_invalid_apl_terms(
+    client: TestClient, login: Login, world: World, change: dict[str, object]
+) -> None:
+    login(world.teacher)
+    response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json={**TERMS, **change})
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize("who", ["other_teacher", "umea_teacher"])
+def test_apl_terms_of_someone_elses_class(
+    client: TestClient, login: Login, world: World, who: str
+) -> None:
+    login(getattr(world, who))
+    response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=TERMS)
+    assert response.status_code == 404
+
+
+def test_principal_cannot_set_apl_terms(client: TestClient, login: Login, world: World) -> None:
+    login(world.principal)
+    response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=TERMS)
+    assert response.status_code == 403
