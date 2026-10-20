@@ -4,6 +4,11 @@
   max-width: var(--main-column);
 }
 
+/* Frågebyggaren behöver plats för tre kolumner. */
+.pageWide {
+  max-width: 90rem;
+}
+
 .header {
   display: grid;
   gap: var(--space-2);

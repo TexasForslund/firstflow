@@ -16,6 +16,7 @@ import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, Card, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
 import { AplTermsForm } from './AplTermsForm'
+import { FormBuilder } from './questions/FormBuilder'
 import { aplSummary } from './aplTerms'
 import styles from './Classes.module.css'
 
@@ -45,7 +46,7 @@ export function ClassPage() {
   const tab: TabId = tabs.some((t) => t.id === requested) ? requested! : 'students'
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${tab === 'questions' && canEdit ? styles.pageWide : ''}`}>
       <header className={styles.header}>
         <h1 className={styles.title}>{cls.name}</h1>
         <p className={styles.subtitle}>
@@ -97,24 +98,10 @@ export function ClassPage() {
           </>
         )}
         {tab === 'terms' && <AplTermsForm classId={cls.id} terms={cls.apl_terms} canEdit={canEdit} />}
-        {tab === 'questions' && <QuestionsPlaceholder />}
+        {tab === 'questions' && <FormBuilder classId={cls.id} canEdit={canEdit} />}
         {tab === 'teachers' && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
       </div>
     </div>
-  )
-}
-
-function QuestionsPlaceholder() {
-  return (
-    <Card>
-      <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>Frågor vid redovisning</h2>
-      </div>
-      <p className={styles.empty}>
-        Här väljer du vilka frågor eleverna i klassen får vid varje veckoredovisning, till exempel fritext, bilder,
-        flerval och betyg. Kopplas in när frågor och redovisning finns (B5).
-      </p>
-    </Card>
   )
 }
 

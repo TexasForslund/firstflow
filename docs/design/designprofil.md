@@ -52,6 +52,17 @@ Tre färger är något mörkare än i skissen för att klara WCAG AA. Lila text 
 
 Avatarer med initialer får en av fem pastellfärger, vald utifrån namnet så att samma person alltid får samma färg: `#ffefc4` (gul), `#c4d5ff` (blå), `#e4c4ff` (lila), `#c4ffc6` (grön), `#ffcbc4` (rosa).
 
+### Frågetyper
+
+Frågebyggaren färgkodar frågetyperna per grupp, som i Typeform (Texas, 2026-10-20). Färgerna är avatarernas pastellfärger, med mörk ikon och siffra:
+
+| Grupp | Frågetyper | Färg |
+|---|---|---|
+| Text | Fritext, kort text | `--avatar-blue` |
+| Val | Flerval, ja/nej | `--avatar-purple` |
+| Betyg | Betyg 1–5 | `--avatar-green` |
+| Övrigt | Meddelande | `--color-surface` med ram |
+
 ## Former och storlekar
 
 - **Radier:** kort 12 px, menyval och valknappar 8 px, taggar 8 px, knappar med kant och "Öppna"-knappar helt runda.
