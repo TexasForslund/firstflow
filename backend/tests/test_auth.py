@@ -27,6 +27,12 @@ def test_login_sets_cookie_and_me_returns_user(
         "role": "student",
         "school_id": str(school.id),
         "school_name": "Testskolan",
+        "preferences": {
+            "text_size": "normal",
+            "high_contrast": False,
+            "reduce_motion": "system",
+            "more_spacing": False,
+        },
     }
     cookie = response.headers["set-cookie"]
     assert settings.session_cookie_name in cookie

@@ -151,10 +151,20 @@ Koppla in det som redan har en plats i klassvyn: "Tilldela praktikplats" och pro
 
 ---
 
-## F13. Frågor och veckoredovisning (B5) 🚧
+## F13. Frågor och veckoredovisning (B5) ✅
 
 Bygger på B5a (PR #14) och [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md). Tre delar, en PR var:
 
 1. **Lärarens frågebyggare** ✅ Klar (PR #15): fliken Frågor i klassvyn. Frågelista med dra och släpp, frågan i mitten där läraren skriver direkt, inställningar och logik till höger, menyn Lägg till fråga, autosparning, Publicera ändringar och Kasta ändringar. Rektor och superadmin ser frågorna utan att kunna ändra.
 2. **Elevens redovisning** ✅ Klar (PR #17): mobilen först, i stil med Snapchat och Instagram men i Firstflows designprofil (Texas, 2026-10-20). En fråga i taget med Föregående, Nästa och Skicka in, animationerna från fragor-typeform.md och en slutskärm. Inskickad redovisning blir ett inlägg med kommentarer. Elevens startsida har stories med redovisningsdagarna, kortet med nästa redovisning och ett flöde med inlägg, och eleven har en flikrad längst ned i mobilen. Läraren kan förhandsgranska frågorna som eleven ser dem. Ingen skiss än, justeras när Texas skissat.
-3. **Läraren läser redovisningarna** 🚧: fliken Redovisningar i klassvyn, olästa först, och redovisningen enligt [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) med kommentarer. Redovisningen markeras som läst när läraren öppnar den. Demoskissernas redovisningar (korta id:n) visas som förut tills F11.
+3. **Läraren läser redovisningarna** ✅ Klar (PR #18): fliken Redovisningar i klassvyn, olästa först, och redovisningen enligt [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) med kommentarer. Redovisningen markeras som läst när läraren öppnar den. Demoskissernas redovisningar (korta id:n) visas som förut tills F11.
+
+---
+
+## F14. Inställningar 🚧
+
+Sidan Inställningar för alla roller (Texas, 2026-10-20):
+
+- **Visning:** tre lägen (Standard, Större, Störst) och fyra inställningar med namn som känns igen från mobilen: Textstorlek, Öka kontrasten, Minska rörelse och Mer luft i texten (WCAG 1.4.12). Sparas på kontot och gäller på alla enheter. Inget mörkt läge (Texas).
+- **Konto:** namn, e-post, roll och skola visas men ändras av skolans administratör. Logga ut från andra enheter.
+- **Senare:** aviseringar (väntar på e-post i B6 och D4) och fler språk.

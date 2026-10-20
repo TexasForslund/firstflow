@@ -1,11 +1,12 @@
 import { useMutation } from '@tanstack/react-query'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 
 import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
 import { useClasses } from '../api/classes'
 import { AppShell } from '../layout/AppShell'
+import { applyPreferences } from './preferences'
 import { navByRole, startPath, type Role } from './roles'
 import { useCurrentUser } from './useCurrentUser'
 import styles from './RequireAuth.module.css'
@@ -17,6 +18,12 @@ export function RequireAuth() {
   const navigate = useNavigate()
   const isTeacher = me.data?.role === 'teacher'
   const classes = useClasses(isTeacher)
+  const preferences = me.data?.preferences
+
+  // Användarens visningsinställningar gäller på alla enheter.
+  useEffect(() => {
+    if (preferences) applyPreferences(preferences)
+  }, [preferences])
 
   const logout = useMutation({
     mutationFn: () => api.POST('/api/auth/logout'),

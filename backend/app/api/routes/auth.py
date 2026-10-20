@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, select
 
 from app.api.deps import CurrentUser, session_cookie
-from app.api.schemas import UserRead
+from app.api.schemas import MeRead, me_read
 from app.core.config import settings
 from app.core.security import (
     hash_session_token,
@@ -25,8 +25,8 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=200)
 
 
-@router.post("/login", response_model=UserRead)
-def login(body: LoginRequest, db: DbSession, response: Response) -> User:
+@router.post("/login", response_model=MeRead)
+def login(body: LoginRequest, db: DbSession, response: Response) -> MeRead:
     user = db.scalar(select(User).where(User.email == normalize_email(body.email)))
     password_ok = verify_password(body.password, user.password_hash if user else None)
     school_active = user is None or user.school is None or user.school.is_active
@@ -51,7 +51,7 @@ def login(body: LoginRequest, db: DbSession, response: Response) -> User:
         secure=settings.session_cookie_secure,
         samesite="lax",
     )
-    return user
+    return me_read(user)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -69,6 +69,7 @@ def logout(
     )
 
 
-@router.get("/me", response_model=UserRead)
-def me(user: CurrentUser) -> User:
-    return user
+@router.get("/me", response_model=MeRead)
+def me(user: CurrentUser) -> MeRead:
+    """Den inloggade användaren, med egna visningsinställningar."""
+    return me_read(user)

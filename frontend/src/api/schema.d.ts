@@ -62,7 +62,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Me */
+        /**
+         * Me
+         * @description Den inloggade användaren, med egna visningsinställningar.
+         */
         get: operations["me_api_auth_me_get"];
         put?: never;
         post?: never;
@@ -327,6 +330,46 @@ export interface paths {
          */
         put: operations["set_teachers_api_students__student_id__teachers_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Preferences
+         * @description Sparar visningsinställningarna. Alla fält skrivs över.
+         */
+        put: operations["set_preferences_api_me_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/sessions/logout-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout Other Devices
+         * @description Loggar ut användaren på alla andra enheter. Den här inloggningen finns kvar.
+         */
+        post: operations["logout_other_devices_api_me_sessions_logout_others_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -786,6 +829,74 @@ export interface components {
              */
             created_at: string;
         };
+        /**
+         * DisplayPreferences
+         * @description Hur Firstflow visas för användaren. Inställningar, Visning.
+         *
+         *     Namnen följer mobilens tillgänglighetsinställningar så att de känns igen.
+         */
+        "DisplayPreferences-Input": {
+            /**
+             * Text Size
+             * @description Textstorlek: normal, cirka 15 % större eller 30 % större
+             * @default normal
+             * @enum {string}
+             */
+            text_size: "normal" | "large" | "largest";
+            /**
+             * High Contrast
+             * @description Öka kontrasten
+             * @default false
+             */
+            high_contrast: boolean;
+            /**
+             * Reduce Motion
+             * @description Minska rörelse: följ datorns inställning eller alltid
+             * @default system
+             * @enum {string}
+             */
+            reduce_motion: "system" | "always";
+            /**
+             * More Spacing
+             * @description Mer luft i texten (WCAG 1.4.12)
+             * @default false
+             */
+            more_spacing: boolean;
+        };
+        /**
+         * DisplayPreferences
+         * @description Hur Firstflow visas för användaren. Inställningar, Visning.
+         *
+         *     Namnen följer mobilens tillgänglighetsinställningar så att de känns igen.
+         */
+        "DisplayPreferences-Output": {
+            /**
+             * Text Size
+             * @description Textstorlek: normal, cirka 15 % större eller 30 % större
+             * @default normal
+             * @enum {string}
+             */
+            text_size: "normal" | "large" | "largest";
+            /**
+             * High Contrast
+             * @description Öka kontrasten
+             * @default false
+             */
+            high_contrast: boolean;
+            /**
+             * Reduce Motion
+             * @description Minska rörelse: följ datorns inställning eller alltid
+             * @default system
+             * @enum {string}
+             */
+            reduce_motion: "system" | "always";
+            /**
+             * More Spacing
+             * @description Mer luft i texten (WCAG 1.4.12)
+             * @default false
+             */
+            more_spacing: boolean;
+        };
         /** DueReport */
         DueReport: {
             /**
@@ -926,6 +1037,27 @@ export interface components {
              * @default true
              */
             required: boolean;
+        };
+        /**
+         * MeRead
+         * @description Den inloggade användaren med egna inställningar. Visas bara för användaren själv.
+         */
+        MeRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            role: components["schemas"]["UserRole"];
+            /** School Id */
+            school_id: string | null;
+            /** School Name */
+            school_name: string | null;
+            preferences: components["schemas"]["DisplayPreferences-Output"];
         };
         /** PersonBrief */
         PersonBrief: {
@@ -1142,6 +1274,11 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** SessionsEnded */
+        SessionsEnded: {
+            /** Ended */
+            ended: number;
         };
         /** ShortTextQuestion */
         "ShortTextQuestion-Input": {
@@ -1427,7 +1564,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRead"];
+                    "application/json": components["schemas"]["MeRead"];
                 };
             };
             /** @description Validation Error */
@@ -1474,7 +1611,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRead"];
+                    "application/json": components["schemas"]["MeRead"];
                 };
             };
         };
@@ -2012,6 +2149,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_preferences_api_me_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisplayPreferences-Input"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisplayPreferences-Output"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_other_devices_api_me_sessions_logout_others_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionsEnded"];
                 };
             };
         };

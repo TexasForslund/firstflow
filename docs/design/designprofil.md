@@ -63,9 +63,21 @@ Frågebyggaren färgkodar frågetyperna per grupp, som i Typeform (Texas, 2026-1
 | Betyg | Betyg 1–5 | `--avatar-green` |
 | Övrigt | Meddelande | `--color-surface` med ram |
 
+### Visningsinställningar
+
+Användaren kan välja visning under Inställningar. Reglerna ligger sist i `frontend/src/index.css` och styrs av attribut på `<html>`. Allt i gränssnittet är byggt i `rem`, så en större textstorlek skalar hela vyn. Skriv därför storlekar i `rem`, inte `px`.
+
+| Inställning | Effekt |
+|---|---|
+| Textstorlek Större / Störst | Grundstorleken 115 % / 130 % |
+| Öka kontrasten | Mörkare sekundär text, tydligare ramar (`#75737d`) och 3 px fokus |
+| Mer luft i texten | Positivt bokstavsavstånd, större ord- och radavstånd (WCAG 1.4.12) |
+| Minska rörelse | Inga animationer, även om datorn inte är inställd på det |
+
 ## Former och storlekar
 
 - **Radier:** kort 12 px, menyval och valknappar 8 px, taggar 8 px, knappar med kant och "Öppna"-knappar helt runda.
+- **Logotyp i sidomenyn:** 30 px hög (Texas, 2026-10-20).
 - **Sidomeny:** 380 px bred på stor skärm, fast till vänster, ljusgrå bakgrund och en ram till höger. Under 1024 px fälls den ut med en menyknapp.
 - **Innehåll:** cirka 80 px luft till vänster om innehållet på stor skärm. Huvudkolumnen är upp till 780 px bred och sidokolumnen cirka 510 px.
 - **Rubriker:** sidrubrik 40 px fet (700). Kortrubriker 18–20 px med vikt 500–600.
