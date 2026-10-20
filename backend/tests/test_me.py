@@ -43,6 +43,12 @@ def test_preferences_follow_the_account_to_a_new_login(
     assert response.json()["preferences"] == BIG
 
 
+def test_smaller_text_is_allowed(client: TestClient, make_user: MakeUser, login: Login) -> None:
+    login(make_user())
+    body = {**BIG, "text_size": "small"}
+    assert client.put("/api/me/preferences", json=body).json()["text_size"] == "small"
+
+
 def test_invalid_preferences_are_rejected(
     client: TestClient, make_user: MakeUser, login: Login
 ) -> None:

@@ -161,10 +161,10 @@ Bygger på B5a (PR #14) och [docs/design/fragor-typeform.md](../docs/design/frag
 
 ---
 
-## F14. Inställningar 🚧
+## F14. Inställningar ✅ Klar (PR #19)
 
 Sidan Inställningar för alla roller (Texas, 2026-10-20):
 
-- **Visning:** tre lägen (Standard, Större, Störst) och fyra inställningar med namn som känns igen från mobilen: Textstorlek, Öka kontrasten, Minska rörelse och Mer luft i texten (WCAG 1.4.12). Sparas på kontot och gäller på alla enheter. Inget mörkt läge (Texas).
+- **Visning:** fyra lägen (Mindre, Standard, Större, Störst) och fyra inställningar med namn som känns igen från mobilen: Textstorlek, Öka kontrasten, Minska rörelse och Mer luft i texten (WCAG 1.4.12). Sparas på kontot och gäller på alla enheter. Inget mörkt läge (Texas).
 - **Konto:** namn, e-post, roll och skola visas men ändras av skolans administratör. Logga ut från andra enheter.
 - **Senare:** aviseringar (väntar på e-post i B6 och D4) och fler språk.

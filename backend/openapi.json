@@ -2243,12 +2243,13 @@
           "text_size": {
             "type": "string",
             "enum": [
+              "small",
               "normal",
               "large",
               "largest"
             ],
             "title": "Text Size",
-            "description": "Textstorlek: normal, cirka 15 % större eller 30 % större",
+            "description": "Textstorlek: cirka 10 % mindre, normal, cirka 15 % större eller 30 % större",
             "default": "normal"
           },
           "high_contrast": {
@@ -2284,12 +2285,13 @@
           "text_size": {
             "type": "string",
             "enum": [
+              "small",
               "normal",
               "large",
               "largest"
             ],
             "title": "Text Size",
-            "description": "Textstorlek: normal, cirka 15 % större eller 30 % större",
+            "description": "Textstorlek: cirka 10 % mindre, normal, cirka 15 % större eller 30 % större",
             "default": "normal"
           },
           "high_contrast": {

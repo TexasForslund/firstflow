@@ -28,8 +28,9 @@ class DisplayPreferences(BaseModel):
 
     model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
 
-    text_size: Literal["normal", "large", "largest"] = Field(
-        default="normal", description="Textstorlek: normal, cirka 15 % större eller 30 % större"
+    text_size: Literal["small", "normal", "large", "largest"] = Field(
+        default="normal",
+        description="Textstorlek: cirka 10 % mindre, normal, cirka 15 % större eller 30 % större",
     )
     high_contrast: bool = Field(default=False, description="Öka kontrasten")
     reduce_motion: Literal["system", "always"] = Field(

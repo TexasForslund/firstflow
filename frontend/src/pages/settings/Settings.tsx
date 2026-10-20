@@ -16,6 +16,7 @@ import { Button, Card, SelectField, Switch } from '../../components'
 import styles from './Settings.module.css'
 
 const TEXT_SIZES = [
+  { value: 'small', label: 'Mindre' },
   { value: 'normal', label: 'Normal' },
   { value: 'large', label: 'Större' },
   { value: 'largest', label: 'Störst' },
