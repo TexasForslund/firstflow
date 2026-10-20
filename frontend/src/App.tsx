@@ -13,6 +13,9 @@ import { NewClass } from './pages/classes/NewClass'
 import { StudentList } from './pages/students/StudentList'
 import { StudentPage } from './pages/students/StudentPage'
 import { Placeholder } from './pages/Placeholder'
+import { AnswerReport } from './pages/student/AnswerReport'
+import { MyReports } from './pages/student/MyReports'
+import { ReportPost } from './pages/student/ReportPost'
 import { Overview } from './pages/teacher/Overview'
 import { StudentHistory } from './pages/teacher/StudentHistory'
 import { WeeklyReport } from './pages/teacher/WeeklyReport'
@@ -56,7 +59,10 @@ const routes: RouteObject[] = [
       placeholder('contracts', ['teacher', 'supervisor', 'school_admin'], 'Kontrakt', 'Utbildningskontrakt och APL-avtal att signera.'),
       placeholder('settings', anyRole, 'Inställningar', 'Konto och aviseringar.'),
 
-      // Elev (F4, F5, F10)
+      // Elev (F4, F5, F10, F13)
+      { path: 'my-reports', element: only(['student'], <MyReports />) },
+      { path: 'my-reports/:reportId', element: only(['student'], <ReportPost />) },
+      { path: 'my-reports/:reportId/answer', element: only(['student'], <AnswerReport />) },
       placeholder('my-apl', ['student'], 'Min APL', 'Din arbetsplats, period och handledare. Kommer i F4.'),
       placeholder('check-in', ['student'], 'Incheckning', 'Checka in för dagens APL. Kommer i F5.'),
 

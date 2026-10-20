@@ -25,9 +25,11 @@ interface AppShellProps {
   /** Lärarens klasser i sidomenyn. Utelämna för roller utan egna klasser. */
   classes?: SidebarClass[]
   onLogout: () => void
+  /** Flikrad längst ned i mobilen, som i appar. Används i elevens vy. */
+  tabBar?: boolean
 }
 
-export function AppShell({ userName, nav, classes, onLogout }: AppShellProps) {
+export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Stäng mobilmenyn när användaren klickar på en länk i den.
@@ -36,7 +38,7 @@ export function AppShell({ userName, nav, classes, onLogout }: AppShellProps) {
   }
 
   return (
-    <div className={styles.shell}>
+    <div className={`${styles.shell} ${tabBar ? styles.withTabBar : ''}`}>
       <header className={styles.mobileBar}>
         <Link to="/" aria-label="Firstflow, till startsidan">
           <Logo height={28} />
@@ -134,6 +136,22 @@ export function AppShell({ userName, nav, classes, onLogout }: AppShellProps) {
       <main className={styles.main}>
         <Outlet />
       </main>
+
+      {tabBar && (
+        <nav aria-label="Flikar" className={styles.tabBar}>
+          <ul>
+            {nav.map(({ to, label, icon: Icon, count }) => (
+              <li key={to}>
+                <NavLink to={to} className={({ isActive }) => `${styles.tab} ${isActive ? styles.tabActive : ''}`}>
+                  <Icon aria-hidden="true" />
+                  <span>{label}</span>
+                  {count ? <span className={styles.tabDot} aria-hidden="true" /> : null}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </div>
   )
 }

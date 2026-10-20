@@ -55,6 +55,7 @@ export function RequireAuth() {
           : undefined
       }
       onLogout={() => logout.mutate()}
+      tabBar={user.role === 'student'}
     />
   )
 }

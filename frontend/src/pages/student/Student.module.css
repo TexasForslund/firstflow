@@ -1,0 +1,348 @@
+/*
+ * Elevens vy: mobilen först, i stil med sociala medier (Texas, 2026-10-20), men i Firstflows
+ * designprofil. Inga skuggor, lila accent, 1 px ramar.
+ */
+
+.page {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 36rem;
+}
+
+.state {
+  color: var(--color-text-secondary);
+}
+
+.hello {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.helloTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-section);
+}
+
+.helloText {
+  color: var(--color-text-secondary);
+}
+
+/* --- Stories --- */
+
+.stories {
+  margin: 0 calc(-1 * var(--space-4));
+}
+
+.stories ul {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.stories ul::-webkit-scrollbar {
+  display: none;
+}
+
+.stories li {
+  scroll-snap-align: start;
+}
+
+.story {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  width: 4.5rem;
+}
+
+.ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  padding: 3px;
+  border-radius: 50%;
+}
+
+.ringTodo {
+  background: var(--color-primary);
+}
+
+.ringDone {
+  background: var(--color-border);
+}
+
+.ringInner {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 100%;
+  height: 100%;
+  border: 3px solid var(--color-bg);
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  line-height: 1;
+}
+
+.ringDone .ringInner {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.ringDay {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-none);
+}
+
+.ringDate {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-none);
+}
+
+.ringCheck {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.ringCheck svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  stroke-width: 3;
+}
+
+.storyLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: var(--tracking-none);
+  white-space: nowrap;
+}
+
+.late {
+  color: var(--color-attention);
+  font-weight: 600;
+}
+
+/* --- Nästa att göra --- */
+
+.next {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.nextEyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+
+}
+
+.nextTitle {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-section);
+}
+
+.nextMeta {
+
+}
+
+.nextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  justify-self: start;
+  min-height: 3rem;
+  margin-top: var(--space-3);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-full);
+  background: #fff;
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.nextButton:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.nextButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.allDone {
+  justify-items: start;
+  border: 1px solid var(--color-border);
+  background: var(--color-sidebar);
+  color: var(--color-text);
+}
+
+.allDone .nextMeta {
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+
+.allDoneIcon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--color-primary-on-light);
+}
+
+.error {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--color-attention);
+  font-size: var(--font-size-sm);
+}
+
+.lateTag,
+.doneTag {
+  flex-shrink: 0;
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-none);
+}
+
+.doneTag {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+/* --- Flödet --- */
+
+.feed {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.feedTitle {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.posts {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.post,
+.postFull {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.post:hover {
+  border-color: var(--color-primary);
+}
+
+.postFull {
+  gap: var(--space-6);
+  padding: var(--space-5);
+}
+
+.postHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.postWho {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.postTitle {
+  font-weight: 600;
+}
+
+.postFullTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+}
+
+.postMeta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.postBody {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.postQuestion {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  letter-spacing: var(--tracking-none);
+}
+
+.postAnswer {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.postFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.postFooter svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  min-height: 2.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.backLink svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}

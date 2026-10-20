@@ -1,4 +1,4 @@
-import { CircleCheck, LoaderCircle, Plus } from 'lucide-react'
+import { CircleCheck, Eye, LoaderCircle, Plus } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -11,6 +11,7 @@ import {
   type QuestionType,
 } from '../../../api/forms'
 import { Button, Card } from '../../../components'
+import { ReportStepper } from '../../reports/ReportStepper'
 import classStyles from '../Classes.module.css'
 import { AddQuestionDialog } from './AddQuestionDialog'
 import styles from './FormBuilder.module.css'
@@ -52,6 +53,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const [previewing, setPreviewing] = useState(false)
 
   // Senaste versionen av frågorna, och en kö så att sparningar alltid kommer i ordning.
   const latest = useRef(questions)
@@ -197,6 +199,13 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
           />
         </div>
         <div className={styles.barActions}>
+          <Button
+            icon={<Eye aria-hidden="true" />}
+            onClick={() => setPreviewing(true)}
+            disabled={questions.length === 0 || !valid}
+          >
+            Förhandsgranska
+          </Button>
           {meta.published_version && hasChanges && !confirmDiscard && (
             <Button onClick={() => setConfirmDiscard(true)} disabled={discard.isPending}>
               Kasta ändringar
@@ -276,6 +285,21 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
       </div>
 
       {adding && <AddQuestionDialog onPick={addQuestion} onClose={() => setAdding(false)} />}
+      {previewing && (
+        // Samma vy som eleven får. Inget sparas.
+        <ReportStepper
+          title="Så här ser eleven frågorna"
+          badge="Förhandsgranskning"
+          questions={questions}
+          onSubmit={async () => {}}
+          onClose={() => setPreviewing(false)}
+          done={{
+            title: 'Klart!',
+            body: 'Här får eleven en bekräftelse på att redovisningen är inskickad. Inga svar sparades i förhandsgranskningen.',
+            actions: <Button onClick={() => setPreviewing(false)}>Tillbaka till frågorna</Button>,
+          }}
+        />
+      )}
     </div>
   )
 }

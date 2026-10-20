@@ -1,0 +1,510 @@
+/*
+ * Elevens redovisning i helskärm, som en story. Inga skuggor.
+ * Animationerna och tiderna kommer från docs/design/fragor-typeform.md.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+}
+
+/* --- Överst: förlopp och stäng --- */
+
+.top {
+  display: grid;
+  gap: var(--space-3);
+  padding: max(var(--space-3), env(safe-area-inset-top)) var(--space-4) var(--space-2);
+}
+
+.segments {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.segment {
+  flex: 1;
+  height: 0.25rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+}
+
+.segmentFill {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  transform-origin: left;
+  transition: transform 300ms ease-out;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.topText {
+  display: grid;
+  min-width: 0;
+}
+
+.topTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.topSubtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.badge {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-none);
+}
+
+.close {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+}
+
+.close svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* --- Frågan --- */
+
+.step {
+  display: grid;
+  align-content: center;
+  gap: var(--space-4);
+  width: min(100%, 42rem);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+  overflow-y: auto;
+}
+
+/* Delarna kommer in lite efter varandra (60 ms). */
+.step > * {
+  animation: 350ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.fromBelow > * {
+  animation-name: enterFromBelow;
+}
+
+.fromAbove > * {
+  animation-name: enterFromAbove;
+}
+
+.step > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.step > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.step > *:nth-child(n + 4) {
+  animation-delay: 180ms;
+}
+
+@keyframes enterFromBelow {
+  from {
+    opacity: 0;
+    transform: translateY(48px);
+  }
+}
+
+@keyframes enterFromAbove {
+  from {
+    opacity: 0;
+    transform: translateY(-48px);
+  }
+}
+
+.counter {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-primary-on-light);
+  letter-spacing: var(--tracking-none);
+}
+
+.question {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-section);
+  outline: none;
+}
+
+@media (min-width: 768px) {
+  .question {
+    font-size: 2rem;
+  }
+}
+
+.description {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+.answer {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.textInput {
+  width: 100%;
+  padding: var(--space-2) 0;
+  border: 0;
+  border-bottom: 2px solid var(--color-primary);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-lg);
+  letter-spacing: var(--tracking-body);
+}
+
+.textInput:focus {
+  outline: none;
+  border-bottom-color: var(--color-primary-hover);
+}
+
+.textInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.textArea {
+  resize: none;
+  field-sizing: content;
+  min-height: 3.5rem;
+  max-height: 40vh;
+}
+
+.options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  text-align: left;
+  transition: background-color 150ms;
+}
+
+.option:hover {
+  background: var(--color-primary-light);
+}
+
+.optionSelected {
+  background: var(--color-primary-light);
+  animation: pulse 250ms ease-out;
+}
+
+/* Mjuk puls i stället för blink, så att vi håller oss under tre blinkningar per sekund. */
+@keyframes pulse {
+  50% {
+    background: #dcd3ff;
+  }
+}
+
+.letter {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 0.375rem;
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-none);
+}
+
+.optionSelected .letter {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.optionLabel {
+  flex: 1;
+}
+
+.optionCheck {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-primary-on-light);
+}
+
+/* Bocken ritas in. */
+.optionCheck :is(path, polyline) {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: draw 200ms 80ms ease-out forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.stars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.star {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  min-width: 3.25rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--tracking-none);
+}
+
+.star svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-star-empty);
+  transition: color 150ms, fill 150ms;
+}
+
+.starFilled svg {
+  color: var(--color-star);
+  fill: var(--color-star);
+}
+
+.starPicked svg {
+  animation: bounce 200ms ease-out;
+}
+
+@keyframes bounce {
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.error {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+  font-size: var(--font-size-sm);
+  animation: slideIn 200ms ease-out both !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* --- Nederst: Föregående och Nästa --- */
+
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(100%, 42rem);
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-5) max(var(--space-5), env(safe-area-inset-bottom));
+}
+
+.back,
+.next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3.25rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+}
+
+.back {
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.back:disabled {
+  visibility: hidden;
+}
+
+.next {
+  flex: 1;
+  max-width: 16rem;
+  padding: 0 var(--space-6);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.next:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.next:disabled {
+  opacity: 0.7;
+}
+
+.back svg,
+.next svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.enterHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.enterHint svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .enterHint {
+    display: none;
+  }
+
+  .back span {
+    display: none;
+  }
+
+  .back {
+    width: 3.25rem;
+    padding: 0;
+  }
+
+  .next {
+    max-width: none;
+  }
+}
+
+/* --- Slutskärmen --- */
+
+.doneStep {
+  justify-items: center;
+  text-align: center;
+}
+
+.doneStep > * {
+  animation-name: enterFromBelow;
+}
+
+.doneCheck {
+  width: 5.5rem;
+  height: 5.5rem;
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.doneCheck circle {
+  fill: var(--color-primary-light);
+  stroke: var(--color-primary);
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: draw 500ms ease-out forwards;
+}
+
+.doneCheck path {
+  stroke: var(--color-primary-on-light);
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: draw 300ms 400ms ease-out forwards;
+}
+
+.doneActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* Minskad rörelse: bara toning, ingen glidning, studs eller puls. */
+@media (prefers-reduced-motion: reduce) {
+  .step > *,
+  .doneStep > * {
+    animation: fade 150ms ease-out both !important;
+    animation-delay: 0ms !important;
+  }
+
+  .optionSelected,
+  .starPicked svg {
+    animation: none;
+  }
+
+  .optionCheck :is(path, polyline),
+  .doneCheck circle,
+  .doneCheck path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .segmentFill,
+  .option,
+  .star svg {
+    transition: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
