@@ -13,6 +13,7 @@ import { NewClass } from './pages/classes/NewClass'
 import { StudentList } from './pages/students/StudentList'
 import { StudentPage } from './pages/students/StudentPage'
 import { Placeholder } from './pages/Placeholder'
+import { Settings } from './pages/settings/Settings'
 import { AnswerReport } from './pages/student/AnswerReport'
 import { MyReports } from './pages/student/MyReports'
 import { ReportPost } from './pages/student/ReportPost'
@@ -57,7 +58,7 @@ const routes: RouteObject[] = [
       placeholder('messages', ['teacher', 'student', 'supervisor', 'syv'], 'Meddelanden', 'Meddelanden mellan lärare, elever och handledare.'),
       placeholder('placements', ['teacher', 'student', 'school_admin'], 'Praktikplatser', 'Arbetsplatser, handledare och vilka elever som är där.'),
       placeholder('contracts', ['teacher', 'supervisor', 'school_admin'], 'Kontrakt', 'Utbildningskontrakt och APL-avtal att signera.'),
-      placeholder('settings', anyRole, 'Inställningar', 'Konto och aviseringar.'),
+      { path: 'settings', element: only(anyRole, <Settings />) },
 
       // Elev (F4, F5, F10, F13)
       { path: 'my-reports', element: only(['student'], <MyReports />) },

@@ -4,7 +4,11 @@ import { createRoot } from 'react-dom/client'
 
 import { queryClient } from './api/queryClient'
 import App from './App.tsx'
+import { applyCachedPreferences } from './auth/preferences'
 import './index.css'
+
+// Textstorlek, kontrast m.m. från förra besöket, innan något ritas.
+applyCachedPreferences()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

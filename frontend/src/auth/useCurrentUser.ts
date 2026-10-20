@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../api/client'
 import type { components } from '../api/schema'
 
-export type CurrentUser = components['schemas']['UserRead']
+export type CurrentUser = components['schemas']['MeRead']
 
 /** Den inloggade användaren, eller null om ingen är inloggad. */
 export function useCurrentUser() {

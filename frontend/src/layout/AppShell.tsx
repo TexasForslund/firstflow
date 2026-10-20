@@ -59,7 +59,7 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
 
       <aside id="sidebar" className={`${styles.sidebar} ${menuOpen ? styles.open : ''}`} onClick={closeOnLink}>
         <Link to="/" className={styles.logo} aria-label="Firstflow, till startsidan">
-          <Logo height={40} />
+          <Logo height={30} />
         </Link>
 
         <div className={styles.user}>

@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2, X } from 'lucide-react'
 import { useId } from 'react'
 
 import type { LogicRule, Question } from '../../../api/forms'
+import { Switch } from '../../../components'
 import styles from './FormBuilder.module.css'
 import { answerOptions, hasLogic, QUESTION_TYPES, questionTitle } from './questionTypes'
 import { TypeBadge } from './TypeBadge'
@@ -85,21 +86,6 @@ export function QuestionSettings({ question, questions, index, onChange, onMove,
         </div>
       </section>
     </aside>
-  )
-}
-
-function Switch({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className={styles.switchRow}>
-      <span>{label}</span>
-      <input
-        type="checkbox"
-        role="switch"
-        className={styles.switch}
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-    </label>
   )
 }
 

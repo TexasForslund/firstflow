@@ -49,7 +49,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserRead"
+                  "$ref": "#/components/schemas/MeRead"
                 }
               }
             }
@@ -92,6 +92,7 @@
           "auth"
         ],
         "summary": "Me",
+        "description": "Den inloggade användaren, med egna visningsinställningar.",
         "operationId": "me_api_auth_me_get",
         "responses": {
           "200": {
@@ -99,7 +100,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserRead"
+                  "$ref": "#/components/schemas/MeRead"
                 }
               }
             }
@@ -998,6 +999,80 @@
             }
           }
         }
+      }
+    },
+    "/api/me/preferences": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Set Preferences",
+        "description": "Sparar visningsinställningarna. Alla fält skrivs över.",
+        "operationId": "set_preferences_api_me_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisplayPreferences-Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayPreferences-Output"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/me/sessions/logout-others": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Logout Other Devices",
+        "description": "Loggar ut användaren på alla andra enheter. Den här inloggningen finns kvar.",
+        "operationId": "logout_other_devices_api_me_sessions_logout_others_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionsEnded"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
       }
     },
     "/api/classes/{class_id}/form": {
@@ -2163,6 +2238,94 @@
         ],
         "title": "CommentRead"
       },
+      "DisplayPreferences-Input": {
+        "properties": {
+          "text_size": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "large",
+              "largest"
+            ],
+            "title": "Text Size",
+            "description": "Textstorlek: normal, cirka 15 % större eller 30 % större",
+            "default": "normal"
+          },
+          "high_contrast": {
+            "type": "boolean",
+            "title": "High Contrast",
+            "description": "Öka kontrasten",
+            "default": false
+          },
+          "reduce_motion": {
+            "type": "string",
+            "enum": [
+              "system",
+              "always"
+            ],
+            "title": "Reduce Motion",
+            "description": "Minska rörelse: följ datorns inställning eller alltid",
+            "default": "system"
+          },
+          "more_spacing": {
+            "type": "boolean",
+            "title": "More Spacing",
+            "description": "Mer luft i texten (WCAG 1.4.12)",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DisplayPreferences",
+        "description": "Hur Firstflow visas för användaren. Inställningar, Visning.\n\nNamnen följer mobilens tillgänglighetsinställningar så att de känns igen."
+      },
+      "DisplayPreferences-Output": {
+        "properties": {
+          "text_size": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "large",
+              "largest"
+            ],
+            "title": "Text Size",
+            "description": "Textstorlek: normal, cirka 15 % större eller 30 % större",
+            "default": "normal"
+          },
+          "high_contrast": {
+            "type": "boolean",
+            "title": "High Contrast",
+            "description": "Öka kontrasten",
+            "default": false
+          },
+          "reduce_motion": {
+            "type": "string",
+            "enum": [
+              "system",
+              "always"
+            ],
+            "title": "Reduce Motion",
+            "description": "Minska rörelse: följ datorns inställning eller alltid",
+            "default": "system"
+          },
+          "more_spacing": {
+            "type": "boolean",
+            "title": "More Spacing",
+            "description": "Mer luft i texten (WCAG 1.4.12)",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text_size",
+          "high_contrast",
+          "reduce_motion",
+          "more_spacing"
+        ],
+        "title": "DisplayPreferences",
+        "description": "Hur Firstflow visas för användaren. Inställningar, Visning.\n\nNamnen följer mobilens tillgänglighetsinställningar så att de känns igen."
+      },
       "DueReport": {
         "properties": {
           "class_id": {
@@ -2520,6 +2683,64 @@
           "required"
         ],
         "title": "LongTextQuestion"
+      },
+      "MeRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "school_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "School Id"
+          },
+          "school_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "School Name"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/DisplayPreferences-Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "school_id",
+          "school_name",
+          "preferences"
+        ],
+        "title": "MeRead",
+        "description": "Den inloggade användaren med egna inställningar. Visas bara för användaren själv."
       },
       "PersonBrief": {
         "properties": {
@@ -2999,6 +3220,19 @@
           "created_at"
         ],
         "title": "SchoolRead"
+      },
+      "SessionsEnded": {
+        "properties": {
+          "ended": {
+            "type": "integer",
+            "title": "Ended"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ended"
+        ],
+        "title": "SessionsEnded"
       },
       "ShortTextQuestion-Input": {
         "properties": {

@@ -183,3 +183,57 @@ ul {
   white-space: nowrap;
   border: 0;
 }
+
+/*
+ * Visningsinställningar (Inställningar, Visning). Sätts som attribut på <html> av
+ * applyPreferences i src/auth/preferences.ts. Allt är byggt i rem, så textstorleken skalar
+ * hela gränssnittet.
+ */
+html[data-text-size='large'] {
+  font-size: 115%;
+}
+
+html[data-text-size='largest'] {
+  font-size: 130%;
+}
+
+/* Öka kontrasten: mörkare grå text och tydligare ramar och fokus. */
+html[data-contrast='high'] {
+  --color-text-secondary: #2f2d38;
+  --color-text-muted: #3e3c46;
+  --color-text-faded: #6e6c76;
+  --color-border: #75737d;
+  --color-primary-on-light: #4a2bd6;
+  --color-attention: #8f2e12;
+}
+
+html[data-contrast='high'] :focus-visible {
+  outline-width: 3px;
+  outline-color: var(--color-text);
+}
+
+/* Mer luft i texten, enligt WCAG 1.4.12 (textavstånd). */
+html[data-spacing='more'] {
+  --tracking-body: 0.03em;
+  --tracking-title: 0.02em;
+  --tracking-section: 0.01em;
+  --tracking-heading: 0;
+  --tracking-display: 0;
+  line-height: 1.75;
+  word-spacing: 0.16em;
+}
+
+html[data-spacing='more'] p + p {
+  margin-top: 0.75em;
+}
+
+/* Minska rörelse alltid, även om datorn inte är inställd på det. */
+html[data-motion='reduce'] *,
+html[data-motion='reduce'] *::before,
+html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
