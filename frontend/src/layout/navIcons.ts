@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MapPinCheck,
   MessageCircle,
+  NotebookPen,
   School,
   UserCog,
   Users,
@@ -26,4 +27,5 @@ export const navIcons = {
   reports: ChartColumn,
   checkIn: MapPinCheck,
   classes: GraduationCap,
+  myReports: NotebookPen,
 }
