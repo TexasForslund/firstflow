@@ -103,7 +103,7 @@ Låser upp: F5.
 
 ---
 
-## B5. Frågor och veckoredovisning ⬜ (Texas + Claude)
+## B5. Frågor och veckoredovisning 🚧 (Texas + Claude)
 
 **Genomgången är gjord** (Texas och Claude, 2026-10-20). Besluten, frågetyperna och datamodellen står i [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md). Läs den innan bygget börjar. Veckoredovisning lämnas bara på vardagar.
 
@@ -113,6 +113,16 @@ Viktigast från genomgången:
 - Frågorna har versioner, och svaren sparas som typade värden med fasta id:n.
 - En inskickad redovisning går inte att ändra. Elev, lärare och handledare kan kommentera den.
 - Extra frågor för enskilda elever, och projektval när B12 finns.
+
+**B5a, backend för frågor och redovisning** 🚧 [PR #14](https://github.com/TexasForslund/firstflow/pull/14):
+- Klassens formulär: utkast, "Publicera ändringar" och "Kasta ändringar". Varje publicering blir en ny version.
+- Frågetyper: kort text, fritext, flerval (med flera val och Annat), ja/nej, betyg 1–5 och meddelande. Logik som hoppar framåt eller till slutet.
+- Eleven: redovisningsdagarna fyra veckor bakåt, en redovisning per vald dag, svar sparas vid Nästa, skicka in. Inskickad redovisning är låst.
+- Läraren: klassens inskickade redovisningar, oläst och läst, kommentarer från elev och lärare.
+
+**B5b, senare:** skolans mallar (skoladmin), förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
+
+**Att planera:** redovisningar och kommentarer hindrar att ett elevkonto raderas (`RESTRICT`). Gallring och radering av elevdata planeras tillsammans med mellanarkivet ([mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md)).
 
 Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar.
 

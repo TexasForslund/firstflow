@@ -157,15 +157,20 @@ Tar vi inte med: kontaktuppgifter, betalning, signatur, NPS, matris, rangordning
 - Frågor och alternativ har **fasta id:n**, så att svaren går att tolka även efter att en fråga har ändrats.
 - Senare kommer ett versionerat export-API för t.ex. Haldor. Fråga Haldor vilket format de vill ha och om de använder SS 12000. Exporten styrs av avtal med skolan, eftersom det är elevdata.
 
-### Datamodellen i stora drag
+### Datamodellen
+Byggd i B5a (backend). Kursivt kommer senare.
 ```
-Mall (skola)          ─┐
-Formulär (klass)      ─┴─▶ Fråga ──▶ Frågeversion (text, typ, alternativ, logik, kurskod)
-                                       ▲
-Redovisning (elev, datum, projekt?) ──▶ Svar (frågeversion, typat värde)
-          └──▶ Kommentar (författare, text)
-Extra fråga (elev) ─▶ Fråga
+Klass ──▶ Utkast (frågorna som JSON, bara läraren ser det)
+      └─▶ Publicerad version 1, 2, 3 … (frågorna som JSON, ändras aldrig)
+                 ▲
+Redovisning (elev, klass, dag, status) ──▶ Svar (frågans id, typat värde)
+      ├─▶ Kommentar (författare, text)
+      └─▶ Läst av (lärare)
+Mall (skola), extra fråga (elev), projekt  ← senare
 ```
+- Varje fråga och varje alternativ har ett fast id som följer med mellan versionerna. Svaren pekar på frågans id, och redovisningen på versionen eleven svarade på. Då går ett svar alltid att tolka mot frågan som eleven såg.
+- En redovisning startas på den senast publicerade versionen och behåller den, även om läraren publicerar en ny medan eleven svarar.
+- Svar sparas i egna kolumner per typ: text, valda alternativ, Annat-text, ja/nej och betyg.
 
 ### Tillgänglighet (WCAG 2.1 AA, Ska-krav i upphandlingen)
 - Allt fungerar med tangentbord och skärmläsare. Fokus flyttas till nästa fråga och läses upp.
