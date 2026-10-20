@@ -9,7 +9,16 @@ Firstflow är en plattform för APL (arbetsplatsförlagt lärande) för skolor, 
 
 ## Teamet
 
-Två utvecklare med var sitt Claude-konto. Hannes äger `backend/`, kollegan äger `frontend/`. Ändra inte i den andra delen utan att det framgår tydligt i PR:en.
+Två utvecklarpar: **Texas + Claude** och **Hannes + Claude**.
+
+| Texas + Claude | Hannes + Claude |
+|---|---|
+| B1b (multi-tenant + roller) | B3 (praktikperiod och APL-plats) |
+| B2 (klasser och elever) | B4 (närvaro och incheckning) |
+| F1–F3 (designsystem, inloggning, klassvy) | B5 (frågor och redovisning) |
+| F4–F6 (APL-vy, incheckning, demo) | B6 (inbjudningar, pilot-prep) |
+
+Ändra inte i den andres pågående feature-branch utan att det framgår tydligt i PR:en. Vid konflikt: prata i Discord innan du mergar.
 
 Vad som är näst på tur står i [att-gora/](att-gora/README.md): `backend.md` och `frontend.md`. Läs mappen innan du börjar en ny uppgift och uppdatera uppgiftens status i samma PR.
 

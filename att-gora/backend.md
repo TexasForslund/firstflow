@@ -1,6 +1,6 @@
 # Backend – att göra
 
-Ägare: Hannes. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
+Ägare: Se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md). B1b och B2 görs av Texas + Claude, B3–B6 av Hannes + Claude. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
 
 Gäller alla uppgifter:
 
@@ -17,7 +17,25 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 ---
 
-## B2. Klasser och elever ⬜
+## B1b. Multi-tenant och rollmodell ⬜ (Texas + Claude)
+
+**Måste göras innan B2.** Läs [docs/multi-tenant-och-roller.md](../docs/multi-tenant-och-roller.md) — det är hela specen.
+
+**Sammanfattning:**
+
+- Ny tabell `schools` (id, name, org_number, is_active)
+- `school_id` på `User` (nullable för superadmin/supervisor)
+- Utökad `UserRole`: `superadmin`, `school_admin`, `principal`, `syv`, `teacher`, `student`, `supervisor`
+- Hjälpfunktion `require_same_school` i `deps.py` — används i alla endpoints som rör skoldata
+- Superadmin-endpoints: `POST/GET /api/superadmin/schools`, `POST /api/superadmin/schools/{id}/admins`
+- `create_user.py` får `--school-id`-flagga
+- `seed_demo.py` skapar 2 demoskolor med full rolluppsättning
+
+**Klart när:** migrering går igenom, tester täcker att en lärare på skola A inte kan se data från skola B (404), och `seed_demo.py` skapar alla roller.
+
+---
+
+## B2. Klasser och elever ⬜ (Texas + Claude)
 
 Låser upp: F3 (klassvy och elevvy).
 
