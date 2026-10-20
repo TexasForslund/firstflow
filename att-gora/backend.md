@@ -57,6 +57,8 @@ Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo
 
 ## B3. Praktikperiod och APL-plats ⬜
 
+Idéer från Texas som rör B3 finns i [ideer.md](ideer.md): praktikplatser per lärare och handledarinbjudan via länk (punkt 4), kalender och schema (punkt 7) och kommentarer från handledaren (punkt 1). Stäm av med Texas innan de byggs in.
+
 Låser upp: F4.
 
 **Mål:** Läraren kopplar en elev till en arbetsplats och en handledare under en period.
@@ -103,7 +105,7 @@ Låser upp: F5.
 
 ---
 
-## B5. Frågor och veckoredovisning 🚧 (Texas + Claude)
+## B5. Frågor och veckoredovisning 🚧 B5a klar (PR #14), B5b kvar (Texas + Claude)
 
 **Genomgången är gjord** (Texas och Claude, 2026-10-20). Besluten, frågetyperna och datamodellen står i [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md). Läs den innan bygget börjar. Veckoredovisning lämnas bara på vardagar.
 
@@ -239,6 +241,8 @@ Trådar mellan lärare och elev, och mellan lärare och handledare. Antal oläst
 ---
 
 ## B12. Projekt ⬜
+
+Idéer från Texas om projekt finns i [ideer.md](ideer.md) (punkt 2). Ta upp dem innan B12 detaljeras.
 
 Ägare: bestäms. Tillagd från lärarskisserna. Ska diskuteras innan start (Texas).
 

@@ -7,8 +7,39 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 | [backend.md](backend.md) | Hannes (B3, B4, B6), Texas (B1b, B2, B5) | Uppgifter i `backend/`: modeller, migreringar, endpoints, tester |
 | [frontend.md](frontend.md) | Texas | Uppgifter i `frontend/`: vyer, komponenter, anrop mot API:t |
 | [drift.md](drift.md) | Bestäms | Driftsättning hos Broadview: produktion, testmiljö, backup, e-post, övervakning |
+| [ideer.md](ideer.md) | Texas | Idéer att bolla. Inget är beslutat, ta upp med Texas innan något byggs |
 
 Ordningen följer fas 1 i [roadmapen](../docs/produktvision-och-roadmap.md): inloggning, klasser och elever, praktikperiod och APL-plats, närvaro, frågor och redovisning.
+
+## Läget just nu (2026-10-20)
+
+Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
+
+**Klart och mergat (Texas + Claude):**
+- **B1b:** skolor och roller, med multi-tenant (#7).
+- **B2 och F3:** klasser och elever. Skoladmin lägger in elever och kopplar dem till lärare, och läraren väljer bland sina elever (#9).
+- **F3b:** användare för skoladmin och skolor för superadmin (#10).
+- **APL-villkor:** dagar per vecka, incheckning, och vilka vardagar veckoredovisningen lämnas. Inga helger (#11, #13).
+- **Driftplanen** för Broadview (#12).
+- **B5a och F13: frågor och veckoredovisning** (#13–#18):
+  - Läraren bygger klassens frågor i fliken Frågor som i Typeform: utkast, publicering, logik och förhandsgranskning.
+  - Eleven svarar i mobilen en fråga i taget, som en story. Svaret sparas vid Nästa.
+  - En inskickad redovisning blir ett inlägg med kommentarer.
+  - Läraren läser i fliken Redovisningar, med olästa först.
+  - Underlaget finns i [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md).
+- **F14:** Inställningar med visning i fyra lägen (Mindre, Standard, Större, Störst), kontrast, rörelse, textavstånd och konto. Sparas per konto (#19, #20).
+- Demodatan (`seed_demo`) ger varje klass ett publicerat formulär med redovisning tisdag och fredag.
+
+**Nästa steg:**
+- **Texas + Claude:**
+  - B5b: mallar (beslut finns i fragor-typeform.md), förslag utifrån läroplanen och extra frågor per elev.
+  - Gå igenom [ideer.md](ideer.md) med Texas.
+- **Hannes + Claude:** B3 (praktikplats), B4 (närvaro) och B6 (inbjudningar och lösenord). Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
+- **Väntar på B3, B4 och B12:**
+  - elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt)
+  - projektval i redovisningen
+  - handledarens åtkomst till redovisningar
+- **Öppet att planera:** att radera elevkonton som har redovisningar (gallring och mellanarkiv). Se B5 i backend.md och punkt 9 i ideer.md.
 
 ## Instruktion till Claude
 
