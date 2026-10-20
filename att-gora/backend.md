@@ -102,3 +102,86 @@ Behövs innan riktiga elever loggar in, men stoppar inte B2–B5:
 - Begränsning av antal inloggningsförsök per e-post och IP.
 - Administratörsroll eller skript för att skapa lärarkonton per skola.
 - Loggning av inloggningar och ändringar i elevdata, utan namn eller annan elevdata i loggen.
+
+---
+
+## B7. Skoladministratör – lärarkategorier och rapporter ⬜
+
+Låser upp: F7.
+
+Se detaljerad spec i [docs/skoladmin-funktioner.md](../docs/skoladmin-funktioner.md).
+
+**Mål:** Ny roll `school_admin` med endpoints för lärarkategorier och Excel-rapporter.
+
+**Gör så här**
+
+1. Lägg till `UserRole.SCHOOL_ADMIN` i rollmodellen. Skapa migrering.
+2. Modell `TeacherCategory` och `TeacherCategoryAssignment` (se spec-dokumentet). Skapa migrering.
+3. Endpoints (alla kräver `school_admin`-roll):
+   - `GET /api/admin/teacher-categories` – Skolverkets kategorilista
+   - `PUT /api/admin/teachers/{user_id}/category` – sätt kategori för lärare
+   - `GET /api/admin/reports/material-compensation?from=&to=` → Excel-fil
+   - `GET /api/admin/reports/state-subsidy?school_year=` → Excel-fil
+4. Seeda in Skolverkets aktuella kategorier (1–5) i migreringen som startvärden.
+
+**Klart när:** tester täcker behörighetsskydd och att Excel-filerna genereras utan fel.
+
+---
+
+## B8. Digital avtalshantering ⬜
+
+Väntar inte på annat. Kan parallellköras med B2–B5.
+
+Se detaljerad spec i [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md).
+
+**Mål:** APL-kontrakt skapas, distribueras och signeras digitalt.
+
+**Gör så här**
+
+1. Modell `Contract`: `id`, `placement_id`, `template_id`, `status` (`draft|sent|partially_signed|fully_signed`), `created_at`, `pdf_path`.
+2. Modell `ContractSignature`: `id`, `contract_id`, `user_id`, `role` (`student|supervisor|teacher|guardian`), `signed_at`, `signature_method` (`bankid|manual`).
+3. Endpoints:
+   - `POST /api/contracts` (lärare): skapa kontrakt från mall för en placering
+   - `GET /api/contracts/{id}` – hämta kontrakt med signeringsstatus
+   - `POST /api/contracts/{id}/sign` – signera (initialt manuell bekräftelse, BankID i nästa steg)
+4. PDF-generering vid skapande (weasyprint). Spara som PDF/A-2b för arkivering.
+5. Notifiera berörda parter via e-post när kontrakt skickas och när alla signerat.
+
+**BankID:** integreras i ett separat steg. Välj signeringstjänst (Scrive/Verified/Nets eID) innan implementation.
+
+---
+
+## B9. SS 12000 / Educloud-integration ⬜
+
+Se detaljerad spec i [docs/ss12000-integration.md](../docs/ss12000-integration.md).
+
+**Tidplan:** Kräver partneravtal med IST (2–4 veckor ledtid). Starta ansökan parallellt med övrig utveckling.
+
+**Mål:** Elever, klasser och personal synkroniseras automatiskt från IST Administration.
+
+**Gör så här**
+
+1. Modeller `ExternalSystem` och `SyncLog` (se spec-dokumentet).
+2. OAuth 2.0 client credentials-flöde mot Educloud.
+3. Synkroniseringslogik: hämta, matcha, skapa/uppdatera användare och klass-kopplingar.
+4. Endpoint `POST /api/admin/integrations/{id}/sync` för manuell synkronisering.
+5. Cron-jobb för nattlig automatisk synkronisering.
+6. Alvis-integration som steg 2 (samma protokoll, annan URL).
+
+---
+
+## B10. Dataexport och mellanarkiv ⬜
+
+Se detaljerad spec i [docs/mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md).
+
+**Mål:** Fullständig dataexport i öppna format (JSON + PDF/A).
+
+**Gör så här**
+
+1. Async export-jobb (Celery eller BackgroundTasks) som samlar all data för en skola.
+2. Generera ZIP med struktur enligt spec.
+3. Alla signerade kontrakt exporteras som PDF/A-2b.
+4. Endpoints:
+   - `POST /api/admin/export` → `{job_id}`
+   - `GET /api/admin/export/{job_id}/status`
+   - `GET /api/admin/export/{job_id}/download` → ZIP-fil
