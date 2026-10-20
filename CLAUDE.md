@@ -21,7 +21,7 @@ Två utvecklarpar: **Texas + Claude** och **Hannes + Claude**.
 
 Ändra inte i den andres pågående feature-branch utan att det framgår tydligt i PR:en. Vid konflikt: prata i Discord innan du mergar.
 
-Vad som är näst på tur står i [att-gora/](att-gora/README.md): `backend.md` och `frontend.md`. Läs mappen innan du börjar en ny uppgift och uppdatera uppgiftens status i samma PR.
+Vad som är näst på tur står i [att-gora/](att-gora/README.md): `backend.md` och `frontend.md`. Läs mappen innan du börjar en ny uppgift och uppdatera uppgiftens status i samma PR. Lägesbilden står överst i `att-gora/README.md`. Idéer som inte är beslutade står i `att-gora/ideer.md`: bygg dem inte utan att Texas har sagt ja.
 
 ## Struktur
 
