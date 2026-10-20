@@ -189,6 +189,10 @@ ul {
  * applyPreferences i src/auth/preferences.ts. Allt är byggt i rem, så textstorleken skalar
  * hela gränssnittet.
  */
+html[data-text-size='small'] {
+  font-size: 90%;
+}
+
 html[data-text-size='large'] {
   font-size: 115%;
 }

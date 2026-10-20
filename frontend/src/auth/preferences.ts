@@ -14,8 +14,14 @@ export const DEFAULT_PREFERENCES: DisplayPreferences = {
   more_spacing: false,
 }
 
-/** De tre färdiga lägena. Rörelse väljs separat och ingår inte. */
+/** De fyra färdiga lägena. Rörelse väljs separat och ingår inte. */
 export const PRESETS = [
+  {
+    id: 'smaller',
+    label: 'Mindre',
+    description: 'Text cirka 10 % mindre, så att mer får plats på skärmen.',
+    values: { text_size: 'small', high_contrast: false, more_spacing: false },
+  },
   {
     id: 'standard',
     label: 'Standard',

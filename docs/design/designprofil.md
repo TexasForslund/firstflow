@@ -69,7 +69,7 @@ Användaren kan välja visning under Inställningar. Reglerna ligger sist i `fro
 
 | Inställning | Effekt |
 |---|---|
-| Textstorlek Större / Störst | Grundstorleken 115 % / 130 % |
+| Textstorlek Mindre / Större / Störst | Grundstorleken 90 % / 115 % / 130 % |
 | Öka kontrasten | Mörkare sekundär text, tydligare ramar (`#75737d`) och 3 px fokus |
 | Mer luft i texten | Positivt bokstavsavstånd, större ord- och radavstånd (WCAG 1.4.12) |
 | Minska rörelse | Inga animationer, även om datorn inte är inställd på det |

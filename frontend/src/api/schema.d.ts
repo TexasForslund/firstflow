@@ -838,11 +838,11 @@ export interface components {
         "DisplayPreferences-Input": {
             /**
              * Text Size
-             * @description Textstorlek: normal, cirka 15 % större eller 30 % större
+             * @description Textstorlek: cirka 10 % mindre, normal, cirka 15 % större eller 30 % större
              * @default normal
              * @enum {string}
              */
-            text_size: "normal" | "large" | "largest";
+            text_size: "small" | "normal" | "large" | "largest";
             /**
              * High Contrast
              * @description Öka kontrasten
@@ -872,11 +872,11 @@ export interface components {
         "DisplayPreferences-Output": {
             /**
              * Text Size
-             * @description Textstorlek: normal, cirka 15 % större eller 30 % större
+             * @description Textstorlek: cirka 10 % mindre, normal, cirka 15 % större eller 30 % större
              * @default normal
              * @enum {string}
              */
-            text_size: "normal" | "large" | "largest";
+            text_size: "small" | "normal" | "large" | "largest";
             /**
              * High Contrast
              * @description Öka kontrasten
