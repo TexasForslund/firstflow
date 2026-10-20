@@ -1,8 +1,7 @@
-import { ChevronDown } from 'lucide-react'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useState, type FormEvent } from 'react'
 
 import { useSetAplTerms, type AplTerms } from '../../api/classes'
-import { Button, Card, TextField } from '../../components'
+import { Button, Card, SelectField, TextField } from '../../components'
 import { WEEKDAYS, aplSummary, weeksBetween } from './aplTerms'
 import styles from './Classes.module.css'
 
@@ -131,30 +130,6 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
         </form>
       </div>
     </Card>
-  )
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  children,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  children: ReactNode
-}) {
-  return (
-    <label className={styles.fieldset} style={{ gap: 'var(--space-2)' }}>
-      <span className={styles.legend}>{label}</span>
-      <span className={styles.select}>
-        <select value={value} onChange={(e) => onChange(e.target.value)}>
-          {children}
-        </select>
-        <ChevronDown aria-hidden="true" />
-      </span>
-    </label>
   )
 }
 

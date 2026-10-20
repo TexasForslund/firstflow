@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, ChevronDown, X } from 'lucide-react'
+import { BriefcaseBusiness, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 
@@ -13,7 +13,7 @@ import {
 } from '../../api/classes'
 import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, SearchSelect, type SearchSelectOption } from '../../components'
+import { Avatar, Button, Card, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
 import { AplTermsForm } from './AplTermsForm'
 import { aplSummary } from './aplTerms'
@@ -272,19 +272,17 @@ function TeachersCard({ classId, teachers, schoolId }: { classId: string; teache
       )}
       <div className={styles.cardBody}>
         {available.length > 0 ? (
-          <form className={styles.inline} onSubmit={submit}>
-            <label className={styles.select}>
-              <span className="sr-only">Välj lärare</span>
-              <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+          <form className={styles.inline} style={{ alignItems: 'end' }} onSubmit={submit}>
+            <div style={{ flex: 1, minWidth: '14rem' }}>
+              <SelectField label="Koppla en lärare på skolan" value={selected} onChange={setSelected}>
                 <option value="">Välj lärare</option>
                 {available.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
                   </option>
                 ))}
-              </select>
-              <ChevronDown aria-hidden="true" />
-            </label>
+              </SelectField>
+            </div>
             <Button type="submit" variant="primary" disabled={!selected || assign.isPending}>
               Koppla lärare
             </Button>
