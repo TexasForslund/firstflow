@@ -6,7 +6,7 @@ Kör från backend/ (eller i Docker: docker compose exec backend uv run python -
 Alla demokonton har lösenordet demo-firstflow. Skriptet kan köras flera gånger:
 konton och skolor som redan finns hoppas över. Det körs bara när ENVIRONMENT är
 development eller test.
-Klasser läggs till i B2 och placeringar i B3.
+Varje skola får två klasser med fem elever var. Placeringar läggs till i B3.
 """
 
 import sys
@@ -18,6 +18,7 @@ from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal
 from app.models.school import School
+from app.models.school_class import SchoolClass
 from app.models.user import User, UserRole
 from app.services.accounts import create_account
 
@@ -56,6 +57,9 @@ STUDENTS = {
     ],
 }  # fmt: skip
 
+# Två klasser per skola. Skolans lärare har båda, eleverna delas fem och fem.
+CLASSES = ["EE22", "EE21"]
+
 ROLE_PREFIX = {
     UserRole.SCHOOL_ADMIN: "admin",
     UserRole.PRINCIPAL: "rektor",
@@ -83,6 +87,27 @@ def _ensure_user(db: Session, email: str, name: str, role: UserRole, school: Sch
     return True
 
 
+def _ensure_classes(db: Session, school: School, key: str) -> None:
+    teacher = db.scalar(select(User).where(User.email == f"larare.{key}@{DOMAIN}"))
+    students = [
+        db.scalar(select(User).where(User.email == f"{_slug(n)}.{key}@{DOMAIN}"))
+        for n in STUDENTS[key]
+    ]
+    for i, class_name in enumerate(CLASSES):
+        exists = db.scalar(
+            select(SchoolClass.id).where(
+                SchoolClass.school_id == school.id, SchoolClass.name == class_name
+            )
+        )
+        if exists:
+            continue
+        school_class = SchoolClass(school_id=school.id, name=class_name)
+        school_class.teachers = [teacher] if teacher else []
+        school_class.students = [s for s in students[i * 5 : i * 5 + 5] if s]
+        db.add(school_class)
+    db.flush()
+
+
 def seed(db: Session) -> list[tuple[str, str, str]]:
     """Skapar demodatan. Returnerar (e-post, roll, skola) för varje nytt konto."""
     created: list[tuple[str, str, str]] = []
@@ -103,6 +128,7 @@ def seed(db: Session) -> list[tuple[str, str, str]]:
             add(f"{ROLE_PREFIX[role]}.{key}@{DOMAIN}", name, role, school)
         for name in STUDENTS[key]:
             add(f"{_slug(name)}.{key}@{DOMAIN}", name, UserRole.STUDENT, school)
+        _ensure_classes(db, school, key)
 
     add(f"handledare@{DOMAIN}", "Gustav Lindahl", UserRole.SUPERVISOR, None)
     return created
@@ -115,7 +141,7 @@ def main() -> None:
         created = seed(db)
         db.commit()
     if not created:
-        print("Demodatan finns redan. Inget nytt skapades.")
+        print("Alla demokonton fanns redan. Saknade klasser har lagts till.")
         return
     print(f"Skapade {len(created)} demokonton. Lösenord för alla: {DEMO_PASSWORD}\n")
     for email, role, school in created:

@@ -26,8 +26,20 @@ export const startPath: Record<Role, string> = {
   supervisor: '/my-students',
 }
 
-const { overview, messages, history, projects, placements, contracts, users, schools, students, reports, checkIn } =
-  navIcons
+const {
+  overview,
+  messages,
+  history,
+  projects,
+  placements,
+  contracts,
+  users,
+  schools,
+  students,
+  reports,
+  checkIn,
+  classes,
+} = navIcons
 
 // Siffrorna i lärarens meny kommer från demodatan tills backend har API:erna (F11).
 export const navByRole: Record<Role, NavItem[]> = {
@@ -51,12 +63,14 @@ export const navByRole: Record<Role, NavItem[]> = {
   ],
   school_admin: [
     { to: '/users', label: 'Användare', icon: users },
+    { to: '/classes', label: 'Klasser', icon: classes },
     { to: '/placements', label: 'Praktikplatser', icon: placements },
     { to: '/contracts', label: 'Kontrakt', icon: contracts },
     { to: '/admin-reports', label: 'Rapporter', icon: reports },
   ],
   principal: [
     { to: '/school', label: 'Översikt', icon: overview },
+    { to: '/classes', label: 'Klasser', icon: classes },
     { to: '/users', label: 'Användare', icon: users },
     { to: '/admin-reports', label: 'Rapporter', icon: reports },
   ],

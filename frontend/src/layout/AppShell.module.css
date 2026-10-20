@@ -121,6 +121,12 @@
   background: var(--color-surface-hover);
 }
 
+.noClasses {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
 .classCount {
   font-size: var(--font-size-xs);
   font-weight: 500;

@@ -1,0 +1,43 @@
+import uuid
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, ForeignKey, String, Table, UniqueConstraint, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base
+from app.models.school import School
+from app.models.user import User
+
+# Vilka lärare som har klassen.
+class_teachers = Table(
+    "class_teachers",
+    Base.metadata,
+    Column("class_id", ForeignKey("school_classes.id", ondelete="CASCADE"), primary_key=True),
+    Column("teacher_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True),
+)
+
+# Vilka elever som går i klassen.
+class_students = Table(
+    "class_students",
+    Base.metadata,
+    Column("class_id", ForeignKey("school_classes.id", ondelete="CASCADE"), primary_key=True),
+    Column("student_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True),
+)
+
+
+class SchoolClass(Base):
+    """En klass, t.ex. EE22. Hör alltid till en skola. Namnet är unikt inom skolan."""
+
+    __tablename__ = "school_classes"
+    __table_args__ = (UniqueConstraint("school_id", "name"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    school_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("schools.id", ondelete="RESTRICT"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(50))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    school: Mapped[School] = relationship()
+    teachers: Mapped[list[User]] = relationship(secondary=class_teachers, order_by=User.name)
+    students: Mapped[list[User]] = relationship(secondary=class_students, order_by=User.name)

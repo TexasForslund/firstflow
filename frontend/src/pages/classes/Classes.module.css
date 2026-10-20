@@ -1,0 +1,260 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+  max-width: var(--main-column);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.cardBody {
+  padding: var(--space-6);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.count {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.list li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 4.5rem;
+  padding: var(--space-3) var(--space-6);
+}
+
+.rowLink {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rowLink:hover .name {
+  text-decoration: underline;
+}
+
+.rowText {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.confirmText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+}
+
+.iconButton:hover {
+  background: var(--color-surface);
+  color: var(--color-error);
+}
+
+.iconButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.dangerButton {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+  color: #fff;
+  font-size: var(--font-size-sm);
+}
+
+.textButton {
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+}
+
+.textButton:hover {
+  background: var(--color-surface);
+}
+
+.empty {
+  padding: var(--space-8) var(--space-6);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: var(--space-4);
+}
+
+.formSingle {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 26rem;
+}
+
+.formError {
+  grid-column: 1 / -1;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-attention-bg);
+  border-radius: var(--radius-sm);
+  color: var(--color-attention);
+  font-size: var(--font-size-base);
+}
+
+.formSuccess {
+  grid-column: 1 / -1;
+  color: var(--color-success);
+  font-size: var(--font-size-base);
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.select {
+  position: relative;
+  display: inline-flex;
+  flex: 1;
+}
+
+.select select {
+  appearance: none;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 var(--space-12) 0 var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+
+.select svg {
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.tagLink:hover {
+  text-decoration: underline;
+}
+
+.state {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: var(--font-size-xl);
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .row,
+  .cardHeader,
+  .cardBody {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .meta {
+    max-width: 12rem;
+  }
+}
+
+.form + .hint {
+  margin-top: var(--space-4);
+}

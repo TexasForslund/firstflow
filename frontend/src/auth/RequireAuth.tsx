@@ -4,20 +4,19 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 
 import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
-import { classes, studentsInClass } from '../demo/data'
+import { useClasses } from '../api/classes'
 import { AppShell } from '../layout/AppShell'
 import { navByRole, startPath, type Role } from './roles'
 import { useCurrentUser } from './useCurrentUser'
 import styles from './RequireAuth.module.css'
-
-// Lärarens klasser i sidomenyn kommer från demodatan tills B2/F3 är klara.
-const demoClasses = classes.map((c) => ({ id: c.id, name: c.name, count: studentsInClass(c.id).length }))
 
 /** Skyddar alla sidor i appen. Ej inloggad skickas till /login. */
 export function RequireAuth() {
   const me = useCurrentUser()
   const location = useLocation()
   const navigate = useNavigate()
+  const isTeacher = me.data?.role === 'teacher'
+  const classes = useClasses(isTeacher)
 
   const logout = useMutation({
     mutationFn: () => api.POST('/api/auth/logout'),
@@ -50,7 +49,11 @@ export function RequireAuth() {
     <AppShell
       userName={user.name}
       nav={navByRole[user.role]}
-      classes={user.role === 'teacher' ? demoClasses : undefined}
+      classes={
+        isTeacher
+          ? (classes.data ?? []).map((c) => ({ id: c.id, name: c.name, count: c.student_count }))
+          : undefined
+      }
       onLogout={() => logout.mutate()}
     />
   )

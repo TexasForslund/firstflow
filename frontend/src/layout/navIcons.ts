@@ -2,6 +2,7 @@ import {
   BriefcaseBusiness,
   ChartColumn,
   FileText,
+  GraduationCap,
   Folder,
   History,
   LayoutDashboard,
@@ -24,4 +25,5 @@ export const navIcons = {
   students: Users,
   reports: ChartColumn,
   checkIn: MapPinCheck,
+  classes: GraduationCap,
 }
