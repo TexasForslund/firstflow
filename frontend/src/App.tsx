@@ -3,6 +3,9 @@ import { createBrowserRouter, createHashRouter, RouterProvider, type RouteObject
 
 import { RequireAuth, RoleHome, RoleRoute } from './auth/RequireAuth'
 import type { Role } from './auth/roles'
+import { SchoolPage } from './pages/admin/SchoolPage'
+import { Schools } from './pages/admin/Schools'
+import { Users } from './pages/admin/Users'
 import { Login } from './pages/auth/Login'
 import { ClassList } from './pages/classes/ClassList'
 import { ClassPage } from './pages/classes/ClassPage'
@@ -61,12 +64,13 @@ const routes: RouteObject[] = [
       placeholder('my-students', ['supervisor'], 'Mina elever', 'Eleverna du handleder just nu. Kommer i F4.'),
 
       // Skolans ledning och administration
-      placeholder('users', ['school_admin', 'principal'], 'Användare', 'Skolans personal och elever. Kommer i F7.'),
+      { path: 'users', element: only(['school_admin', 'principal'], <Users />) },
       placeholder('school', ['principal'], 'Översikt', 'Skolans APL i siffror: elever på APL, närvaro och avtal.'),
       placeholder('admin-reports', ['school_admin', 'principal'], 'Rapporter', 'Statsbidragsrapport och underlag för materialersättning. Kommer i F7.'),
 
       // Superadmin
-      placeholder('admin/schools', ['superadmin'], 'Skolor', 'Alla skolor i Firstflow och deras administratörer.'),
+      { path: 'admin/schools', element: only(['superadmin'], <Schools />) },
+      { path: 'admin/schools/:schoolId', element: only(['superadmin'], <SchoolPage />) },
 
       { path: '*', element: <Placeholder title="Sidan finns inte" description="Kontrollera adressen eller gå tillbaka till startsidan." /> },
     ],

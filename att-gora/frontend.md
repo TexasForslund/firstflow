@@ -48,6 +48,16 @@ Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11
 
 ---
 
+## F3b. Användare och skolor ✅ Klar (PR #10)
+
+- `/users`: skolans personal med filter per roll. Skoladmin lägger till lärare, rektor och SYV (`POST /api/schools/{id}/users`). Rektor läser.
+- `/admin/schools` och `/admin/schools/:id`: superadmin skapar skolor och deras skoladministratörer, och ser antal konton per roll.
+- Ny komponent `SelectField` med etikett kopplad via id. Används för alla rullistor utom elevhistorikens (demodata).
+
+Därmed går en ny skola att sätta upp helt i gränssnittet: skola, skoladmin, personal, klasser, elever och APL-villkor. Nya konton kan inte logga in förrän inbjudan och lösenord finns (B6).
+
+---
+
 ## F4. Min APL och handledarvy ⬜
 
 Väntar på: B3.
