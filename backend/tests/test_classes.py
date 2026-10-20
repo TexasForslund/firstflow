@@ -433,24 +433,18 @@ def test_unknown_student_is_not_found(client: TestClient, login: Login, world: W
 # ─── APL-villkor ───────────────────────────────────────────────
 
 TERMS = {
-    "apl_start_date": "2027-01-11",
-    "apl_end_date": "2027-03-19",
     "apl_days_per_week": 2,
     "check_in_required": True,
-    "attendance_min_percent": 90,
-    "report_due_weekday": 4,
+    "report_due_weekdays": [1, 2, 4],
 }
 
 
 def test_new_class_has_empty_terms(client: TestClient, login: Login, world: World) -> None:
     login(world.teacher)
     assert client.get(f"/api/classes/{world.ee22.id}").json()["apl_terms"] == {
-        "apl_start_date": None,
-        "apl_end_date": None,
         "apl_days_per_week": None,
         "check_in_required": True,
-        "attendance_min_percent": None,
-        "report_due_weekday": None,
+        "report_due_weekdays": [],
     }
 
 
@@ -463,14 +457,22 @@ def test_set_apl_terms(client: TestClient, login: Login, world: World, who: str)
     assert client.get(f"/api/classes/{world.ee22.id}").json()["apl_terms"] == TERMS
 
 
+def test_weekdays_are_deduplicated_and_sorted(
+    client: TestClient, login: Login, world: World
+) -> None:
+    login(world.teacher)
+    body = {**TERMS, "report_due_weekdays": [4, 0, 4]}
+    response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=body)
+    assert response.json()["apl_terms"]["report_due_weekdays"] == [0, 4]
+
+
 @pytest.mark.parametrize(
     "change",
     [
-        {"apl_end_date": "2027-01-01"},  # före start
         {"apl_days_per_week": 0},
         {"apl_days_per_week": 6},
-        {"attendance_min_percent": 101},
-        {"report_due_weekday": 7},
+        {"report_due_weekdays": [7]},
+        {"report_due_weekdays": [-1]},
     ],
 )
 def test_invalid_apl_terms(

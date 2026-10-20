@@ -1,20 +1,19 @@
 import type { AplTerms } from '../../api/classes'
 
 export const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
+const SHORT = ['mån', 'tis', 'ons', 'tors', 'fre', 'lör', 'sön']
 
-/** Antal veckor i perioden, räknat från startdagens vecka till slutdagens. */
-export function weeksBetween(start: string, end: string) {
-  const ms = new Date(end).getTime() - new Date(start).getTime()
-  return Math.floor(ms / (7 * 24 * 3600 * 1000)) + 1
+/** "måndag", "tis, ons och fre" eller "" om inga dagar är valda. */
+export function weekdayList(days: number[]) {
+  const sorted = [...days].sort((a, b) => a - b)
+  if (sorted.length === 0) return ''
+  if (sorted.length === 1) return WEEKDAYS[sorted[0]]
+  const names = sorted.map((d) => SHORT[d])
+  return `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
 }
 
-/** Kort sammanfattning, t.ex. "10 veckor · 2 dagar/vecka". Tom om inget är bestämt. */
+/** Kort sammanfattning, t.ex. "2 dagar/vecka". Tom om inget är bestämt. */
 export function aplSummary(terms: AplTerms) {
-  const parts: string[] = []
-  if (terms.apl_start_date && terms.apl_end_date) {
-    const weeks = weeksBetween(terms.apl_start_date, terms.apl_end_date)
-    parts.push(`${weeks} ${weeks === 1 ? 'vecka' : 'veckor'}`)
-  }
-  if (terms.apl_days_per_week) parts.push(`${terms.apl_days_per_week} ${terms.apl_days_per_week === 1 ? 'dag' : 'dagar'}/vecka`)
-  return parts.join(' · ')
+  const days = terms.apl_days_per_week
+  return days ? `${days} ${days === 1 ? 'dag' : 'dagar'}/vecka` : ''
 }

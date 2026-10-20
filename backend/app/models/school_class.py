@@ -1,10 +1,9 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
 from sqlalchemy import (
     CheckConstraint,
     Column,
-    Date,
     DateTime,
     ForeignKey,
     SmallInteger,
@@ -12,8 +11,10 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
     func,
+    text,
     true,
 )
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -52,12 +53,11 @@ class SchoolClass(Base):
     __tablename__ = "school_classes"
     __table_args__ = (
         UniqueConstraint("school_id", "name"),
-        CheckConstraint("apl_end_date >= apl_start_date", name="apl_period_order"),
         CheckConstraint("apl_days_per_week BETWEEN 1 AND 5", name="apl_days_per_week_range"),
         CheckConstraint(
-            "attendance_min_percent BETWEEN 0 AND 100", name="attendance_min_percent_range"
+            "report_due_weekdays <@ ARRAY[0, 1, 2, 3, 4, 5, 6]::smallint[]",
+            name="report_due_weekdays_range",
         ),
-        CheckConstraint("report_due_weekday BETWEEN 0 AND 6", name="report_due_weekday_range"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -68,14 +68,12 @@ class SchoolClass(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     # APL-villkor för hela klassen. Tomt betyder att det inte är bestämt än.
-    apl_start_date: Mapped[date | None] = mapped_column(Date)
-    apl_end_date: Mapped[date | None] = mapped_column(Date)
     apl_days_per_week: Mapped[int | None] = mapped_column(SmallInteger)
     check_in_required: Mapped[bool] = mapped_column(default=True, server_default=true())
-    # Lägsta närvaro i procent innan eleven hamnar under "Behöver uppmärksamhet".
-    attendance_min_percent: Mapped[int | None] = mapped_column(SmallInteger)
-    # Veckodag då veckoredovisningen ska vara inlämnad: 0 = måndag … 6 = söndag.
-    report_due_weekday: Mapped[int | None] = mapped_column(SmallInteger)
+    # Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag. Tom lista = inte bestämt.
+    report_due_weekdays: Mapped[list[int]] = mapped_column(
+        ARRAY(SmallInteger), default=list, server_default=text("'{}'")
+    )
 
     school: Mapped[School] = relationship()
     teachers: Mapped[list[User]] = relationship(secondary=class_teachers, order_by=User.name)

@@ -346,13 +346,9 @@ export interface components {
         };
         /**
          * AplTerms
-         * @description APL-villkor för hela klassen. null betyder att det inte är bestämt än.
+         * @description APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än.
          */
         AplTerms: {
-            /** Apl Start Date */
-            apl_start_date?: string | null;
-            /** Apl End Date */
-            apl_end_date?: string | null;
             /** Apl Days Per Week */
             apl_days_per_week?: number | null;
             /**
@@ -360,13 +356,11 @@ export interface components {
              * @default true
              */
             check_in_required: boolean;
-            /** Attendance Min Percent */
-            attendance_min_percent?: number | null;
             /**
-             * Report Due Weekday
-             * @description 0 = måndag … 6 = söndag
+             * Report Due Weekdays
+             * @description Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag
              */
-            report_due_weekday?: number | null;
+            report_due_weekdays?: number[];
         };
         /** ClassCreate */
         ClassCreate: {

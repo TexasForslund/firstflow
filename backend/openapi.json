@@ -1027,30 +1027,6 @@
       },
       "AplTerms": {
         "properties": {
-          "apl_start_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Apl Start Date"
-          },
-          "apl_end_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Apl End Date"
-          },
           "apl_days_per_week": {
             "anyOf": [
               {
@@ -1069,37 +1045,21 @@
             "title": "Check In Required",
             "default": true
           },
-          "attendance_min_percent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 100.0,
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Attendance Min Percent"
-          },
-          "report_due_weekday": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 6.0,
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Report Due Weekday",
-            "description": "0 = måndag … 6 = söndag"
+          "report_due_weekdays": {
+            "items": {
+              "type": "integer",
+              "maximum": 6.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 7,
+            "title": "Report Due Weekdays",
+            "description": "Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag"
           }
         },
         "type": "object",
         "title": "AplTerms",
-        "description": "APL-villkor för hela klassen. null betyder att det inte är bestämt än."
+        "description": "APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än."
       },
       "ClassCreate": {
         "properties": {
