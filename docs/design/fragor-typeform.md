@@ -86,6 +86,8 @@ Källor till beteendet: Typeforms hjälpcenter om frågetyper och byggaren, dera
 | Olika frågor olika redovisningsdagar? | **Nej**, samma frågor alla redovisningsdagar |
 | Logik i första versionen? | **Ja**, t.ex. "Om Nej, hoppa över nästa fråga" |
 | Gemensamma frågemallar för skolan? | **Ja.** Skoladmin skapar dem och alla lärare på skolan ser dem |
+| Får lärare spara egna mallar? | **Ja.** Läraren kan spara klassens frågor som en egen mall och använda den igen, t.ex. nästa år |
+| Vad händer med klassens frågor när en mall väljs? | **Mallen tar över.** Läraren erbjuds först att spara de nuvarande frågorna som en egen mall |
 | Svarar handledaren på frågor? | **Nej**, bara eleven |
 | Får eleven ändra en inskickad redovisning? | **Nej.** Eleven, läraren och handledaren kan i stället skriva kommentarer på inlägget |
 | Frågor till enskilda elever? | Möjligheten ska finnas (se förslag nedan) |
@@ -100,7 +102,11 @@ Källor till beteendet: Typeforms hjälpcenter om frågetyper och byggaren, dera
 
 ### Tre sätt att börja
 1. **Egna frågor** från början.
-2. **Skolans mallar**, som skoladmin har skapat. Läraren kopierar en mall till klassen och kan ändra i kopian.
+2. **En mall**: skolans mallar, som skoladmin har skapat, eller lärarens egna mallar. Läraren kopierar mallen till klassen och kan ändra i kopian.
+   - Mallen **ersätter** klassens frågor i utkastet. Har klassen redan frågor erbjuds läraren att spara dem som en egen mall först, så att de går att använda igen.
+   - Läraren kan när som helst spara klassens frågor som en egen mall ("Spara som mall").
+   - En ändrad mall påverkar inte klasser som redan har använt den, eftersom klassen har en egen kopia.
+   - Lärarens egna mallar syns bara för läraren. Skolans mallar syns för alla lärare på skolan.
 3. **Förslag utifrån läroplanen.** Läraren väljer program och kurs. Firstflow hämtar kursen från Skolverkets öppna API (`api.skolverket.se/syllabus`), och Claude tar fram ett förslag på frågor. Läraren går alltid igenom, ändrar och godkänner. Inget publiceras automatiskt.
    - Varje fråga kan märkas med kurskod, så att vi senare kan visa vilka delar av kursen eleven har redovisat.
    - Firstflow använder ett eget API-konto hos Anthropic (`ANTHROPIC_API_KEY` på servern), inte någons personliga abonnemang. Kostnaden är per förslag. Förslaget sparas per kurs och återanvänds, så det tas bara fram en gång.

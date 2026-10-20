@@ -120,7 +120,7 @@ Viktigast från genomgången:
 - Eleven: redovisningsdagarna fyra veckor bakåt, en redovisning per vald dag, svar sparas vid Nästa, skicka in. Inskickad redovisning är låst.
 - Läraren: klassens inskickade redovisningar, oläst och läst, kommentarer från elev och lärare.
 
-**B5b, senare:** skolans mallar (skoladmin), förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
+**B5b, senare:** mallar (skoladmin skapar skolans mallar, läraren sparar egna mallar och mallen ersätter klassens frågor, se [fragor-typeform.md](../docs/design/fragor-typeform.md)), förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
 
 **Att planera:** redovisningar och kommentarer hindrar att ett elevkonto raderas (`RESTRICT`). Gallring och radering av elevdata planeras tillsammans med mellanarkivet ([mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md)).
 
