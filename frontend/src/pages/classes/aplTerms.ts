@@ -1,7 +1,8 @@
 import type { AplTerms } from '../../api/classes'
 
-export const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
-const SHORT = ['mån', 'tis', 'ons', 'tors', 'fre', 'lör', 'sön']
+/** Vardagar, 0 = måndag … 4 = fredag. Ingen APL på helger. */
+export const WEEKDAYS = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag']
+const SHORT = ['mån', 'tis', 'ons', 'tors', 'fre']
 
 /** "måndag", "tis, ons och fre" eller "" om inga dagar är valda. */
 export function weekdayList(days: number[]) {

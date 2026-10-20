@@ -1048,13 +1048,13 @@
           "report_due_weekdays": {
             "items": {
               "type": "integer",
-              "maximum": 6.0,
+              "maximum": 4.0,
               "minimum": 0.0
             },
             "type": "array",
-            "maxItems": 7,
+            "maxItems": 5,
             "title": "Report Due Weekdays",
-            "description": "Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag"
+            "description": "Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag"
           }
         },
         "type": "object",

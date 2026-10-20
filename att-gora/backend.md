@@ -107,6 +107,8 @@ Låser upp: F5.
 
 **Planeras tillsammans med Texas innan något byggs** (Texas, 2026-10-20). Påbörja inte utan genomgång.
 
+Underlag till genomgången: [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md), som beskriver hur Typeform bygger formulär och hur det ser ut när man svarar, samt frågorna vi ska ta ställning till. Veckoredovisning lämnas bara på vardagar.
+
 Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar.
 
 Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) visar vad som behövs:

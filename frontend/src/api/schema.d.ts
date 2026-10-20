@@ -358,7 +358,7 @@ export interface components {
             check_in_required: boolean;
             /**
              * Report Due Weekdays
-             * @description Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag
+             * @description Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag
              */
             report_due_weekdays?: number[];
         };

@@ -55,7 +55,7 @@ class SchoolClass(Base):
         UniqueConstraint("school_id", "name"),
         CheckConstraint("apl_days_per_week BETWEEN 1 AND 5", name="apl_days_per_week_range"),
         CheckConstraint(
-            "report_due_weekdays <@ ARRAY[0, 1, 2, 3, 4, 5, 6]::smallint[]",
+            "report_due_weekdays <@ ARRAY[0, 1, 2, 3, 4]::smallint[]",
             name="report_due_weekdays_range",
         ),
     )
@@ -70,7 +70,8 @@ class SchoolClass(Base):
     # APL-villkor för hela klassen. Tomt betyder att det inte är bestämt än.
     apl_days_per_week: Mapped[int | None] = mapped_column(SmallInteger)
     check_in_required: Mapped[bool] = mapped_column(default=True, server_default=true())
-    # Veckodagar då veckoredovisning ska lämnas: 0 = måndag … 6 = söndag. Tom lista = inte bestämt.
+    # Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag. Tom lista = inte bestämt.
+    # Ingen APL på helger (Texas, 2026-10-20).
     report_due_weekdays: Mapped[list[int]] = mapped_column(
         ARRAY(SmallInteger), default=list, server_default=text("'{}'")
     )
