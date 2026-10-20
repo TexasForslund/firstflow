@@ -1,6 +1,6 @@
 # Backend – att göra
 
-Ägare: Se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md). B1b och B2 görs av Texas + Claude, B3–B6 av Hannes + Claude. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
+Ägare: Se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md). B1b, B2 och B5 görs av Texas + Claude, B3, B4 och B6 av Hannes + Claude. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
 
 Gäller alla uppgifter:
 
@@ -48,7 +48,7 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 - **Elevregistret:** skoladmin lägger in elever (`POST /api/students` med namn, e-post, `teacher_ids` och valfria `class_ids`) och sätter elevens lärare (`PUT /api/students/{id}/teachers`). Kopplingen lagras i `teacher_students`, oberoende av klasser. `GET /api/students?q=` ger läraren hens kopplade elever och skolans personal alla elever. Lärare skapar inga elevkonton.
 - `DELETE /api/classes/{id}/students/{student_id}`: tar bort ur klassen, inte kontot.
 - `POST/DELETE /api/classes/{id}/teachers`: skoladmin kopplar lärare på samma skola.
-- `PUT /api/classes/{id}/apl-terms`: klassens APL-villkor (period, dagar per vecka, incheckning, lägsta närvaro, veckodag för veckoredovisning). Läraren för klassen och skoladmin. Villkoren finns också i `GET /api/classes/{id}` som `apl_terms`.
+- `PUT /api/classes/{id}/apl-terms`: klassens APL-villkor (dagar per vecka, incheckning och vilka veckodagar veckoredovisning ska lämnas). Läraren för klassen och skoladmin. Villkoren finns också i `GET /api/classes/{id}` som `apl_terms`.
 - `GET /api/students/{id}`: elevsidan, med klasser och lärare. Läraren ser elever som är kopplade till hen eller går i hens klasser.
 
 Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
@@ -78,7 +78,6 @@ Låser upp: F4.
 
 **Krav från klassvyn (Texas, 2026-10-20):** klassen är navet. Läraren tilldelar praktikplats per elev direkt i klassvyns elevlista (`/classes/:id`, fliken Elever), där det redan finns en plats för det i varje elevrad. Därför:
 
-- Klassens APL-villkor (`apl_start_date`, `apl_end_date` på `SchoolClass`, se B2) är förval för placeringens `start_date` och `end_date`.
 - `GET /api/classes/{class_id}` eller `GET /api/classes/{class_id}/placements` behöver ge arbetsplatsens namn per elev, så att elevraden kan visa den.
 - Läraren ska bara kunna placera elever i klasser hen undervisar, och arbetsplatser och handledare ska höra till skolan (`require_same_school`).
 
@@ -100,13 +99,15 @@ Låser upp: F5.
    - `GET /api/classes/{class_id}/attendance?from=&to=` (lärare): per elev antal dagar närvarande, frånvarande och sjuk.
    - `GET /api/supervisor/attendance?date=` (handledare): dagens incheckningar för handledarens elever.
 3. Spara ingen plats (GPS). Det är inte nödvändigt för funktionen.
-4. Använd klassens APL-villkor (B2): `check_in_required` avgör om incheckning krävs, och elever under `attendance_min_percent` ska med i "Behöver uppmärksamhet" (B13).
+4. Använd klassens APL-villkor (B2): `check_in_required` avgör om incheckning krävs, och `apl_days_per_week` hur många APL-dagar eleven har per vecka.
 
 ---
 
-## B5. Frågor och veckoredovisning ⬜
+## B5. Frågor och veckoredovisning ⬜ (Texas + Claude)
 
-Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar. Detaljeras när B4 är klar.
+**Planeras tillsammans med Texas innan något byggs** (Texas, 2026-10-20). Påbörja inte utan genomgång.
+
+Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar.
 
 Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) visar vad som behövs:
 
@@ -114,7 +115,7 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
 - Fyra frågetyper: bilder (uppladdning), fritext, flerval (t.ex. Ja/Nej/Vet inte) och betyg 1–5.
 - Läraren ser olästa redovisningar på översikten, så redovisningen behöver statusen läst/oläst per lärare.
 - Bilagor räknas per redovisning ("Bilagor (2)").
-- **Frågorna sätts per klass** (Texas, 2026-10-20): i klassvyns flik Frågor väljer läraren vilka frågor eleverna i klassen får vid varje redovisningstillfälle. Klassens `report_due_weekday` (B2) anger när redovisningen ska vara inlämnad.
+- **Frågorna sätts per klass** (Texas, 2026-10-20): i klassvyns flik Frågor väljer läraren vilka frågor eleverna i klassen får vid varje redovisningstillfälle. Klassens `report_due_weekdays` (B2) anger vilka veckodagar redovisning ska lämnas.
 
 ---
 
