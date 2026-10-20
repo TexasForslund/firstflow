@@ -1,6 +1,6 @@
 # Multi-tenant och rollmodell
 
-**Status:** Arkitekturbeslut — implementeras innan B2  
+**Status:** Implementerad i B1b (PR #7)  
 **Påverkar:** Hela systemet. Läs detta innan du skriver någon ny model eller endpoint.
 
 ---
@@ -105,7 +105,16 @@ GET  /api/superadmin/schools                        # Lista alla skolor
 POST /api/superadmin/schools/{school_id}/admins     # Skapa school_admin för en skola
 ```
 
-Dessa endpoints kräver `superadmin`-rollen. Konton skapas tills vidare via skript:
+Dessa endpoints kräver `superadmin`-rollen.
+
+En skolas användare:
+
+```
+GET  /api/schools/{school_id}/users?role=           # school_admin, principal, superadmin
+POST /api/schools/{school_id}/users                 # school_admin, superadmin: principal, syv, teacher, student
+```
+
+Databasen har villkoret `ck_users_school_matches_role`: superadmin och handledare har ingen skola, alla andra roller har en. Villkoret gäller nya och ändrade konton. Konton skapas tills vidare via skript:
 
 ```bash
 uv run python -m scripts.create_user \

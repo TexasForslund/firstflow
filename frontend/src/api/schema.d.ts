@@ -72,10 +72,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/superadmin/schools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Schools */
+        get: operations["list_schools_api_superadmin_schools_get"];
+        put?: never;
+        /** Create School */
+        post: operations["create_school_api_superadmin_schools_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/superadmin/schools/{school_id}/admins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create School Admin
+         * @description Skapar en skoladministratör. Lösenordet sätts via inbjudan (B6) eller create_user.
+         */
+        post: operations["create_school_admin_api_superadmin_schools__school_id__admins_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/{school_id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List School Users */
+        get: operations["list_school_users_api_schools__school_id__users_get"];
+        put?: never;
+        /**
+         * Create School User
+         * @description Skapar ett konto på skolan. Lösenordet sätts via inbjudan (B6).
+         */
+        post: operations["create_school_user_api_schools__school_id__users_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountCreate */
+        AccountCreate: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -101,6 +167,44 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** SchoolAccountCreate */
+        SchoolAccountCreate: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "principal" | "syv" | "teacher" | "student";
+        };
+        /** SchoolCreate */
+        SchoolCreate: {
+            /** Name */
+            name: string;
+            /** Org Number */
+            org_number?: string | null;
+        };
+        /** SchoolRead */
+        SchoolRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Org Number */
+            org_number: string | null;
+            /** Is Active */
+            is_active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** UserRead */
         UserRead: {
             /**
@@ -113,12 +217,17 @@ export interface components {
             /** Name */
             name: string;
             role: components["schemas"]["UserRole"];
+            /** School Id */
+            school_id: string | null;
+            /** School Name */
+            school_name: string | null;
         };
         /**
          * UserRole
+         * @description Roller i Firstflow. Se docs/multi-tenant-och-roller.md.
          * @enum {string}
          */
-        UserRole: "teacher" | "student" | "supervisor";
+        UserRole: "superadmin" | "school_admin" | "principal" | "syv" | "teacher" | "student" | "supervisor";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -228,6 +337,162 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserRead"];
+                };
+            };
+        };
+    };
+    list_schools_api_superadmin_schools_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchoolRead"][];
+                };
+            };
+        };
+    };
+    create_school_api_superadmin_schools_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchoolCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchoolRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_school_admin_api_superadmin_schools__school_id__admins_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                school_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_school_users_api_schools__school_id__users_get: {
+        parameters: {
+            query?: {
+                role?: components["schemas"]["UserRole"] | null;
+            };
+            header?: never;
+            path: {
+                school_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_school_user_api_schools__school_id__users_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                school_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchoolAccountCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

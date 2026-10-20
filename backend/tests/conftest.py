@@ -22,7 +22,8 @@ from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import get_db
 from app.main import app
-from app.models.user import User, UserRole
+from app.models.school import School
+from app.models.user import ROLES_WITHOUT_SCHOOL, User, UserRole
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
@@ -83,18 +84,46 @@ PASSWORD = "rätt-lösenord-123"
 
 
 @pytest.fixture
-def make_user(db: Session) -> Callable[..., User]:
-    """Skapar en användare med lösenordet PASSWORD."""
+def make_school(db: Session) -> Callable[..., School]:
+    """Skapar en skola."""
+
+    def make(name: str = "Testskolan") -> School:
+        school = School(name=name)
+        db.add(school)
+        db.flush()
+        return school
+
+    return make
+
+
+@pytest.fixture
+def school(make_school: Callable[..., School]) -> School:
+    """Standardskolan som make_user använder när ingen skola anges."""
+    return make_school()
+
+
+@pytest.fixture
+def make_user(db: Session, school: School) -> Callable[..., User]:
+    """Skapar en användare med lösenordet PASSWORD.
+
+    Roller som hör till en skola hamnar på standardskolan om ingen annan anges.
+    """
 
     def make(
         email: str = "larare@skola.se",
         role: UserRole = UserRole.TEACHER,
         is_active: bool = True,
+        in_school: School | None = None,
     ) -> User:
+        if role in ROLES_WITHOUT_SCHOOL:
+            school_id = None
+        else:
+            school_id = (in_school or school).id
         user = User(
             email=email,
             name="Testperson",
             role=role,
+            school_id=school_id,
             password_hash=hash_password(PASSWORD),
             is_active=is_active,
         )

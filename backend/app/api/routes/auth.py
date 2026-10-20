@@ -1,12 +1,12 @@
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, select
 
 from app.api.deps import CurrentUser, session_cookie
+from app.api.schemas import UserRead
 from app.core.config import settings
 from app.core.security import (
     hash_session_token,
@@ -15,7 +15,7 @@ from app.core.security import (
     verify_password,
 )
 from app.db.session import DbSession
-from app.models.user import User, UserRole, UserSession
+from app.models.user import User, UserSession
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -23,13 +23,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 class LoginRequest(BaseModel):
     email: str = Field(max_length=320)
     password: str = Field(max_length=200)
-
-
-class UserRead(BaseModel):
-    id: UUID
-    email: str
-    name: str
-    role: UserRole
 
 
 @router.post("/login", response_model=UserRead)
