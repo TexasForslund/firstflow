@@ -87,7 +87,9 @@ def _ensure_user(db: Session, email: str, name: str, role: UserRole, school: Sch
     return True
 
 
-def _ensure_classes(db: Session, school: School, key: str) -> None:
+def _ensure_classes(db: Session, school: School, key: str) -> list[str]:
+    """Skapar skolans demoklasser som saknas. Returnerar namnen på de nya."""
+    created: list[str] = []
     teacher = db.scalar(select(User).where(User.email == f"larare.{key}@{DOMAIN}"))
     students = [
         db.scalar(select(User).where(User.email == f"{_slug(n)}.{key}@{DOMAIN}"))
@@ -105,11 +107,13 @@ def _ensure_classes(db: Session, school: School, key: str) -> None:
         school_class.teachers = [teacher] if teacher else []
         school_class.students = [s for s in students[i * 5 : i * 5 + 5] if s]
         db.add(school_class)
+        created.append(class_name)
     db.flush()
+    return created
 
 
 def seed(db: Session) -> list[tuple[str, str, str]]:
-    """Skapar demodatan. Returnerar (e-post, roll, skola) för varje nytt konto."""
+    """Skapar demodatan. Returnerar (e-post eller klass, roll, skola) för allt som skapades."""
     created: list[tuple[str, str, str]] = []
 
     def add(email: str, name: str, role: UserRole, school: School | None) -> None:
@@ -128,7 +132,8 @@ def seed(db: Session) -> list[tuple[str, str, str]]:
             add(f"{ROLE_PREFIX[role]}.{key}@{DOMAIN}", name, role, school)
         for name in STUDENTS[key]:
             add(f"{_slug(name)}.{key}@{DOMAIN}", name, UserRole.STUDENT, school)
-        _ensure_classes(db, school, key)
+        for class_name in _ensure_classes(db, school, key):
+            created.append((f"klass {class_name}", "–", school.name))
 
     add(f"handledare@{DOMAIN}", "Gustav Lindahl", UserRole.SUPERVISOR, None)
     return created
@@ -141,9 +146,11 @@ def main() -> None:
         created = seed(db)
         db.commit()
     if not created:
-        print("Alla demokonton fanns redan. Saknade klasser har lagts till.")
+        print("Demodatan finns redan. Inget nytt skapades.")
         return
-    print(f"Skapade {len(created)} demokonton. Lösenord för alla: {DEMO_PASSWORD}\n")
+    accounts = sum(1 for item in created if not item[0].startswith("klass "))
+    print(f"Skapade {accounts} demokonton och {len(created) - accounts} klasser.")
+    print(f"Lösenord för alla konton: {DEMO_PASSWORD}\n")
     for email, role, school in created:
         print(f"  {role:<13} {school:<15} {email}")
 

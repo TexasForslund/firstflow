@@ -31,17 +31,16 @@ Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11
 
 ---
 
-## F3. Klassvy och elevvy ⬜
+## F3. Klassvy och elevvy ✅ Klar (PR #9)
 
-Väntar på: B2.
+- Lärarens "Dina klasser" i sidomenyn hämtas från `GET /api/classes`.
+- `/classes/:classId`: elevlista, "Lägg till elev" (namn och e-post) och ta bort ur klassen med bekräftelse på sidan. Skoladmin kopplar också lärare.
+- `/classes/new`: skapa klass (lärare och skoladmin).
+- `/classes`: skolans alla klasser för skoladmin och rektor (nytt menyval "Klasser").
+- `/students/:studentId`: elevens namn, skola och klasser. Fylls på med APL och närvaro i F4 och F5.
+- API-anropen finns i `src/api/classes.ts`. `ApiError` i `src/api/errors.ts` visar API:ts felmeddelande.
 
-**Mål:** Läraren ser sina klasser, öppnar en klass och ser eleverna.
-
-**Gör så här**
-
-1. `/classes`: lista från `GET /api/classes` med namn och antal elever, plus en knapp "Ny klass" (`POST /api/classes`).
-2. `/classes/:classId`: elevlista från `GET /api/classes/{class_id}`. Formulär "Lägg till elev" med namn och e-post (`POST /api/classes/{class_id}/students`). Invalidera klassens query efter ändring.
-3. `/students/:studentId`: en enkel elevvy med namn och klass. Fylls på med APL och närvaro i F4 och F5.
+Översikten, veckoredovisningen och elevhistoriken har kvar demodatan tills F11.
 
 ---
 

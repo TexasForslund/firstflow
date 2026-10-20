@@ -37,34 +37,19 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 ---
 
-## B2. Klasser och elever ⬜ (Texas + Claude)
+## B2. Klasser och elever ✅ Klar (PR #9, Texas + Claude)
 
-Låser upp: F3 (klassvy och elevvy).
+`SchoolClass` hör till en skola (namnet unikt inom skolan), med kopplingstabellerna `class_teachers` och `class_students`. Endpoints i `app/api/routes/classes.py` och `students.py`:
 
-**Mål:** En lärare ser sina klasser, skapar en klass och lägger till elever.
+- `GET /api/classes`: läraren får sina klasser, skoladmin och rektor skolans alla, superadmin alla.
+- `POST /api/classes`: lärare (kopplas automatiskt) eller skoladmin.
+- `GET /api/classes/{id}`: med lärare och elever.
+- `POST /api/classes/{id}/students` med `{name, email}`: kopplar en befintlig elev på skolan eller skapar ett nytt elevkonto. Annat konto med samma e-post ger 409.
+- `DELETE /api/classes/{id}/students/{student_id}`: tar bort ur klassen, inte kontot.
+- `POST/DELETE /api/classes/{id}/teachers`: skoladmin kopplar lärare på samma skola.
+- `GET /api/students/{id}`: elevsidan. Läraren ser bara elever i sina klasser.
 
-**Efter B1b:** klasser hör till en skola (`school_id` på `SchoolClass`). Varje endpoint anropar `require_same_school`. Elever kan redan skapas av skoladmin via `POST /api/schools/{school_id}/users`, så `POST /api/classes/{class_id}/students` kan koppla befintliga elever i stället för att skapa nya. `seed_demo.py` skapar redan skolor, personal och elever: B2 lägger till klasserna.
-
-**Gör så här**
-
-1. Modeller i `app/models/school_class.py`:
-   - `SchoolClass`: `id` (UUID), `name` (t.ex. "EE22"), `created_at`.
-   - Kopplingstabell `class_teachers` (`class_id`, `teacher_id`): vilka lärare som har klassen.
-   - Kopplingstabell `class_students` (`class_id`, `student_id`): vilka elever som går i klassen.
-   - Importera i `app/db/models.py` och skapa migrering med `alembic revision --autogenerate`.
-2. Endpoints i `app/api/routes/classes.py`, alla bara för `teacher`:
-   - `GET /api/classes` ger lärarens klasser: `[{id, name, student_count}]`.
-   - `POST /api/classes` med `{name}` skapar en klass och kopplar den inloggade läraren.
-   - `GET /api/classes/{class_id}` ger `{id, name, students: [{id, name, email}]}`. Svarar 404 om läraren inte har klassen.
-   - `POST /api/classes/{class_id}/students` med `{name, email}` skapar ett elevkonto utan lösenord (sätt `password_hash` till `"!"`, som aldrig godkänns av `verify_password`; lösenord sätts via inbjudan i B6) eller kopplar en befintlig elev med samma e-post. Svarar med eleven.
-   - `DELETE /api/classes/{class_id}/students/{student_id}` tar bort eleven ur klassen, inte kontot.
-3. `scripts/seed_demo.py`: skapar en demolärare, en demohandledare, två klasser med fem elever var och lösenordet `demo-firstflow` på alla demokonton. Skriptet ska vägra köra om `ENVIRONMENT=production`.
-
-**Klart när**
-
-- Tester täcker alla endpoints inklusive en annan lärares klass (404) och en elev som anropar (403).
-- `openapi.json` och `schema.d.ts` är uppdaterade.
-- Uppgiften är markerad klar här och F3 i `frontend.md` säger att den inte längre väntar.
+Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
 
 ---
 

@@ -185,8 +185,9 @@ export interface paths {
          * Add Student
          * @description Lägger till en elev i klassen.
          *
-         *     Finns e-postadressen redan som elev på samma skola kopplas den eleven. Annars skapas ett
-         *     nytt elevkonto utan lösenord (sätts via inbjudan i B6).
+         *     Finns e-postadressen redan som aktiv elev på samma skola kopplas den eleven. Annars skapas
+         *     ett nytt elevkonto utan lösenord (sätts via inbjudan i B6). Alla andra konton med samma
+         *     e-post, även avstängda, ger 409.
          */
         post: operations["add_student_api_classes__class_id__students_post"];
         delete?: never;
@@ -226,7 +227,7 @@ export interface paths {
         put?: never;
         /**
          * Assign Teacher
-         * @description Kopplar en lärare på samma skola till klassen.
+         * @description Kopplar en aktiv lärare på samma skola till klassen.
          */
         post: operations["assign_teacher_api_classes__class_id__teachers_post"];
         delete?: never;
@@ -262,6 +263,8 @@ export interface paths {
         /**
          * Get Student
          * @description Lärare ser elever i klasser hen undervisar. Skolans personal ser skolans elever.
+         *
+         *     Avstängda elevkonton svarar 404, precis som i klasslistorna.
          */
         get: operations["get_student_api_students__student_id__get"];
         put?: never;

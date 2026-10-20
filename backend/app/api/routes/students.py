@@ -43,9 +43,12 @@ class StudentRead(BaseModel):
 
 @router.get("/{student_id}", response_model=StudentRead)
 def get_student(student_id: UUID, db: DbSession, user: CanViewStudents) -> StudentRead:
-    """Lärare ser elever i klasser hen undervisar. Skolans personal ser skolans elever."""
+    """Lärare ser elever i klasser hen undervisar. Skolans personal ser skolans elever.
+
+    Avstängda elevkonton svarar 404, precis som i klasslistorna.
+    """
     student = db.get(User, student_id)
-    if student is None or student.role != UserRole.STUDENT:
+    if student is None or student.role != UserRole.STUDENT or not student.is_active:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
     require_same_school(user, student.school_id)
 

@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -250,7 +251,7 @@ def test_superadmin_sees_every_class(
     login(make_user(email="sa@firstflow.se", role=UserRole.SUPERADMIN))
     assert len(client.get("/api/classes").json()) == 2
     assert client.get(f"/api/classes/{world.umea_class.id}").status_code == 200
-    assert client.post("/api/classes", json={"name": "X"}).status_code == 403
+    assert client.post("/api/classes", json={"name": "X"}).status_code == 403  # har ingen skola
 
 
 # ─── Elevsidan ─────────────────────────────────────────────────
@@ -298,3 +299,123 @@ def test_students_and_supervisors_cannot_open_student_page(
 ) -> None:
     login(make_user(email=f"{role}@x.se", role=role, in_school=world.kramfors))
     assert client.get(f"/api/students/{world.student.id}").status_code == 403
+
+
+# ─── Efter granskning ──────────────────────────────────────────
+
+
+def test_inactive_accounts_are_hidden_and_cannot_be_linked(
+    client: TestClient, db: Session, login: Login, make_user: MakeUser, world: World
+) -> None:
+    inactive_student = make_user(
+        email="slutat@kramfors.se", role=UserRole.STUDENT, in_school=world.kramfors
+    )
+    inactive_student.is_active = False
+    world.other_teacher.is_active = False
+    world.ee22.students.append(inactive_student)
+    db.flush()
+
+    login(world.admin)
+    detail = client.get(f"/api/classes/{world.ee22.id}").json()
+    assert [s["email"] for s in detail["students"]] == ["hugo@kramfors.se"]
+    assert client.get("/api/classes").json()[0]["student_count"] == 1
+    assert client.get(f"/api/students/{inactive_student.id}").status_code == 404
+
+    response = client.post(
+        f"/api/classes/{world.ee22.id}/students", json={"email": "slutat@kramfors.se", "name": "X"}
+    )
+    assert response.status_code == 409
+    response = client.post(
+        f"/api/classes/{world.ee22.id}/teachers", json={"teacher_id": str(world.other_teacher.id)}
+    )
+    assert response.status_code == 404
+
+
+def test_linking_twice_does_not_fail(client: TestClient, login: Login, world: World) -> None:
+    login(world.admin)
+    url = f"/api/classes/{world.ee22.id}/teachers"
+    body = {"teacher_id": str(world.teacher.id)}  # redan kopplad
+    assert client.post(url, json=body).status_code == 201
+    assert len(client.get(f"/api/classes/{world.ee22.id}").json()["teachers"]) == 1
+
+
+def test_concurrent_class_creation_gives_409(
+    client: TestClient, db: Session, login: Login, world: World
+) -> None:
+    """Hinner två anrop förbi namnkontrollen samtidigt ger det andra 409, inte 500."""
+    login(world.admin)
+    real_scalar = db.scalar
+
+    def miss_duplicate_check(statement, *args, **kwargs):  # type: ignore[no-untyped-def]
+        if "school_classes" in str(statement) and "name" in str(statement):
+            return None
+        return real_scalar(statement, *args, **kwargs)
+
+    with patch.object(db, "scalar", side_effect=miss_duplicate_check):
+        response = client.post("/api/classes", json={"name": "EE22"})
+    assert response.status_code == 409
+    assert client.get("/api/classes").status_code == 200  # sessionen fungerar fortfarande
+
+
+def test_superadmin_only_reads_classes(
+    client: TestClient, login: Login, make_user: MakeUser, world: World
+) -> None:
+    login(make_user(email="sa@firstflow.se", role=UserRole.SUPERADMIN))
+    cid = world.ee22.id
+    assert client.get(f"/api/students/{world.student.id}").status_code == 200
+    response = client.post(f"/api/classes/{cid}/students", json={"email": "a@b.se", "name": "A"})
+    assert response.status_code == 403
+    teacher = {"teacher_id": str(world.other_teacher.id)}
+    assert client.post(f"/api/classes/{cid}/teachers", json=teacher).status_code == 403
+    assert client.delete(f"/api/classes/{cid}/students/{world.student.id}").status_code == 403
+
+
+def test_teacher_sees_only_own_classes_of_shared_student(
+    client: TestClient, db: Session, login: Login, world: World
+) -> None:
+    other_class = SchoolClass(
+        school_id=world.kramfors.id,
+        name="EE21",
+        teachers=[world.other_teacher],
+        students=[world.student],
+    )
+    db.add(other_class)
+    db.flush()
+    login(world.teacher)
+    classes = client.get(f"/api/students/{world.student.id}").json()["classes"]
+    assert [c["name"] for c in classes] == ["EE22"]
+
+
+def test_teacher_cannot_unassign_teachers(client: TestClient, login: Login, world: World) -> None:
+    login(world.teacher)
+    url = f"/api/classes/{world.ee22.id}/teachers/{world.teacher.id}"
+    assert client.delete(url).status_code == 403
+
+
+def test_admin_of_other_school_gets_404_on_every_change(
+    client: TestClient, login: Login, make_user: MakeUser, world: World
+) -> None:
+    login(make_user(email="admin@umea.se", role=UserRole.SCHOOL_ADMIN, in_school=world.umea))
+    cid = world.ee22.id
+    teacher = {"teacher_id": str(world.teacher.id)}
+    assert client.post(f"/api/classes/{cid}/teachers", json=teacher).status_code == 404
+    assert client.delete(f"/api/classes/{cid}/teachers/{world.teacher.id}").status_code == 404
+    assert client.delete(f"/api/classes/{cid}/students/{world.student.id}").status_code == 404
+    response = client.post(f"/api/classes/{cid}/students", json={"email": "a@b.se", "name": "A"})
+    assert response.status_code == 404
+
+
+def test_school_admin_cannot_add_student_of_other_school(
+    client: TestClient, login: Login, make_user: MakeUser, world: World
+) -> None:
+    make_user(email="elev@umea.se", role=UserRole.STUDENT, in_school=world.umea)
+    login(world.admin)
+    response = client.post(
+        f"/api/classes/{world.ee22.id}/students", json={"email": "elev@umea.se", "name": "X"}
+    )
+    assert response.status_code == 409
+
+
+def test_unknown_student_is_not_found(client: TestClient, login: Login, world: World) -> None:
+    login(world.admin)
+    assert client.get("/api/students/00000000-0000-0000-0000-000000000000").status_code == 404

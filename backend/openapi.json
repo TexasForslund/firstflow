@@ -500,7 +500,7 @@
           "classes"
         ],
         "summary": "Add Student",
-        "description": "Lägger till en elev i klassen.\n\nFinns e-postadressen redan som elev på samma skola kopplas den eleven. Annars skapas ett\nnytt elevkonto utan lösenord (sätts via inbjudan i B6).",
+        "description": "Lägger till en elev i klassen.\n\nFinns e-postadressen redan som aktiv elev på samma skola kopplas den eleven. Annars skapas\nett nytt elevkonto utan lösenord (sätts via inbjudan i B6). Alla andra konton med samma\ne-post, även avstängda, ger 409.",
         "operationId": "add_student_api_classes__class_id__students_post",
         "security": [
           {
@@ -611,7 +611,7 @@
           "classes"
         ],
         "summary": "Assign Teacher",
-        "description": "Kopplar en lärare på samma skola till klassen.",
+        "description": "Kopplar en aktiv lärare på samma skola till klassen.",
         "operationId": "assign_teacher_api_classes__class_id__teachers_post",
         "security": [
           {
@@ -721,7 +721,7 @@
           "students"
         ],
         "summary": "Get Student",
-        "description": "Lärare ser elever i klasser hen undervisar. Skolans personal ser skolans elever.",
+        "description": "Lärare ser elever i klasser hen undervisar. Skolans personal ser skolans elever.\n\nAvstängda elevkonton svarar 404, precis som i klasslistorna.",
         "operationId": "get_student_api_students__student_id__get",
         "security": [
           {
