@@ -1077,7 +1077,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FormContent"
+                "$ref": "#/components/schemas/FormContent-Input"
               }
             }
           }
@@ -1210,7 +1210,7 @@
           "reports"
         ],
         "summary": "My Reports",
-        "description": "Redovisningsdagarna de senaste fyra veckorna i elevens klasser, nyast först.\n\nBara klasser med ett publicerat formulär räknas. Dagarna kommer från klassens\nAPL-villkor (`report_due_weekdays`).",
+        "description": "Redovisningsdagarna de senaste fyra veckorna i elevens klasser, nyast först.\n\nBara klasser med ett publicerat formulär räknas. Dagarna kommer från klassens\nAPL-villkor (`report_due_weekdays`) och börjar tidigast när klassen fick frågor och\neleven kom in i klassen.",
         "operationId": "my_reports_api_reports_mine_get",
         "responses": {
           "200": {
@@ -1241,7 +1241,7 @@
           "reports"
         ],
         "summary": "Start Report",
-        "description": "Startar redovisningen för en klass och en dag, eller öppnar den om den redan finns.\n\nDagen måste vara en av klassens redovisningsdagar, inte i framtiden och högst fyra veckor\nbakåt.",
+        "description": "Startar redovisningen för en klass och en dag, eller öppnar den om den redan finns.\n\nDagen måste vara en av klassens redovisningsdagar, inte i framtiden, högst fyra veckor\nbakåt och inte före dagen då klassen fick frågor eller eleven kom in i klassen.",
         "operationId": "start_report_api_reports_post",
         "requestBody": {
           "content": {
@@ -1741,6 +1741,11 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
+          "text",
+          "choice_ids",
+          "other_text",
+          "boolean",
+          "rating",
           "question_id"
         ],
         "title": "AnswerRead"
@@ -1875,7 +1880,7 @@
         ],
         "title": "Choice"
       },
-      "ChoiceQuestion": {
+      "ChoiceQuestion-Input": {
         "properties": {
           "id": {
             "type": "string",
@@ -1941,6 +1946,80 @@
           "title",
           "type",
           "choices"
+        ],
+        "title": "ChoiceQuestion"
+      },
+      "ChoiceQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "choice",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 2,
+            "title": "Choices"
+          },
+          "multiple": {
+            "type": "boolean",
+            "title": "Multiple",
+            "description": "Eleven får välja flera alternativ",
+            "default": false
+          },
+          "allow_other": {
+            "type": "boolean",
+            "title": "Allow Other",
+            "description": "Alternativet 'Annat' med fritext",
+            "default": false
+          },
+          "logic": {
+            "items": {
+              "$ref": "#/components/schemas/LogicRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Logic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "required",
+          "choices",
+          "multiple",
+          "allow_other",
+          "logic"
         ],
         "title": "ChoiceQuestion"
       },
@@ -2137,39 +2216,39 @@
         ],
         "title": "DueReport"
       },
-      "FormContent": {
+      "FormContent-Input": {
         "properties": {
           "questions": {
             "items": {
               "oneOf": [
                 {
-                  "$ref": "#/components/schemas/ShortTextQuestion"
+                  "$ref": "#/components/schemas/ShortTextQuestion-Input"
                 },
                 {
-                  "$ref": "#/components/schemas/LongTextQuestion"
+                  "$ref": "#/components/schemas/LongTextQuestion-Input"
                 },
                 {
-                  "$ref": "#/components/schemas/ChoiceQuestion"
+                  "$ref": "#/components/schemas/ChoiceQuestion-Input"
                 },
                 {
-                  "$ref": "#/components/schemas/YesNoQuestion"
+                  "$ref": "#/components/schemas/YesNoQuestion-Input"
                 },
                 {
-                  "$ref": "#/components/schemas/RatingQuestion"
+                  "$ref": "#/components/schemas/RatingQuestion-Input"
                 },
                 {
-                  "$ref": "#/components/schemas/StatementQuestion"
+                  "$ref": "#/components/schemas/StatementQuestion-Input"
                 }
               ],
               "discriminator": {
                 "propertyName": "type",
                 "mapping": {
-                  "choice": "#/components/schemas/ChoiceQuestion",
-                  "long_text": "#/components/schemas/LongTextQuestion",
-                  "rating": "#/components/schemas/RatingQuestion",
-                  "short_text": "#/components/schemas/ShortTextQuestion",
-                  "statement": "#/components/schemas/StatementQuestion",
-                  "yes_no": "#/components/schemas/YesNoQuestion"
+                  "choice": "#/components/schemas/ChoiceQuestion-Input",
+                  "long_text": "#/components/schemas/LongTextQuestion-Input",
+                  "rating": "#/components/schemas/RatingQuestion-Input",
+                  "short_text": "#/components/schemas/ShortTextQuestion-Input",
+                  "statement": "#/components/schemas/StatementQuestion-Input",
+                  "yes_no": "#/components/schemas/YesNoQuestion-Input"
                 }
               }
             },
@@ -2183,10 +2262,59 @@
         "title": "FormContent",
         "description": "Formulärets frågor i ordning."
       },
+      "FormContent-Output": {
+        "properties": {
+          "questions": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ShortTextQuestion-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/LongTextQuestion-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoiceQuestion-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/YesNoQuestion-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/RatingQuestion-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/StatementQuestion-Output"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "choice": "#/components/schemas/ChoiceQuestion-Output",
+                  "long_text": "#/components/schemas/LongTextQuestion-Output",
+                  "rating": "#/components/schemas/RatingQuestion-Output",
+                  "short_text": "#/components/schemas/ShortTextQuestion-Output",
+                  "statement": "#/components/schemas/StatementQuestion-Output",
+                  "yes_no": "#/components/schemas/YesNoQuestion-Output"
+                }
+              }
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Questions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "questions"
+        ],
+        "title": "FormContent",
+        "description": "Formulärets frågor i ordning."
+      },
       "FormRead": {
         "properties": {
           "draft": {
-            "$ref": "#/components/schemas/FormContent"
+            "$ref": "#/components/schemas/FormContent-Output"
           },
           "published_version": {
             "anyOf": [
@@ -2313,7 +2441,7 @@
         ],
         "title": "LoginRequest"
       },
-      "LongTextQuestion": {
+      "LongTextQuestion-Input": {
         "properties": {
           "id": {
             "type": "string",
@@ -2349,6 +2477,47 @@
           "id",
           "title",
           "type"
+        ],
+        "title": "LongTextQuestion"
+      },
+      "LongTextQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "long_text",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "required"
         ],
         "title": "LongTextQuestion"
       },
@@ -2395,7 +2564,7 @@
         ],
         "title": "PersonRead"
       },
-      "RatingQuestion": {
+      "RatingQuestion-Input": {
         "properties": {
           "id": {
             "type": "string",
@@ -2439,6 +2608,56 @@
           "id",
           "title",
           "type"
+        ],
+        "title": "RatingQuestion"
+      },
+      "RatingQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "rating",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "logic": {
+            "items": {
+              "$ref": "#/components/schemas/LogicRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Logic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "required",
+          "logic"
         ],
         "title": "RatingQuestion"
       },
@@ -2517,33 +2736,33 @@
             "items": {
               "oneOf": [
                 {
-                  "$ref": "#/components/schemas/ShortTextQuestion"
+                  "$ref": "#/components/schemas/ShortTextQuestion-Output"
                 },
                 {
-                  "$ref": "#/components/schemas/LongTextQuestion"
+                  "$ref": "#/components/schemas/LongTextQuestion-Output"
                 },
                 {
-                  "$ref": "#/components/schemas/ChoiceQuestion"
+                  "$ref": "#/components/schemas/ChoiceQuestion-Output"
                 },
                 {
-                  "$ref": "#/components/schemas/YesNoQuestion"
+                  "$ref": "#/components/schemas/YesNoQuestion-Output"
                 },
                 {
-                  "$ref": "#/components/schemas/RatingQuestion"
+                  "$ref": "#/components/schemas/RatingQuestion-Output"
                 },
                 {
-                  "$ref": "#/components/schemas/StatementQuestion"
+                  "$ref": "#/components/schemas/StatementQuestion-Output"
                 }
               ],
               "discriminator": {
                 "propertyName": "type",
                 "mapping": {
-                  "choice": "#/components/schemas/ChoiceQuestion",
-                  "long_text": "#/components/schemas/LongTextQuestion",
-                  "rating": "#/components/schemas/RatingQuestion",
-                  "short_text": "#/components/schemas/ShortTextQuestion",
-                  "statement": "#/components/schemas/StatementQuestion",
-                  "yes_no": "#/components/schemas/YesNoQuestion"
+                  "choice": "#/components/schemas/ChoiceQuestion-Output",
+                  "long_text": "#/components/schemas/LongTextQuestion-Output",
+                  "rating": "#/components/schemas/RatingQuestion-Output",
+                  "short_text": "#/components/schemas/ShortTextQuestion-Output",
+                  "statement": "#/components/schemas/StatementQuestion-Output",
+                  "yes_no": "#/components/schemas/YesNoQuestion-Output"
                 }
               }
             },
@@ -2781,7 +3000,7 @@
         ],
         "title": "SchoolRead"
       },
-      "ShortTextQuestion": {
+      "ShortTextQuestion-Input": {
         "properties": {
           "id": {
             "type": "string",
@@ -2820,7 +3039,48 @@
         ],
         "title": "ShortTextQuestion"
       },
-      "StatementQuestion": {
+      "ShortTextQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "short_text",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "required"
+        ],
+        "title": "ShortTextQuestion"
+      },
+      "StatementQuestion-Input": {
         "properties": {
           "id": {
             "type": "string",
@@ -2850,6 +3110,42 @@
         "required": [
           "id",
           "title",
+          "type"
+        ],
+        "title": "StatementQuestion",
+        "description": "Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar."
+      },
+      "StatementQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "statement",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
           "type"
         ],
         "title": "StatementQuestion",
@@ -3100,7 +3396,7 @@
         ],
         "title": "ValidationError"
       },
-      "YesNoQuestion": {
+      "YesNoQuestion-Input": {
         "properties": {
           "id": {
             "type": "string",
@@ -3144,6 +3440,56 @@
           "id",
           "title",
           "type"
+        ],
+        "title": "YesNoQuestion"
+      },
+      "YesNoQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "yes_no",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "logic": {
+            "items": {
+              "$ref": "#/components/schemas/LogicRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Logic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "required",
+          "logic"
         ],
         "title": "YesNoQuestion"
       }

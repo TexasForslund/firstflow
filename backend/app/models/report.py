@@ -20,6 +20,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     SmallInteger,
     String,
@@ -27,6 +28,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Uuid,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -89,6 +91,13 @@ class Report(Base):
         CheckConstraint(
             "(status = 'submitted') = (submitted_at IS NOT NULL)", name="submitted_at_matches"
         ),
+        # Lärarens lista: klassens inskickade redovisningar, senaste först.
+        Index(
+            "ix_reports_class_submitted",
+            "class_id",
+            "submitted_at",
+            postgresql_where=text("status = 'submitted'"),
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -120,7 +129,14 @@ class ReportAnswer(Base):
     """Ett svar som typat värde. Vilken kolumn som används beror på frågetypen."""
 
     __tablename__ = "report_answers"
-    __table_args__ = (CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),)
+    __table_args__ = (
+        CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),
+        # Ett svar har ett värde: text, flerval (med eller utan Annat), ja/nej eller betyg.
+        CheckConstraint(
+            "num_nonnulls(text, boolean, rating, coalesce(choice_ids::text, other_text)) = 1",
+            name="one_value",
+        ),
+    )
 
     report_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("reports.id", ondelete="CASCADE"), primary_key=True

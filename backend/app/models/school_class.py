@@ -35,6 +35,8 @@ class_students = Table(
     Base.metadata,
     Column("class_id", ForeignKey("school_classes.id", ondelete="CASCADE"), primary_key=True),
     Column("student_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True),
+    # När eleven lades i klassen. Redovisningar räknas från den dagen.
+    Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
 )
 
 # Vilka elever en lärare ansvarar för. Sätts av skoladmin, oberoende av klasser.

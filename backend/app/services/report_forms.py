@@ -46,7 +46,8 @@ NO = "no"
 class LogicRule(BaseModel):
     """Om svaret är `when`, gå till frågan `goto`. `goto` null betyder att gå till slutet."""
 
-    model_config = ConfigDict(extra="forbid")
+    # I API-svaren är alla fält med standardvärde obligatoriska, så att frontend slipper gissa.
+    model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
 
     when: str = Field(
         min_length=1,
@@ -57,14 +58,16 @@ class LogicRule(BaseModel):
 
 
 class Choice(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    # I API-svaren är alla fält med standardvärde obligatoriska, så att frontend slipper gissa.
+    model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
 
     id: UUID
     label: Label
 
 
 class _Question(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    # I API-svaren är alla fält med standardvärde obligatoriska, så att frontend slipper gissa.
+    model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
 
     id: UUID
     title: Title
@@ -134,7 +137,8 @@ def _allowed_when(question: Any) -> set[str]:
 class FormContent(BaseModel):
     """Formulärets frågor i ordning."""
 
-    model_config = ConfigDict(extra="forbid")
+    # I API-svaren är alla fält med standardvärde obligatoriska, så att frontend slipper gissa.
+    model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
 
     questions: list[Question] = Field(default_factory=list, max_length=MAX_QUESTIONS)
 
@@ -190,7 +194,9 @@ class AnswerValue(BaseModel):
     Ett tomt svar (t.ex. bara mellanslag) räknas som obesvarat.
     """
 
-    model_config = ConfigDict(extra="forbid", from_attributes=True)
+    model_config = ConfigDict(
+        extra="forbid", from_attributes=True, json_schema_serialization_defaults_required=True
+    )
 
     text: str | None = Field(default=None, max_length=LONG_TEXT_MAX)
     choice_ids: list[UUID] | None = Field(default=None, max_length=MAX_CHOICES)

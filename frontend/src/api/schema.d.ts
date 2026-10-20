@@ -409,7 +409,8 @@ export interface paths {
          * @description Redovisningsdagarna de senaste fyra veckorna i elevens klasser, nyast först.
          *
          *     Bara klasser med ett publicerat formulär räknas. Dagarna kommer från klassens
-         *     APL-villkor (`report_due_weekdays`).
+         *     APL-villkor (`report_due_weekdays`) och börjar tidigast när klassen fick frågor och
+         *     eleven kom in i klassen.
          */
         get: operations["my_reports_api_reports_mine_get"];
         put?: never;
@@ -433,8 +434,8 @@ export interface paths {
          * Start Report
          * @description Startar redovisningen för en klass och en dag, eller öppnar den om den redan finns.
          *
-         *     Dagen måste vara en av klassens redovisningsdagar, inte i framtiden och högst fyra veckor
-         *     bakåt.
+         *     Dagen måste vara en av klassens redovisningsdagar, inte i framtiden, högst fyra veckor
+         *     bakåt och inte före dagen då klassen fick frågor eller eleven kom in i klassen.
          */
         post: operations["start_report_api_reports_post"];
         delete?: never;
@@ -577,15 +578,15 @@ export interface components {
         /** AnswerRead */
         AnswerRead: {
             /** Text */
-            text?: string | null;
+            text: string | null;
             /** Choice Ids */
-            choice_ids?: string[] | null;
+            choice_ids: string[] | null;
             /** Other Text */
-            other_text?: string | null;
+            other_text: string | null;
             /** Boolean */
-            boolean?: boolean | null;
+            boolean: boolean | null;
             /** Rating */
-            rating?: number | null;
+            rating: number | null;
             /**
              * Question Id
              * Format: uuid
@@ -643,7 +644,7 @@ export interface components {
             label: string;
         };
         /** ChoiceQuestion */
-        ChoiceQuestion: {
+        "ChoiceQuestion-Input": {
             /**
              * Id
              * Format: uuid
@@ -682,6 +683,47 @@ export interface components {
             allow_other: boolean;
             /** Logic */
             logic?: components["schemas"]["LogicRule"][];
+        };
+        /** ChoiceQuestion */
+        "ChoiceQuestion-Output": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "choice";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Choices */
+            choices: components["schemas"]["Choice"][];
+            /**
+             * Multiple
+             * @description Eleven får välja flera alternativ
+             * @default false
+             */
+            multiple: boolean;
+            /**
+             * Allow Other
+             * @description Alternativet 'Annat' med fritext
+             * @default false
+             */
+            allow_other: boolean;
+            /** Logic */
+            logic: components["schemas"]["LogicRule"][];
         };
         /** ClassCreate */
         ClassCreate: {
@@ -772,13 +814,21 @@ export interface components {
          * FormContent
          * @description Formulärets frågor i ordning.
          */
-        FormContent: {
+        "FormContent-Input": {
             /** Questions */
-            questions?: (components["schemas"]["ShortTextQuestion"] | components["schemas"]["LongTextQuestion"] | components["schemas"]["ChoiceQuestion"] | components["schemas"]["YesNoQuestion"] | components["schemas"]["RatingQuestion"] | components["schemas"]["StatementQuestion"])[];
+            questions?: (components["schemas"]["ShortTextQuestion-Input"] | components["schemas"]["LongTextQuestion-Input"] | components["schemas"]["ChoiceQuestion-Input"] | components["schemas"]["YesNoQuestion-Input"] | components["schemas"]["RatingQuestion-Input"] | components["schemas"]["StatementQuestion-Input"])[];
+        };
+        /**
+         * FormContent
+         * @description Formulärets frågor i ordning.
+         */
+        "FormContent-Output": {
+            /** Questions */
+            questions: (components["schemas"]["ShortTextQuestion-Output"] | components["schemas"]["LongTextQuestion-Output"] | components["schemas"]["ChoiceQuestion-Output"] | components["schemas"]["YesNoQuestion-Output"] | components["schemas"]["RatingQuestion-Output"] | components["schemas"]["StatementQuestion-Output"])[];
         };
         /** FormRead */
         FormRead: {
-            draft: components["schemas"]["FormContent"];
+            draft: components["schemas"]["FormContent-Output"];
             /** Published Version */
             published_version: number | null;
             /** Published At */
@@ -828,7 +878,32 @@ export interface components {
             password: string;
         };
         /** LongTextQuestion */
-        LongTextQuestion: {
+        "LongTextQuestion-Input": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "long_text";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+        };
+        /** LongTextQuestion */
+        "LongTextQuestion-Output": {
             /**
              * Id
              * Format: uuid
@@ -875,7 +950,7 @@ export interface components {
             email: string;
         };
         /** RatingQuestion */
-        RatingQuestion: {
+        "RatingQuestion-Input": {
             /**
              * Id
              * Format: uuid
@@ -900,6 +975,33 @@ export interface components {
             required: boolean;
             /** Logic */
             logic?: components["schemas"]["LogicRule"][];
+        };
+        /** RatingQuestion */
+        "RatingQuestion-Output": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "rating";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Logic */
+            logic: components["schemas"]["LogicRule"][];
         };
         /** Ref */
         Ref: {
@@ -944,7 +1046,7 @@ export interface components {
             /** Form Version */
             form_version: number;
             /** Questions */
-            questions: (components["schemas"]["ShortTextQuestion"] | components["schemas"]["LongTextQuestion"] | components["schemas"]["ChoiceQuestion"] | components["schemas"]["YesNoQuestion"] | components["schemas"]["RatingQuestion"] | components["schemas"]["StatementQuestion"])[];
+            questions: (components["schemas"]["ShortTextQuestion-Output"] | components["schemas"]["LongTextQuestion-Output"] | components["schemas"]["ChoiceQuestion-Output"] | components["schemas"]["YesNoQuestion-Output"] | components["schemas"]["RatingQuestion-Output"] | components["schemas"]["StatementQuestion-Output"])[];
             /** Answers */
             answers: components["schemas"]["AnswerRead"][];
             /**
@@ -1042,7 +1144,32 @@ export interface components {
             created_at: string;
         };
         /** ShortTextQuestion */
-        ShortTextQuestion: {
+        "ShortTextQuestion-Input": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "short_text";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+        };
+        /** ShortTextQuestion */
+        "ShortTextQuestion-Output": {
             /**
              * Id
              * Format: uuid
@@ -1070,7 +1197,30 @@ export interface components {
          * StatementQuestion
          * @description Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar.
          */
-        StatementQuestion: {
+        "StatementQuestion-Input": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "statement";
+        };
+        /**
+         * StatementQuestion
+         * @description Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar.
+         */
+        "StatementQuestion-Output": {
             /**
              * Id
              * Format: uuid
@@ -1176,7 +1326,7 @@ export interface components {
             ctx?: Record<string, never>;
         };
         /** YesNoQuestion */
-        YesNoQuestion: {
+        "YesNoQuestion-Input": {
             /**
              * Id
              * Format: uuid
@@ -1201,6 +1351,33 @@ export interface components {
             required: boolean;
             /** Logic */
             logic?: components["schemas"]["LogicRule"][];
+        };
+        /** YesNoQuestion */
+        "YesNoQuestion-Output": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "yes_no";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Logic */
+            logic: components["schemas"]["LogicRule"][];
         };
     };
     responses: never;
@@ -1881,7 +2058,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["FormContent"];
+                "application/json": components["schemas"]["FormContent-Input"];
             };
         };
         responses: {

@@ -185,3 +185,29 @@ def test_rating_logic_uses_numbers(client: TestClient, login: Login, setup: dict
     assert client.put(setup["url"], json={"questions": [rating]}).status_code == 200
     rating["logic"] = [{"when": "6", "goto": None}]
     assert client.put(setup["url"], json={"questions": [rating]}).status_code == 422
+
+
+def test_published_question_cannot_change_type(
+    client: TestClient, login: Login, setup: dict
+) -> None:
+    login(setup["teacher"])
+    question = text_question()
+    client.put(setup["url"], json={"questions": [question]})
+    # Utkastet får ändras fritt så länge frågan inte är publicerad.
+    assert (
+        client.put(
+            setup["url"], json={"questions": [{**question, "type": "short_text"}]}
+        ).status_code
+        == 200
+    )
+    client.post(f"{setup['url']}/publish")
+    changed = client.put(setup["url"], json={"questions": [{**question, "type": "long_text"}]})
+    assert changed.status_code == 422
+    assert "annan frågetyp" in changed.json()["detail"]
+
+
+def test_saving_draft_twice_updates_it(client: TestClient, login: Login, setup: dict) -> None:
+    login(setup["teacher"])
+    client.put(setup["url"], json={"questions": [text_question("Första")]})
+    second = client.put(setup["url"], json={"questions": [text_question("Andra")]}).json()
+    assert [q["title"] for q in second["draft"]["questions"]] == ["Andra"]

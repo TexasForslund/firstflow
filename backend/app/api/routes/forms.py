@@ -15,12 +15,13 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert
 
 from app.api.routes.classes import CanEditClasses, CanViewClasses, get_accessible_class
 from app.db.session import DbSession
 from app.models.report import ClassForm, FormVersion
 from app.models.user import User
-from app.services.report_forms import FormContent, dump_questions
+from app.services.report_forms import FormContent, dump_questions, parse_questions
 
 router = APIRouter(prefix="/classes/{class_id}/form", tags=["forms"])
 
@@ -41,6 +42,11 @@ def latest_version(db: DbSession, class_id: UUID) -> FormVersion | None:
     )
 
 
+def _canonical(raw: list[Any]) -> list[Any]:
+    """Frågorna med alla standardvärden ifyllda, så att gamla och nya versioner går att jämföra."""
+    return dump_questions(parse_questions(raw))
+
+
 def _draft_questions(db: DbSession, class_id: UUID, latest: FormVersion | None) -> list[Any]:
     form = db.get(ClassForm, class_id)
     if form is not None:
@@ -56,7 +62,7 @@ def _read(db: DbSession, class_id: UUID) -> FormRead:
         draft=FormContent.model_validate({"questions": draft}),
         published_version=latest.version if latest else None,
         published_at=latest.published_at if latest else None,
-        has_unpublished_changes=draft != published,
+        has_unpublished_changes=_canonical(draft) != _canonical(published),
     )
 
 
@@ -71,19 +77,41 @@ def get_form(class_id: UUID, db: DbSession, user: CanViewClasses) -> FormRead:
 def save_draft(class_id: UUID, body: FormContent, db: DbSession, user: CanEditClasses) -> FormRead:
     """Sparar hela utkastet: frågorna i ordning. Eleverna ser inget förrän det publiceras."""
     get_accessible_class(db, user, class_id)
+    _check_types_unchanged(db, class_id, body)
     _save(db, class_id, dump_questions(body.questions), user)
     db.commit()
     return _read(db, class_id)
 
 
+def _check_types_unchanged(db: DbSession, class_id: UUID, body: FormContent) -> None:
+    """En publicerad fråga får inte byta typ. Då går gamla svar inte att tolka."""
+    published: dict[str, str] = {}
+    for questions in db.scalars(
+        select(FormVersion.questions).where(FormVersion.class_id == class_id)
+    ):
+        for question in questions:
+            published[question["id"]] = question["type"]
+    for question in body.questions:
+        old_type = published.get(str(question.id))
+        if old_type is not None and old_type != question.type:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f'Frågan "{question.title}" är redan publicerad som en annan frågetyp. '
+                "Lägg till en ny fråga i stället.",
+            )
+
+
 def _save(db: DbSession, class_id: UUID, questions: list[Any], user: User) -> None:
-    form = db.get(ClassForm, class_id)
-    if form is None:
-        db.add(ClassForm(class_id=class_id, draft=questions, updated_by_id=user.id))
-    else:
-        form.draft = questions
-        form.updated_by_id = user.id
-    db.flush()
+    # Två samtidiga sparningar (t.ex. två flikar) ska inte ge fel. Den sista vinner.
+    db.execute(
+        insert(ClassForm)
+        .values(class_id=class_id, draft=questions, updated_by_id=user.id)
+        .on_conflict_do_update(
+            index_elements=[ClassForm.class_id],
+            set_={"draft": questions, "updated_by_id": user.id, "updated_at": func.now()},
+        )
+    )
+    db.expire_all()
 
 
 @router.post("/publish", response_model=FormRead)
@@ -98,7 +126,7 @@ def publish(class_id: UUID, db: DbSession, user: CanEditClasses) -> FormRead:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Lägg till minst en fråga"
         )
-    if latest is not None and draft == latest.questions:
+    if latest is not None and _canonical(draft) == _canonical(latest.questions):
         raise HTTPException(
             status.HTTP_409_CONFLICT, detail="Det finns inga ändringar att publicera"
         )

@@ -167,16 +167,52 @@ def _in_class(db: DbSession, student: User, class_id: UUID) -> bool:
     )
 
 
+def _first_due_date(db: DbSession, student: User, class_id: UUID, today: date) -> date:
+    """Första dagen eleven ska redovisa i klassen.
+
+    Det senaste av: fyra veckor bakåt, dagen då klassen först fick frågor och dagen då eleven
+    lades i klassen. Dagar före det räknas inte som missade.
+    """
+    first = today - timedelta(days=REPORT_WINDOW_DAYS - 1)
+    first_published = db.scalar(
+        select(func.min(FormVersion.published_at)).where(FormVersion.class_id == class_id)
+    )
+    enrolled = db.scalar(
+        select(class_students.c.created_at).where(
+            class_students.c.class_id == class_id, class_students.c.student_id == student.id
+        )
+    )
+    for moment in (first_published, enrolled):
+        if moment is not None:
+            first = max(first, time.local_date(moment))
+    return first
+
+
 def _get_report(db: DbSession, user: User, report_id: UUID, *, for_update: bool = False) -> Report:
     """Redovisningen om användaren får se den, annars 404."""
-    query = select(Report).where(Report.id == report_id)
+    query = (
+        select(Report)
+        .where(Report.id == report_id)
+        .options(
+            selectinload(Report.school_class),
+            selectinload(Report.student),
+            selectinload(Report.form_version),
+            selectinload(Report.answers),
+            selectinload(Report.comments).selectinload(ReportComment.author),
+        )
+    )
     if for_update:
         query = query.with_for_update()
     report = db.scalar(query)
     if report is None:
         raise _not_found()
     require_same_school(user, report.school_class.school_id)
-    if user.role == UserRole.STUDENT and report.student_id == user.id:
+    # Eleven måste fortfarande gå i klassen. Tas hen bort ur klassen försvinner åtkomsten.
+    if (
+        user.role == UserRole.STUDENT
+        and report.student_id == user.id
+        and _in_class(db, user, report.class_id)
+    ):
         return report
     if (
         user.role == UserRole.TEACHER
@@ -238,7 +274,8 @@ def my_reports(db: DbSession, user: Student) -> list[DueReport]:
     """Redovisningsdagarna de senaste fyra veckorna i elevens klasser, nyast först.
 
     Bara klasser med ett publicerat formulär räknas. Dagarna kommer från klassens
-    APL-villkor (`report_due_weekdays`).
+    APL-villkor (`report_due_weekdays`) och börjar tidigast när klassen fick frågor och
+    eleven kom in i klassen.
     """
     today = time.today()
     start = today - timedelta(days=REPORT_WINDOW_DAYS - 1)
@@ -265,9 +302,10 @@ def my_reports(db: DbSession, user: Student) -> list[DueReport]:
     slots = set(reports)
     for class_id in published:
         weekdays = set(by_id[class_id].report_due_weekdays)
+        first = _first_due_date(db, user, class_id, today)
         for offset in range(REPORT_WINDOW_DAYS):
             day = today - timedelta(days=offset)
-            if day.weekday() in weekdays:
+            if day >= first and day.weekday() in weekdays:
                 slots.add((class_id, day))
 
     items = []
@@ -290,8 +328,8 @@ def my_reports(db: DbSession, user: Student) -> list[DueReport]:
 def start_report(body: ReportStart, db: DbSession, user: Student) -> ReportDetail:
     """Startar redovisningen för en klass och en dag, eller öppnar den om den redan finns.
 
-    Dagen måste vara en av klassens redovisningsdagar, inte i framtiden och högst fyra veckor
-    bakåt.
+    Dagen måste vara en av klassens redovisningsdagar, inte i framtiden, högst fyra veckor
+    bakåt och inte före dagen då klassen fick frågor eller eleven kom in i klassen.
     """
     school_class = db.get(SchoolClass, body.class_id)
     if school_class is None or school_class.school_id != user.school_id:
@@ -314,11 +352,6 @@ def start_report(body: ReportStart, db: DbSession, user: Student) -> ReportDetai
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Dagen har inte kommit än"
         )
-    if body.due_date < today - timedelta(days=REPORT_WINDOW_DAYS - 1):
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="Redovisningen är för gammal för att lämnas",
-        )
     if body.due_date.weekday() not in school_class.report_due_weekdays:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -328,6 +361,11 @@ def start_report(body: ReportStart, db: DbSession, user: Student) -> ReportDetai
     if version is None:
         raise HTTPException(
             status.HTTP_409_CONFLICT, detail="Läraren har inte publicerat några frågor än"
+        )
+    if body.due_date < _first_due_date(db, user, school_class.id, today):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Den dagen behöver du inte lämna någon redovisning",
         )
 
     # Två samtidiga anrop (t.ex. dubbelklick) ska ge samma redovisning, inte ett fel.
@@ -364,7 +402,8 @@ def save_answer(
     report_id: UUID, question_id: UUID, body: AnswerValue, db: DbSession, user: Student
 ) -> ReportDetail:
     """Sparar svaret på en fråga när eleven trycker Nästa. Ett tomt svar tar bort svaret."""
-    report = _get_report(db, user, report_id)
+    # Låst, så att ett svar inte kan sparas samtidigt som redovisningen skickas in.
+    report = _get_report(db, user, report_id, for_update=True)
     _require_draft(report)
     question = next(
         (q for q in parse_questions(report.form_version.questions) if q.id == question_id), None

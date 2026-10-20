@@ -122,6 +122,8 @@ Viktigast från genomgången:
 
 **B5b, senare:** skolans mallar (skoladmin), förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
 
+**Att planera:** redovisningar och kommentarer hindrar att ett elevkonto raderas (`RESTRICT`). Gallring och radering av elevdata planeras tillsammans med mellanarkivet ([mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md)).
+
 Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar.
 
 Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) visar vad som behövs:

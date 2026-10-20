@@ -8,10 +8,12 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.models.report import FormVersion
 from app.models.school import School
-from app.models.school_class import SchoolClass
+from app.models.school_class import SchoolClass, class_students
 from app.models.user import User, UserRole
 
 MakeUser = Callable[..., User]
@@ -107,6 +109,11 @@ def w(
     assert client.put(url, json={"questions": world.questions}).status_code == 200
     assert client.post(f"{url}/publish").status_code == 200
     client.post("/api/auth/logout")
+    # Klassen fick frågor och eleverna kom in i klassen långt innan testets "i dag".
+    long_ago = datetime(2026, 8, 1, tzinfo=UTC)
+    db.execute(update(FormVersion).values(published_at=long_ago))
+    db.execute(update(class_students).values(created_at=long_ago))
+    db.flush()
     return world
 
 
@@ -420,3 +427,94 @@ def test_cannot_comment_on_draft(client: TestClient, login: Login, w: World) -> 
     report = start(client, w)
     response = client.post(f"/api/reports/{report['id']}/comments", json={"body": "Hej"})
     assert response.status_code == 409
+
+
+# --- Granskningens fall -------------------------------------------------------------------
+
+
+def test_removed_student_loses_access(client: TestClient, login: Login, w: World) -> None:
+    login(w.student)
+    report = start(client, w)
+    client.post("/api/auth/logout")
+    login(w.teacher)
+    assert client.delete(f"/api/classes/{w.ee22.id}/students/{w.student.id}").status_code == 204
+    client.post("/api/auth/logout")
+    login(w.student)
+    assert client.get(f"/api/reports/{report['id']}").status_code == 404
+    assert answer(client, report, w.html, boolean=True).status_code == 404
+    assert client.post(f"/api/reports/{report['id']}/submit").status_code == 404
+    assert client.get("/api/reports/mine").json() == []
+
+
+def test_removed_teacher_loses_access(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    report = submitted(client, login, w)
+    w.ee22.teachers.remove(w.teacher)
+    db.flush()
+    login(w.teacher)
+    assert client.get(f"/api/reports/{report['id']}").status_code == 404
+
+
+def test_days_before_publish_or_enrolment_are_not_due(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    # Klassen fick frågor i går (tisdag) och eleven kom in då.
+    yesterday = datetime(2026, 10, 20, 8, 0, tzinfo=UTC)
+    db.execute(update(FormVersion).values(published_at=yesterday))
+    db.flush()
+    login(w.student)
+    assert [i["due_date"] for i in client.get("/api/reports/mine").json()] == [str(TUESDAY)]
+    response = client.post(
+        "/api/reports", json={"class_id": str(w.ee22.id), "due_date": str(FRIDAY)}
+    )
+    assert response.status_code == 422
+
+    db.execute(update(FormVersion).values(published_at=datetime(2026, 8, 1, tzinfo=UTC)))
+    db.execute(
+        update(class_students)
+        .where(class_students.c.student_id == w.student.id)
+        .values(created_at=datetime(2026, 10, 21, 6, 0, tzinfo=UTC))
+    )
+    db.flush()
+    assert client.get("/api/reports/mine").json() == []
+
+
+def test_lateness_uses_swedish_date(client: TestClient, login: Login, w: World) -> None:
+    # 23:30 UTC på tisdagen är redan onsdag i svensk tid.
+    with patch("app.core.time.now", return_value=datetime(2026, 10, 20, 23, 30, tzinfo=UTC)):
+        report = submitted(client, login, w)
+    assert report["is_late"] is True
+    login(w.student)
+    friday = start(client, w, FRIDAY)
+    fill_all(client, w, friday)
+    with patch("app.core.time.now", return_value=datetime(2026, 10, 16, 21, 30, tzinfo=UTC)):
+        on_time = client.post(f"/api/reports/{friday['id']}/submit").json()
+    assert on_time["is_late"] is False  # 23:30 svensk tid samma fredag
+
+
+def test_first_matching_rule_wins_for_multiple_choice(
+    client: TestClient, login: Login, w: World
+) -> None:
+    first, second = (str(uuid4()) for _ in range(2))
+    end_question = q("long_text", "Sista")
+    middle = q("long_text", "Mitten")
+    multi = q(
+        "choice",
+        "Vad gjorde du?",
+        multiple=True,
+        choices=[{"id": first, "label": "A"}, {"id": second, "label": "B"}],
+        logic=[{"when": second, "goto": None}, {"when": first, "goto": end_question["id"]}],
+    )
+    login(w.teacher)
+    url = f"/api/classes/{w.ee22.id}/form"
+    client.put(url, json={"questions": [multi, middle, end_question]})
+    client.post(f"{url}/publish")
+    client.post("/api/auth/logout")
+
+    login(w.student)
+    report = start(client, w, FRIDAY)
+    path = answer(client, report, multi, choice_ids=[first, second]).json()["path"]
+    assert path == [multi["id"]]  # regeln för B står först
+    path = answer(client, report, multi, choice_ids=[first]).json()["path"]
+    assert path == [multi["id"], end_question["id"]]
