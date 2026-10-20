@@ -53,7 +53,13 @@
   --font-size-xl: 1.75rem;     /* 28 */
   --font-size-2xl: 2.5rem;     /* 40 */
   --font-size-display: 3rem;   /* 48 */
-  --tracking-tight: -0.02em;
+  /* Bokstavsavstånd. Små siffror (13 px) får inget negativt avstånd. */
+  --tracking-body: -0.3px;     /* brödtext, menyval, knappar, taggar, fält */
+  --tracking-title: -0.5px;    /* namn, frågor, kortrubriker (18–20 px) */
+  --tracking-section: -0.6px;  /* sektionsrubriker (20–28 px) */
+  --tracking-heading: -1.2px;  /* sidrubriker (40 px) */
+  --tracking-display: -1.6px;  /* stora siffror (48 px) */
+  --tracking-none: 0;
 
   /* Avstånd */
   --space-1: 0.25rem;
@@ -84,6 +90,7 @@
   font-family: var(--font-family);
   font-size: 100%;
   line-height: 1.5;
+  letter-spacing: var(--tracking-body);
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
@@ -113,8 +120,16 @@ p {
 h1,
 h2,
 h3 {
-  letter-spacing: var(--tracking-tight);
   line-height: 1.2;
+}
+
+h1 {
+  letter-spacing: var(--tracking-heading);
+}
+
+h2,
+h3 {
+  letter-spacing: var(--tracking-title);
 }
 
 a {
@@ -135,6 +150,14 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+/* Formulärelement ärver inte bokstavsavstånd av sig själva */
+button,
+input,
+textarea,
+select {
+  letter-spacing: inherit;
 }
 
 /* Fokusmarkering med outline, inte skugga */

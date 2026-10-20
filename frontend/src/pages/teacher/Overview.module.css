@@ -102,7 +102,7 @@
 .sectionTitle {
   font-size: var(--font-size-lg);
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-section);
 }
 
 .actions {
@@ -121,7 +121,7 @@
   font-size: var(--font-size-lg);
   font-weight: 500;
   color: var(--color-attention);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .attentionSubtitle {
@@ -156,7 +156,7 @@
 .attentionName {
   font-size: var(--font-size-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .attentionReason {
@@ -193,7 +193,7 @@
 .percent {
   font-size: var(--font-size-display);
   font-weight: 500;
-  letter-spacing: -0.03em;
+  letter-spacing: var(--tracking-display);
   line-height: 1;
 }
 
@@ -245,7 +245,7 @@
 .messageName {
   font-size: var(--font-size-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .messagePreview {
@@ -268,6 +268,7 @@
 .groupTitle {
   font-size: var(--font-size-lg);
   font-weight: 600;
+  letter-spacing: var(--tracking-section);
   margin: var(--space-4) 0 var(--space-4);
 }
 
@@ -300,7 +301,7 @@
 .studentName {
   font-size: var(--font-size-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .studentWorkplace {

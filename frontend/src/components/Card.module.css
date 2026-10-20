@@ -24,7 +24,7 @@
   gap: var(--space-3);
   font-size: var(--font-size-lg);
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .title svg {

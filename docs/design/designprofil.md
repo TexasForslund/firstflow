@@ -7,6 +7,7 @@ Firstflow följer konceptet i skisserna i den här mappen. Ändringar i koncepte
 | [larare-oversikt.png](larare-oversikt.png) | Lärarens översikt ("Det här behöver du titta på i dag") |
 | [larare-veckoredovisning.png](larare-veckoredovisning.png) | En elevs veckoredovisning med elevkort till höger |
 | [larare-elevhistorik.png](larare-elevhistorik.png) | Elevhistorik med filter per klass och elev |
+| [logo.svg](logo.svg) | Logotypen, originalfil. Används via `Logo` i `frontend/src/components/Logo.tsx` |
 
 Handledarens vy byggs på samma sätt som lärarens. Elevens vy skiljer sig: den är byggd för mobilen först och ska kännas som en app i stil med sociala medier, enkel att använda. Skisser för den kommer senare.
 
@@ -56,7 +57,19 @@ Avatarer med initialer får en av fem pastellfärger, vald utifrån namnet så a
 - **Radier:** kort 12 px, menyval och valknappar 8 px, taggar 8 px, knappar med kant och "Öppna"-knappar helt runda.
 - **Sidomeny:** 380 px bred på stor skärm, fast till vänster, ljusgrå bakgrund och en ram till höger. Under 1024 px fälls den ut med en menyknapp.
 - **Innehåll:** cirka 80 px luft till vänster om innehållet på stor skärm. Huvudkolumnen är upp till 780 px bred och sidokolumnen cirka 510 px.
-- **Rubriker:** sidrubrik 40 px fet (700) med tätare bokstavsavstånd (−0,02 em). Kortrubriker 18–20 px med vikt 500–600.
+- **Rubriker:** sidrubrik 40 px fet (700). Kortrubriker 18–20 px med vikt 500–600.
+- **Bokstavsavstånd** (variabler `--tracking-*` i `index.css`):
+
+  | Text | Värde |
+  |---|---|
+  | Brödtext, menyval, knappar, taggar, fält | −0,3 px |
+  | Namn, frågor, kortrubriker (18–20 px) | −0,5 px |
+  | Sektionsrubriker (20–28 px) | −0,6 px |
+  | Sidrubriker (40 px) | −1,2 px |
+  | Stora siffror (48 px) | −1,6 px |
+  | Små siffror i märken och listor (13 px) | 0 |
+
+  Skriv aldrig ett eget värde för `letter-spacing`. Använd variablerna.
 - **Klickytor** minst 44 px höga på mobil.
 
 ## Komponenter

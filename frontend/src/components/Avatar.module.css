@@ -7,7 +7,7 @@
   font-weight: 500;
   color: var(--color-text);
   object-fit: cover;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-none);
 }
 
 .sm {

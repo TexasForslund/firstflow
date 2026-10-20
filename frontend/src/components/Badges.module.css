@@ -11,6 +11,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-none);
 }
 
 .tag,

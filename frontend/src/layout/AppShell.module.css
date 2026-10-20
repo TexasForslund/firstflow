@@ -42,7 +42,7 @@
 .userName {
   font-size: var(--font-size-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-title);
 }
 
 .nav {
@@ -96,7 +96,7 @@
   margin-bottom: var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-body);
 }
 
 .sectionLabel::after {
@@ -125,6 +125,7 @@
   font-size: var(--font-size-xs);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-none);
 }
 
 .createClass {
