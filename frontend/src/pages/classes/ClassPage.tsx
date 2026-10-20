@@ -11,8 +11,9 @@ import {
   useUnassignTeacher,
   type Person,
 } from '../../api/classes'
+import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, TextField } from '../../components'
+import { Avatar, Button, Card, SearchSelect, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
 import styles from './Classes.module.css'
 
@@ -55,7 +56,7 @@ export function ClassPage() {
         )}
       </Card>
 
-      {canEdit && <AddStudentForm classId={cls.id} />}
+      {canEdit && <AddStudentForm classId={cls.id} inClass={cls.students} isTeacher={user?.role === 'teacher'} />}
       {canAssignTeachers && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
     </div>
   )
@@ -106,59 +107,56 @@ function StudentRow({ classId, student, canEdit }: { classId: string; student: P
   )
 }
 
-function AddStudentForm({ classId }: { classId: string }) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [added, setAdded] = useState<string | null>(null)
+function AddStudentForm({ classId, inClass, isTeacher }: { classId: string; inClass: Person[]; isTeacher: boolean }) {
+  const students = useStudents()
   const add = useAddStudent(classId)
+  const [added, setAdded] = useState<string | null>(null)
+  const candidates: SearchSelectOption[] = (students.data ?? [])
+    .filter((s) => !inClass.some((c) => c.id === s.id))
+    .map((s) => ({
+      id: s.id,
+      label: s.name,
+      description: [s.email, ...s.classes.map((c) => c.name)].join(' · '),
+    }))
 
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    setAdded(null)
-    add.mutate(
-      { name, email },
-      {
-        onSuccess: (student) => {
-          setAdded(student.name)
-          setName('')
-          setEmail('')
-        },
-      },
-    )
-  }
+  const emptyText = isTeacher
+    ? (students.data ?? []).length === 0
+      ? 'Inga elever är kopplade till dig än. Skolans administratör kopplar elever till lärare.'
+      : 'Alla dina elever är redan i klassen.'
+    : 'Alla skolans elever är redan i klassen.'
 
   return (
-    <Card>
+    <Card className={styles.overflowVisible}>
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>Lägg till elev</h2>
       </div>
       <div className={styles.cardBody}>
-        <form className={styles.form} onSubmit={submit}>
-          <TextField label="Namn" name="name" required value={name} onChange={(e) => setName(e.target.value)} />
-          <TextField
-            label="E-post"
-            name="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Button type="submit" variant="primary" disabled={add.isPending}>
-            Lägg till
-          </Button>
-          {add.isError && (
-            <p className={styles.formError} role="alert">
-              {add.error.message}
-            </p>
-          )}
-          {added && (
-            <p className={styles.formSuccess} role="status">
-              {added} är tillagd i klassen.
-            </p>
-          )}
-        </form>
+        <SearchSelect
+          label={isTeacher ? 'Välj bland dina elever' : 'Välj bland skolans elever'}
+          placeholder="Sök på namn eller e-post"
+          options={candidates}
+          emptyText={students.isPending ? 'Hämtar elever…' : emptyText}
+          onSelect={(option) => {
+            // Fältet stängs inte av medan eleven läggs till, så att fokus stannar kvar.
+            if (add.isPending) return
+            setAdded(null)
+            add.mutate(option.id, { onSuccess: () => setAdded(option.label) })
+          }}
+        />
+        {add.isError && (
+          <p className={styles.formError} role="alert">
+            {add.error.message}
+          </p>
+        )}
+        {added && (
+          <p className={styles.formSuccess} role="status">
+            {added} är tillagd i klassen.
+          </p>
+        )}
         <p className={styles.hint}>
-          Finns eleven redan på skolan kopplas hen till klassen. Annars skapas ett nytt elevkonto.
+          {isTeacher
+            ? 'Listan visar elever som skolans administratör har kopplat till dig.'
+            : 'Nya elever läggs in under Elever.'}
         </p>
       </div>
     </Card>

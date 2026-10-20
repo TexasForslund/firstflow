@@ -81,6 +81,8 @@ def client(db: Session) -> Iterator[TestClient]:
 
 
 PASSWORD = "rätt-lösenord-123"
+# Hashas en gång. Argon2 är medvetet långsamt och testerna skapar många användare.
+PASSWORD_HASH = hash_password(PASSWORD)
 
 
 @pytest.fixture
@@ -124,7 +126,7 @@ def make_user(db: Session, school: School) -> Callable[..., User]:
             name="Testperson",
             role=role,
             school_id=school_id,
-            password_hash=hash_password(PASSWORD),
+            password_hash=PASSWORD_HASH,
             is_active=is_active,
         )
         db.add(user)

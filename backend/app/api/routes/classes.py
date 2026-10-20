@@ -21,9 +21,8 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles, require_same_school
 from app.db.session import DbSession
-from app.models.school_class import SchoolClass, class_students, class_teachers
+from app.models.school_class import SchoolClass, class_students, class_teachers, teacher_students
 from app.models.user import User, UserRole
-from app.services.accounts import AccountCreate, create_account
 
 router = APIRouter(prefix="/classes", tags=["classes"])
 
@@ -189,34 +188,35 @@ def get_class(class_id: UUID, db: DbSession, user: CanViewClasses) -> ClassDetai
     return _detail(_get_class(db, user, class_id))
 
 
-@router.post("/{class_id}/students", response_model=PersonRead, status_code=status.HTTP_201_CREATED)
-def add_student(class_id: UUID, body: AccountCreate, db: DbSession, user: CanEditClasses) -> User:
-    """Lägger till en elev i klassen.
+class StudentLink(BaseModel):
+    student_id: UUID
 
-    Finns e-postadressen redan som aktiv elev på samma skola kopplas den eleven. Annars skapas
-    ett nytt elevkonto utan lösenord (sätts via inbjudan i B6). Alla andra konton med samma
-    e-post, även avstängda, ger 409.
+
+@router.post("/{class_id}/students", response_model=PersonRead, status_code=status.HTTP_201_CREATED)
+def add_student(class_id: UUID, body: StudentLink, db: DbSession, user: CanEditClasses) -> User:
+    """Lägger en befintlig elev i klassen.
+
+    Eleverna läggs in i systemet av skoladmin (POST /api/students). Läraren kan bara lägga
+    elever som är kopplade till hen. Skoladmin kan lägga alla aktiva elever på skolan.
     """
     school_class = _get_class(db, user, class_id)
-    existing = db.scalar(select(User).where(User.email == body.email))
-    if existing is not None:
-        if (
-            existing.role != UserRole.STUDENT
-            or existing.school_id != school_class.school_id
-            or not existing.is_active
-        ):
-            raise HTTPException(
-                status.HTTP_409_CONFLICT, detail="Det finns redan ett konto med den e-postadressen"
+    student = db.get(User, body.student_id)
+    if (
+        student is None
+        or student.role != UserRole.STUDENT
+        or student.school_id != school_class.school_id
+        or not student.is_active
+    ):
+        raise _not_found()
+    if user.role == UserRole.TEACHER:
+        linked = db.scalar(
+            select(teacher_students.c.student_id).where(
+                teacher_students.c.teacher_id == user.id,
+                teacher_students.c.student_id == student.id,
             )
-        student = existing
-    else:
-        student = create_account(
-            db,
-            email=body.email,
-            name=body.name,
-            role=UserRole.STUDENT,
-            school_id=school_class.school_id,
         )
+        if linked is None:
+            raise _not_found()
     _link(db, class_students, school_class.id, "student_id", student.id)
     db.commit()
     return student

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.models.school import School
-from app.models.school_class import SchoolClass
+from app.models.school_class import SchoolClass, teacher_students
 from app.models.user import User, UserRole
 
 MakeUser = Callable[..., User]
@@ -30,6 +30,16 @@ class World:
     umea_class: SchoolClass
 
 
+def link(db: Session, teacher: User, student: User) -> None:
+    """Kopplar eleven till läraren, som skoladmin gör."""
+    db.execute(teacher_students.insert().values(teacher_id=teacher.id, student_id=student.id))
+    db.flush()
+
+
+def student_body(student: User) -> dict[str, str]:
+    return {"student_id": str(student.id)}
+
+
 @pytest.fixture
 def world(db: Session, make_school: Callable[..., School], make_user: MakeUser) -> World:
     kramfors, umea = make_school("Kramforsskolan"), make_school("Umeåskolan")
@@ -43,6 +53,7 @@ def world(db: Session, make_school: Callable[..., School], make_user: MakeUser) 
     umea_class = SchoolClass(school_id=umea.id, name="EE22", teachers=[umea_teacher])
     db.add_all([ee22, umea_class])
     db.flush()
+    link(db, teacher, student)
     return World(
         kramfors, umea, teacher, other, umea_teacher, admin, principal, student, ee22, umea_class
     )
@@ -126,7 +137,7 @@ def test_class_of_someone_else_is_not_found(
     login(getattr(world, who))
     cid = world.ee22.id
     assert client.get(f"/api/classes/{cid}").status_code == 404
-    response = client.post(f"/api/classes/{cid}/students", json={"email": "x@y.se", "name": "X"})
+    response = client.post(f"/api/classes/{cid}/students", json=student_body(world.student))
     assert response.status_code == 404
     assert client.delete(f"/api/classes/{cid}/students/{world.student.id}").status_code == 404
 
@@ -154,51 +165,59 @@ def test_classes_require_login(client: TestClient) -> None:
     assert client.get("/api/classes").status_code == 401
 
 
-def test_add_new_student(client: TestClient, login: Login, world: World) -> None:
+def test_teacher_adds_own_student(
+    client: TestClient, db: Session, login: Login, make_user: MakeUser, world: World
+) -> None:
+    elsa = make_user(email="elsa@kramfors.se", role=UserRole.STUDENT, in_school=world.kramfors)
+    link(db, world.teacher, elsa)
     login(world.teacher)
-    response = client.post(
-        f"/api/classes/{world.ee22.id}/students",
-        json={"email": "Elsa@Kramfors.se", "name": "Elsa Lindqvist"},
-    )
+    response = client.post(f"/api/classes/{world.ee22.id}/students", json=student_body(elsa))
     assert response.status_code == 201
     assert response.json()["email"] == "elsa@kramfors.se"
     students = client.get(f"/api/classes/{world.ee22.id}").json()["students"]
-    assert [s["name"] for s in students] == ["Elsa Lindqvist", "Testperson"]
-
-
-def test_add_existing_student_of_same_school_links_it(
-    client: TestClient, db: Session, login: Login, make_user: MakeUser, world: World
-) -> None:
-    existing = make_user(email="omar@kramfors.se", role=UserRole.STUDENT, in_school=world.kramfors)
-    login(world.teacher)
-    response = client.post(
-        f"/api/classes/{world.ee22.id}/students", json={"email": "omar@kramfors.se", "name": "X"}
-    )
-    assert response.status_code == 201
-    assert response.json()["id"] == str(existing.id)
+    assert {s["email"] for s in students} == {"elsa@kramfors.se", "hugo@kramfors.se"}
     # Två gånger ger ingen dubblett
-    client.post(
-        f"/api/classes/{world.ee22.id}/students", json={"email": "omar@kramfors.se", "name": "X"}
-    )
+    client.post(f"/api/classes/{world.ee22.id}/students", json=student_body(elsa))
     assert client.get("/api/classes").json()[0]["student_count"] == 2
 
 
-@pytest.mark.parametrize("email", ["anders@umea.se", "per@kramfors.se"])
-def test_add_student_with_email_of_other_account(
-    client: TestClient, login: Login, world: World, email: str
+def test_teacher_cannot_add_student_not_linked_to_them(
+    client: TestClient, login: Login, make_user: MakeUser, world: World
 ) -> None:
-    """En lärare eller en elev på en annan skola kan inte kopplas som elev."""
+    """Läraren kan bara lägga sina egna elever i klasser."""
+    omar = make_user(email="omar@kramfors.se", role=UserRole.STUDENT, in_school=world.kramfors)
     login(world.teacher)
-    response = client.post(
-        f"/api/classes/{world.ee22.id}/students", json={"email": email, "name": "X"}
+    response = client.post(f"/api/classes/{world.ee22.id}/students", json=student_body(omar))
+    assert response.status_code == 404
+
+
+def test_school_admin_adds_any_student_of_school(
+    client: TestClient, login: Login, make_user: MakeUser, world: World
+) -> None:
+    omar = make_user(email="omar@kramfors.se", role=UserRole.STUDENT, in_school=world.kramfors)
+    login(world.admin)
+    response = client.post(f"/api/classes/{world.ee22.id}/students", json=student_body(omar))
+    assert response.status_code == 201
+
+
+@pytest.mark.parametrize("who", ["umea_student", "other_teacher"])
+def test_cannot_add_non_student_or_other_school(
+    client: TestClient, login: Login, make_user: MakeUser, world: World, who: str
+) -> None:
+    target = (
+        make_user(email="elev@umea.se", role=UserRole.STUDENT, in_school=world.umea)
+        if who == "umea_student"
+        else world.other_teacher
     )
-    assert response.status_code == 409
+    login(world.admin)
+    response = client.post(f"/api/classes/{world.ee22.id}/students", json=student_body(target))
+    assert response.status_code == 404
 
 
 def test_principal_cannot_change_class(client: TestClient, login: Login, world: World) -> None:
     login(world.principal)
     response = client.post(
-        f"/api/classes/{world.ee22.id}/students", json={"email": "ny@kramfors.se", "name": "Ny"}
+        f"/api/classes/{world.ee22.id}/students", json=student_body(world.student)
     )
     assert response.status_code == 403
 
@@ -322,9 +341,9 @@ def test_inactive_accounts_are_hidden_and_cannot_be_linked(
     assert client.get(f"/api/students/{inactive_student.id}").status_code == 404
 
     response = client.post(
-        f"/api/classes/{world.ee22.id}/students", json={"email": "slutat@kramfors.se", "name": "X"}
+        f"/api/classes/{world.ee22.id}/students", json=student_body(inactive_student)
     )
-    assert response.status_code == 409
+    assert response.status_code == 404
     response = client.post(
         f"/api/classes/{world.ee22.id}/teachers", json={"teacher_id": str(world.other_teacher.id)}
     )
@@ -363,7 +382,7 @@ def test_superadmin_only_reads_classes(
     login(make_user(email="sa@firstflow.se", role=UserRole.SUPERADMIN))
     cid = world.ee22.id
     assert client.get(f"/api/students/{world.student.id}").status_code == 200
-    response = client.post(f"/api/classes/{cid}/students", json={"email": "a@b.se", "name": "A"})
+    response = client.post(f"/api/classes/{cid}/students", json=student_body(world.student))
     assert response.status_code == 403
     teacher = {"teacher_id": str(world.other_teacher.id)}
     assert client.post(f"/api/classes/{cid}/teachers", json=teacher).status_code == 403
@@ -381,9 +400,10 @@ def test_teacher_sees_only_own_classes_of_shared_student(
     )
     db.add(other_class)
     db.flush()
-    login(world.teacher)
+    # other_teacher har EE21 men är inte kopplad till eleven: ser bara sin klass.
+    login(world.other_teacher)
     classes = client.get(f"/api/students/{world.student.id}").json()["classes"]
-    assert [c["name"] for c in classes] == ["EE22"]
+    assert [c["name"] for c in classes] == ["EE21"]
 
 
 def test_teacher_cannot_unassign_teachers(client: TestClient, login: Login, world: World) -> None:
@@ -401,19 +421,8 @@ def test_admin_of_other_school_gets_404_on_every_change(
     assert client.post(f"/api/classes/{cid}/teachers", json=teacher).status_code == 404
     assert client.delete(f"/api/classes/{cid}/teachers/{world.teacher.id}").status_code == 404
     assert client.delete(f"/api/classes/{cid}/students/{world.student.id}").status_code == 404
-    response = client.post(f"/api/classes/{cid}/students", json={"email": "a@b.se", "name": "A"})
+    response = client.post(f"/api/classes/{cid}/students", json=student_body(world.student))
     assert response.status_code == 404
-
-
-def test_school_admin_cannot_add_student_of_other_school(
-    client: TestClient, login: Login, make_user: MakeUser, world: World
-) -> None:
-    make_user(email="elev@umea.se", role=UserRole.STUDENT, in_school=world.umea)
-    login(world.admin)
-    response = client.post(
-        f"/api/classes/{world.ee22.id}/students", json={"email": "elev@umea.se", "name": "X"}
-    )
-    assert response.status_code == 409
 
 
 def test_unknown_student_is_not_found(client: TestClient, login: Login, world: World) -> None:

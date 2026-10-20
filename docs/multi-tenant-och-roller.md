@@ -32,8 +32,8 @@ superadmin          Firstflow-teamet. Skapar skolor och skoladmins. Ser allt.
 | Vem | Kan skapa |
 |---|---|
 | `superadmin` | Skolor, `school_admin`-konton |
-| `school_admin` | `principal`, `syv`, `teacher` och `student` inom sin skola |
-| `teacher` | Bjuder in `student` till en klass (via inbjudningslänk) |
+| `school_admin` | `principal`, `syv`, `teacher` och `student` inom sin skola. Väljer elevens lärare (`PUT /api/students/{id}/teachers`) |
+| `teacher` | Skapar inga elevkonton. Lägger elever som skoladmin har kopplat till hen i sina klasser |
 | `teacher` | Bjuder in `supervisor` i samband med en placering |
 
 **Ingen öppen registrering.** Det går inte att skapa ett konto själv.

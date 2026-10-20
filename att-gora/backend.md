@@ -44,10 +44,11 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 - `GET /api/classes`: läraren får sina klasser, skoladmin och rektor skolans alla, superadmin alla.
 - `POST /api/classes`: lärare (kopplas automatiskt) eller skoladmin.
 - `GET /api/classes/{id}`: med lärare och elever.
-- `POST /api/classes/{id}/students` med `{name, email}`: kopplar en befintlig elev på skolan eller skapar ett nytt elevkonto. Annat konto med samma e-post ger 409.
+- `POST /api/classes/{id}/students` med `{student_id}`: lägger en befintlig elev i klassen. Läraren kan bara lägga elever som är kopplade till hen, skoladmin alla aktiva elever på skolan.
+- **Elevregistret:** skoladmin lägger in elever (`POST /api/students` med namn, e-post, `teacher_ids` och valfria `class_ids`) och sätter elevens lärare (`PUT /api/students/{id}/teachers`). Kopplingen lagras i `teacher_students`, oberoende av klasser. `GET /api/students?q=` ger läraren hens kopplade elever och skolans personal alla elever. Lärare skapar inga elevkonton.
 - `DELETE /api/classes/{id}/students/{student_id}`: tar bort ur klassen, inte kontot.
 - `POST/DELETE /api/classes/{id}/teachers`: skoladmin kopplar lärare på samma skola.
-- `GET /api/students/{id}`: elevsidan. Läraren ser bara elever i sina klasser.
+- `GET /api/students/{id}`: elevsidan, med klasser och lärare. Läraren ser elever som är kopplade till hen eller går i hens klasser.
 
 Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
 

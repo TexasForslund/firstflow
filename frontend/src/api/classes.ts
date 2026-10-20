@@ -7,12 +7,10 @@ import type { components } from './schema'
 export type ClassSummary = components['schemas']['ClassSummary']
 export type ClassDetail = components['schemas']['ClassDetail']
 export type Person = components['schemas']['PersonRead']
-export type Student = components['schemas']['StudentRead']
 
 const keys = {
   classes: ['classes'] as const,
   class: (id: string) => ['classes', id] as const,
-  student: (id: string) => ['students', id] as const,
   teachers: (schoolId: string) => ['schools', schoolId, 'teachers'] as const,
 }
 
@@ -35,20 +33,6 @@ export function useClass(classId: string) {
     queryFn: async () => {
       const { data, error, response } = await api.GET('/api/classes/{class_id}', {
         params: { path: { class_id: classId } },
-      })
-      if (!data) throw new ApiError(error, response.status)
-      return data
-    },
-  })
-}
-
-export function useStudent(studentId: string) {
-  return useQuery({
-    queryKey: keys.student(studentId),
-    retry: false,
-    queryFn: async () => {
-      const { data, error, response } = await api.GET('/api/students/{student_id}', {
-        params: { path: { student_id: studentId } },
       })
       if (!data) throw new ApiError(error, response.status)
       return data
@@ -98,10 +82,10 @@ function useInvalidateClass(classId: string) {
 export function useAddStudent(classId: string) {
   const invalidate = useInvalidateClass(classId)
   return useMutation({
-    mutationFn: async (body: { name: string; email: string }) => {
+    mutationFn: async (studentId: string) => {
       const { data, error, response } = await api.POST('/api/classes/{class_id}/students', {
         params: { path: { class_id: classId } },
-        body,
+        body: { student_id: studentId },
       })
       if (!data) throw new ApiError(error, response.status)
       return data

@@ -7,6 +7,7 @@ import { Login } from './pages/auth/Login'
 import { ClassList } from './pages/classes/ClassList'
 import { ClassPage } from './pages/classes/ClassPage'
 import { NewClass } from './pages/classes/NewClass'
+import { StudentList } from './pages/students/StudentList'
 import { StudentPage } from './pages/students/StudentPage'
 import { Placeholder } from './pages/Placeholder'
 import { Overview } from './pages/teacher/Overview'
@@ -43,6 +44,7 @@ const routes: RouteObject[] = [
       { path: 'classes', element: only(['school_admin', 'principal'], <ClassList />) },
       { path: 'classes/new', element: only(['teacher', 'school_admin'], <NewClass />) },
       { path: 'classes/:classId', element: only(['teacher', 'school_admin', 'principal', 'superadmin'], <ClassPage />) },
+      { path: 'students', element: only(['teacher', 'school_admin', 'principal', 'syv'], <StudentList />) },
       { path: 'students/:studentId', element: only(['teacher', 'school_admin', 'principal', 'syv', 'superadmin'], <StudentPage />) },
 
       // Flera roller
@@ -62,7 +64,6 @@ const routes: RouteObject[] = [
       placeholder('users', ['school_admin', 'principal'], 'Användare', 'Skolans personal och elever. Kommer i F7.'),
       placeholder('school', ['principal'], 'Översikt', 'Skolans APL i siffror: elever på APL, närvaro och avtal.'),
       placeholder('admin-reports', ['school_admin', 'principal'], 'Rapporter', 'Statsbidragsrapport och underlag för materialersättning. Kommer i F7.'),
-      placeholder('students', ['syv'], 'Elever', 'Elevöversikt för studie- och yrkesvägledare.'),
 
       // Superadmin
       placeholder('admin/schools', ['superadmin'], 'Skolor', 'Alla skolor i Firstflow och deras administratörer.'),

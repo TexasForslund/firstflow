@@ -24,6 +24,15 @@ class_students = Table(
     Column("student_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True),
 )
 
+# Vilka elever en lärare ansvarar för. Sätts av skoladmin, oberoende av klasser.
+# Läraren kan bara lägga sina egna elever i klasser.
+teacher_students = Table(
+    "teacher_students",
+    Base.metadata,
+    Column("teacher_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("student_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True),
+)
+
 
 class SchoolClass(Base):
     """En klass, t.ex. EE22. Hör alltid till en skola. Namnet är unikt inom skolan."""

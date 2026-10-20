@@ -18,7 +18,7 @@ export const roleLabel: Record<Role, string> = {
 /** Startsidan för varje roll. Dit skickas användaren efter inloggning. */
 export const startPath: Record<Role, string> = {
   superadmin: '/admin/schools',
-  school_admin: '/users',
+  school_admin: '/students',
   principal: '/school',
   syv: '/students',
   teacher: '/overview',
@@ -46,6 +46,7 @@ export const navByRole: Record<Role, NavItem[]> = {
   teacher: [
     { to: '/overview', label: 'Översikt', icon: overview, count: attention.length, countLabel: 'att följa upp' },
     { to: '/messages', label: 'Meddelanden', icon: messages, count: unreadMessages, countLabel: 'olästa' },
+    { to: '/students', label: 'Mina elever', icon: students },
     { to: '/student-history', label: 'Elevhistorik', icon: history },
     { to: '/projects', label: 'Projekt', icon: projects },
     { to: '/placements', label: 'Praktikplatser', icon: placements },
@@ -62,14 +63,16 @@ export const navByRole: Record<Role, NavItem[]> = {
     { to: '/messages', label: 'Meddelanden', icon: messages },
   ],
   school_admin: [
-    { to: '/users', label: 'Användare', icon: users },
+    { to: '/students', label: 'Elever', icon: students },
     { to: '/classes', label: 'Klasser', icon: classes },
+    { to: '/users', label: 'Användare', icon: users },
     { to: '/placements', label: 'Praktikplatser', icon: placements },
     { to: '/contracts', label: 'Kontrakt', icon: contracts },
     { to: '/admin-reports', label: 'Rapporter', icon: reports },
   ],
   principal: [
     { to: '/school', label: 'Översikt', icon: overview },
+    { to: '/students', label: 'Elever', icon: students },
     { to: '/classes', label: 'Klasser', icon: classes },
     { to: '/users', label: 'Användare', icon: users },
     { to: '/admin-reports', label: 'Rapporter', icon: reports },

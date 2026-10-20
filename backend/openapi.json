@@ -500,7 +500,7 @@
           "classes"
         ],
         "summary": "Add Student",
-        "description": "Lägger till en elev i klassen.\n\nFinns e-postadressen redan som aktiv elev på samma skola kopplas den eleven. Annars skapas\nett nytt elevkonto utan lösenord (sätts via inbjudan i B6). Alla andra konton med samma\ne-post, även avstängda, ger 409.",
+        "description": "Lägger en befintlig elev i klassen.\n\nEleverna läggs in i systemet av skoladmin (POST /api/students). Läraren kan bara lägga\nelever som är kopplade till hen. Skoladmin kan lägga alla aktiva elever på skolan.",
         "operationId": "add_student_api_classes__class_id__students_post",
         "security": [
           {
@@ -524,7 +524,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountCreate"
+                "$ref": "#/components/schemas/StudentLink"
               }
             }
           }
@@ -715,13 +715,131 @@
         }
       }
     },
+    "/api/students": {
+      "get": {
+        "tags": [
+          "students"
+        ],
+        "summary": "List Students",
+        "description": "Läraren får sina kopplade elever. Skolans personal får skolans alla elever.",
+        "operationId": "list_students_api_students_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Sök på namn eller e-post",
+              "title": "Q"
+            },
+            "description": "Sök på namn eller e-post"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StudentRead"
+                  },
+                  "title": "Response List Students Api Students Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "students"
+        ],
+        "summary": "Create Student",
+        "description": "Skapar en elev på skolan, med lärare och klasser. Lösenordet sätts via inbjudan (B6).",
+        "operationId": "create_student_api_students_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/students/{student_id}": {
       "get": {
         "tags": [
           "students"
         ],
         "summary": "Get Student",
-        "description": "Lärare ser elever i klasser hen undervisar. Skolans personal ser skolans elever.\n\nAvstängda elevkonton svarar 404, precis som i klasslistorna.",
         "operationId": "get_student_api_students__student_id__get",
         "security": [
           {
@@ -740,6 +858,65 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/teachers": {
+      "put": {
+        "tags": [
+          "students"
+        ],
+        "summary": "Set Teachers",
+        "description": "Sätter elevens lärare. Listan ersätter de tidigare.",
+        "operationId": "set_teachers_api_students__student_id__teachers_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeachersSet"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -844,25 +1021,6 @@
           "students"
         ],
         "title": "ClassDetail"
-      },
-      "ClassRef": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name"
-        ],
-        "title": "ClassRef"
       },
       "ClassSummary": {
         "properties": {
@@ -976,6 +1134,25 @@
         ],
         "title": "PersonRead"
       },
+      "Ref": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Ref"
+      },
       "SchoolAccountCreate": {
         "properties": {
           "email": {
@@ -1078,6 +1255,60 @@
         ],
         "title": "SchoolRead"
       },
+      "StudentCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "teacher_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Teacher Ids"
+          },
+          "class_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Class Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name"
+        ],
+        "title": "StudentCreate"
+      },
+      "StudentLink": {
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Student Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student_id"
+        ],
+        "title": "StudentLink"
+      },
       "StudentRead": {
         "properties": {
           "id": {
@@ -1106,10 +1337,17 @@
           },
           "classes": {
             "items": {
-              "$ref": "#/components/schemas/ClassRef"
+              "$ref": "#/components/schemas/Ref"
             },
             "type": "array",
             "title": "Classes"
+          },
+          "teachers": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Teachers"
           }
         },
         "type": "object",
@@ -1118,7 +1356,8 @@
           "name",
           "email",
           "school_name",
-          "classes"
+          "classes",
+          "teachers"
         ],
         "title": "StudentRead"
       },
@@ -1135,6 +1374,24 @@
           "teacher_id"
         ],
         "title": "TeacherAssign"
+      },
+      "TeachersSet": {
+        "properties": {
+          "teacher_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Teacher Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "teacher_ids"
+        ],
+        "title": "TeachersSet"
       },
       "UserRead": {
         "properties": {

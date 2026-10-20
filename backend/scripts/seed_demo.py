@@ -12,13 +12,14 @@ Varje skola får två klasser med fem elever var. Placeringar läggs till i B3.
 import sys
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal
 from app.models.school import School
-from app.models.school_class import SchoolClass
+from app.models.school_class import SchoolClass, teacher_students
 from app.models.user import User, UserRole
 from app.services.accounts import create_account
 
@@ -95,6 +96,15 @@ def _ensure_classes(db: Session, school: School, key: str) -> list[str]:
         db.scalar(select(User).where(User.email == f"{_slug(n)}.{key}@{DOMAIN}"))
         for n in STUDENTS[key]
     ]
+    # Skolans lärare ansvarar för alla demoelever (kopplingen sätts annars av skoladmin).
+    if teacher:
+        for student in students:
+            if student:
+                db.execute(
+                    insert(teacher_students)
+                    .values(teacher_id=teacher.id, student_id=student.id)
+                    .on_conflict_do_nothing()
+                )
     for i, class_name in enumerate(CLASSES):
         exists = db.scalar(
             select(SchoolClass.id).where(
