@@ -37,34 +37,21 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 ---
 
-## B2. Klasser och elever ⬜ (Texas + Claude)
+## B2. Klasser och elever ✅ Klar (PR #9, Texas + Claude)
 
-Låser upp: F3 (klassvy och elevvy).
+`SchoolClass` hör till en skola (namnet unikt inom skolan), med kopplingstabellerna `class_teachers` och `class_students`. Endpoints i `app/api/routes/classes.py` och `students.py`:
 
-**Mål:** En lärare ser sina klasser, skapar en klass och lägger till elever.
+- `GET /api/classes`: läraren får sina klasser, skoladmin och rektor skolans alla, superadmin alla.
+- `POST /api/classes`: lärare (kopplas automatiskt) eller skoladmin.
+- `GET /api/classes/{id}`: med lärare och elever.
+- `POST /api/classes/{id}/students` med `{student_id}`: lägger en befintlig elev i klassen. Läraren kan bara lägga elever som är kopplade till hen, skoladmin alla aktiva elever på skolan.
+- **Elevregistret:** skoladmin lägger in elever (`POST /api/students` med namn, e-post, `teacher_ids` och valfria `class_ids`) och sätter elevens lärare (`PUT /api/students/{id}/teachers`). Kopplingen lagras i `teacher_students`, oberoende av klasser. `GET /api/students?q=` ger läraren hens kopplade elever och skolans personal alla elever. Lärare skapar inga elevkonton.
+- `DELETE /api/classes/{id}/students/{student_id}`: tar bort ur klassen, inte kontot.
+- `POST/DELETE /api/classes/{id}/teachers`: skoladmin kopplar lärare på samma skola.
+- `PUT /api/classes/{id}/apl-terms`: klassens APL-villkor (period, dagar per vecka, incheckning, lägsta närvaro, veckodag för veckoredovisning). Läraren för klassen och skoladmin. Villkoren finns också i `GET /api/classes/{id}` som `apl_terms`.
+- `GET /api/students/{id}`: elevsidan, med klasser och lärare. Läraren ser elever som är kopplade till hen eller går i hens klasser.
 
-**Efter B1b:** klasser hör till en skola (`school_id` på `SchoolClass`). Varje endpoint anropar `require_same_school`. Elever kan redan skapas av skoladmin via `POST /api/schools/{school_id}/users`, så `POST /api/classes/{class_id}/students` kan koppla befintliga elever i stället för att skapa nya. `seed_demo.py` skapar redan skolor, personal och elever: B2 lägger till klasserna.
-
-**Gör så här**
-
-1. Modeller i `app/models/school_class.py`:
-   - `SchoolClass`: `id` (UUID), `name` (t.ex. "EE22"), `created_at`.
-   - Kopplingstabell `class_teachers` (`class_id`, `teacher_id`): vilka lärare som har klassen.
-   - Kopplingstabell `class_students` (`class_id`, `student_id`): vilka elever som går i klassen.
-   - Importera i `app/db/models.py` och skapa migrering med `alembic revision --autogenerate`.
-2. Endpoints i `app/api/routes/classes.py`, alla bara för `teacher`:
-   - `GET /api/classes` ger lärarens klasser: `[{id, name, student_count}]`.
-   - `POST /api/classes` med `{name}` skapar en klass och kopplar den inloggade läraren.
-   - `GET /api/classes/{class_id}` ger `{id, name, students: [{id, name, email}]}`. Svarar 404 om läraren inte har klassen.
-   - `POST /api/classes/{class_id}/students` med `{name, email}` skapar ett elevkonto utan lösenord (sätt `password_hash` till `"!"`, som aldrig godkänns av `verify_password`; lösenord sätts via inbjudan i B6) eller kopplar en befintlig elev med samma e-post. Svarar med eleven.
-   - `DELETE /api/classes/{class_id}/students/{student_id}` tar bort eleven ur klassen, inte kontot.
-3. `scripts/seed_demo.py`: skapar en demolärare, en demohandledare, två klasser med fem elever var och lösenordet `demo-firstflow` på alla demokonton. Skriptet ska vägra köra om `ENVIRONMENT=production`.
-
-**Klart när**
-
-- Tester täcker alla endpoints inklusive en annan lärares klass (404) och en elev som anropar (403).
-- `openapi.json` och `schema.d.ts` är uppdaterade.
-- Uppgiften är markerad klar här och F3 i `frontend.md` säger att den inte längre väntar.
+Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
 
 ---
 
@@ -89,6 +76,12 @@ Låser upp: F4.
 
 **Klart när:** tester för varje roll och för en handledare som försöker se en annan handledares elev (404).
 
+**Krav från klassvyn (Texas, 2026-10-20):** klassen är navet. Läraren tilldelar praktikplats per elev direkt i klassvyns elevlista (`/classes/:id`, fliken Elever), där det redan finns en plats för det i varje elevrad. Därför:
+
+- Klassens APL-villkor (`apl_start_date`, `apl_end_date` på `SchoolClass`, se B2) är förval för placeringens `start_date` och `end_date`.
+- `GET /api/classes/{class_id}` eller `GET /api/classes/{class_id}/placements` behöver ge arbetsplatsens namn per elev, så att elevraden kan visa den.
+- Läraren ska bara kunna placera elever i klasser hen undervisar, och arbetsplatser och handledare ska höra till skolan (`require_same_school`).
+
 ---
 
 ## B4. Närvaro och incheckning ⬜
@@ -107,6 +100,7 @@ Låser upp: F5.
    - `GET /api/classes/{class_id}/attendance?from=&to=` (lärare): per elev antal dagar närvarande, frånvarande och sjuk.
    - `GET /api/supervisor/attendance?date=` (handledare): dagens incheckningar för handledarens elever.
 3. Spara ingen plats (GPS). Det är inte nödvändigt för funktionen.
+4. Använd klassens APL-villkor (B2): `check_in_required` avgör om incheckning krävs, och elever under `attendance_min_percent` ska med i "Behöver uppmärksamhet" (B13).
 
 ---
 
@@ -120,6 +114,7 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
 - Fyra frågetyper: bilder (uppladdning), fritext, flerval (t.ex. Ja/Nej/Vet inte) och betyg 1–5.
 - Läraren ser olästa redovisningar på översikten, så redovisningen behöver statusen läst/oläst per lärare.
 - Bilagor räknas per redovisning ("Bilagor (2)").
+- **Frågorna sätts per klass** (Texas, 2026-10-20): i klassvyns flik Frågor väljer läraren vilka frågor eleverna i klassen får vid varje redovisningstillfälle. Klassens `report_due_weekday` (B2) anger när redovisningen ska vara inlämnad.
 
 ---
 
@@ -227,9 +222,9 @@ Trådar mellan lärare och elev, och mellan lärare och handledare. Antal oläst
 
 ## B12. Projekt ⬜
 
-Ägare: bestäms. Tillagd från lärarskisserna.
+Ägare: bestäms. Tillagd från lärarskisserna. Ska diskuteras innan start (Texas).
 
-Läraren skapar projekt och tilldelar dem till elever. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
+Läraren skapar projekt och tilldelar dem till elever från klassvyn, på samma sätt som praktikplats. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
 
 ---
 

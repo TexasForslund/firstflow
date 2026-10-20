@@ -131,6 +131,208 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Classes
+         * @description Lärare får sina egna klasser. Skoladmin och rektor får skolans alla klasser.
+         */
+        get: operations["list_classes_api_classes_get"];
+        put?: never;
+        /**
+         * Create Class
+         * @description Skapar en klass på användarens skola. En lärare kopplas automatiskt till klassen.
+         */
+        post: operations["create_class_api_classes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Class */
+        get: operations["get_class_api_classes__class_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Student
+         * @description Lägger en befintlig elev i klassen.
+         *
+         *     Eleverna läggs in i systemet av skoladmin (POST /api/students). Läraren kan bara lägga
+         *     elever som är kopplade till hen. Skoladmin kan lägga alla aktiva elever på skolan.
+         */
+        post: operations["add_student_api_classes__class_id__students_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/students/{student_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Student
+         * @description Tar bort eleven ur klassen. Elevkontot finns kvar.
+         */
+        delete: operations["remove_student_api_classes__class_id__students__student_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/teachers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign Teacher
+         * @description Kopplar en aktiv lärare på samma skola till klassen.
+         */
+        post: operations["assign_teacher_api_classes__class_id__teachers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/teachers/{teacher_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Unassign Teacher */
+        delete: operations["unassign_teacher_api_classes__class_id__teachers__teacher_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/apl-terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Apl Terms
+         * @description Sätter klassens APL-villkor. Läraren för klassen eller skoladmin. Alla fält skrivs över.
+         */
+        put: operations["set_apl_terms_api_classes__class_id__apl_terms_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Students
+         * @description Läraren får sina kopplade elever. Skolans personal får skolans alla elever.
+         */
+        get: operations["list_students_api_students_get"];
+        put?: never;
+        /**
+         * Create Student
+         * @description Skapar en elev på skolan, med lärare och klasser. Lösenordet sätts via inbjudan (B6).
+         */
+        post: operations["create_student_api_students_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Student */
+        get: operations["get_student_api_students__student_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}/teachers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Teachers
+         * @description Sätter elevens lärare. Listan ersätter de tidigare.
+         */
+        put: operations["set_teachers_api_students__student_id__teachers_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -141,6 +343,69 @@ export interface components {
             email: string;
             /** Name */
             name: string;
+        };
+        /**
+         * AplTerms
+         * @description APL-villkor för hela klassen. null betyder att det inte är bestämt än.
+         */
+        AplTerms: {
+            /** Apl Start Date */
+            apl_start_date?: string | null;
+            /** Apl End Date */
+            apl_end_date?: string | null;
+            /** Apl Days Per Week */
+            apl_days_per_week?: number | null;
+            /**
+             * Check In Required
+             * @default true
+             */
+            check_in_required: boolean;
+            /** Attendance Min Percent */
+            attendance_min_percent?: number | null;
+            /**
+             * Report Due Weekday
+             * @description 0 = måndag … 6 = söndag
+             */
+            report_due_weekday?: number | null;
+        };
+        /** ClassCreate */
+        ClassCreate: {
+            /** Name */
+            name: string;
+        };
+        /** ClassDetail */
+        ClassDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * School Id
+             * Format: uuid
+             */
+            school_id: string;
+            /** Teachers */
+            teachers: components["schemas"]["PersonRead"][];
+            /** Students */
+            students: components["schemas"]["PersonRead"][];
+            apl_terms: components["schemas"]["AplTerms"];
+        };
+        /** ClassSummary */
+        ClassSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Student Count */
+            student_count: number;
+            /** Teacher Names */
+            teacher_names: string[];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -166,6 +431,28 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** PersonRead */
+        PersonRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+        };
+        /** Ref */
+        Ref: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** SchoolAccountCreate */
         SchoolAccountCreate: {
@@ -204,6 +491,56 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** StudentCreate */
+        StudentCreate: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /** Teacher Ids */
+            teacher_ids?: string[];
+            /** Class Ids */
+            class_ids?: string[];
+        };
+        /** StudentLink */
+        StudentLink: {
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+        };
+        /** StudentRead */
+        StudentRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** School Name */
+            school_name: string | null;
+            /** Classes */
+            classes: components["schemas"]["Ref"][];
+            /** Teachers */
+            teachers: components["schemas"]["Ref"][];
+        };
+        /** TeacherAssign */
+        TeacherAssign: {
+            /**
+             * Teacher Id
+             * Format: uuid
+             */
+            teacher_id: string;
+        };
+        /** TeachersSet */
+        TeachersSet: {
+            /** Teacher Ids */
+            teacher_ids: string[];
         };
         /** UserRead */
         UserRead: {
@@ -484,6 +821,387 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_classes_api_classes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassSummary"][];
+                };
+            };
+        };
+    };
+    create_class_api_classes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_class_api_classes__class_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_student_api_classes__class_id__students_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentLink"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_student_api_classes__class_id__students__student_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_teacher_api_classes__class_id__teachers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeacherAssign"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unassign_teacher_api_classes__class_id__teachers__teacher_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                teacher_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_apl_terms_api_classes__class_id__apl_terms_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AplTerms"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_students_api_students_get: {
+        parameters: {
+            query?: {
+                /** @description Sök på namn eller e-post */
+                q?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_student_api_students_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_student_api_students__student_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_teachers_api_students__student_id__teachers_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeachersSet"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentRead"];
                 };
             };
             /** @description Validation Error */

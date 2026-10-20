@@ -18,7 +18,7 @@ export const roleLabel: Record<Role, string> = {
 /** Startsidan för varje roll. Dit skickas användaren efter inloggning. */
 export const startPath: Record<Role, string> = {
   superadmin: '/admin/schools',
-  school_admin: '/users',
+  school_admin: '/students',
   principal: '/school',
   syv: '/students',
   teacher: '/overview',
@@ -26,8 +26,20 @@ export const startPath: Record<Role, string> = {
   supervisor: '/my-students',
 }
 
-const { overview, messages, history, projects, placements, contracts, users, schools, students, reports, checkIn } =
-  navIcons
+const {
+  overview,
+  messages,
+  history,
+  projects,
+  placements,
+  contracts,
+  users,
+  schools,
+  students,
+  reports,
+  checkIn,
+  classes,
+} = navIcons
 
 // Siffrorna i lärarens meny kommer från demodatan tills backend har API:erna (F11).
 export const navByRole: Record<Role, NavItem[]> = {
@@ -50,6 +62,8 @@ export const navByRole: Record<Role, NavItem[]> = {
     { to: '/messages', label: 'Meddelanden', icon: messages },
   ],
   school_admin: [
+    { to: '/students', label: 'Elever', icon: students },
+    { to: '/classes', label: 'Klasser', icon: classes },
     { to: '/users', label: 'Användare', icon: users },
     { to: '/placements', label: 'Praktikplatser', icon: placements },
     { to: '/contracts', label: 'Kontrakt', icon: contracts },
@@ -57,6 +71,8 @@ export const navByRole: Record<Role, NavItem[]> = {
   ],
   principal: [
     { to: '/school', label: 'Översikt', icon: overview },
+    { to: '/students', label: 'Elever', icon: students },
+    { to: '/classes', label: 'Klasser', icon: classes },
     { to: '/users', label: 'Användare', icon: users },
     { to: '/admin-reports', label: 'Rapporter', icon: reports },
   ],

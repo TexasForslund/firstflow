@@ -22,6 +22,7 @@ export interface SidebarClass {
 interface AppShellProps {
   userName: string
   nav: NavItem[]
+  /** Lärarens klasser i sidomenyn. Utelämna för roller utan egna klasser. */
   classes?: SidebarClass[]
   onLogout: () => void
 }
@@ -86,15 +87,19 @@ export function AppShell({ userName, nav, classes, onLogout }: AppShellProps) {
             <h2 id="your-classes" className={styles.sectionLabel}>
               Dina klasser
             </h2>
+            {classes.length === 0 && <p className={styles.noClasses}>Du har inga klasser än.</p>}
             <ul>
               {classes.map((cls) => (
                 <li key={cls.id}>
-                  <Link to={`/student-history?class=${cls.id}`} className={styles.classItem}>
+                  <NavLink
+                    to={`/classes/${cls.id}`}
+                    className={({ isActive }) => `${styles.classItem} ${isActive ? styles.active : ''}`}
+                  >
                     <span>{cls.name}</span>
                     <span className={styles.classCount} aria-label={`${cls.count} elever`}>
                       {cls.count}
                     </span>
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
             </ul>

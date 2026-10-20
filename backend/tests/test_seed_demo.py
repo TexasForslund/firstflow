@@ -2,6 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.school import School
+from app.models.school_class import SchoolClass
 from app.models.user import User, UserRole
 from scripts.seed_demo import seed
 
@@ -24,3 +25,9 @@ def test_seed_creates_every_role_and_is_repeatable(db: Session) -> None:
         ).all()
     )
     assert per_school == {"Kramforsskolan": 14, "Umeåskolan": 14}
+
+    classes = db.scalars(select(SchoolClass).join(School).where(School.name == "Kramforsskolan"))
+    assert sorted((c.name, len(c.students), len(c.teachers)) for c in classes) == [
+        ("EE21", 5, 1),
+        ("EE22", 5, 1),
+    ]
