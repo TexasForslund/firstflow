@@ -1,0 +1,72 @@
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--space-8) var(--space-4);
+  background: var(--color-sidebar);
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-8);
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--space-10);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-section);
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.submit {
+  width: 100%;
+  min-height: 3rem;
+  margin-top: var(--space-2);
+}
+
+.error {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-attention-bg);
+  border-radius: var(--radius-sm);
+  color: var(--color-attention);
+  font-size: var(--font-size-base);
+}
+
+.note {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 480px) {
+  .page {
+    place-items: start center;
+    background: var(--color-bg);
+  }
+
+  .panel {
+    padding: var(--space-6) 0;
+    border: none;
+  }
+}

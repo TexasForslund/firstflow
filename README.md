@@ -68,7 +68,7 @@ Fyll databasen med demokonton (två skolor med alla roller, lösenord `demo-firs
 
     docker compose exec backend uv run python -m scripts.seed_demo
 
-Lärarvyn visar demodata tills inloggningen (F2) är klar.
+Logga in på http://localhost:5173 med till exempel `larare.kramfors@demo.firstflow.se` (lärare), `admin.kramfors@demo.firstflow.se` (skoladmin) eller `superadmin@demo.firstflow.se`. Lösenordet är `demo-firstflow`. Lärarens vyer visar fortfarande påhittad data tills klasser och redovisningar är byggda.
 
 Närmaste nästa steg
 Färdigställ webbplatsen
