@@ -1,6 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.models.report import FormVersion
 from app.models.school import School
 from app.models.school_class import SchoolClass
 from app.models.user import User, UserRole
@@ -31,3 +32,13 @@ def test_seed_creates_every_role_and_is_repeatable(db: Session) -> None:
         ("EE21", 5, 1),
         ("EE22", 5, 1),
     ]
+
+
+def test_seed_gives_every_class_a_published_form(db: Session) -> None:
+    seed(db)
+    classes = db.scalars(select(SchoolClass).join(School).where(School.name == "Kramforsskolan"))
+    for school_class in classes:
+        version = db.scalar(select(FormVersion).where(FormVersion.class_id == school_class.id))
+        assert version is not None
+        assert len(version.questions) == 6
+        assert school_class.report_due_weekdays == [1, 4]

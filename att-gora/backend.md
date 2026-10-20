@@ -114,7 +114,7 @@ Viktigast från genomgången:
 - En inskickad redovisning går inte att ändra. Elev, lärare och handledare kan kommentera den.
 - Extra frågor för enskilda elever, och projektval när B12 finns.
 
-**B5a, backend för frågor och redovisning** 🚧 [PR #14](https://github.com/TexasForslund/firstflow/pull/14):
+**B5a, backend för frågor och redovisning** ✅ Klar (PR #14):
 - Klassens formulär: utkast, "Publicera ändringar" och "Kasta ändringar". Varje publicering blir en ny version.
 - Frågetyper: kort text, fritext, flerval (med flera val och Annat), ja/nej, betyg 1–5 och meddelande. Logik som hoppar framåt eller till slutet.
 - Eleven: redovisningsdagarna fyra veckor bakåt, en redovisning per vald dag, svar sparas vid Nästa, skicka in. Inskickad redovisning är låst.

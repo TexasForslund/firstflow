@@ -147,4 +147,14 @@ Ersätt `src/demo/data.ts` med riktiga anrop: veckoredovisningar, meddelanden, p
 
 Väntar på: B3, B12 och B5.
 
-Koppla in det som redan har en plats i klassvyn: "Tilldela praktikplats" och projekt i varje elevrad under fliken Elever, och valet av frågor under fliken Frågor (B5, planeras med Texas).
+Koppla in det som redan har en plats i klassvyn: "Tilldela praktikplats" och projekt i varje elevrad under fliken Elever, och valet av frågor under fliken Frågor (byggs i F13).
+
+---
+
+## F13. Frågor och veckoredovisning (B5) 🚧
+
+Bygger på B5a (PR #14) och [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md). Tre delar, en PR var:
+
+1. **Lärarens frågebyggare** 🚧: fliken Frågor i klassvyn. Frågelista med dra och släpp, frågan i mitten där läraren skriver direkt, inställningar och logik till höger, menyn Lägg till fråga, autosparning, Publicera ändringar och Kasta ändringar. Rektor och superadmin ser frågorna utan att kunna ändra.
+2. **Elevens redovisning** ⬜: mobilen först, i stil med Snapchat och Instagram men i Firstflows designprofil (Texas, 2026-10-20). En fråga i taget med Föregående, Nästa och Skicka in, animationerna från fragor-typeform.md och en slutskärm. Inskickad redovisning blir ett inlägg med kommentarer. Ingen skiss än, justeras när Texas skissat.
+3. **Läraren läser redovisningarna** ⬜: fliken Redovisningar i klassvyn, olästa först, och redovisningen enligt [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) med kommentarer.
