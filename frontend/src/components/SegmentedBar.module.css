@@ -1,0 +1,15 @@
+.bar {
+  display: flex;
+  gap: var(--space-2);
+  height: 0.25rem;
+}
+
+.bar span {
+  flex-basis: 0;
+  border-radius: var(--radius-full);
+  min-width: 0.75rem;
+}
+
+.present { background: var(--color-success-bar); }
+.absent { background: var(--color-error-bar); }
+.rest { background: var(--color-track); }

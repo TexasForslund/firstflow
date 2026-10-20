@@ -1,6 +1,6 @@
 # Backend – att göra
 
-Ägare: Hannes. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
+Ägare: Se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md). B1b och B2 görs av Texas + Claude, B3–B6 av Hannes + Claude. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
 
 Gäller alla uppgifter:
 
@@ -17,7 +17,7 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 ---
 
-## B1b. Multi-tenant och rollmodell ⬜
+## B1b. Multi-tenant och rollmodell ⬜ (Texas + Claude)
 
 **Måste göras innan B2.** Läs [docs/multi-tenant-och-roller.md](../docs/multi-tenant-och-roller.md) — det är hela specen.
 
@@ -35,7 +35,7 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 ---
 
-## B2. Klasser och elever ⬜
+## B2. Klasser och elever ⬜ (Texas + Claude)
 
 Låser upp: F3 (klassvy och elevvy).
 
@@ -106,9 +106,16 @@ Låser upp: F5.
 
 ---
 
-## B5. Frågor och redovisning ⬜
+## B5. Frågor och veckoredovisning ⬜
 
 Läraren skapar frågor, tilldelar dem till en klass, eleven svarar och läraren granskar. Detaljeras när B4 är klar.
+
+Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png) visar vad som behövs:
+
+- En veckoredovisning hör till en elev, en vecka och ett projekt (se B12).
+- Fyra frågetyper: bilder (uppladdning), fritext, flerval (t.ex. Ja/Nej/Vet inte) och betyg 1–5.
+- Läraren ser olästa redovisningar på översikten, så redovisningen behöver statusen läst/oläst per lärare.
+- Bilagor räknas per redovisning ("Bilagor (2)").
 
 ---
 
@@ -203,3 +210,27 @@ Se detaljerad spec i [docs/mellanarkiv-dataexport.md](../docs/mellanarkiv-dataex
    - `POST /api/admin/export` → `{job_id}`
    - `GET /api/admin/export/{job_id}/status`
    - `GET /api/admin/export/{job_id}/download` → ZIP-fil
+
+---
+
+## B11. Meddelanden ⬜
+
+Ägare: bestäms. Tillagd från lärarskisserna ([larare-oversikt.png](../docs/design/larare-oversikt.png)).
+
+Trådar mellan lärare och elev, och mellan lärare och handledare. Antal olästa per tråd och totalt (visas i menyn). Senaste meddelandet förhandsvisas på översikten. Detaljeras innan start.
+
+---
+
+## B12. Projekt ⬜
+
+Ägare: bestäms. Tillagd från lärarskisserna.
+
+Läraren skapar projekt och tilldelar dem till elever. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
+
+---
+
+## B13. "Behöver uppmärksamhet" ⬜
+
+Ägare: bestäms. Tillagd från lärarskisserna.
+
+Ett endpoint som ger lärarens lista över saker att följa upp, viktigast först: upprepad frånvaro som inte är anmäld, saknade veckoredovisningar, närvaro som handledaren inte bekräftat och kontrakt som saknar underskrift. Bygger på B4, B5 och avtalshanteringen (B8).

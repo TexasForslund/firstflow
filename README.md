@@ -52,6 +52,21 @@ Fas	Huvudmål	Nyckelresultat
 3. Bedömningsstöd	Strukturera utbildningsunderlag	Moment, progression och bedömningsvy
 4. Integrationer	Minska dubbelarbete	API + skolplattformar
 5. Arbetsliv	Skapa värde efter APL	Erfarenhetsprofil och CV
+Kör Firstflow lokalt
+
+Kräver Docker Desktop och git.
+
+    git clone https://github.com/TexasForslund/firstflow.git
+    cd firstflow
+    git checkout feat/arbetsuppdelning-och-f1-start   # tills PR #6 är mergad
+    docker compose up --build
+
+Öppna sedan http://localhost:5173. API-dokumentationen finns på http://localhost:8000/docs.
+
+Första starten tar några minuter. Därefter räcker `docker compose up`. Kodändringar syns direkt utan omstart. Stoppa med Ctrl+C, eller `docker compose down`.
+
+Lärarvyn visar demodata tills inloggningen (F2) är klar.
+
 Närmaste nästa steg
 Färdigställ webbplatsen
 Färdigställ demon

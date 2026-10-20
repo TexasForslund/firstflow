@@ -1,4 +1,9 @@
-# Lokal utvecklingsdatabas. Starta med: docker compose up -d db
+# Hela Firstflow lokalt: docker compose up
+#   Appen:  http://localhost:5173
+#   API:t:  http://localhost:8000/docs
+#
+# Bara databasen (om du kör backend och frontend utanför Docker):
+#   docker compose up -d db
 services:
   db:
     image: postgres:17
@@ -10,6 +15,38 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U firstflow"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  backend:
+    build: ./backend
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://firstflow:firstflow@db:5432/firstflow
+      CORS_ORIGINS: '["http://localhost:5173"]'
+      SESSION_COOKIE_SECURE: "false"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app # kodändringar laddas om direkt
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # behåll containerns node_modules
+    depends_on:
+      - backend
 
 volumes:
   db-data:
