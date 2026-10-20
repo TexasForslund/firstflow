@@ -25,9 +25,13 @@ CanCreateSchoolUsers = Annotated[
 
 
 def _require_school(db: DbSession, user: User, school_id: UUID) -> None:
-    """Samma skola som användaren (eller superadmin), och skolan måste finnas."""
+    """Samma skola som användaren (eller superadmin), och skolan måste finnas.
+
+    En avstängd skola syns bara för superadmin.
+    """
     require_same_school(user, school_id)
-    if db.get(School, school_id) is None:
+    school = db.get(School, school_id)
+    if school is None or (not school.is_active and user.role != UserRole.SUPERADMIN):
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
 
 

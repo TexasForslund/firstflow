@@ -29,7 +29,8 @@ class LoginRequest(BaseModel):
 def login(body: LoginRequest, db: DbSession, response: Response) -> User:
     user = db.scalar(select(User).where(User.email == normalize_email(body.email)))
     password_ok = verify_password(body.password, user.password_hash if user else None)
-    if user is None or not password_ok or not user.is_active:
+    school_active = user is None or user.school is None or user.school.is_active
+    if user is None or not password_ok or not user.is_active or not school_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Fel e-post eller lösenord")
 
     now = datetime.now(UTC)

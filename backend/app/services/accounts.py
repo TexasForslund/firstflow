@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import normalize_email
@@ -45,7 +46,11 @@ def create_account(
     school_id: UUID | None,
     password_hash: str = NO_PASSWORD,
 ) -> User:
-    """Skapar ett konto. Svarar 409 om e-postadressen redan används."""
+    """Skapar ett konto. Svarar 409 om e-postadressen redan används.
+
+    E-post är unik i hela Firstflow, så 409 avslöjar att adressen har ett konto, även på en
+    annan skola. Det går inte att undvika utan att släppa unikheten och är ett medvetet val.
+    """
     if (role in ROLES_WITHOUT_SCHOOL) != (school_id is None):
         raise ValueError(
             f"Rollen {role} kräver {'ingen' if role in ROLES_WITHOUT_SCHOOL else 'en'} skola"
@@ -56,6 +61,15 @@ def create_account(
             status.HTTP_409_CONFLICT, detail="Det finns redan ett konto med den e-postadressen"
         )
     user = User(email=email, name=name, role=role, school_id=school_id, password_hash=password_hash)
+    savepoint = db.begin_nested()
     db.add(user)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        # Två samtidiga anrop med samma e-post: det andra hamnar här.
+        savepoint.rollback()
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="Det finns redan ett konto med den e-postadressen"
+        ) from None
+    savepoint.commit()
     return user

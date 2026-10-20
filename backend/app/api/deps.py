@@ -5,11 +5,12 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyCookie
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from app.core.config import settings
 from app.core.security import hash_session_token
 from app.db.session import DbSession
+from app.models.school import School
 from app.models.user import User, UserRole, UserSession
 
 session_cookie = APIKeyCookie(name=settings.session_cookie_name, auto_error=False)
@@ -18,16 +19,19 @@ session_cookie = APIKeyCookie(name=settings.session_cookie_name, auto_error=Fals
 def get_current_user(db: DbSession, token: Annotated[str | None, Depends(session_cookie)]) -> User:
     """Den inloggade användaren.
 
-    Svarar 401 om sessionen saknas, har gått ut eller om kontot är avstängt.
+    Svarar 401 om sessionen saknas, har gått ut, om kontot är avstängt eller om
+    användarens skola är avstängd.
     """
     if token:
         user = db.scalar(
             select(User)
             .join(UserSession)
+            .outerjoin(School, User.school_id == School.id)
             .where(
                 UserSession.token_hash == hash_session_token(token),
                 UserSession.expires_at > datetime.now(UTC),
                 User.is_active,
+                or_(User.school_id.is_(None), School.is_active),
             )
         )
         if user is not None:

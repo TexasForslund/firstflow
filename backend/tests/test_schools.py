@@ -1,12 +1,17 @@
 """Tenantskydd: en skolas användare syns och skapas bara av den egna skolan."""
 
 from collections.abc import Callable
+from unittest.mock import patch
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.models.school import School
 from app.models.user import User, UserRole
+from app.services.accounts import create_account
+from tests.conftest import PASSWORD
 
 MakeUser = Callable[..., User]
 MakeSchool = Callable[..., School]
@@ -135,6 +140,8 @@ def test_create_account_with_taken_email(
 ) -> None:
     kramfors, _ = two_schools
     login(make_user(email="admin@kramfors.se", role=UserRole.SCHOOL_ADMIN, in_school=kramfors))
+    # E-post är unik i hela Firstflow. 409 avslöjar därför att adressen finns på en annan
+    # skola. Det är ett medvetet val, se docs/multi-tenant-och-roller.md.
     response = client.post(
         f"/api/schools/{kramfors.id}/users",
         json={"email": "larare@umea.se", "name": "Dubblett", "role": "teacher"},
@@ -179,3 +186,73 @@ def test_school_endpoints_require_login(
 ) -> None:
     kramfors, _ = two_schools
     assert client.get(f"/api/schools/{kramfors.id}/users").status_code == 401
+
+
+def test_inactive_school_blocks_its_users(
+    client: TestClient,
+    db: Session,
+    make_user: MakeUser,
+    login: Login,
+    two_schools: tuple[School, School],
+) -> None:
+    """En avstängd skola: inloggade användare kastas ut och nya inloggningar nekas."""
+    kramfors, _ = two_schools
+    admin = make_user(email="admin@kramfors.se", role=UserRole.SCHOOL_ADMIN, in_school=kramfors)
+    login(admin)
+    assert client.get(f"/api/schools/{kramfors.id}/users").status_code == 200
+
+    kramfors.is_active = False
+    db.flush()
+
+    assert client.get("/api/auth/me").status_code == 401
+    assert client.get(f"/api/schools/{kramfors.id}/users").status_code == 401
+    response = client.post("/api/auth/login", json={"email": admin.email, "password": PASSWORD})
+    assert response.status_code == 401
+
+
+def test_superadmin_still_sees_inactive_school(
+    client: TestClient,
+    db: Session,
+    make_user: MakeUser,
+    login: Login,
+    two_schools: tuple[School, School],
+) -> None:
+    kramfors, _ = two_schools
+    kramfors.is_active = False
+    db.flush()
+    login(make_user(email="sa@firstflow.se", role=UserRole.SUPERADMIN))
+    assert client.get(f"/api/schools/{kramfors.id}/users").status_code == 200
+
+
+def test_taken_email_is_case_insensitive(
+    client: TestClient, make_user: MakeUser, login: Login, two_schools: tuple[School, School]
+) -> None:
+    kramfors, _ = two_schools
+    login(make_user(email="admin@kramfors.se", role=UserRole.SCHOOL_ADMIN, in_school=kramfors))
+    response = client.post(
+        f"/api/schools/{kramfors.id}/users",
+        json={"email": "LARARE@Kramfors.se", "name": "Dubblett", "role": "teacher"},
+    )
+    assert response.status_code == 409
+
+
+def test_invalid_role_filter(
+    client: TestClient, make_user: MakeUser, login: Login, two_schools: tuple[School, School]
+) -> None:
+    kramfors, _ = two_schools
+    login(make_user(email="admin@kramfors.se", role=UserRole.SCHOOL_ADMIN, in_school=kramfors))
+    response = client.get(f"/api/schools/{kramfors.id}/users", params={"role": "hackare"})
+    assert response.status_code == 422
+
+
+def test_concurrent_duplicate_email_gives_409(db: Session, school: School) -> None:
+    """Om två anrop hinner förbi kontrollen samtidigt ger det andra 409, inte 500."""
+    create_account(db, email="samma@skola.se", name="A", role=UserRole.TEACHER, school_id=school.id)
+    # Låtsas att kontrollen inte såg det första kontot, som när två anrop körs samtidigt.
+    with patch.object(db, "scalar", return_value=None):
+        with pytest.raises(HTTPException) as error:
+            create_account(
+                db, email="samma@skola.se", name="B", role=UserRole.TEACHER, school_id=school.id
+            )
+    assert error.value.status_code == 409
+    assert db.get(School, school.id) is not None  # sessionen går fortfarande att använda

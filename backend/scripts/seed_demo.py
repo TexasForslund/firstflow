@@ -4,7 +4,8 @@ Kör från backend/ (eller i Docker: docker compose exec backend uv run python -
     uv run python -m scripts.seed_demo
 
 Alla demokonton har lösenordet demo-firstflow. Skriptet kan köras flera gånger:
-konton och skolor som redan finns hoppas över. Det vägrar köra när ENVIRONMENT=production.
+konton och skolor som redan finns hoppas över. Det körs bara när ENVIRONMENT är
+development eller test.
 Klasser läggs till i B2 och placeringar i B3.
 """
 
@@ -21,6 +22,7 @@ from app.models.user import User, UserRole
 from app.services.accounts import create_account
 
 DEMO_PASSWORD = "demo-firstflow"
+ALLOWED_ENVIRONMENTS = {"development", "test"}
 DOMAIN = "demo.firstflow.se"
 
 SCHOOLS = {
@@ -107,8 +109,8 @@ def seed(db: Session) -> list[tuple[str, str, str]]:
 
 
 def main() -> None:
-    if settings.environment == "production":
-        sys.exit("seed_demo körs inte i produktion.")
+    if settings.environment not in ALLOWED_ENVIRONMENTS:
+        sys.exit(f"seed_demo körs bara i {', '.join(sorted(ALLOWED_ENVIRONMENTS))}.")
     with SessionLocal() as db:
         created = seed(db)
         db.commit()

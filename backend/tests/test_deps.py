@@ -72,3 +72,11 @@ def test_require_same_school(
         assert error.value.status_code == 404
     with pytest.raises(HTTPException):
         require_same_school(teacher, uuid.uuid4())
+
+
+def test_require_same_school_for_user_without_school() -> None:
+    """Äldre konton (före B1b) kan ha en skolroll men ingen skola. De får aldrig åtkomst."""
+    legacy_teacher = User(role=UserRole.TEACHER, school_id=None)
+    with pytest.raises(HTTPException) as error:
+        require_same_school(legacy_teacher, uuid.uuid4())
+    assert error.value.status_code == 404
