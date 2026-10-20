@@ -1,12 +1,12 @@
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, select
 
 from app.api.deps import CurrentUser, session_cookie
+from app.api.schemas import UserRead
 from app.core.config import settings
 from app.core.security import (
     hash_session_token,
@@ -15,7 +15,7 @@ from app.core.security import (
     verify_password,
 )
 from app.db.session import DbSession
-from app.models.user import User, UserRole, UserSession
+from app.models.user import User, UserSession
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,18 +25,12 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=200)
 
 
-class UserRead(BaseModel):
-    id: UUID
-    email: str
-    name: str
-    role: UserRole
-
-
 @router.post("/login", response_model=UserRead)
 def login(body: LoginRequest, db: DbSession, response: Response) -> User:
     user = db.scalar(select(User).where(User.email == normalize_email(body.email)))
     password_ok = verify_password(body.password, user.password_hash if user else None)
-    if user is None or not password_ok or not user.is_active:
+    school_active = user is None or user.school is None or user.school.is_active
+    if user is None or not password_ok or not user.is_active or not school_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Fel e-post eller lösenord")
 
     now = datetime.now(UTC)

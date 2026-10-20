@@ -6,13 +6,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.models.school import School
 from app.models.user import User, UserRole, UserSession
 from tests.conftest import PASSWORD
 
 MakeUser = Callable[..., User]
 
 
-def test_login_sets_cookie_and_me_returns_user(client: TestClient, make_user: MakeUser) -> None:
+def test_login_sets_cookie_and_me_returns_user(
+    client: TestClient, make_user: MakeUser, school: School
+) -> None:
     user = make_user(role=UserRole.STUDENT)
 
     response = client.post("/api/auth/login", json={"email": user.email, "password": PASSWORD})
@@ -22,6 +25,8 @@ def test_login_sets_cookie_and_me_returns_user(client: TestClient, make_user: Ma
         "email": "larare@skola.se",
         "name": "Testperson",
         "role": "student",
+        "school_id": str(school.id),
+        "school_name": "Testskolan",
     }
     cookie = response.headers["set-cookie"]
     assert settings.session_cookie_name in cookie
@@ -122,3 +127,13 @@ def test_session_token_is_stored_hashed(
     session = db.scalar(select(UserSession).where(UserSession.user_id == user.id))
     assert session is not None
     assert session.token_hash != token
+
+
+def test_me_has_no_school_for_superadmin(
+    client: TestClient, make_user: MakeUser, login: Callable[[User], None]
+) -> None:
+    login(make_user(email="admin@firstflow.se", role=UserRole.SUPERADMIN))
+    body = client.get("/api/auth/me").json()
+    assert body["role"] == "superadmin"
+    assert body["school_id"] is None
+    assert body["school_name"] is None

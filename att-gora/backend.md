@@ -17,7 +17,7 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 ---
 
-## B1b. Multi-tenant och rollmodell ⬜ (Texas + Claude)
+## B1b. Multi-tenant och rollmodell ✅ Klar (PR #7, Texas + Claude)
 
 **Måste göras innan B2.** Läs [docs/multi-tenant-och-roller.md](../docs/multi-tenant-och-roller.md) — det är hela specen.
 
@@ -33,6 +33,8 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 
 **Klart när:** migrering går igenom, tester täcker att en lärare på skola A inte kan se data från skola B (404), och `seed_demo.py` skapar alla roller.
 
+**Byggt utöver specen:** `GET/POST /api/schools/{school_id}/users`. Skoladmin listar och skapar rektor, SYV, lärare och elever på sin egen skola. Rektor kan lista. Används också i testerna för tenantskyddet. Nya konton har inget lösenord förrän inbjudan finns (B6). Lösenord kan sättas med `create_user`.
+
 ---
 
 ## B2. Klasser och elever ⬜ (Texas + Claude)
@@ -40,6 +42,8 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 Låser upp: F3 (klassvy och elevvy).
 
 **Mål:** En lärare ser sina klasser, skapar en klass och lägger till elever.
+
+**Efter B1b:** klasser hör till en skola (`school_id` på `SchoolClass`). Varje endpoint anropar `require_same_school`. Elever kan redan skapas av skoladmin via `POST /api/schools/{school_id}/users`, så `POST /api/classes/{class_id}/students` kan koppla befintliga elever i stället för att skapa nya. `seed_demo.py` skapar redan skolor, personal och elever: B2 lägger till klasserna.
 
 **Gör så här**
 

@@ -88,6 +88,8 @@ Firstflow hanterar personuppgifter om elever, ofta minderåriga.
 - Varje endpoint som rör elevdata ska kontrollera att användaren har rätt roll och rätt koppling till eleven.
 - Inloggad användare: `user: CurrentUser` från `app/api/deps.py`. Rollkrav: `Annotated[User, Depends(require_roles(UserRole.TEACHER))]`. Rollen räcker inte för elevdata, kopplingen till eleven måste också kontrolleras.
 - Inloggningen är en httpOnly-cookie (`firstflow_session`). Frontend skickar den automatiskt eftersom `/api` går via samma origin.
-- Konton skapas tills vidare med `uv run python -m scripts.create_user --email ... --name ... --role teacher|student|supervisor`.
+- **Multi-tenant:** varje skola är en tenant. Varje endpoint som rör en skolas data anropar `require_same_school(user, school_id)` från `app/api/deps.py` utöver rollkontrollen. Se [docs/multi-tenant-och-roller.md](docs/multi-tenant-och-roller.md).
+- Ingen kan registrera sig själv. Konton skapas uppifrån: superadmin skapar skolor och skoladmins, skoladmin skapar personal och elever. Använd `create_account` i `app/services/accounts.py`.
+- Konton kan skapas med `uv run python -m scripts.create_user --email ... --name ... --role <roll> --school-id <uuid>` (`--list-schools` visar id:n). Demodata: `uv run python -m scripts.seed_demo`.
 - Hemligheter ligger i `.env` och committas aldrig. `.env.example` visar vilka variabler som finns.
 - Logga aldrig personnummer, namn eller annan elevdata.

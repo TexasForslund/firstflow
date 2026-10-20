@@ -58,12 +58,15 @@ Kräver Docker Desktop och git.
 
     git clone https://github.com/TexasForslund/firstflow.git
     cd firstflow
-    git checkout feat/arbetsuppdelning-och-f1-start   # tills PR #6 är mergad
     docker compose up --build
 
 Öppna sedan http://localhost:5173. API-dokumentationen finns på http://localhost:8000/docs.
 
 Första starten tar några minuter. Därefter räcker `docker compose up`. Kodändringar syns direkt utan omstart. Stoppa med Ctrl+C, eller `docker compose down`.
+
+Fyll databasen med demokonton (två skolor med alla roller, lösenord `demo-firstflow`) i ett nytt terminalfönster medan appen är igång:
+
+    docker compose exec backend uv run python -m scripts.seed_demo
 
 Lärarvyn visar demodata tills inloggningen (F2) är klar.
 

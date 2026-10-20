@@ -1,6 +1,6 @@
 # Multi-tenant och rollmodell
 
-**Status:** Arkitekturbeslut — implementeras innan B2  
+**Status:** Implementerad i B1b (PR #7)  
 **Påverkar:** Hela systemet. Läs detta innan du skriver någon ny model eller endpoint.
 
 ---
@@ -32,7 +32,7 @@ superadmin          Firstflow-teamet. Skapar skolor och skoladmins. Ser allt.
 | Vem | Kan skapa |
 |---|---|
 | `superadmin` | Skolor, `school_admin`-konton |
-| `school_admin` | `principal`, `syv`, `teacher` inom sin skola |
+| `school_admin` | `principal`, `syv`, `teacher` och `student` inom sin skola |
 | `teacher` | Bjuder in `student` till en klass (via inbjudningslänk) |
 | `teacher` | Bjuder in `supervisor` i samband med en placering |
 
@@ -105,7 +105,22 @@ GET  /api/superadmin/schools                        # Lista alla skolor
 POST /api/superadmin/schools/{school_id}/admins     # Skapa school_admin för en skola
 ```
 
-Dessa endpoints kräver `superadmin`-rollen. Konton skapas tills vidare via skript:
+Dessa endpoints kräver `superadmin`-rollen.
+
+En skolas användare:
+
+```
+GET  /api/schools/{school_id}/users?role=           # school_admin, principal, superadmin
+POST /api/schools/{school_id}/users                 # school_admin, superadmin: principal, syv, teacher, student
+```
+
+Databasen har villkoret `ck_users_school_matches_role`: superadmin och handledare har ingen skola, alla andra roller har en. Villkoret gäller nya och ändrade konton.
+
+### Beslut och kända begränsningar
+
+- **Avstängd skola** (`is_active = false`): skolans användare kan inte logga in, och inloggade sessioner slutar gälla. Bara superadmin ser skolan.
+- **E-post är unik i hela Firstflow.** Försöker en skoladmin skapa ett konto med en adress som redan finns, även på en annan skola, blir svaret 409. Det avslöjar att adressen har ett konto. Det är ett medvetet val: alternativet är att samma person kan ha flera konton. Begränsning av antal försök läggs till i B6.
+- **Konton från före B1b:** lärare och elever som skapades innan skolorna fanns saknar skola. De får aldrig åtkomst till någon skolas data, men de kan inte ändras förrän de flyttats till en skola, eftersom villkoret i databasen gäller vid varje ändring. Flytta eller ta bort dem innan första pilotskolan startar, och kör sedan `ALTER TABLE users VALIDATE CONSTRAINT ck_users_school_matches_role`. Konton skapas tills vidare via skript:
 
 ```bash
 uv run python -m scripts.create_user \
