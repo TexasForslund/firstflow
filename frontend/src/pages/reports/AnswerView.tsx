@@ -2,7 +2,7 @@ import { Send, Star } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import type { Question } from '../../api/forms'
-import { useAddComment, type ReportDetail } from '../../api/reports'
+import { useAddComment, type AnswerRead, type ReportDetail } from '../../api/reports'
 import { Avatar } from '../../components'
 import { answerText } from './answers'
 import styles from './AnswerView.module.css'
@@ -22,32 +22,41 @@ export function AnswerView({ report }: { report: ReportDetail }) {
           <div key={question.id} className={styles.item}>
             <dt className={styles.question}>{question.title}</dt>
             <dd className={styles.answer}>
-              {!answer ? (
-                <span className={styles.none}>Inget svar</span>
-              ) : question.type === 'rating' ? (
-                <span className={styles.stars} aria-label={`${answer.rating} av 5`}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <Star key={n} aria-hidden="true" className={n <= (answer.rating ?? 0) ? styles.starOn : styles.starOff} />
-                  ))}
-                </span>
-              ) : question.type === 'choice' || question.type === 'yes_no' ? (
-                <span className={styles.chips}>
-                  {answerText(question, answer)
-                    .split(', ')
-                    .map((label) => (
-                      <span key={label} className={styles.chip}>
-                        {label}
-                      </span>
-                    ))}
-                </span>
-              ) : (
-                <p className={styles.text}>{answer.text}</p>
-              )}
+              <AnswerContent question={question} answer={answer} />
             </dd>
           </div>
         )
       })}
     </dl>
+  )
+}
+
+/** Ett svar: text, alternativ som etiketter eller betyg som stjärnor. */
+export function AnswerContent({ question, answer }: { question: Question; answer: AnswerRead | undefined }) {
+  return (
+    <>
+      {!answer ? (
+        <span className={styles.none}>Inget svar</span>
+      ) : question.type === 'rating' ? (
+        <span className={styles.stars} aria-label={`${answer.rating} av 5`}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star key={n} aria-hidden="true" className={n <= (answer.rating ?? 0) ? styles.starOn : styles.starOff} />
+          ))}
+        </span>
+      ) : question.type === 'choice' || question.type === 'yes_no' ? (
+        <span className={styles.chips}>
+          {answerText(question, answer)
+            .split(', ')
+            .map((label) => (
+              <span key={label} className={styles.chip}>
+                {label}
+              </span>
+            ))}
+        </span>
+      ) : (
+        <p className={styles.text}>{answer.text}</p>
+      )}
+    </>
   )
 }
 

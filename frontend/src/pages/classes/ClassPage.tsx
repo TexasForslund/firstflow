@@ -11,22 +11,27 @@ import {
   useUnassignTeacher,
   type Person,
 } from '../../api/classes'
+import { useClassReports } from '../../api/reports'
 import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, Card, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
 import { AplTermsForm } from './AplTermsForm'
+import { ClassReports } from './ClassReports'
 import { FormBuilder } from './questions/FormBuilder'
 import { aplSummary } from './aplTerms'
 import styles from './Classes.module.css'
 
-type TabId = 'students' | 'terms' | 'questions' | 'teachers'
+type TabId = 'students' | 'reports' | 'terms' | 'questions' | 'teachers'
 
 export function ClassPage() {
   const { classId = '' } = useParams()
   const { data: user } = useCurrentUser()
   const query = useClass(classId)
   const [params, setParams] = useSearchParams()
+  // Bara läraren läser redovisningarna. Antalet olästa visas på fliken.
+  const isTeacher = user?.role === 'teacher'
+  const unread = useClassReports(classId, { unreadOnly: true }, isTeacher)
 
   if (query.isPending) return <p className={styles.state}>Laddar klassen…</p>
   if (query.isError) return <NotFound what="Klassen" />
@@ -38,6 +43,7 @@ export function ClassPage() {
 
   const tabs: { id: TabId; label: string; count?: number }[] = [
     { id: 'students', label: 'Elever', count: cls.students.length },
+    ...(isTeacher ? [{ id: 'reports' as const, label: 'Redovisningar', count: unread.data?.length || undefined }] : []),
     { id: 'terms', label: 'APL-villkor' },
     { id: 'questions', label: 'Frågor' },
     ...(canAssignTeachers ? [{ id: 'teachers' as const, label: 'Lärare', count: cls.teachers.length }] : []),
@@ -97,6 +103,7 @@ export function ClassPage() {
             )}
           </>
         )}
+        {tab === 'reports' && <ClassReports classId={cls.id} students={cls.students} />}
         {tab === 'terms' && <AplTermsForm classId={cls.id} terms={cls.apl_terms} canEdit={canEdit} />}
         {tab === 'questions' && <FormBuilder classId={cls.id} canEdit={canEdit} />}
         {tab === 'teachers' && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
