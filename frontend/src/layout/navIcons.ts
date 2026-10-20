@@ -1,4 +1,16 @@
-import { BriefcaseBusiness, FileText, Folder, History, LayoutDashboard, MessageCircle } from 'lucide-react'
+import {
+  BriefcaseBusiness,
+  ChartColumn,
+  FileText,
+  Folder,
+  History,
+  LayoutDashboard,
+  MapPinCheck,
+  MessageCircle,
+  School,
+  UserCog,
+  Users,
+} from 'lucide-react'
 
 export const navIcons = {
   overview: LayoutDashboard,
@@ -7,4 +19,9 @@ export const navIcons = {
   projects: Folder,
   placements: BriefcaseBusiness,
   contracts: FileText,
+  users: UserCog,
+  schools: School,
+  students: Users,
+  reports: ChartColumn,
+  checkIn: MapPinCheck,
 }

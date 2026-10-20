@@ -23,33 +23,11 @@ Lärarens tre vyer från skisserna är byggda med demodata i `src/demo/data.ts`:
 
 ---
 
-## F2. Inloggning ⬜
+## F2. Inloggning ✅ Klar (PR #8)
 
-Väntar på: B1 (✅ klar när PR #3 är mergad).
+`/login` i designprofilen. `useCurrentUser()` i `src/auth/` (`null` = ej inloggad). `RequireAuth` skyddar alla sidor och skickar till `/login`, och efter inloggning kommer användaren tillbaka till sidan hen försökte nå. `RoleRoute` visar en sida bara för vissa roller. Startsida och meny per roll finns i `src/auth/roles.ts`. Utloggning tömmer query-cachen. Svarar API:t 401 senare (sessionen har gått ut) hamnar användaren på `/login` via en middleware i `src/api/client.ts`.
 
-**Mål:** Användaren loggar in, ser rätt startsida för sin roll och kan logga ut.
-
-**API** (typerna finns i `schema.d.ts`)
-
-- `POST /api/auth/login` med `{email, password}`. Svarar `200` med `UserRead` `{id, email, name, role}` och sätter en cookie. Svarar `401` vid fel e-post eller lösenord.
-- `GET /api/auth/me` svarar `200` med `UserRead` eller `401` om ingen är inloggad.
-- `POST /api/auth/logout` svarar `204`.
-- `role` är `"teacher"`, `"student"` eller `"supervisor"`.
-
-**Gör så här**
-
-1. En hook `useCurrentUser()` i `src/auth/` som kör `useQuery({queryKey: ['me'], ...})` mot `/api/auth/me`. `401` betyder "inte inloggad" och ska ge `null`, inte ett fel. Sätt `retry: false` för just 401.
-2. Sidan `/login` med e-post, lösenord och knappen "Logga in". `useMutation` mot `/api/auth/login`. Vid lyckad inloggning, sätt svaret som data för `['me']` och skicka användaren till startsidan för sin roll. Vid 401, visa "Fel e-post eller lösenord".
-3. Skydda alla andra sidor: är `useCurrentUser()` `null`, skicka till `/login`.
-4. Startsidor per roll: lärare `/classes`, elev `/my-apl`, handledare `/my-students`. Tomma sidor med rubrik räcker tills vidare.
-5. "Logga ut" i appskalet: `POST /api/auth/logout`, töm query-cachen med `queryClient.clear()` och gå till `/login`.
-6. Får ett anrop `401` senare (sessionen har gått ut), sätt `['me']` till `null` så att användaren hamnar på `/login`.
-
-Cookien är httpOnly. Frontend kan inte och ska inte läsa den. Spara inget om inloggningen i `localStorage`.
-
-**Testa lokalt:** skapa ett konto med `uv run python -m scripts.create_user --email larare@demo.se --name "Demo Lärare" --role teacher` i `backend/` och logga in på http://localhost:5173.
-
-**Klart när:** det går att logga in och ut för alla tre roller och att ladda om sidan behåller inloggningen.
+Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11). Övriga rollers sidor är platshållare.
 
 ---
 
