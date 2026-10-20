@@ -1,5 +1,13 @@
 # Samlar alla modeller så att Alembic hittar dem vid autogenerate.
 from app.db.base import Base  # noqa: F401
+from app.models.report import (  # noqa: F401
+    ClassForm,
+    FormVersion,
+    Report,
+    ReportAnswer,
+    ReportComment,
+    ReportRead,
+)
 from app.models.school import School  # noqa: F401
 from app.models.school_class import (  # noqa: F401
     SchoolClass,

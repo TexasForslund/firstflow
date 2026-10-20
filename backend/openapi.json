@@ -999,6 +999,647 @@
           }
         }
       }
+    },
+    "/api/classes/{class_id}/form": {
+      "get": {
+        "tags": [
+          "forms"
+        ],
+        "summary": "Get Form",
+        "description": "Utkastet och vilken version som är publicerad.",
+        "operationId": "get_form_api_classes__class_id__form_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "forms"
+        ],
+        "summary": "Save Draft",
+        "description": "Sparar hela utkastet: frågorna i ordning. Eleverna ser inget förrän det publiceras.",
+        "operationId": "save_draft_api_classes__class_id__form_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FormContent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/form/publish": {
+      "post": {
+        "tags": [
+          "forms"
+        ],
+        "summary": "Publish",
+        "description": "Publicerar utkastet som en ny version. Nya redovisningar får den här versionen.",
+        "operationId": "publish_api_classes__class_id__form_publish_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/form/discard": {
+      "post": {
+        "tags": [
+          "forms"
+        ],
+        "summary": "Discard Changes",
+        "description": "Kastar ändringarna i utkastet och går tillbaka till den publicerade versionen.",
+        "operationId": "discard_changes_api_classes__class_id__form_discard_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/mine": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "My Reports",
+        "description": "Redovisningsdagarna de senaste fyra veckorna i elevens klasser, nyast först.\n\nBara klasser med ett publicerat formulär räknas. Dagarna kommer från klassens\nAPL-villkor (`report_due_weekdays`).",
+        "operationId": "my_reports_api_reports_mine_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DueReport"
+                  },
+                  "type": "array",
+                  "title": "Response My Reports Api Reports Mine Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/reports": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Start Report",
+        "description": "Startar redovisningen för en klass och en dag, eller öppnar den om den redan finns.\n\nDagen måste vara en av klassens redovisningsdagar, inte i framtiden och högst fyra veckor\nbakåt.",
+        "operationId": "start_report_api_reports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportStart"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/reports/{report_id}": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Report",
+        "operationId": "get_report_api_reports__report_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/answers/{question_id}": {
+      "put": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Save Answer",
+        "description": "Sparar svaret på en fråga när eleven trycker Nästa. Ett tomt svar tar bort svaret.",
+        "operationId": "save_answer_api_reports__report_id__answers__question_id__put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/submit": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Submit Report",
+        "description": "Skickar in redovisningen. Alla obligatoriska frågor som eleven får måste vara besvarade.\n\nSvar på frågor som logiken hoppade över tas bort, så att bara det eleven faktiskt\nlämnade in sparas.",
+        "operationId": "submit_report_api_reports__report_id__submit_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/read": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Mark Read",
+        "description": "Markerar redovisningen som läst av läraren.",
+        "operationId": "mark_read_api_reports__report_id__read_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/comments": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Add Comment",
+        "description": "Kommentar på en inskickad redovisning, från eleven själv eller en lärare för klassen.",
+        "operationId": "add_comment_api_reports__report_id__comments_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/reports": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "List Class Reports",
+        "description": "Klassens inskickade redovisningar, senast inskickade först. Bara för klassens lärare.",
+        "operationId": "list_class_reports_api_classes__class_id__reports_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Student Id"
+            }
+          },
+          {
+            "name": "unread_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Unread Only"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReportSummary"
+                  },
+                  "title": "Response List Class Reports Api Classes  Class Id  Reports Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1024,6 +1665,157 @@
           "name"
         ],
         "title": "AccountCreate"
+      },
+      "AnswerRead": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "choice_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Choice Ids"
+          },
+          "other_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Text"
+          },
+          "boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boolean"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Question Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question_id"
+        ],
+        "title": "AnswerRead"
+      },
+      "AnswerValue": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "choice_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Choice Ids"
+          },
+          "other_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Text"
+          },
+          "boolean": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boolean"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AnswerValue",
+        "description": "Ett svar. Fyll bara i fältet som passar frågetypen.\n\n- Kort text och fritext: `text`\n- Flerval: `choice_ids` och, om \"Annat\" är tillåtet, `other_text`\n- Ja/Nej: `boolean`\n- Betyg: `rating` (1–5)\nEtt tomt svar (t.ex. bara mellanslag) räknas som obesvarat."
       },
       "AplTerms": {
         "properties": {
@@ -1060,6 +1852,97 @@
         "type": "object",
         "title": "AplTerms",
         "description": "APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än."
+      },
+      "Choice": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "Choice"
+      },
+      "ChoiceQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "choice",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 2,
+            "title": "Choices"
+          },
+          "multiple": {
+            "type": "boolean",
+            "title": "Multiple",
+            "description": "Eleven får välja flera alternativ",
+            "default": false
+          },
+          "allow_other": {
+            "type": "boolean",
+            "title": "Allow Other",
+            "description": "Alternativet 'Annat' med fritext",
+            "default": false
+          },
+          "logic": {
+            "items": {
+              "$ref": "#/components/schemas/LogicRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Logic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type",
+          "choices"
+        ],
+        "title": "ChoiceQuestion"
       },
       "ClassCreate": {
         "properties": {
@@ -1153,6 +2036,195 @@
         ],
         "title": "ClassSummary"
       },
+      "CommentCreate": {
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body"
+        ],
+        "title": "CommentCreate"
+      },
+      "CommentRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "author": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "author_role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "author",
+          "author_role",
+          "body",
+          "created_at"
+        ],
+        "title": "CommentRead"
+      },
+      "DueReport": {
+        "properties": {
+          "class_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Class Id"
+          },
+          "class_name": {
+            "type": "string",
+            "title": "Class Name"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_started",
+              "draft",
+              "submitted"
+            ],
+            "title": "Status"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          }
+        },
+        "type": "object",
+        "required": [
+          "class_id",
+          "class_name",
+          "due_date",
+          "report_id",
+          "status",
+          "is_late"
+        ],
+        "title": "DueReport"
+      },
+      "FormContent": {
+        "properties": {
+          "questions": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ShortTextQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/LongTextQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoiceQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/YesNoQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/RatingQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/StatementQuestion"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "choice": "#/components/schemas/ChoiceQuestion",
+                  "long_text": "#/components/schemas/LongTextQuestion",
+                  "rating": "#/components/schemas/RatingQuestion",
+                  "short_text": "#/components/schemas/ShortTextQuestion",
+                  "statement": "#/components/schemas/StatementQuestion",
+                  "yes_no": "#/components/schemas/YesNoQuestion"
+                }
+              }
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Questions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FormContent",
+        "description": "Formulärets frågor i ordning."
+      },
+      "FormRead": {
+        "properties": {
+          "draft": {
+            "$ref": "#/components/schemas/FormContent"
+          },
+          "published_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Version"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "has_unpublished_changes": {
+            "type": "boolean",
+            "title": "Has Unpublished Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "draft",
+          "published_version",
+          "published_at",
+          "has_unpublished_changes"
+        ],
+        "title": "FormRead"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1189,6 +2261,38 @@
         ],
         "title": "HealthResponse"
       },
+      "LogicRule": {
+        "properties": {
+          "when": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "When",
+            "description": "Ett alternativs id, 'yes' eller 'no', eller ett betyg '1'–'5'"
+          },
+          "goto": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goto",
+            "description": "Frågan att gå till. null = gå till slutet"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "when",
+          "goto"
+        ],
+        "title": "LogicRule",
+        "description": "Om svaret är `when`, gå till frågan `goto`. `goto` null betyder att gå till slutet."
+      },
       "LoginRequest": {
         "properties": {
           "email": {
@@ -1208,6 +2312,64 @@
           "password"
         ],
         "title": "LoginRequest"
+      },
+      "LongTextQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "long_text",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "title": "LongTextQuestion"
+      },
+      "PersonBrief": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "PersonBrief"
       },
       "PersonRead": {
         "properties": {
@@ -1233,6 +2395,53 @@
         ],
         "title": "PersonRead"
       },
+      "RatingQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "rating",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "logic": {
+            "items": {
+              "$ref": "#/components/schemas/LogicRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Logic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "title": "RatingQuestion"
+      },
       "Ref": {
         "properties": {
           "id": {
@@ -1251,6 +2460,224 @@
           "name"
         ],
         "title": "Ref"
+      },
+      "ReportDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "class_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Class Id"
+          },
+          "class_name": {
+            "type": "string",
+            "title": "Class Name"
+          },
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submitted At"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          },
+          "form_version": {
+            "type": "integer",
+            "title": "Form Version"
+          },
+          "questions": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ShortTextQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/LongTextQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoiceQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/YesNoQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/RatingQuestion"
+                },
+                {
+                  "$ref": "#/components/schemas/StatementQuestion"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "choice": "#/components/schemas/ChoiceQuestion",
+                  "long_text": "#/components/schemas/LongTextQuestion",
+                  "rating": "#/components/schemas/RatingQuestion",
+                  "short_text": "#/components/schemas/ShortTextQuestion",
+                  "statement": "#/components/schemas/StatementQuestion",
+                  "yes_no": "#/components/schemas/YesNoQuestion"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerRead"
+            },
+            "type": "array",
+            "title": "Answers"
+          },
+          "path": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Path",
+            "description": "Frågorna eleven får, i ordning, med hänsyn till logiken och svaren"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/CommentRead"
+            },
+            "type": "array",
+            "title": "Comments"
+          },
+          "is_read": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Read",
+            "description": "Om du (läraren) har läst den. null för eleven"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "class_id",
+          "class_name",
+          "student",
+          "due_date",
+          "status",
+          "started_at",
+          "submitted_at",
+          "is_late",
+          "form_version",
+          "questions",
+          "answers",
+          "path",
+          "comments",
+          "is_read"
+        ],
+        "title": "ReportDetail"
+      },
+      "ReportStart": {
+        "properties": {
+          "class_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Class Id"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "class_id",
+          "due_date"
+        ],
+        "title": "ReportStart"
+      },
+      "ReportStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "submitted"
+        ],
+        "title": "ReportStatus"
+      },
+      "ReportSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          },
+          "is_read": {
+            "type": "boolean",
+            "title": "Is Read"
+          },
+          "comment_count": {
+            "type": "integer",
+            "title": "Comment Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "due_date",
+          "submitted_at",
+          "is_late",
+          "is_read",
+          "comment_count"
+        ],
+        "title": "ReportSummary"
       },
       "SchoolAccountCreate": {
         "properties": {
@@ -1353,6 +2780,80 @@
           "created_at"
         ],
         "title": "SchoolRead"
+      },
+      "ShortTextQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "short_text",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "title": "ShortTextQuestion"
+      },
+      "StatementQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "statement",
+            "title": "Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "title": "StatementQuestion",
+        "description": "Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar."
       },
       "StudentCreate": {
         "properties": {
@@ -1598,6 +3099,53 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "YesNoQuestion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "type": {
+            "type": "string",
+            "const": "yes_no",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "logic": {
+            "items": {
+              "$ref": "#/components/schemas/LogicRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Logic"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "title": "YesNoQuestion"
       }
     },
     "securitySchemes": {

@@ -333,6 +333,236 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes/{class_id}/form": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Form
+         * @description Utkastet och vilken version som är publicerad.
+         */
+        get: operations["get_form_api_classes__class_id__form_get"];
+        /**
+         * Save Draft
+         * @description Sparar hela utkastet: frågorna i ordning. Eleverna ser inget förrän det publiceras.
+         */
+        put: operations["save_draft_api_classes__class_id__form_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/form/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish
+         * @description Publicerar utkastet som en ny version. Nya redovisningar får den här versionen.
+         */
+        post: operations["publish_api_classes__class_id__form_publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/form/discard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discard Changes
+         * @description Kastar ändringarna i utkastet och går tillbaka till den publicerade versionen.
+         */
+        post: operations["discard_changes_api_classes__class_id__form_discard_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Reports
+         * @description Redovisningsdagarna de senaste fyra veckorna i elevens klasser, nyast först.
+         *
+         *     Bara klasser med ett publicerat formulär räknas. Dagarna kommer från klassens
+         *     APL-villkor (`report_due_weekdays`).
+         */
+        get: operations["my_reports_api_reports_mine_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Report
+         * @description Startar redovisningen för en klass och en dag, eller öppnar den om den redan finns.
+         *
+         *     Dagen måste vara en av klassens redovisningsdagar, inte i framtiden och högst fyra veckor
+         *     bakåt.
+         */
+        post: operations["start_report_api_reports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Report */
+        get: operations["get_report_api_reports__report_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/answers/{question_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Answer
+         * @description Sparar svaret på en fråga när eleven trycker Nästa. Ett tomt svar tar bort svaret.
+         */
+        put: operations["save_answer_api_reports__report_id__answers__question_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit Report
+         * @description Skickar in redovisningen. Alla obligatoriska frågor som eleven får måste vara besvarade.
+         *
+         *     Svar på frågor som logiken hoppade över tas bort, så att bara det eleven faktiskt
+         *     lämnade in sparas.
+         */
+        post: operations["submit_report_api_reports__report_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Read
+         * @description Markerar redovisningen som läst av läraren.
+         */
+        post: operations["mark_read_api_reports__report_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Comment
+         * @description Kommentar på en inskickad redovisning, från eleven själv eller en lärare för klassen.
+         */
+        post: operations["add_comment_api_reports__report_id__comments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Class Reports
+         * @description Klassens inskickade redovisningar, senast inskickade först. Bara för klassens lärare.
+         */
+        get: operations["list_class_reports_api_classes__class_id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -343,6 +573,46 @@ export interface components {
             email: string;
             /** Name */
             name: string;
+        };
+        /** AnswerRead */
+        AnswerRead: {
+            /** Text */
+            text?: string | null;
+            /** Choice Ids */
+            choice_ids?: string[] | null;
+            /** Other Text */
+            other_text?: string | null;
+            /** Boolean */
+            boolean?: boolean | null;
+            /** Rating */
+            rating?: number | null;
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+        };
+        /**
+         * AnswerValue
+         * @description Ett svar. Fyll bara i fältet som passar frågetypen.
+         *
+         *     - Kort text och fritext: `text`
+         *     - Flerval: `choice_ids` och, om "Annat" är tillåtet, `other_text`
+         *     - Ja/Nej: `boolean`
+         *     - Betyg: `rating` (1–5)
+         *     Ett tomt svar (t.ex. bara mellanslag) räknas som obesvarat.
+         */
+        AnswerValue: {
+            /** Text */
+            text?: string | null;
+            /** Choice Ids */
+            choice_ids?: string[] | null;
+            /** Other Text */
+            other_text?: string | null;
+            /** Boolean */
+            boolean?: boolean | null;
+            /** Rating */
+            rating?: number | null;
         };
         /**
          * AplTerms
@@ -361,6 +631,57 @@ export interface components {
              * @description Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag
              */
             report_due_weekdays?: number[];
+        };
+        /** Choice */
+        Choice: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** ChoiceQuestion */
+        ChoiceQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "choice";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Choices */
+            choices: components["schemas"]["Choice"][];
+            /**
+             * Multiple
+             * @description Eleven får välja flera alternativ
+             * @default false
+             */
+            multiple: boolean;
+            /**
+             * Allow Other
+             * @description Alternativet 'Annat' med fritext
+             * @default false
+             */
+            allow_other: boolean;
+            /** Logic */
+            logic?: components["schemas"]["LogicRule"][];
         };
         /** ClassCreate */
         ClassCreate: {
@@ -401,6 +722,70 @@ export interface components {
             /** Teacher Names */
             teacher_names: string[];
         };
+        /** CommentCreate */
+        CommentCreate: {
+            /** Body */
+            body: string;
+        };
+        /** CommentRead */
+        CommentRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            author: components["schemas"]["PersonBrief"];
+            author_role: components["schemas"]["UserRole"];
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** DueReport */
+        DueReport: {
+            /**
+             * Class Id
+             * Format: uuid
+             */
+            class_id: string;
+            /** Class Name */
+            class_name: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Report Id */
+            report_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_started" | "draft" | "submitted";
+            /** Is Late */
+            is_late: boolean;
+        };
+        /**
+         * FormContent
+         * @description Formulärets frågor i ordning.
+         */
+        FormContent: {
+            /** Questions */
+            questions?: (components["schemas"]["ShortTextQuestion"] | components["schemas"]["LongTextQuestion"] | components["schemas"]["ChoiceQuestion"] | components["schemas"]["YesNoQuestion"] | components["schemas"]["RatingQuestion"] | components["schemas"]["StatementQuestion"])[];
+        };
+        /** FormRead */
+        FormRead: {
+            draft: components["schemas"]["FormContent"];
+            /** Published Version */
+            published_version: number | null;
+            /** Published At */
+            published_at: string | null;
+            /** Has Unpublished Changes */
+            has_unpublished_changes: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -419,12 +804,63 @@ export interface components {
              */
             database: "ok" | "unavailable";
         };
+        /**
+         * LogicRule
+         * @description Om svaret är `when`, gå till frågan `goto`. `goto` null betyder att gå till slutet.
+         */
+        LogicRule: {
+            /**
+             * When
+             * @description Ett alternativs id, 'yes' eller 'no', eller ett betyg '1'–'5'
+             */
+            when: string;
+            /**
+             * Goto
+             * @description Frågan att gå till. null = gå till slutet
+             */
+            goto: string | null;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
             email: string;
             /** Password */
             password: string;
+        };
+        /** LongTextQuestion */
+        LongTextQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "long_text";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+        };
+        /** PersonBrief */
+        PersonBrief: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** PersonRead */
         PersonRead: {
@@ -438,6 +874,33 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** RatingQuestion */
+        RatingQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "rating";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Logic */
+            logic?: components["schemas"]["LogicRule"][];
+        };
         /** Ref */
         Ref: {
             /**
@@ -447,6 +910,98 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** ReportDetail */
+        ReportDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Class Id
+             * Format: uuid
+             */
+            class_id: string;
+            /** Class Name */
+            class_name: string;
+            student: components["schemas"]["PersonBrief"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            status: components["schemas"]["ReportStatus"];
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Submitted At */
+            submitted_at: string | null;
+            /** Is Late */
+            is_late: boolean;
+            /** Form Version */
+            form_version: number;
+            /** Questions */
+            questions: (components["schemas"]["ShortTextQuestion"] | components["schemas"]["LongTextQuestion"] | components["schemas"]["ChoiceQuestion"] | components["schemas"]["YesNoQuestion"] | components["schemas"]["RatingQuestion"] | components["schemas"]["StatementQuestion"])[];
+            /** Answers */
+            answers: components["schemas"]["AnswerRead"][];
+            /**
+             * Path
+             * @description Frågorna eleven får, i ordning, med hänsyn till logiken och svaren
+             */
+            path: string[];
+            /** Comments */
+            comments: components["schemas"]["CommentRead"][];
+            /**
+             * Is Read
+             * @description Om du (läraren) har läst den. null för eleven
+             */
+            is_read: boolean | null;
+        };
+        /** ReportStart */
+        ReportStart: {
+            /**
+             * Class Id
+             * Format: uuid
+             */
+            class_id: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+        };
+        /**
+         * ReportStatus
+         * @enum {string}
+         */
+        ReportStatus: "draft" | "submitted";
+        /** ReportSummary */
+        ReportSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["PersonBrief"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /** Is Read */
+            is_read: boolean;
+            /** Comment Count */
+            comment_count: number;
         };
         /** SchoolAccountCreate */
         SchoolAccountCreate: {
@@ -485,6 +1040,54 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ShortTextQuestion */
+        ShortTextQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "short_text";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+        };
+        /**
+         * StatementQuestion
+         * @description Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar.
+         */
+        StatementQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "statement";
         };
         /** StudentCreate */
         StudentCreate: {
@@ -571,6 +1174,33 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** YesNoQuestion */
+        YesNoQuestion: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "yes_no";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Logic */
+            logic?: components["schemas"]["LogicRule"][];
         };
     };
     responses: never;
@@ -1196,6 +1826,384 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_form_api_classes__class_id__form_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_draft_api_classes__class_id__form_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FormContent"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_api_classes__class_id__form_publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_changes_api_classes__class_id__form_discard_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_reports_api_reports_mine_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DueReport"][];
+                };
+            };
+        };
+    };
+    start_report_api_reports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportStart"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_report_api_reports__report_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_answer_api_reports__report_id__answers__question_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                question_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerValue"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_report_api_reports__report_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_read_api_reports__report_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_comment_api_reports__report_id__comments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_class_reports_api_classes__class_id__reports_get: {
+        parameters: {
+            query?: {
+                student_id?: string | null;
+                unread_only?: boolean;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportSummary"][];
                 };
             };
             /** @description Validation Error */

@@ -128,7 +128,7 @@ def _detail(school_class: SchoolClass) -> ClassDetail:
     )
 
 
-def _get_class(db: DbSession, user: User, class_id: UUID) -> SchoolClass:
+def get_accessible_class(db: DbSession, user: User, class_id: UUID) -> SchoolClass:
     """Klassen om användaren får se den, annars 404. Rollen avgör om hen får ändra den."""
     school_class = db.get(SchoolClass, class_id)
     if school_class is None:
@@ -206,7 +206,7 @@ def create_class(body: ClassCreate, db: DbSession, user: CanEditClasses) -> Clas
 
 @router.get("/{class_id}", response_model=ClassDetail)
 def get_class(class_id: UUID, db: DbSession, user: CanViewClasses) -> ClassDetail:
-    return _detail(_get_class(db, user, class_id))
+    return _detail(get_accessible_class(db, user, class_id))
 
 
 class StudentLink(BaseModel):
@@ -220,7 +220,7 @@ def add_student(class_id: UUID, body: StudentLink, db: DbSession, user: CanEditC
     Eleverna läggs in i systemet av skoladmin (POST /api/students). Läraren kan bara lägga
     elever som är kopplade till hen. Skoladmin kan lägga alla aktiva elever på skolan.
     """
-    school_class = _get_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id)
     student = db.get(User, body.student_id)
     if (
         student is None
@@ -248,7 +248,7 @@ def remove_student(
     class_id: UUID, student_id: UUID, db: DbSession, user: CanEditClasses
 ) -> Response:
     """Tar bort eleven ur klassen. Elevkontot finns kvar."""
-    school_class = _get_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id)
     student = next((s for s in school_class.students if s.id == student_id), None)
     if student is None:
         raise _not_found()
@@ -262,7 +262,7 @@ def assign_teacher(
     class_id: UUID, body: TeacherAssign, db: DbSession, user: CanAssignTeachers
 ) -> User:
     """Kopplar en aktiv lärare på samma skola till klassen."""
-    school_class = _get_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id)
     teacher = db.get(User, body.teacher_id)
     if (
         teacher is None
@@ -280,7 +280,7 @@ def assign_teacher(
 def unassign_teacher(
     class_id: UUID, teacher_id: UUID, db: DbSession, user: CanAssignTeachers
 ) -> Response:
-    school_class = _get_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id)
     teacher = next((t for t in school_class.teachers if t.id == teacher_id), None)
     if teacher is None:
         raise _not_found()
@@ -294,7 +294,7 @@ def set_apl_terms(
     class_id: UUID, body: AplTerms, db: DbSession, user: CanEditClasses
 ) -> ClassDetail:
     """Sätter klassens APL-villkor. Läraren för klassen eller skoladmin. Alla fält skrivs över."""
-    school_class = _get_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id)
     for field, value in body.model_dump().items():
         setattr(school_class, field, value)
     db.commit()
