@@ -4,8 +4,9 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 
 | Fil | Vem | Innehåll |
 | --- | --- | --- |
-| [backend.md](backend.md) | Hannes (B3–B6), Texas (B1b, B2) | Uppgifter i `backend/`: modeller, migreringar, endpoints, tester |
+| [backend.md](backend.md) | Hannes (B3, B4, B6), Texas (B1b, B2, B5) | Uppgifter i `backend/`: modeller, migreringar, endpoints, tester |
 | [frontend.md](frontend.md) | Texas | Uppgifter i `frontend/`: vyer, komponenter, anrop mot API:t |
+| [drift.md](drift.md) | Bestäms | Driftsättning hos Broadview: produktion, testmiljö, backup, e-post, övervakning |
 
 Ordningen följer fas 1 i [roadmapen](../docs/produktvision-och-roadmap.md): inloggning, klasser och elever, praktikperiod och APL-plats, närvaro, frågor och redovisning.
 

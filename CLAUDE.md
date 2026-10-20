@@ -31,6 +31,8 @@ frontend/   TypeScript, React, Vite, TanStack Query, openapi-fetch
 docs/       Produktvision och annan dokumentation
 ```
 
+Drift sker hos Broadview. Planen finns i [docs/driftsattning.md](docs/driftsattning.md) och uppgifterna i [att-gora/drift.md](att-gora/drift.md). Dagens `docker-compose.yml` är bara för utveckling.
+
 ## API-kontraktet
 
 Backend och frontend hänger ihop via OpenAPI-schemat i `backend/openapi.json`.
