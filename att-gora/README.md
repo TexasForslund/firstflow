@@ -34,7 +34,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **Texas + Claude:**
   - B5b: mallar (beslut finns i fragor-typeform.md), förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
-- **Hannes + Claude:** B3 (praktikplats) är byggd och ligger för granskning (2026-10-21). Sedan B4 (närvaro) och B6 (inbjudningar och lösenord). Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
+- **Hannes + Claude:** B3 (praktikplats) är byggd och ligger för granskning i #22 (2026-10-21). Sedan B4 (närvaro) och B6 (inbjudningar och lösenord). Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
 - **Väntar på B3, B4 och B12:**
   - elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt)
   - projektval i redovisningen
