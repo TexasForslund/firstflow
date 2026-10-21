@@ -1,5 +1,10 @@
 # Samlar alla modeller så att Alembic hittar dem vid autogenerate.
 from app.db.base import Base  # noqa: F401
+from app.models.placement import (  # noqa: F401
+    Placement,
+    Workplace,
+    workplace_supervisors,
+)
 from app.models.report import (  # noqa: F401
     ClassForm,
     FormVersion,

@@ -55,33 +55,29 @@ Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo
 
 ---
 
-## B3. Praktikperiod och APL-plats ⬜
+## B3. Praktikperiod och APL-plats 🚧 (Hannes + Claude, PR öppnas)
 
-Idéer från Texas som rör B3 finns i [ideer.md](ideer.md): praktikplatser per lärare och handledarinbjudan via länk (punkt 4), kalender och schema (punkt 7) och kommentarer från handledaren (punkt 1). Stäm av med Texas innan de byggs in.
+Låser upp: F4 och praktikplatsen i klassvyn (F12).
 
-Låser upp: F4.
+Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar sina elever där under en period. Endpoints i `app/api/routes/placements.py`, modeller i `app/models/placement.py`:
 
-**Mål:** Läraren kopplar en elev till en arbetsplats och en handledare under en period.
+- `Workplace` (`school_id`, `name`, `address` valfri) hör till skolan. Handledarna kopplas i `workplace_supervisors`. Samma handledare kan finnas på flera arbetsplatser och skolor, eftersom handledaren inte hör till någon skola.
+- `Placement` (`student_id`, `workplace_id`, `supervisor_id`, `start_date`, `end_date`). En elevs placeringar får inte överlappa, så det finns högst en aktiv placering per dag (B4 bygger på det).
+- `GET /api/workplaces` (lärare, skoladmin, rektor): skolans arbetsplatser med handledare (namn och e-post).
+- `POST /api/workplaces` med `{name, address}` (lärare, skoladmin).
+- `POST /api/workplaces/{id}/supervisors` med `{name, email}` (lärare, skoladmin): skapar ett handledarkonto utan lösenord, eller kopplar en befintlig handledare med samma e-post. Lösenordet sätts via inbjudan (B6). En annan roll med samma e-post svarar 409.
+- `POST /api/placements` med `{student_id, workplace_id, supervisor_id, start_date, end_date}`: läraren placerar elever som går i en klass hen undervisar, skoladmin skolans alla elever. Handledaren måste finnas på arbetsplatsen (422). Överlappande period svarar 409.
+- `DELETE /api/placements/{id}`: tar bort en placering som blev fel. Samma behörighet.
+- `GET /api/classes/{class_id}/placements`: klassens placeringar med elev, arbetsplats, handledare och period. Samma behörighet som klassvyn. Klassvyns elevrad tar elevens pågående placering härifrån.
+- `GET /api/me/placements` (elev): egna placeringar med arbetsplats och handledarens namn.
+- `GET /api/supervisor/students` (handledare): elever som handledaren har i dag, med period och arbetsplats. En annan handledares elever syns inte.
+- `seed_demo.py`: två arbetsplatser per skola med handledare, och eleverna i EE22 placerade under en pågående period. EE21 har inga placeringar. Gustav Lindahl (`handledare@demo.firstflow.se`) har elever på båda skolorna.
 
-**Gör så här**
-
-1. Modeller:
-   - `Workplace`: `id`, `name`, `address` (valfri).
-   - `Placement`: `id`, `student_id`, `workplace_id`, `supervisor_id` (användare med roll `supervisor`), `start_date`, `end_date`.
-2. Endpoints:
-   - `POST /api/workplaces`, `GET /api/workplaces` (lärare).
-   - `POST /api/placements` med `{student_id, workplace_id, supervisor_id, start_date, end_date}` (lärare som har elevens klass).
-   - `GET /api/classes/{class_id}/placements` (lärare): alla elevers placeringar i klassen.
-   - `GET /api/me/placements` (elev): elevens egna placeringar med arbetsplats och handledarens namn.
-   - `GET /api/supervisor/students` (handledare): elever som handledaren har just nu, med period och arbetsplats.
-3. Utöka `seed_demo.py` med arbetsplatser och placeringar.
-
-**Klart när:** tester för varje roll och för en handledare som försöker se en annan handledares elev (404).
-
-**Krav från klassvyn (Texas, 2026-10-20):** klassen är navet. Läraren tilldelar praktikplats per elev direkt i klassvyns elevlista (`/classes/:id`, fliken Elever), där det redan finns en plats för det i varje elevrad. Därför:
-
-- `GET /api/classes/{class_id}` eller `GET /api/classes/{class_id}/placements` behöver ge arbetsplatsens namn per elev, så att elevraden kan visa den.
-- Läraren ska bara kunna placera elever i klasser hen undervisar, och arbetsplatser och handledare ska höra till skolan (`require_same_school`).
+**Inte byggt, att ta senare:**
+- Ändra en placering (`PATCH`), t.ex. förlänga perioden. I dag tas den bort och skapas på nytt.
+- Ta bort en handledare från en arbetsplats, och ändra eller ta bort arbetsplatser.
+- Handledarens åtkomst till redovisningar och kommentarer (B5b, idé 1).
+- Idéerna i [ideer.md](ideer.md) punkt 4 (platser per lärare och inbjudningslänk) och 7 (schema) är inte inbyggda. Arbetsplatserna hör till skolan, som i specen.
 
 ---
 

@@ -607,6 +607,155 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workplaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Workplaces
+         * @description Skolans arbetsplatser med sina handledare.
+         */
+        get: operations["list_workplaces_api_workplaces_get"];
+        put?: never;
+        /** Create Workplace */
+        post: operations["create_workplace_api_workplaces_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workplaces/{workplace_id}/supervisors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Supervisor
+         * @description Lägger till en handledare på arbetsplatsen.
+         *
+         *     Finns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen, eftersom
+         *     samma handledare kan ta emot elever från flera skolor. Namnet i anropet används då inte.
+         *     Annars skapas ett handledarkonto utan lösenord, som sätts via inbjudan (B6).
+         *     En annan roll med samma e-postadress svarar 409.
+         */
+        post: operations["add_supervisor_api_workplaces__workplace_id__supervisors_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/placements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Placement
+         * @description Placerar en elev på en arbetsplats med en handledare under en period.
+         *
+         *     Handledaren måste finnas på arbetsplatsen. Perioden får inte överlappa elevens andra
+         *     placeringar (409).
+         */
+        post: operations["create_placement_api_placements_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/placements/{placement_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Placement
+         * @description Tar bort en placering, t.ex. om den blev fel. Samma behörighet som att skapa den.
+         */
+        delete: operations["delete_placement_api_placements__placement_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/placements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Class Placements
+         * @description Placeringarna för klassens aktiva elever, per elev i datumordning.
+         */
+        get: operations["list_class_placements_api_classes__class_id__placements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/placements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Placements
+         * @description Elevens egna placeringar, i datumordning.
+         */
+        get: operations["my_placements_api_me_placements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervised Students
+         * @description Elever som handledaren har i dag, med period och arbetsplats.
+         */
+        get: operations["supervised_students_api_supervisor_students_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1059,6 +1208,30 @@ export interface components {
             school_name: string | null;
             preferences: components["schemas"]["DisplayPreferences-Output"];
         };
+        /**
+         * MyPlacement
+         * @description Elevens egen placering. Handledarens namn räcker för eleven.
+         */
+        MyPlacement: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            workplace: components["schemas"]["WorkplaceRef"];
+            /** Supervisor Name */
+            supervisor_name: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
         /** PersonBrief */
         PersonBrief: {
             /**
@@ -1080,6 +1253,58 @@ export interface components {
             name: string;
             /** Email */
             email: string;
+        };
+        /** PlacementCreate */
+        PlacementCreate: {
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+            /**
+             * Workplace Id
+             * Format: uuid
+             */
+            workplace_id: string;
+            /**
+             * Supervisor Id
+             * Format: uuid
+             */
+            supervisor_id: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
+        /**
+         * PlacementRead
+         * @description En placering som läraren ser, t.ex. i klassvyns elevlista.
+         */
+        PlacementRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["Ref"];
+            workplace: components["schemas"]["WorkplaceRef"];
+            supervisor: components["schemas"]["SupervisorRead"];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
         };
         /** RatingQuestion */
         "RatingQuestion-Input": {
@@ -1413,6 +1638,41 @@ export interface components {
             /** Teachers */
             teachers: components["schemas"]["Ref"][];
         };
+        /**
+         * SupervisedStudent
+         * @description En elev som handledaren har just nu.
+         */
+        SupervisedStudent: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            student: components["schemas"]["Ref"];
+            workplace: components["schemas"]["WorkplaceRef"];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
+        /** SupervisorRead */
+        SupervisorRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+        };
         /** TeacherAssign */
         TeacherAssign: {
             /**
@@ -1461,6 +1721,39 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WorkplaceCreate */
+        WorkplaceCreate: {
+            /** Name */
+            name: string;
+            /** Address */
+            address?: string | null;
+        };
+        /** WorkplaceRead */
+        WorkplaceRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Address */
+            address: string | null;
+            /** Supervisors */
+            supervisors: components["schemas"]["SupervisorRead"][];
+        };
+        /** WorkplaceRef */
+        WorkplaceRef: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Address */
+            address: string | null;
         };
         /** YesNoQuestion */
         "YesNoQuestion-Input": {
@@ -2580,6 +2873,227 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_workplaces_api_workplaces_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkplaceRead"][];
+                };
+            };
+        };
+    };
+    create_workplace_api_workplaces_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkplaceCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkplaceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_supervisor_api_workplaces__workplace_id__supervisors_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkplaceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_placement_api_placements_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlacementCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacementRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_placement_api_placements__placement_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                placement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_class_placements_api_classes__class_id__placements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacementRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_placements_api_me_placements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPlacement"][];
+                };
+            };
+        };
+    };
+    supervised_students_api_supervisor_students_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisedStudent"][];
                 };
             };
         };
