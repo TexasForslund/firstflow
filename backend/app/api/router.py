@@ -6,6 +6,7 @@ from app.api.routes import (
     forms,
     health,
     me,
+    placements,
     reports,
     schools,
     students,
@@ -23,3 +24,8 @@ api_router.include_router(me.router)
 api_router.include_router(forms.router)
 api_router.include_router(reports.router)
 api_router.include_router(reports.class_router)
+api_router.include_router(placements.workplace_router)
+api_router.include_router(placements.router)
+api_router.include_router(placements.class_router)
+api_router.include_router(placements.me_router)
+api_router.include_router(placements.supervisor_router)

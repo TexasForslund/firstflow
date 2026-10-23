@@ -1715,6 +1715,344 @@
           }
         }
       }
+    },
+    "/api/workplaces": {
+      "get": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "List Workplaces",
+        "description": "Skolans arbetsplatser med sina handledare.",
+        "operationId": "list_workplaces_api_workplaces_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkplaceRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Workplaces Api Workplaces Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "Create Workplace",
+        "operationId": "create_workplace_api_workplaces_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkplaceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkplaceRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/workplaces/{workplace_id}/supervisors": {
+      "post": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "Add Supervisor",
+        "description": "Lägger till en handledare på arbetsplatsen.\n\nFinns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen, eftersom\nsamma handledare kan ta emot elever från flera skolor. Namnet i anropet används då inte.\nAnnars skapas ett handledarkonto utan lösenord, som sätts via inbjudan (B6).\nEn annan roll med samma e-postadress svarar 409.",
+        "operationId": "add_supervisor_api_workplaces__workplace_id__supervisors_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workplace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workplace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkplaceRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/placements": {
+      "post": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "Create Placement",
+        "description": "Placerar en elev på en arbetsplats med en handledare under en period.\n\nHandledaren måste finnas på arbetsplatsen. Perioden får inte överlappa elevens andra\nplaceringar (409).",
+        "operationId": "create_placement_api_placements_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlacementCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacementRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/placements/{placement_id}": {
+      "delete": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "Delete Placement",
+        "description": "Tar bort en placering, t.ex. om den blev fel. Samma behörighet som att skapa den.",
+        "operationId": "delete_placement_api_placements__placement_id__delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "placement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Placement Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/placements": {
+      "get": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "List Class Placements",
+        "description": "Placeringarna för klassens aktiva elever, per elev i datumordning.",
+        "operationId": "list_class_placements_api_classes__class_id__placements_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlacementRead"
+                  },
+                  "title": "Response List Class Placements Api Classes  Class Id  Placements Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/placements": {
+      "get": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "My Placements",
+        "description": "Elevens egna placeringar, i datumordning.",
+        "operationId": "my_placements_api_me_placements_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyPlacement"
+                  },
+                  "type": "array",
+                  "title": "Response My Placements Api Me Placements Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/supervisor/students": {
+      "get": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "Supervised Students",
+        "description": "Elever som handledaren har i dag, med period och arbetsplats.",
+        "operationId": "supervised_students_api_supervisor_students_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SupervisedStudent"
+                  },
+                  "type": "array",
+                  "title": "Response Supervised Students Api Supervisor Students Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2744,6 +3082,42 @@
         "title": "MeRead",
         "description": "Den inloggade användaren med egna inställningar. Visas bara för användaren själv."
       },
+      "MyPlacement": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "workplace": {
+            "$ref": "#/components/schemas/WorkplaceRef"
+          },
+          "supervisor_name": {
+            "type": "string",
+            "title": "Supervisor Name"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workplace",
+          "supervisor_name",
+          "start_date",
+          "end_date"
+        ],
+        "title": "MyPlacement",
+        "description": "Elevens egen placering. Handledarens namn räcker för eleven."
+      },
       "PersonBrief": {
         "properties": {
           "id": {
@@ -2786,6 +3160,83 @@
           "email"
         ],
         "title": "PersonRead"
+      },
+      "PlacementCreate": {
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Student Id"
+          },
+          "workplace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workplace Id"
+          },
+          "supervisor_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Supervisor Id"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student_id",
+          "workplace_id",
+          "supervisor_id",
+          "start_date",
+          "end_date"
+        ],
+        "title": "PlacementCreate"
+      },
+      "PlacementRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "workplace": {
+            "$ref": "#/components/schemas/WorkplaceRef"
+          },
+          "supervisor": {
+            "$ref": "#/components/schemas/SupervisorRead"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "workplace",
+          "supervisor",
+          "start_date",
+          "end_date"
+        ],
+        "title": "PlacementRead",
+        "description": "En placering som läraren ser, t.ex. i klassvyns elevlista."
       },
       "RatingQuestion-Input": {
         "properties": {
@@ -3493,6 +3944,65 @@
         ],
         "title": "StudentRead"
       },
+      "SupervisedStudent": {
+        "properties": {
+          "placement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Placement Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "workplace": {
+            "$ref": "#/components/schemas/WorkplaceRef"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "placement_id",
+          "student",
+          "workplace",
+          "start_date",
+          "end_date"
+        ],
+        "title": "SupervisedStudent",
+        "description": "En elev som handledaren har just nu."
+      },
+      "SupervisorRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email"
+        ],
+        "title": "SupervisorRead"
+      },
       "TeacherAssign": {
         "properties": {
           "teacher_id": {
@@ -3631,6 +4141,103 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WorkplaceCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "WorkplaceCreate"
+      },
+      "WorkplaceRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "supervisors": {
+            "items": {
+              "$ref": "#/components/schemas/SupervisorRead"
+            },
+            "type": "array",
+            "title": "Supervisors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "address",
+          "supervisors"
+        ],
+        "title": "WorkplaceRead"
+      },
+      "WorkplaceRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "address"
+        ],
+        "title": "WorkplaceRef"
       },
       "YesNoQuestion-Input": {
         "properties": {

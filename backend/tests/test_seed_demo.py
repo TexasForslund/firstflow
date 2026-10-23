@@ -1,6 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
 from app.models.school_class import SchoolClass
@@ -42,3 +43,29 @@ def test_seed_gives_every_class_a_published_form(db: Session) -> None:
         assert version is not None
         assert len(version.questions) == 6
         assert school_class.report_due_weekdays == [1, 4]
+
+
+def test_seed_places_ee22_students_with_supervisors(db: Session) -> None:
+    seed(db)
+    ee22 = db.scalar(
+        select(SchoolClass)
+        .join(School)
+        .where(School.name == "Kramforsskolan", SchoolClass.name == "EE22")
+    )
+    placements = list(
+        db.scalars(select(Placement).where(Placement.student_id.in_([s.id for s in ee22.students])))
+    )
+    assert len(placements) == 5
+    for placement in placements:
+        assert placement.supervisor in placement.workplace.supervisors
+        assert placement.workplace.school_id == ee22.school_id
+    # Gustav Lindahl har elever på båda skolorna.
+    gustav = db.scalar(select(User).where(User.email == "handledare@demo.firstflow.se"))
+    schools = set(
+        db.scalars(
+            select(Workplace.school_id)
+            .join(Placement, Placement.workplace_id == Workplace.id)
+            .where(Placement.supervisor_id == gustav.id)
+        )
+    )
+    assert len(schools) == 2

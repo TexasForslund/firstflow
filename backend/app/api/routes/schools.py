@@ -36,7 +36,7 @@ def _require_school(db: DbSession, user: User, school_id: UUID) -> None:
 
 
 class SchoolAccountCreate(AccountCreate):
-    # Skoladmins skapas av superadmin, handledare bjuds in per placering (B3).
+    # Skoladmins skapas av superadmin, handledare läggs till per arbetsplats (B3).
     role: Literal["principal", "syv", "teacher", "student"]
 
 

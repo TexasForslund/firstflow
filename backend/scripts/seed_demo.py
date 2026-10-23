@@ -7,20 +7,25 @@ Alla demokonton har lösenordet demo-firstflow. Skriptet kan köras flera gånge
 konton och skolor som redan finns hoppas över. Det körs bara när ENVIRONMENT är
 development eller test.
 Varje skola får två klasser med fem elever var. Varje klass får ett publicerat formulär för
-veckoredovisning, med redovisning tisdag och fredag. Placeringar läggs till i B3.
+veckoredovisning, med redovisning tisdag och fredag. Varje skola får två arbetsplatser med
+var sin handledare, och eleverna i EE22 är placerade där under en pågående period. Eleverna i
+EE21 har ingen placering, så att det syns hur det ser ut innan läraren har placerat dem.
 """
 
 import sys
 import uuid
+from datetime import timedelta
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.core import time
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal
+from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
 from app.models.school_class import SchoolClass, teacher_students
@@ -65,6 +70,19 @@ STUDENTS = {
 
 # Två klasser per skola. Skolans lärare har båda, eleverna delas fem och fem.
 CLASSES = ["EE22", "EE21"]
+
+# Arbetsplatser per skola: (namn, adress, handledarens e-postprefix, handledarens namn).
+# Gustav Lindahl (handledare@) har elever från båda skolorna.
+WORKPLACES = {
+    "kramfors": [
+        ("Kramfors El & Data", "Storgatan 12, Kramfors", "handledare", "Gustav Lindahl"),
+        ("Höga Kusten Elinstallation", "Industrivägen 4, Kramfors", "handledare.hk", "Sofia Åberg"),
+    ],
+    "umea": [
+        ("Umeå Energi Service", "Kungsgatan 40, Umeå", "handledare.ues", "Mikael Rask"),
+        ("Norrlands Elteknik", None, "handledare", "Gustav Lindahl"),
+    ],
+}  # fmt: skip
 
 ROLE_PREFIX = {
     UserRole.SCHOOL_ADMIN: "admin",
@@ -163,6 +181,48 @@ def _ensure_forms(db: Session, school: School) -> list[str]:
     return created
 
 
+def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
+    """Skapar skolans arbetsplatser och placerar eleverna i EE22 där. Returnerar nya platser."""
+    created: list[str] = []
+    workplaces: list[tuple[Workplace, User]] = []
+    for name, address, prefix, _ in WORKPLACES[key]:
+        supervisor = db.scalar(select(User).where(User.email == f"{prefix}@{DOMAIN}"))
+        workplace = db.scalar(
+            select(Workplace).where(Workplace.school_id == school.id, Workplace.name == name)
+        )
+        if workplace is None:
+            workplace = Workplace(school_id=school.id, name=name, address=address)
+            workplace.supervisors = [supervisor] if supervisor else []
+            db.add(workplace)
+            created.append(name)
+        if supervisor:
+            workplaces.append((workplace, supervisor))
+    db.flush()
+
+    school_class = db.scalar(
+        select(SchoolClass).where(SchoolClass.school_id == school.id, SchoolClass.name == "EE22")
+    )
+    if school_class is None or not workplaces:
+        return created
+    # En pågående period: började för två veckor sedan och håller på i sex veckor till.
+    start = time.today() - timedelta(days=14)
+    for i, student in enumerate(school_class.students):
+        if db.scalar(select(Placement.id).where(Placement.student_id == student.id)):
+            continue
+        workplace, supervisor = workplaces[0] if i < 3 else workplaces[-1]
+        db.add(
+            Placement(
+                student_id=student.id,
+                workplace_id=workplace.id,
+                supervisor_id=supervisor.id,
+                start_date=start,
+                end_date=start + timedelta(days=55),
+            )
+        )
+    db.flush()
+    return created
+
+
 def seed(db: Session) -> list[tuple[str, str, str]]:
     """Skapar demodatan. Returnerar (e-post eller klass, roll, skola) för allt som skapades."""
     created: list[tuple[str, str, str]] = []
@@ -187,8 +247,11 @@ def seed(db: Session) -> list[tuple[str, str, str]]:
             created.append((f"klass {class_name}", "–", school.name))
         for class_name in _ensure_forms(db, school):
             created.append((f"formulär {class_name}", "–", school.name))
-
-    add(f"handledare@{DOMAIN}", "Gustav Lindahl", UserRole.SUPERVISOR, None)
+        # Handledare hör inte till någon skola. De kopplas till skolan via arbetsplatsen.
+        for _, _, prefix, name in WORKPLACES[key]:
+            add(f"{prefix}@{DOMAIN}", name, UserRole.SUPERVISOR, None)
+        for name in _ensure_placements(db, school, key):
+            created.append((f"arbetsplats {name}", "–", school.name))
     return created
 
 
@@ -203,8 +266,12 @@ def main() -> None:
         return
     classes = sum(1 for item in created if item[0].startswith("klass "))
     forms = sum(1 for item in created if item[0].startswith("formulär "))
-    accounts = len(created) - classes - forms
-    print(f"Skapade {accounts} demokonton, {classes} klasser och {forms} formulär.")
+    workplaces = sum(1 for item in created if item[0].startswith("arbetsplats "))
+    accounts = len(created) - classes - forms - workplaces
+    print(
+        f"Skapade {accounts} demokonton, {classes} klasser, {forms} formulär"
+        f" och {workplaces} arbetsplatser."
+    )
     print(f"Lösenord för alla konton: {DEMO_PASSWORD}\n")
     for email, role, school in created:
         print(f"  {role:<13} {school:<15} {email}")

@@ -65,6 +65,7 @@ Väntar på: B3.
 - Elev, `/my-apl`: arbetsplats, period och handledare från `GET /api/me/placements`.
 - Handledare, `/my-students`: elever från `GET /api/supervisor/students`.
 - Lärare: på klassvyn visas varje elevs APL-plats från `GET /api/classes/{class_id}/placements`, med möjlighet att koppla elev till plats.
+- Arbetsplatser och handledare finns i `GET/POST /api/workplaces` och `POST /api/workplaces/{id}/supervisors`. Placeringen skapas med `POST /api/placements` och tas bort med `DELETE /api/placements/{id}`. Se B3 i backend.md (Hannes + Claude, 2026-10-21).
 
 ---
 
