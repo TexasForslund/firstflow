@@ -14,10 +14,11 @@ Två utvecklarpar: **Texas + Claude** och **Hannes + Claude**.
 | Texas + Claude | Hannes + Claude |
 |---|---|
 | B1b (multi-tenant + roller) | B3 (praktikperiod och APL-plats) |
-| B2 (klasser och elever) | B4 (närvaro och incheckning) |
-| F1–F3 (designsystem, inloggning, klassvy) | B6 (inbjudningar, pilot-prep) |
-| F4–F6 (APL-vy, incheckning, demo) | |
+| B2 (klasser och elever) | B6 (inbjudningar, pilot-prep) |
+| B4 (närvaro och incheckning, tagen från Hannes 2026-10-26) | |
 | B5 (frågor och redovisning, planeras med Texas först) | |
+| F1–F3 (designsystem, inloggning, klassvy) | |
+| F4–F6 (APL-vy, incheckning, demo) | |
 
 Ändra inte i den andres pågående feature-branch utan att det framgår tydligt i PR:en. Vid konflikt: prata i Discord innan du mergar.
 
