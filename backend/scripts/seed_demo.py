@@ -195,10 +195,20 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
             select(Workplace).where(Workplace.school_id == school.id, Workplace.name == name)
         )
         if workplace is None:
-            workplace = Workplace(school_id=school.id, name=name, address=address)
+            workplace = Workplace(
+                school_id=school.id,
+                name=name,
+                address=address,
+                industry="El och energi",
+                description=f"{name} tar emot elever på APL inom elinstallation och service.",
+            )
             workplace.supervisors = [supervisor] if supervisor else []
             db.add(workplace)
             created.append(name)
+        # Företagen syns bara för läraren som bjöd in handledaren (Texas, 2026-10-26).
+        if workplace.owner_teacher_id is None:
+            teacher = db.scalar(select(User).where(User.email == f"larare.{key}@{DOMAIN}"))
+            workplace.owner_teacher_id = teacher.id if teacher else None
         if supervisor:
             workplaces.append((workplace, supervisor))
     db.flush()

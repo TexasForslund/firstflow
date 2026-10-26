@@ -199,3 +199,12 @@ Sidan Inställningar för alla roller (Texas, 2026-10-20):
 - APL-villkor har förklaringar till vad varje inställning styr.
 - Anmäl frånvaro är borttaget från elevens Incheckning (Texas, 2026-10-26). Endpointen `POST /api/attendance/absence` finns kvar i backend tills vidare.
 - Elevens incheckning: en ruta mitt på skärmen första gången eleven öppnar appen en APL-dag efter 08:30. Stängs den visas en rad högst upp på varje sida tills eleven har checkat in. Animation när eleven checkar in.
+
+---
+
+## F15. Inbjudan av handledare, Företag och notiser 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+- **Praktikplatser** (lärare, skoladmin): Bjud in handledare med e-post, listan Skickade inbjudningar (väntar, konto skapat, utgången, återkallad) med Skicka igen och Återkalla, och Dina företag med profil och handledare. Ny arbetsplats och Lägg till handledare är borttagna.
+- **`/invite/:token`** (ingen inloggning): handledaren skapar konto och företagsprofil, och hamnar sedan på Mina elever.
+- **Företag** (handledare, `/company`): företagsprofilen med Redigera, handledarna och Bjud in en kollega (högst tre).
+- **Notiser:** en klocka i menyn (och i mobilens toppfält) med antal olästa. Notiserna markeras som lästa när listan öppnas.

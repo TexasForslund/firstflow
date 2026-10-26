@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet } from 'react-router'
 
 import { Avatar, CountBadge, Logo } from '../components'
 import styles from './AppShell.module.css'
+import { NotificationBell } from './NotificationBell'
 
 export interface NavItem {
   to: string
@@ -67,16 +68,19 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar, top }: AppS
         <Link to="/" aria-label="Firstflow, till startsidan">
           <Logo height={28} />
         </Link>
-        <button
-          type="button"
-          className={styles.menuButton}
+        <span className={styles.mobileActions}>
+          <NotificationBell />
+          <button
+            type="button"
+            className={styles.menuButton}
           aria-label={menuOpen ? 'Stäng menyn' : 'Öppna menyn'}
           aria-expanded={menuOpen}
           aria-controls="sidebar"
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-        </button>
+            {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
+        </span>
       </header>
 
       {menuOpen && <div className={styles.backdrop} onClick={() => setMenuOpen(false)} aria-hidden="true" />}
@@ -86,17 +90,20 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar, top }: AppS
           <Link to="/" className={styles.logo} aria-label="Firstflow, till startsidan">
             <Logo height={30} symbolOnly={collapsed} />
           </Link>
-          <button
-            type="button"
-            className={styles.collapseButton}
+          <span className={styles.topActions}>
+            <NotificationBell />
+            <button
+              type="button"
+              className={styles.collapseButton}
             aria-label={collapsed ? 'Visa hela menyn' : 'Fäll ihop menyn'}
             title={collapsed ? 'Visa hela menyn' : 'Fäll ihop menyn'}
             aria-expanded={!collapsed}
             aria-controls="sidebar"
             onClick={toggleCollapsed}
           >
-            {collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
-          </button>
+              {collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
+            </button>
+          </span>
         </div>
 
         <div className={styles.user} title={collapsed ? userName : undefined}>

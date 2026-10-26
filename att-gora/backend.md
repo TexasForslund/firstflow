@@ -146,6 +146,8 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
 
 ## B6. Inför pilot ⬜
 
+**Inbjudan av handledare togs över av Texas + Claude 2026-10-26** och är byggd (se B14 nedan). Kvar för Hannes: inbjudan och lösenord för elever och personal, glömt lösenord, begränsning av inloggningsförsök och loggning.
+
 Behövs innan riktiga elever loggar in, men stoppar inte B2–B5:
 
 - Inbjudan och lösenord: läraren bjuder in elev eller handledare, som sätter sitt lösenord via en engångslänk (`POST /api/auth/invite`, `POST /api/auth/set-password`). Samma flöde används för glömt lösenord.
@@ -261,3 +263,21 @@ Läraren skapar projekt och tilldelar dem till elever från klassvyn, på samma 
 Ägare: bestäms. Tillagd från lärarskisserna.
 
 Ett endpoint som ger lärarens lista över saker att följa upp, viktigast först: upprepad frånvaro som inte är anmäld, saknade veckoredovisningar, närvaro som handledaren inte bekräftat och kontrakt som saknar underskrift. Bygger på B4, B5 och avtalshanteringen (B8).
+
+---
+
+## B14. Inbjudan av handledare och företagsprofil 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 2026-10-26).
+
+- `Invitation` och `Notification` i `app/models/invitation.py`. Endpoints i `app/api/routes/invitations.py`.
+- `POST /api/invitations` med `{email}` (lärare, skoladmin): skickar ett mejl med en engångslänk `/invite/<token>`. Token är slumpad, bara hashen sparas och länken gäller i 14 dagar. En ny inbjudan till samma adress ersätter den gamla.
+- `GET /api/invitations`, `POST /api/invitations/{id}/resend` (ny länk) och `DELETE /api/invitations/{id}` (återkalla).
+- `GET /api/invite/{token}` och `POST /api/invite/{token}/accept` (ingen inloggning): handledaren skapar konto (minst 10 tecken i lösenordet) och företagsprofil (namn, adress, bransch, beskrivning) och blir inloggad. Läraren får en notis.
+- Företaget (`Workplace.owner_teacher_id`) syns bara för läraren som bjöd in, och för skoladmin och rektor. Bjöd skoladmin in syns det för skolans alla lärare.
+- `GET/PUT /api/supervisor/workplaces` och `POST /api/supervisor/workplaces/{id}/invitations`: handledaren ändrar profilen och bjuder in upp till tre kollegor.
+- `GET /api/notifications` och `POST /api/notifications/read`.
+- `POST /api/workplaces` och `POST /api/workplaces/{id}/supervisors` får bara skoladmin använda.
+- E-post: `app/services/email.py`. Utan `SMTP_HOST` skrivs mejlet och länken till loggen (inte i produktion). SMTP sätts upp senare (D4).
+
+**Inte byggt:** en handledare som redan har ett konto kan inte bjudas in till ett nytt företag eller av en annan lärare (409). Det behövs när samma handledare tar emot elever från flera lärare.

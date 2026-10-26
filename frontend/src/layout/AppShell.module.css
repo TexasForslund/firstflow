@@ -53,6 +53,13 @@
   height: 1.25rem;
 }
 
+.topActions,
+.mobileActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .navCount {
   display: inline-flex;
 }
@@ -349,6 +356,10 @@
     gap: var(--space-4);
   }
 
+  .collapsed .topActions {
+    flex-direction: column;
+  }
+
   .collapsed .user {
     justify-content: center;
   }
@@ -387,7 +398,8 @@
 }
 
 @media (max-width: 1024px) {
-  .collapseButton {
+  .collapseButton,
+  .topActions {
     display: none;
   }
 }

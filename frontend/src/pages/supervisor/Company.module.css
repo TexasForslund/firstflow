@@ -1,0 +1,66 @@
+.company {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin: 0;
+  padding: var(--space-6);
+}
+
+.details dt {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.details dd {
+  margin: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.inlineIcon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: var(--space-1);
+  vertical-align: -0.15em;
+}
+
+.textareaField {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.textareaField textarea {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-md);
+  resize: vertical;
+}
+
+@media (max-width: 640px) {
+  .details {
+    grid-template-columns: 1fr;
+    padding: var(--space-4);
+  }
+}
