@@ -4,9 +4,18 @@ import type { ReactNode } from 'react'
 import styles from './Badges.module.css'
 
 /** Siffra i en liten ljuslila cirkel, t.ex. olästa meddelanden. */
-export function CountBadge({ count, label }: { count: number; label?: string }) {
+export function CountBadge({
+  count,
+  label,
+  tone = 'primary',
+}: {
+  count: number
+  label?: string
+  /** Färgen säger vad siffran gäller: lila olästa, persika att följa upp, gul att signera. */
+  tone?: 'primary' | 'attention' | 'butter'
+}) {
   return (
-    <span className={styles.count} aria-label={label ? `${count} ${label}` : undefined}>
+    <span className={`${styles.count} ${styles[tone]}`} aria-label={label ? `${count} ${label}` : undefined}>
       {count}
     </span>
   )

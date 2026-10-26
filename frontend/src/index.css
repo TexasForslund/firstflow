@@ -90,7 +90,7 @@
   --radius-full: 9999px;
 
   /* Layout */
-  --sidebar-width: 23.75rem; /* 380 */
+  --sidebar-width: 17.5rem; /* 280 (Texas, 2026-10-26) */
   --main-column: 50.5rem;    /* 808 */
   --side-column: 33.25rem;   /* 532 */
   --column-gap: 1.375rem;    /* 22 */

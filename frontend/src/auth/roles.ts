@@ -42,17 +42,40 @@ const {
   myReports,
 } = navIcons
 
-// Meddelanden och Kontrakt har siffror från demodatan tills de är byggda. Översiktens siffra
-// sätts i RequireAuth från lärarens översikt.
+// Lärarens meny i tre grupper enligt Texas skiss (2026-10-26). Meddelanden och Kontrakt har siffror
+// från demodatan tills de är byggda. Översiktens siffra och Närvarons "3/5" sätts i RequireAuth
+// från lärarens översikt.
 export const navByRole: Record<Role, NavItem[]> = {
   teacher: [
-    { to: '/overview', label: 'Översikt', icon: overview, countLabel: 'att följa upp' },
-    { to: '/attendance', label: 'Närvaro', icon: checkIn },
-    { to: '/messages', label: 'Meddelanden', icon: messages, count: unreadMessages, countLabel: 'olästa' },
-    { to: '/student-history', label: 'Elevhistorik', icon: history },
-    { to: '/projects', label: 'Projekt', icon: projects },
-    { to: '/placements', label: 'Praktikplatser', icon: placements },
-    { to: '/contracts', label: 'Kontrakt', icon: contracts, count: contractsToSign, countLabel: 'att signera' },
+    {
+      group: 'I dag',
+      to: '/overview',
+      label: 'Översikt',
+      icon: overview,
+      countLabel: 'att följa upp',
+      tone: 'attention',
+    },
+    { group: 'I dag', to: '/attendance', label: 'Närvaro', icon: checkIn },
+    {
+      group: 'I dag',
+      to: '/messages',
+      label: 'Meddelanden',
+      icon: messages,
+      count: unreadMessages,
+      countLabel: 'olästa',
+    },
+    { group: 'Elever', to: '/student-history', label: 'Elevhistorik', icon: history, classesAfter: true },
+    { group: 'APL', to: '/placements', label: 'Praktikplatser', icon: placements },
+    { group: 'APL', to: '/projects', label: 'Projekt', icon: projects },
+    {
+      group: 'APL',
+      to: '/contracts',
+      label: 'Kontrakt',
+      icon: contracts,
+      count: contractsToSign,
+      countLabel: 'att signera',
+      tone: 'butter',
+    },
   ],
   supervisor: [
     { to: '/my-students', label: 'Mina elever', icon: students },
