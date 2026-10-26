@@ -107,7 +107,7 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar, top }: AppS
         </div>
 
         <div className={styles.user} title={collapsed ? userName : undefined}>
-          <Avatar name={userName} size={collapsed ? 'md' : 'lg'} color="pink" />
+          <Avatar name={userName} size="sm" color="pink" />
           <div>
             <p className={styles.welcome}>Välkommen tillbaka</p>
             <p className={styles.userName}>{userName}</p>

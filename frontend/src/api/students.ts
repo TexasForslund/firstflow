@@ -116,3 +116,17 @@ export function useStudentReports(studentId: string, enabled: boolean) {
     },
   })
 }
+
+/** Det som behöver följas upp för eleven, med samma regler som lärarens översikt. */
+export function useStudentAttention(studentId: string) {
+  return useQuery({
+    queryKey: ['students', studentId, 'attention'],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/students/{student_id}/attention', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}

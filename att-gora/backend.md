@@ -303,4 +303,5 @@ Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 20
 - `attention`, viktigast först: `missing_check_ins` (minst två de senaste fyra veckorna, samma räkning som klassens närvaro), `missing_reports` (redovisningsdagar före i dag utan inskickad redovisning) och `no_placement` (ingen pågående eller kommande placering, när någon annan i klassen har en).
 - `reports` och `unread_reports`: olästa inskickade redovisningar, de tio senaste, med de två första textsvaren förkortade till 300 tecken.
 - Närvaroräkningen och redovisningsdagarna är utbrutna till `class_student_attendance` och `due_days` så att översikten räknar likadant som Närvaro och elevens redovisningar.
+- **Elevsidan, version 2** (Texas + Claude, 2026-10-26): `GET /api/students/{id}/attention` (samma behörighet som elevsidan) ger elevens uppmärksamhetspunkter med översiktens regler och `missing_report_days`. `GET /api/students/{id}/reports` har nu `answers`, alla textsvar förkortade till 1000 tecken, för sök och filter. `text_answers` i `reports.py` används både här och av översikten.
 

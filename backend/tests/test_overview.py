@@ -205,3 +205,40 @@ def test_only_teachers(
 
 def test_requires_login(client: TestClient) -> None:
     assert client.get("/api/teacher/overview").status_code == 401
+
+
+# --- Elevsidan ----------------------------------------------------------------------------
+
+
+def test_student_attention(client: TestClient, login: Login, w: World, db: Session) -> None:
+    submit(db, w, w.maja, date(2026, 10, 16))
+    login(w.teacher)
+    maja = client.get(f"/api/students/{w.maja.id}/attention").json()
+    assert [(i["reason"], i["count"]) for i in maja["items"]] == [
+        ("missing_check_ins", 3),
+        ("missing_reports", 1),
+    ]
+    assert maja["missing_report_days"] == ["2026-10-20"]
+    liam = client.get(f"/api/students/{w.liam.id}/attention").json()
+    assert [i["reason"] for i in liam["items"]] == ["missing_reports", "no_placement"]
+    assert liam["missing_report_days"] == ["2026-10-20", "2026-10-16"]
+
+
+def test_student_attention_access(
+    client: TestClient, login: Login, w: World, make_user: MakeUser
+) -> None:
+    login(w.other_teacher)
+    assert client.get(f"/api/students/{w.hugo.id}/attention").status_code == 404
+    login(make_user(email="admin@kramfors.se", role=UserRole.SCHOOL_ADMIN, in_school=w.ee22.school))
+    assert client.get(f"/api/students/{w.hugo.id}/attention").status_code == 200
+
+
+def test_student_reports_have_all_text_answers(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    submit(db, w, w.hugo, date(2026, 10, 16), text="  Drog kabel  ")
+    login(w.teacher)
+    body = client.get(f"/api/students/{w.hugo.id}/reports").json()
+    assert body[0]["answers"] == [
+        {"question_id": w.question_id, "question": "Vad har du gjort?", "text": "Drog kabel"}
+    ]

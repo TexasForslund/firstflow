@@ -222,6 +222,19 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ---
 
+## F17. Elevsidan, version 2 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+Skissen är gjord och godkänd av Texas (Design-ytan "Firstflow – Elevsida skiss").
+
+- **Vänster kolumn: Redovisningar** får mest plats. Där finns sök i svaren, val av period (hela tiden, den här veckan, de senaste fyra veckorna) och fråga, och knappar för Alla, Olästa, Med kommentarer, Sena och Saknas, med antal på varje. Korten visar de två första svaren. Saknade redovisningar visas som gula streckade kort på sitt datum. Bara lärare ser redovisningarna.
+- **Höger kolumn:** Behöver uppmärksamhet (bara när det finns något), Närvaro (procent, stapel, veckans dagar och alla incheckningar) och Praktikplats (period, förloppsstapel, handledare och andra placeringar).
+- **Exportera** syns men är avstängd tills vi har bestämt vad exporten ska innehålla.
+- Lärarkortet är borttaget. Skoladmin ändrar elevens lärare via länken Ändra lärare.
+- Elevens avatar och avataren i sidomenyn är mindre.
+- Nya mjuka färger i designprofilen: mint (praktikplats), ljusblå (närvaro) och ljusgul (saknade redovisningar).
+
+---
+
 ## F15. Inbjudan av handledare, Företag och notiser ✅ Klar ([PR #28](https://github.com/TexasForslund/firstflow/pull/28), Texas + Claude, 2026-10-26)
 
 - **Praktikplatser** (lärare, skoladmin): Bjud in handledare med e-post, listan Skickade inbjudningar (väntar, konto skapat, utgången, återkallad) med Skicka igen och Återkalla, och Dina företag med profil och handledare. Ny arbetsplats och Lägg till handledare är borttagna.

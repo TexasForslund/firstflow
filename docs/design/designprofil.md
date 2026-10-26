@@ -47,6 +47,9 @@ Värdena är uppmätta i skisserna. De finns som CSS-variabler i `frontend/src/i
 | `--color-attention` | `#b8401f` | Rubrik i rutan "Behöver uppmärksamhet" |
 | `--color-choice-selected` | `#ffe1e1` | Valt svar i Ja/Nej/Vet inte |
 | `--color-star` | `#f5b21b` | Stjärnbetyg |
+| `--color-mint-bg` / `--color-mint` | `#e6f6ec` / `#146c34` | Praktikplats: ikonruta och text (Texas, 2026-10-26) |
+| `--color-sky-bg` / `--color-sky` | `#e7f0fe` / `#1f5fbf` | Närvaro: ikonruta och text |
+| `--color-butter-bg` / `--color-butter` | `#fff5d6` / `#8a5a00` | Redovisningar som saknas |
 
 Tre färger är något mörkare än i skissen för att klara WCAG AA. Lila text på ljuslila bakgrund var 4,05:1 och är nu 4,7:1 (`#7353ff` → `#6747f5`). Den gröna siffran var 4,41:1 och är nu 4,93:1 (`#158b2e` → `#13822b`). Rubriken i rutan "Behöver uppmärksamhet" var 4,47:1 och är nu 5,02:1 (`#c24829` → `#b8401f`). Den bleka texten i förhandsvisningen av veckoredovisningar är en toning som visar att det finns mer text, inte innehåll som ska läsas, och undantas därför.
 
