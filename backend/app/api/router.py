@@ -1,10 +1,12 @@
 from fastapi import APIRouter
 
 from app.api.routes import (
+    attendance,
     auth,
     classes,
     forms,
     health,
+    invitations,
     me,
     placements,
     reports,
@@ -29,3 +31,13 @@ api_router.include_router(placements.router)
 api_router.include_router(placements.class_router)
 api_router.include_router(placements.me_router)
 api_router.include_router(placements.supervisor_router)
+api_router.include_router(attendance.router)
+api_router.include_router(attendance.me_router)
+api_router.include_router(attendance.class_router)
+api_router.include_router(attendance.supervisor_router)
+api_router.include_router(invitations.router)
+api_router.include_router(invitations.public_router)
+api_router.include_router(invitations.supervisor_router)
+api_router.include_router(invitations.notification_router)
+api_router.include_router(attendance.student_router)
+api_router.include_router(reports.student_router)

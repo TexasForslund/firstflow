@@ -1,0 +1,348 @@
+/*
+ * Elevens incheckning: mobilen först, samma uttryck som elevens övriga vyer.
+ * Grönt och rött används bara för närvaro, enligt designprofilen.
+ */
+
+.page {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 36rem;
+}
+
+.header {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-section);
+}
+
+.date {
+  color: var(--color-text-secondary);
+}
+
+.date::first-letter {
+  text-transform: uppercase;
+}
+
+.state,
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.muted {
+  font-size: var(--font-size-sm);
+}
+
+/* --- Checka in --- */
+
+.checkInBlock {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.checkInButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 6rem;
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+  text-align: left;
+}
+
+.checkInButton:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.checkInButton:disabled {
+  opacity: 0.8;
+}
+
+.checkInButton svg {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.checkInButton > span {
+  display: grid;
+}
+
+.checkInLabel {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-section);
+}
+
+.checkInPlace {
+  font-size: var(--font-size-base);
+}
+
+.reported {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+}
+
+.reported svg {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* --- Kort --- */
+
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.cardTitle {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.doneIcon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--color-success-bar);
+  color: #fff;
+}
+
+.doneIcon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* --- Veckan --- */
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-sm);
+}
+
+.dayToday {
+  background: var(--color-primary-light);
+}
+
+.dayName {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-transform: capitalize;
+}
+
+.dayToday .dayName {
+  color: var(--color-primary-on-light);
+  font-weight: 600;
+}
+
+.dot {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+}
+
+.dot svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.present {
+  background: var(--color-success-bar);
+  color: #fff;
+}
+
+.absent {
+  background: var(--color-error-bar);
+}
+
+.missing {
+  border: 2px dashed var(--color-border);
+}
+
+.future {
+  border: 1px solid var(--color-border);
+}
+
+.none {
+  background: var(--color-surface);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Frånvaro --- */
+
+.absenceClosed {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.choices legend {
+  width: 100%;
+  margin-bottom: var(--space-2);
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+}
+
+.choice:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.choiceOn {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.input {
+  min-height: 3rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.error,
+.success {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.error {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.success {
+  background: var(--color-surface);
+}
+
+/* --- Tomläge --- */
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-10) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+  text-align: center;
+}
+
+.empty svg {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: var(--space-2);
+  color: var(--color-primary);
+}
+
+.emptyTitle {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.emptyText {
+  color: var(--color-text-secondary);
+}

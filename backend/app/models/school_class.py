@@ -37,6 +37,8 @@ class_students = Table(
     Column("student_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True),
     # När eleven lades i klassen. Redovisningar räknas från den dagen.
     Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
+    # En elev går i en klass (Texas, 2026-10-26). Läggs eleven i en ny klass flyttas hen.
+    UniqueConstraint("student_id", name="uq_class_students_student_id"),
 )
 
 # Vilka elever en lärare ansvarar för. Sätts av skoladmin, oberoende av klasser.

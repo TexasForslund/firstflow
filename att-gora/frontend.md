@@ -44,7 +44,7 @@ Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11
 
 **Klassen är navet** (Texas, 2026-10-20). Klassvyn har flikarna Elever, APL-villkor, Frågor och Lärare (bara skoladmin). Läraren styr klassen därifrån: vilka elever som går i den, varje elevs praktikplats (B3) och projekt (B12), klassens APL-villkor (dagar per vecka, incheckning och vilka veckodagar veckoredovisning ska lämnas) och frågorna vid redovisning (B5). Läraren har ingen egen elevlista. `/students` är skoladmins, rektorns och SYV:s elevregister.
 
-Översikten, veckoredovisningen och elevhistoriken har kvar demodatan tills F11.
+Översikten och veckoredovisningen har kvar demodatan tills F11. Elevhistoriken har riktig data sedan F16.
 
 ---
 
@@ -58,9 +58,19 @@ Därmed går en ny skola att sätta upp helt i gränssnittet: skola, skoladmin, 
 
 ---
 
-## F4. Min APL och handledarvy ⬜
+## F4. Min APL och handledarvy 🚧 Granskas ([PR #23](https://github.com/TexasForslund/firstflow/pull/23), Texas + Claude)
 
-Väntar på: B3.
+Byggd 2026-10-26 mot B3 (PR #22). Ingen ändring i backend.
+
+- **Elev, `/my-apl`:** kortet med pågående APL (arbetsplats, adress, period, vecka X av Y och hur många dagar som är kvar) och handledaren. Utan pågående placering visas den närmaste kommande. Kommande och tidigare placeringar listas under.
+- **Handledare, `/my-students`:** dagens elever grupperade per arbetsplats, med period och vecka.
+- **Lärare och skoladmin, `/placements`:** skolans arbetsplatser med handledare. Ny arbetsplats och Lägg till handledare. Rektor ser sidan utan att kunna ändra.
+- **Klassvyn, fliken Elever:** elevraden visar pågående eller nästa placering. Knappen öppnar en panel med elevens placeringar (Ta bort) och formuläret Ny placering: arbetsplats, handledare på arbetsplatsen, start- och slutdatum. Överlappande period och fel handledare ger tydliga felmeddelanden.
+- Elever ser inte längre `/placements`, bara Min APL.
+
+Elevens praktikplats på elevsidan (`/students/:id`) är byggd i F16.
+
+Ursprunglig spec:
 
 - Elev, `/my-apl`: arbetsplats, period och handledare från `GET /api/me/placements`.
 - Handledare, `/my-students`: elever från `GET /api/supervisor/students`.
@@ -69,7 +79,15 @@ Väntar på: B3.
 
 ---
 
-## F5. Incheckning och närvaro ⬜
+## F5. Incheckning och närvaro 🚧 Granskas ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude)
+
+**Byggd 2026-10-26** mot B4:
+- Elev, `/check-in`: stor knapp Checka in, sedan "Incheckad 07:52". Anmäl frånvaro (sjuk eller annan, datum, kommentar). Veckans dagar som prickar (grönt incheckad, rött frånvaro, streckad inte incheckad).
+- Lärare, `/attendance` (ny i menyn, även för skoladmin och rektor via adressen): välj klass och period (den här veckan, senaste fyra veckorna eller egna datum). En rad per elev med närvarostapel och siffror, elever med flest dagar utan incheckning överst och märkta Följ upp.
+- Handledare, `/my-students`: dagens status per elev (incheckad med tid, sjuk, frånvarande eller inte incheckad).
+
+Ursprunglig spec:
+
 
 Väntar på: B4.
 
@@ -169,3 +187,37 @@ Sidan Inställningar för alla roller (Texas, 2026-10-20):
 - **Visning:** fyra lägen (Mindre, Standard, Större, Störst) och fyra inställningar med namn som känns igen från mobilen: Textstorlek, Öka kontrasten, Minska rörelse och Mer luft i texten (WCAG 1.4.12). Sparas på kontot och gäller på alla enheter. Inget mörkt läge (Texas).
 - **Konto:** namn, e-post, roll och skola visas men ändras av skolans administratör. Logga ut från andra enheter.
 - **Senare:** aviseringar (väntar på e-post i B6 och D4) och fler språk.
+
+---
+
+## Förbättringar efter genomgång med Texas (2026-10-26) 🚧 Granskas
+
+- Rullistor har vit bakgrund och ram, som datumfälten.
+- Sökbara val (`Combobox`) för arbetsplats och handledare, och sökfält för elever i klassvyn och på Närvaro.
+- Vänstermenyn kan fällas ihop så att bara ikonerna syns. Valet sparas i webbläsaren.
+- Elevraden i klassvyn visar bara ikon och företagsnamn. Handledare och period syns i panelen.
+- APL-villkor har förklaringar till vad varje inställning styr.
+- Anmäl frånvaro är borttaget från elevens Incheckning (Texas, 2026-10-26). Endpointen `POST /api/attendance/absence` finns kvar i backend tills vidare.
+- Elevens incheckning: en ruta mitt på skärmen första gången eleven öppnar appen en APL-dag efter 08:30. Stängs den visas en rad högst upp på varje sida tills eleven har checkat in. Animation när eleven checkar in.
+
+---
+
+## F16. Elevsidan och Elevhistorik 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (allt om en elev). Alla klick på en elev leder till elevsidan.
+
+- **Elevsidan** (`/students/:id`): klassen i rubriken, Praktikplats (pågående eller nästa, med adress, period, vecka och handledare, och tidigare placeringar), Närvaro (stapel och siffror för perioden, de senaste dagarna och Visa alla), Redovisningar (bara lärare, länk till varje redovisning) och Lärare. Skoladmin redigerar elevens lärare som förut.
+- **Elevhistorik** (`/student-history`): riktig data i stället för demodata. Filter på klass och elev (sökbara), filterchips, grupper per klass och en rad per elev med praktikplats och antal redovisningar.
+- **En klass per elev:** läggs en elev som går i en annan klass till i klassvyn visas "X går i EE22. Vill du flytta eleven hit?" med knappen Flytta. Skoladmin väljer en klass (inte flera) när en elev läggs in.
+- Veckoredovisningens sidopanel visar elevens riktiga praktikplats.
+
+**Inte byggt:** antal projekt per elev (väntar på B12). Byter eleven klass ligger redovisningarna kvar på den gamla klassen, så den nya läraren ser dem inte.
+
+---
+
+## F15. Inbjudan av handledare, Företag och notiser 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+- **Praktikplatser** (lärare, skoladmin): Bjud in handledare med e-post, listan Skickade inbjudningar (väntar, konto skapat, utgången, återkallad) med Skicka igen och Återkalla, och Dina företag med profil och handledare. Ny arbetsplats och Lägg till handledare är borttagna.
+- **`/invite/:token`** (ingen inloggning): handledaren skapar konto och företagsprofil, och hamnar sedan på Mina elever.
+- **Företag** (handledare, `/company`): företagsprofilen med Redigera, handledarna och Bjud in en kollega (högst tre).
+- **Notiser:** en klocka i menyn (och i mobilens toppfält) med antal olästa. Notiserna markeras som lästa när listan öppnas.

@@ -6,6 +6,7 @@ import type { Role } from './auth/roles'
 import { SchoolPage } from './pages/admin/SchoolPage'
 import { Schools } from './pages/admin/Schools'
 import { Users } from './pages/admin/Users'
+import { AcceptInvite } from './pages/auth/AcceptInvite'
 import { Login } from './pages/auth/Login'
 import { ClassList } from './pages/classes/ClassList'
 import { ClassPage } from './pages/classes/ClassPage'
@@ -13,10 +14,16 @@ import { NewClass } from './pages/classes/NewClass'
 import { StudentList } from './pages/students/StudentList'
 import { StudentPage } from './pages/students/StudentPage'
 import { Placeholder } from './pages/Placeholder'
+import { Placements } from './pages/placements/Placements'
 import { Settings } from './pages/settings/Settings'
 import { AnswerReport } from './pages/student/AnswerReport'
+import { CheckIn } from './pages/student/CheckIn'
+import { MyApl } from './pages/student/MyApl'
 import { MyReports } from './pages/student/MyReports'
 import { ReportPost } from './pages/student/ReportPost'
+import { Company } from './pages/supervisor/Company'
+import { MyStudents } from './pages/supervisor/MyStudents'
+import { Attendance } from './pages/teacher/Attendance'
 import { Overview } from './pages/teacher/Overview'
 import { StudentHistory } from './pages/teacher/StudentHistory'
 import { ReportRoute } from './pages/teacher/TeacherReport'
@@ -34,6 +41,8 @@ function placeholder(path: string, roles: Role[], title: string, description: st
 
 const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
+  // Länken i inbjudningsmejlet. Kräver ingen inloggning.
+  { path: '/invite/:token', element: <AcceptInvite /> },
   {
     path: '/',
     element: <RequireAuth />,
@@ -44,6 +53,7 @@ const routes: RouteObject[] = [
       { path: 'overview', element: only(staff, <Overview />) },
       { path: 'reports/:reportId', element: only(staff, <ReportRoute />) },
       { path: 'student-history', element: only(staff, <StudentHistory />) },
+      { path: 'attendance', element: only(['teacher', 'school_admin', 'principal'], <Attendance />) },
       placeholder('reports', staff, 'Veckoredovisningar', 'Alla veckoredovisningar, med filter per klass, elev och vecka.'),
       placeholder('projects', staff, 'Projekt', 'Projekt som tilldelas elever och kopplas till veckoredovisningar.'),
 
@@ -56,7 +66,7 @@ const routes: RouteObject[] = [
 
       // Flera roller
       placeholder('messages', ['teacher', 'student', 'supervisor', 'syv'], 'Meddelanden', 'Meddelanden mellan lärare, elever och handledare.'),
-      placeholder('placements', ['teacher', 'student', 'school_admin'], 'Praktikplatser', 'Arbetsplatser, handledare och vilka elever som är där.'),
+      { path: 'placements', element: only(['teacher', 'school_admin', 'principal'], <Placements />) },
       placeholder('contracts', ['teacher', 'supervisor', 'school_admin'], 'Kontrakt', 'Utbildningskontrakt och APL-avtal att signera.'),
       { path: 'settings', element: only(anyRole, <Settings />) },
 
@@ -64,11 +74,12 @@ const routes: RouteObject[] = [
       { path: 'my-reports', element: only(['student'], <MyReports />) },
       { path: 'my-reports/:reportId', element: only(['student'], <ReportPost />) },
       { path: 'my-reports/:reportId/answer', element: only(['student'], <AnswerReport />) },
-      placeholder('my-apl', ['student'], 'Min APL', 'Din arbetsplats, period och handledare. Kommer i F4.'),
-      placeholder('check-in', ['student'], 'Incheckning', 'Checka in för dagens APL. Kommer i F5.'),
+      { path: 'my-apl', element: only(['student'], <MyApl />) },
+      { path: 'check-in', element: only(['student'], <CheckIn />) },
 
       // Handledare (F4)
-      placeholder('my-students', ['supervisor'], 'Mina elever', 'Eleverna du handleder just nu. Kommer i F4.'),
+      { path: 'my-students', element: only(['supervisor'], <MyStudents />) },
+      { path: 'company', element: only(['supervisor'], <Company />) },
 
       // Skolans ledning och administration
       { path: 'users', element: only(['school_admin', 'principal'], <Users />) },

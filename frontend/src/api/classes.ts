@@ -83,10 +83,11 @@ function useInvalidateClass(classId: string) {
 export function useAddStudent(classId: string) {
   const invalidate = useInvalidateClass(classId)
   return useMutation({
-    mutationFn: async (studentId: string) => {
+    // move: eleven går i en annan klass och ska flyttas hit. Utan move svarar API:t 409.
+    mutationFn: async ({ studentId, move = false }: { studentId: string; move?: boolean }) => {
       const { data, error, response } = await api.POST('/api/classes/{class_id}/students', {
         params: { path: { class_id: classId } },
-        body: { student_id: studentId },
+        body: { student_id: studentId, move },
       })
       if (!data) throw new ApiError(error, response.status)
       return data

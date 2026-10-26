@@ -4,7 +4,7 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 
 | Fil | Vem | Innehåll |
 | --- | --- | --- |
-| [backend.md](backend.md) | Hannes (B3, B6), Texas (B1b, B2, B4, B5) | Uppgifter i `backend/`: modeller, migreringar, endpoints, tester |
+| [backend.md](backend.md) | Hannes (B3, B4, B6), Texas (B1b, B2, B5) | Uppgifter i `backend/`: modeller, migreringar, endpoints, tester |
 | [frontend.md](frontend.md) | Texas | Uppgifter i `frontend/`: vyer, komponenter, anrop mot API:t |
 | [drift.md](drift.md) | Bestäms | Driftsättning hos Broadview: produktion, testmiljö, backup, e-post, övervakning |
 | [ideer.md](ideer.md) | Texas | Idéer att bolla. Inget är beslutat, ta upp med Texas innan något byggs |
@@ -30,13 +30,22 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **F14:** Inställningar med visning i fyra lägen (Mindre, Standard, Större, Störst), kontrast, rörelse, textavstånd och konto. Sparas per konto (#19, #20).
 - Demodatan (`seed_demo`) ger varje klass ett publicerat formulär med redovisning tisdag och fredag.
 
+**Klart och mergat (Hannes + Claude):**
+- **B3:** arbetsplatser, handledare och placeringar (#22).
+
+**Granskas (Texas + Claude):**
+- **F16: elevsidan och Elevhistorik.** En elev går i en klass och flyttas efter bekräftelse. Elevsidan samlar praktikplats, närvaro, redovisningar och lärare. Elevhistorik har riktig data.
+- **B14 och F15: inbjudan av handledare.** Läraren bjuder in med e-post, handledaren skapar konto och företagsprofil via länken, läraren får en notis. Handledaren bjuder in upp till tre kollegor. Inbjudan av handledare togs över från Hannes B6.
+- **B4 och F5 (#26): närvaro och incheckning.** Eleven checkar in och anmäler frånvaro, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
+- **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
+
 **Nästa steg:**
 - **Texas + Claude:**
   - B5b: mallar (beslut finns i fragor-typeform.md), förslag utifrån läroplanen och extra frågor per elev.
+  - F6: lärarens dashboard med riktig närvaro, när B4 och F5 är mergade.
   - Gå igenom [ideer.md](ideer.md) med Texas.
-- **Texas + Claude:** B4 (närvaro och incheckning) är flyttad från Hannes (2026-10-26), eftersom den blockerar F5, F6 och demon.
-- **Hannes + Claude:** B3 (praktikplats) är klar och mergad (#22). Nästa är B6 (inbjudningar och lösenord). Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
-- **Väntar på B4 och B12:**
+- **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
+- **Väntar på B12:**
   - elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt)
   - projektval i redovisningen
   - handledarens åtkomst till redovisningar

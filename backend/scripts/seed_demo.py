@@ -10,11 +10,14 @@ Varje skola får två klasser med fem elever var. Varje klass får ett publicera
 veckoredovisning, med redovisning tisdag och fredag. Varje skola får två arbetsplatser med
 var sin handledare, och eleverna i EE22 är placerade där under en pågående period. Eleverna i
 EE21 har ingen placering, så att det syns hur det ser ut innan läraren har placerat dem.
+Eleverna i EE22 har närvaro sedan placeringen började, med en sjukdag och en elev som
+slutat checka in.
 """
 
 import sys
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
+from datetime import time as dt_time
 from typing import Any
 
 from sqlalchemy import select
@@ -25,6 +28,7 @@ from app.core import time
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal
+from app.models.attendance import Attendance, AttendanceStatus
 from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
@@ -191,10 +195,20 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
             select(Workplace).where(Workplace.school_id == school.id, Workplace.name == name)
         )
         if workplace is None:
-            workplace = Workplace(school_id=school.id, name=name, address=address)
+            workplace = Workplace(
+                school_id=school.id,
+                name=name,
+                address=address,
+                industry="El och energi",
+                description=f"{name} tar emot elever på APL inom elinstallation och service.",
+            )
             workplace.supervisors = [supervisor] if supervisor else []
             db.add(workplace)
             created.append(name)
+        # Företagen syns bara för läraren som bjöd in handledaren (Texas, 2026-10-26).
+        if workplace.owner_teacher_id is None:
+            teacher = db.scalar(select(User).where(User.email == f"larare.{key}@{DOMAIN}"))
+            workplace.owner_teacher_id = teacher.id if teacher else None
         if supervisor:
             workplaces.append((workplace, supervisor))
     db.flush()
@@ -219,6 +233,55 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
                 end_date=start + timedelta(days=55),
             )
         )
+    db.flush()
+    return created
+
+
+def _ensure_attendance(db: Session, school: School) -> int:
+    """Ger placeringarna i EE22 närvaro fram till i går, och några incheckningar i dag.
+
+    Mönstret visar det läraren behöver se: de flesta checkar in, en elev har varit sjuk en
+    dag och en elev har slutat checka in de senaste dagarna. Returnerar antal nya dagar.
+    """
+    school_class = db.scalar(
+        select(SchoolClass).where(SchoolClass.school_id == school.id, SchoolClass.name == "EE22")
+    )
+    if school_class is None:
+        return 0
+    today = time.today()
+    created = 0
+    for i, student in enumerate(school_class.students):
+        placement = db.scalar(select(Placement).where(Placement.student_id == student.id))
+        if placement is None or db.scalar(
+            select(Attendance.id).where(Attendance.placement_id == placement.id).limit(1)
+        ):
+            continue
+        weekdays = [
+            placement.start_date + timedelta(days=d)
+            for d in range((min(today, placement.end_date) - placement.start_date).days + 1)
+            if (placement.start_date + timedelta(days=d)).weekday() < 5
+        ]
+        for n, day in enumerate(weekdays):
+            is_today = day == today
+            if i == len(school_class.students) - 1 and n >= len(weekdays) - 3:
+                continue  # sista eleven har inte checkat in de senaste dagarna
+            if is_today and i >= 2:
+                continue  # i dag har bara de två första checkat in än
+            if i == 1 and n == 3:
+                db.add(
+                    Attendance(placement_id=placement.id, date=day, status=AttendanceStatus.SICK)
+                )
+            else:
+                at = datetime.combine(day, dt_time(7, 30 + (i * 7 + n * 3) % 25), time.SCHOOL_TZ)
+                db.add(
+                    Attendance(
+                        placement_id=placement.id,
+                        date=day,
+                        status=AttendanceStatus.PRESENT,
+                        checked_in_at=at,
+                    )
+                )
+            created += 1
     db.flush()
     return created
 
@@ -252,6 +315,8 @@ def seed(db: Session) -> list[tuple[str, str, str]]:
             add(f"{prefix}@{DOMAIN}", name, UserRole.SUPERVISOR, None)
         for name in _ensure_placements(db, school, key):
             created.append((f"arbetsplats {name}", "–", school.name))
+        if days := _ensure_attendance(db, school):
+            created.append((f"närvaro {days} dagar", "–", school.name))
     return created
 
 
@@ -267,10 +332,12 @@ def main() -> None:
     classes = sum(1 for item in created if item[0].startswith("klass "))
     forms = sum(1 for item in created if item[0].startswith("formulär "))
     workplaces = sum(1 for item in created if item[0].startswith("arbetsplats "))
-    accounts = len(created) - classes - forms - workplaces
+    attendance = sum(1 for item in created if item[0].startswith("närvaro "))
+    accounts = len(created) - classes - forms - workplaces - attendance
     print(
         f"Skapade {accounts} demokonton, {classes} klasser, {forms} formulär"
         f" och {workplaces} arbetsplatser."
+        + (" Närvaro för eleverna i EE22." if attendance else "")
     )
     print(f"Lösenord för alla konton: {DEMO_PASSWORD}\n")
     for email, role, school in created:

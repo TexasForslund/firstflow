@@ -21,9 +21,47 @@
   border-right: 1px solid var(--color-border);
 }
 
+.sidebarTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
 .logo {
   display: inline-flex;
-  margin-bottom: var(--space-8);
+}
+
+.collapseButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.collapseButton:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.collapseButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.topActions,
+.mobileActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.navCount {
+  display: inline-flex;
 }
 
 .user {
@@ -300,5 +338,68 @@
 @media (prefers-reduced-motion: reduce) {
   .sidebar {
     transition: none;
+  }
+}
+
+/* ─── Hopfälld meny: bara ikoner (stor skärm) ──────────────── */
+@media (min-width: 1025px) {
+  .collapsed {
+    --sidebar-width: 5.5rem;
+  }
+
+  .collapsed .sidebar {
+    padding: var(--space-8) var(--space-3);
+  }
+
+  .collapsed .sidebarTop {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .collapsed .topActions {
+    flex-direction: column;
+  }
+
+  .collapsed .user {
+    justify-content: center;
+  }
+
+  .collapsed .user > div:last-child,
+  .collapsed .navLabel,
+  .collapsed .sectionLabel,
+  .collapsed .classesSection {
+    display: none;
+  }
+
+  .collapsed .navItem {
+    position: relative;
+    justify-content: center;
+    width: 100%;
+    margin: 0 0 var(--space-2);
+    padding: 0;
+  }
+
+  .collapsed .navCount {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    transform: scale(0.8);
+  }
+
+  .collapsed .nav {
+    margin-bottom: var(--space-8);
+  }
+
+  .collapsed .section {
+    margin-bottom: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 1024px) {
+  .collapseButton,
+  .topActions {
+    display: none;
   }
 }

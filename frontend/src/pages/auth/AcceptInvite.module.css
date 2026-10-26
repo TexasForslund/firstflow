@@ -1,0 +1,63 @@
+.panel {
+  max-width: 34rem;
+}
+
+.state {
+  color: var(--color-text-secondary);
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.divided {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Rubriken ligger innanför ramen, inte i den. */
+.divided .legend {
+  float: left;
+  width: 100%;
+}
+
+.legend {
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.textareaField {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.textareaField textarea {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-md);
+  resize: vertical;
+}
+
+.textareaField textarea:focus-visible {
+  border-color: var(--color-primary);
+}

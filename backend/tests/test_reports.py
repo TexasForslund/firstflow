@@ -56,6 +56,10 @@ class World:
             email="sara@kramfors.se", role=UserRole.STUDENT, in_school=self.kramfors
         )
         self.umea_student = make_user(email="ali@umea.se", role=UserRole.STUDENT, in_school=umea)
+        # En elev går i en klass, så TE21 har en egen elev.
+        self.te21_student = make_user(
+            email="maja@kramfors.se", role=UserRole.STUDENT, in_school=self.kramfors
+        )
         self.ee22 = SchoolClass(
             school_id=self.kramfors.id,
             name="EE22",
@@ -67,7 +71,7 @@ class World:
             school_id=self.kramfors.id,
             name="TE21",
             teachers=[self.teacher],
-            students=[self.student],
+            students=[self.te21_student],
             report_due_weekdays=[1],
         )
         db.add_all([self.ee22, self.empty])
@@ -152,7 +156,7 @@ def test_mine_lists_due_days_of_published_classes(
 ) -> None:
     login(w.student)
     items = client.get("/api/reports/mine").json()
-    # Fyra veckor bakåt, tisdagar och fredagar. TE21 har inget publicerat formulär.
+    # Fyra veckor bakåt, tisdagar och fredagar.
     assert len(items) == 8
     assert {i["class_name"] for i in items} == {"EE22"}
     assert items[0] == {
@@ -206,7 +210,7 @@ def test_start_report_checks_the_day(
 
 
 def test_start_report_needs_published_form(client: TestClient, login: Login, w: World) -> None:
-    login(w.student)
+    login(w.te21_student)
     response = client.post(
         "/api/reports", json={"class_id": str(w.empty.id), "due_date": str(TUESDAY)}
     )

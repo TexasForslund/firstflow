@@ -5,7 +5,7 @@ import { Link } from 'react-router'
 import { useClasses, useSchoolTeachers } from '../../api/classes'
 import { useCreateStudent, useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, InfoChip, TextField } from '../../components'
+import { Avatar, Button, Card, Combobox, InfoChip, TextField } from '../../components'
 import styles from '../classes/Classes.module.css'
 import { CheckList } from './CheckList'
 
@@ -112,7 +112,8 @@ function CreateStudentForm({ schoolId, onDone }: { schoolId?: string | null; onD
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [teacherIds, setTeacherIds] = useState<string[]>([])
-  const [classIds, setClassIds] = useState<string[]>([])
+  // En elev går i en klass (Texas, 2026-10-26).
+  const [classId, setClassId] = useState('')
   const [created, setCreated] = useState<string | null>(null)
   const teachers = useSchoolTeachers(schoolId, true)
   const classes = useClasses()
@@ -122,13 +123,13 @@ function CreateStudentForm({ schoolId, onDone }: { schoolId?: string | null; onD
     event.preventDefault()
     setCreated(null)
     create.mutate(
-      { name, email, teacher_ids: teacherIds, class_ids: classIds },
+      { name, email, teacher_ids: teacherIds, class_ids: classId ? [classId] : [] },
       {
         onSuccess: (student) => {
           setCreated(student.name)
           setName('')
           setEmail('')
-          setClassIds([])
+          setClassId('')
         },
       },
     )
@@ -170,11 +171,12 @@ function CreateStudentForm({ schoolId, onDone }: { schoolId?: string | null; onD
               onChange={setTeacherIds}
               emptyText={teachers.isPending ? 'Hämtar lärare…' : 'Skolan har inga lärare än.'}
             />
-            <CheckList
-              legend="Klass (valfritt)"
-              options={(classes.data ?? []).map((c) => ({ id: c.id, name: c.name }))}
-              selected={classIds}
-              onChange={setClassIds}
+            <Combobox
+              label="Klass (valfritt)"
+              value={classId}
+              onChange={setClassId}
+              placeholder="Välj klass"
+              options={(classes.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
               emptyText={classes.isPending ? 'Hämtar klasser…' : 'Skolan har inga klasser än.'}
             />
           </div>
