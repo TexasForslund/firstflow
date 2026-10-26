@@ -96,3 +96,29 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-base);
 }
+
+.input:disabled {
+  background: var(--color-surface);
+  cursor: not-allowed;
+}
+
+.clear {
+  position: absolute;
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+}
+
+.clear:hover {
+  background: var(--color-surface);
+}
+
+.clear svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}

@@ -15,9 +15,9 @@ import { useClassPlacements, type Placement } from '../../api/placements'
 import { useClassReports } from '../../api/reports'
 import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
+import { Avatar, Button, Card, matches, SearchInput, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
-import { currentPlacement, periodText } from '../placements/period'
+import { currentPlacement } from '../placements/period'
 import { AplTermsForm } from './AplTermsForm'
 import { ClassReports } from './ClassReports'
 import { FormBuilder } from './questions/FormBuilder'
@@ -36,6 +36,7 @@ export function ClassPage() {
   const isTeacher = user?.role === 'teacher'
   const unread = useClassReports(classId, { unreadOnly: true }, isTeacher)
   const placements = useClassPlacements(classId, query.isSuccess)
+  const [search, setSearch] = useState('')
 
   if (query.isPending) return <p className={styles.state}>Laddar klassen…</p>
   if (query.isError) return <NotFound what="Klassen" />
@@ -87,16 +88,21 @@ export function ClassPage() {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className={styles.panel}>
         {tab === 'students' && (
           <>
-            <Card>
+            <Card className={styles.overflowVisible}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>Elever</h2>
                 <span className={styles.count}>{cls.students.length}</span>
               </div>
+              {cls.students.length > 0 && (
+                <div className={styles.listSearch}>
+                  <SearchInput label="Sök elev i klassen" placeholder="Sök elev" value={search} onChange={setSearch} />
+                </div>
+              )}
               {cls.students.length === 0 ? (
                 <p className={styles.empty}>Inga elever i klassen än.{canEdit && ' Lägg till den första nedan.'}</p>
               ) : (
                 <ul className={styles.list}>
-                  {cls.students.map((student) => (
+                  {cls.students.filter((student) => matches(`${student.name} ${student.email}`, search)).map((student) => (
                     <StudentRow
                       key={student.id}
                       classId={cls.id}
@@ -143,9 +149,6 @@ function StudentRow({ classId, student, canEdit, placements, placementsLoading }
   ) : current ? (
     <span className={styles.placementText}>
       <span className={styles.placementName}>{current.workplace.name}</span>
-      <span>
-        {current.supervisor.name} · {periodText(current.start_date, current.end_date)}
-      </span>
     </span>
   ) : (
     <span>{canEdit ? 'Tilldela praktikplats' : 'Ingen praktikplats'}</span>

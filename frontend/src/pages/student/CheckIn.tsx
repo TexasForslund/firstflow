@@ -12,6 +12,7 @@ import {
 import { Button } from '../../components'
 import { parseDay } from '../reports/answers'
 import styles from './CheckIn.module.css'
+import { CheckInSuccess } from './CheckInSuccess'
 
 const ABSENCE_DAYS_BACK = 7
 
@@ -89,9 +90,13 @@ function Today({ data }: { data: MyAttendance }) {
   if (today?.status === 'present') {
     return (
       <section className={`${styles.card} ${styles.done}`} role="status">
-        <span className={styles.doneIcon}>
-          <Check aria-hidden="true" />
-        </span>
+        {checkIn.isSuccess ? (
+          <CheckInSuccess size="md" />
+        ) : (
+          <span className={styles.doneIcon}>
+            <Check aria-hidden="true" />
+          </span>
+        )}
         <span>
           <p className={styles.cardTitle}>Incheckad {today.checked_in_at && time(today.checked_in_at)}</p>
           <p className={styles.muted}>{data.workplace_name}</p>

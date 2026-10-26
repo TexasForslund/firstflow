@@ -203,8 +203,8 @@
   width: 100%;
   min-height: 3rem;
   padding: 0 var(--space-12) 0 var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid transparent;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text);
   font-size: var(--font-size-md);
@@ -716,4 +716,21 @@
     margin-right: var(--space-4);
     padding: var(--space-4);
   }
+}
+
+.listSearch {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cardIntro {
+  padding: var(--space-4) var(--space-6) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+}
+
+.termField {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
 }

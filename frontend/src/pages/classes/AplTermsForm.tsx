@@ -44,6 +44,9 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>APL-villkor</h2>
       </div>
+      <p className={styles.cardIntro}>
+        Inställningarna gäller hela klassen och styr incheckningen, närvaron och veckoredovisningarna.
+      </p>
       <div className={styles.cardBody}>
         <form
           className={styles.formSingle}
@@ -52,18 +55,30 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
           onChange={() => setSaved(false)}
         >
           <div className={styles.formGrid}>
-            <SelectField label="APL-dagar per vecka" value={days} onChange={setDays}>
-              <option value="">Inte bestämt</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n} {n === 1 ? 'dag' : 'dagar'}
-                </option>
-              ))}
-            </SelectField>
-            <label className={styles.check} style={{ alignSelf: 'end', minHeight: '3rem' }}>
-              <input type="checkbox" checked={checkIn} onChange={(e) => setCheckIn(e.target.checked)} />
-              Eleven checkar in varje APL-dag
-            </label>
+            <div className={styles.termField}>
+              <SelectField label="APL-dagar per vecka" value={days} onChange={setDays}>
+                <option value="">Inte bestämt</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n} {n === 1 ? 'dag' : 'dagar'}
+                  </option>
+                ))}
+              </SelectField>
+              <p className={styles.hint}>
+                Hur många dagar i veckan eleverna är ute på APL. Används för att räkna ut missade incheckningar
+                på sidan Närvaro.
+              </p>
+            </div>
+            <div className={styles.termField}>
+              <label className={styles.check} style={{ minHeight: '3rem', marginTop: '1.75rem' }}>
+                <input type="checkbox" checked={checkIn} onChange={(e) => setCheckIn(e.target.checked)} />
+                Eleven checkar in varje APL-dag
+              </label>
+              <p className={styles.hint}>
+                Eleven får en påminnelse om att checka in. Är rutan avbockad räknas dagar utan incheckning inte
+                som avvikelse.
+              </p>
+            </div>
           </div>
 
           <fieldset className={styles.fieldset}>
@@ -79,7 +94,7 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
             <p className={styles.hint}>
               {weekdays.length === 0
                 ? 'Välj en eller flera dagar.'
-                : `Eleverna lämnar veckoredovisning ${weekdayList(weekdays)}.`}
+                : `Eleverna lämnar veckoredovisning ${weekdayList(weekdays)}. De dagarna får eleven en redovisning att svara på i appen.`}
             </p>
           </fieldset>
 
