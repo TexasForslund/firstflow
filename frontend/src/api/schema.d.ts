@@ -1168,6 +1168,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/teacher/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Teacher Overview
+         * @description Översikten för lärarens klasser. Bara klasser på lärarens egen skola.
+         */
+        get: operations["teacher_overview_api_teacher_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1187,6 +1207,13 @@ export interface components {
             email: string;
             /** Name */
             name: string;
+        };
+        /** AnswerPreview */
+        AnswerPreview: {
+            /** Question */
+            question: string;
+            /** Text */
+            text: string;
         };
         /** AnswerRead */
         AnswerRead: {
@@ -1270,6 +1297,23 @@ export interface components {
          * @enum {string}
          */
         AttendanceStatus: "present" | "absent" | "sick";
+        /** AttentionItem */
+        AttentionItem: {
+            student: components["schemas"]["PersonBrief"];
+            /** Class Name */
+            class_name: string;
+            reason: components["schemas"]["AttentionReason"];
+            /**
+             * Count
+             * @description Antal missade incheckningar eller redovisningar. 0 annars
+             */
+            count: number;
+        };
+        /**
+         * AttentionReason
+         * @enum {string}
+         */
+        AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement";
         /** Choice */
         Choice: {
             /**
@@ -1419,6 +1463,23 @@ export interface components {
             student_count: number;
             /** Teacher Names */
             teacher_names: string[];
+        };
+        /** ClassToday */
+        ClassToday: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * On Apl
+             * @description Elever med en placering som pågår i dag
+             */
+            on_apl: number;
+            /** Checked In */
+            checked_in: number;
         };
         /** Colleague */
         Colleague: {
@@ -1836,6 +1897,36 @@ export interface components {
             created_at: string;
             /** Read */
             read: boolean;
+        };
+        /** OverviewReport */
+        OverviewReport: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["PersonBrief"];
+            /** Class Name */
+            class_name: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /** Comment Count */
+            comment_count: number;
+            /**
+             * Preview
+             * @description De första textsvaren, förkortade
+             */
+            preview: components["schemas"]["AnswerPreview"][];
         };
         /** PersonBrief */
         PersonBrief: {
@@ -2410,6 +2501,29 @@ export interface components {
              * Format: uuid
              */
             teacher_id: string;
+        };
+        /** TeacherOverview */
+        TeacherOverview: {
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** On Apl */
+            on_apl: number;
+            /** Checked In */
+            checked_in: number;
+            /** Classes */
+            classes: components["schemas"]["ClassToday"][];
+            /** Attention */
+            attention: components["schemas"]["AttentionItem"][];
+            /** Unread Reports */
+            unread_reports: number;
+            /**
+             * Reports
+             * @description Olästa redovisningar, senaste först
+             */
+            reports: components["schemas"]["OverviewReport"][];
         };
         /** TeachersSet */
         TeachersSet: {
@@ -4526,6 +4640,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    teacher_overview_api_teacher_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeacherOverview"];
                 };
             };
         };

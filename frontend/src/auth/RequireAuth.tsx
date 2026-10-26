@@ -5,6 +5,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
 import { useClasses } from '../api/classes'
+import { useTeacherOverview } from '../api/overview'
 import { AppShell } from '../layout/AppShell'
 import { CheckInPrompt } from '../pages/student/CheckInPrompt'
 import { applyPreferences } from './preferences'
@@ -19,6 +20,7 @@ export function RequireAuth() {
   const navigate = useNavigate()
   const isTeacher = me.data?.role === 'teacher'
   const classes = useClasses(isTeacher)
+  const overview = useTeacherOverview(isTeacher)
   const preferences = me.data?.preferences
 
   // Användarens visningsinställningar gäller på alla enheter.
@@ -56,7 +58,9 @@ export function RequireAuth() {
   return (
     <AppShell
       userName={user.name}
-      nav={navByRole[user.role]}
+      nav={navByRole[user.role].map((item) =>
+        item.to === '/overview' ? { ...item, count: overview.data?.attention.length } : item,
+      )}
       classes={
         isTeacher
           ? (classes.data ?? []).map((c) => ({ id: c.id, name: c.name, count: c.student_count }))

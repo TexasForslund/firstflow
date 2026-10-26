@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api } from './client'
 import { ApiError } from './errors'
+import { overviewKey } from './overview'
 import type { components } from './schema'
 
 export type ReportDetail = components['schemas']['ReportDetail']
@@ -150,6 +151,7 @@ export function useMarkRead(reportId: string) {
       )
       const report = queryClient.getQueryData<ReportDetail>(keys.report(reportId))
       if (report) queryClient.invalidateQueries({ queryKey: classKey(report.class_id) })
+      queryClient.invalidateQueries({ queryKey: overviewKey })
     },
   })
 }

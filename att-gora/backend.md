@@ -293,3 +293,14 @@ Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 20
 - E-post: `app/services/email.py`. Utan `SMTP_HOST` skrivs mejlet och länken till loggen (inte i produktion). SMTP sätts upp senare (D4).
 
 **Inte byggt:** en handledare som redan har ett konto kan inte bjudas in till ett nytt företag eller av en annan lärare (409). Det behövs när samma handledare tar emot elever från flera lärare.
+
+---
+
+## B15. Lärarens översikt 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+`GET /api/teacher/overview` (bara lärare, klasserna hen undervisar) i `app/api/routes/overview.py`:
+- `on_apl`, `checked_in` och `classes`: elever med en placering som pågår i dag (bara vardagar) och dagens incheckningar, totalt och per klass.
+- `attention`, viktigast först: `missing_check_ins` (minst två de senaste fyra veckorna, samma räkning som klassens närvaro), `missing_reports` (redovisningsdagar före i dag utan inskickad redovisning) och `no_placement` (ingen pågående eller kommande placering, när någon annan i klassen har en).
+- `reports` och `unread_reports`: olästa inskickade redovisningar, de tio senaste, med de två första textsvaren förkortade till 300 tecken.
+- Närvaroräkningen och redovisningsdagarna är utbrutna till `class_student_attendance` och `due_days` så att översikten räknar likadant som Närvaro och elevens redovisningar.
+

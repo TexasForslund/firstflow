@@ -8,6 +8,7 @@ from app.api.routes import (
     health,
     invitations,
     me,
+    overview,
     placements,
     reports,
     schools,
@@ -44,3 +45,4 @@ api_router.include_router(invitations.supervisor_router)
 api_router.include_router(invitations.notification_router)
 api_router.include_router(attendance.student_router)
 api_router.include_router(reports.student_router)
+api_router.include_router(overview.router)
