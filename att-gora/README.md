@@ -34,7 +34,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B3:** arbetsplatser, handledare och placeringar (#22).
 
 **Granskas (Texas + Claude):**
-- **B4 och F5: närvaro och incheckning.** Eleven checkar in och anmäler frånvaro, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
+- **B4 och F5 (#26): närvaro och incheckning.** Eleven checkar in och anmäler frånvaro, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
 - **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
 
 **Nästa steg:**

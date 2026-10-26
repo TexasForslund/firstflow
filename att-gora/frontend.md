@@ -79,7 +79,7 @@ Ursprunglig spec:
 
 ---
 
-## F5. Incheckning och närvaro 🚧 Granskas (Texas + Claude)
+## F5. Incheckning och närvaro 🚧 Granskas ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude)
 
 **Byggd 2026-10-26** mot B4:
 - Elev, `/check-in`: stor knapp Checka in, sedan "Incheckad 07:52". Anmäl frånvaro (sjuk eller annan, datum, kommentar). Veckans dagar som prickar (grönt incheckad, rött frånvaro, streckad inte incheckad).

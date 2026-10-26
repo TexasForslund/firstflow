@@ -81,7 +81,7 @@ Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar 
 
 ---
 
-## B4. Närvaro och incheckning 🚧 Granskas (Texas + Claude, tagen från Hannes 2026-10-26)
+## B4. Närvaro och incheckning 🚧 Granskas ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude, tagen från Hannes 2026-10-26)
 
 **Byggd 2026-10-26.** Modell `Attendance` i `app/models/attendance.py`, endpoints i `app/api/routes/attendance.py`:
 - `POST /api/attendance/check-in` (elev), `POST /api/attendance/absence` (elev, `{date, status: absent|sick, note}`), `GET /api/me/attendance` (elev).
