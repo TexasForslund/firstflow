@@ -51,7 +51,8 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 - `PUT /api/classes/{id}/apl-terms`: klassens APL-villkor (dagar per vecka, incheckning och vilka veckodagar veckoredovisning ska lämnas). Läraren för klassen och skoladmin. Villkoren finns också i `GET /api/classes/{id}` som `apl_terms`.
 - `GET /api/students/{id}`: elevsidan, med klasser och lärare. Läraren ser elever som är kopplade till hen eller går i hens klasser.
 - **En klass per elev** (Texas, 2026-10-26): unik nyckel på `class_students.student_id` (migreringen tar bort dubbletter först). Går eleven i en annan klass svarar `POST /api/classes/{id}/students` 409, och med `move: true` flyttas eleven. `class_ids` vid `POST /api/students` får ha högst en klass.
-- Elevsidan (Texas + Claude, 2026-10-26): `GET /api/students/{id}` har `workplace` (pågående eller nästa placering) och `report_count` (inskickade redovisningar). Nya endpoints med samma behörighet som elevsidan: `GET /api/students/{id}/placements` och `GET /api/students/{id}/attendance` (standard: pågående placering fram till i dag, annars de senaste fyra veckorna). `GET /api/students/{id}/reports` är bara för lärare och visar redovisningar från klasser läraren undervisar.
+- Elevsidan (Texas + Claude, 2026-10-26): `GET /api/students/{id}` har `workplace` (pågående eller nästa placering) och `report_count` (inskickade redovisningar). Nya endpoints med samma behörighet som elevsidan: `GET /api/students/{id}/placements` och `GET /api/students/{id}/attendance` (standard: pågående placering fram till i dag, annars de senaste fyra veckorna). `GET /api/students/{id}/reports` är bara för lärare.
+- **Redovisningarna följer eleven** (Texas, 2026-10-26): undervisar läraren klassen som eleven går i nu ser hen alla elevens inskickade redovisningar, även från en tidigare klass, både i listan och i `GET /api/reports/{id}`. Redovisningen behåller klassen den skrevs i. En lärare som bara hade eleven i en tidigare klass ser redovisningarna från sin klass.
 
 Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
 
@@ -83,15 +84,16 @@ Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar 
 
 ---
 
-## B4. Närvaro och incheckning 🚧 Granskas ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude, tagen från Hannes 2026-10-26)
+## B4. Närvaro och incheckning ✅ Klar ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude, tagen från Hannes 2026-10-26)
 
 **Byggd 2026-10-26.** Modell `Attendance` i `app/models/attendance.py`, endpoints i `app/api/routes/attendance.py`:
-- `POST /api/attendance/check-in` (elev), `POST /api/attendance/absence` (elev, `{date, status: absent|sick, note}`), `GET /api/me/attendance` (elev).
+- `POST /api/attendance/check-in` (elev), `GET /api/me/attendance` (elev).
+- **Frånvaroanmälan är borttagen** (Texas, 2026-10-26): `POST /api/attendance/absence` finns inte längre, och närvaron visar bara incheckad eller ej incheckad (fälten `absent`, `sick` och `note` är borttagna ur svaren). En migrering tar bort gamla anmälda frånvarodagar. Statusvärdena finns kvar i databasen men sätts inte.
 - `GET /api/classes/{class_id}/attendance?from=&to=` (samma behörighet som klassvyn): per elev förväntade dagar, närvarande, frånvarande, sjuk, ej incheckad och dagens status. Standard är de senaste fyra veckorna.
 - `GET /api/supervisor/attendance?date=` (handledare): dagens status för handledarens elever.
 - Regler (Texas, 2026-10-26): bara vardagar. Frånvaro i dag och framåt inom placeringen, och högst sju dagar bakåt. En incheckning ersätter frånvaro samma dag, men inte tvärtom. "Ej incheckad" = förväntade dagar (från klassens dagar per vecka) minus registrerade, och räknas bara när klassen kräver incheckning.
 - En placering med närvaro går inte att ta bort (409).
-- `seed_demo`: närvaro för EE22 med en sjukdag och en elev som slutat checka in.
+- `seed_demo`: närvaro för EE22 med en missad dag och en elev som slutat checka in.
 
 Ursprunglig spec:
 
@@ -130,7 +132,7 @@ Viktigast från genomgången:
 - Eleven: redovisningsdagarna fyra veckor bakåt, en redovisning per vald dag, svar sparas vid Nästa, skicka in. Inskickad redovisning är låst.
 - Läraren: klassens inskickade redovisningar, oläst och läst, kommentarer från elev och lärare.
 
-**B5b del 1, frågemallar** 🚧 Granskas (Texas + Claude, 2026-10-26):
+**B5b del 1, frågemallar** ✅ Klar ([PR #24](https://github.com/TexasForslund/firstflow/pull/24), Texas + Claude, 2026-10-26):
 - `QuestionTemplate` i `app/models/template.py`: skolans mallar (`owner_id` null) och lärarens egna. Endpoints i `app/api/routes/templates.py`.
 - `GET /api/templates` (lärare, skoladmin): skolans mallar först, sedan egna. `POST /api/templates` med `{name, class_id}` sparar klassens utkast som mall. Skoladmin skapar skolans mallar, läraren egna.
 - `PATCH` och `DELETE /api/templates/{id}`: skoladmin ändrar skolans mallar, läraren sina egna. En lärare som försöker ändra en skolmall får 403. Andras egna mallar och andra skolors mallar ger 404.
@@ -276,7 +278,7 @@ Ett endpoint som ger lärarens lista över saker att följa upp, viktigast förs
 
 ---
 
-## B14. Inbjudan av handledare och företagsprofil 🚧 Granskas (Texas + Claude, 2026-10-26)
+## B14. Inbjudan av handledare och företagsprofil ✅ Klar ([PR #28](https://github.com/TexasForslund/firstflow/pull/28), Texas + Claude, 2026-10-26)
 
 Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 2026-10-26).
 

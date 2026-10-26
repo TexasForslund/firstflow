@@ -10,7 +10,6 @@ export type MyAttendance = components['schemas']['MyAttendance']
 export type ClassAttendance = components['schemas']['ClassAttendance']
 export type StudentAttendance = components['schemas']['StudentAttendance']
 export type SupervisorAttendance = components['schemas']['SupervisorAttendance']
-export type AbsenceCreate = components['schemas']['AbsenceCreate']
 
 const keys = {
   mine: ['me', 'attendance'] as const,
@@ -43,18 +42,6 @@ export function useCheckIn() {
   return useMutation({
     mutationFn: async () => {
       const { data, error, response } = await api.POST('/api/attendance/check-in')
-      if (!data) throw new ApiError(error, response.status)
-      return data
-    },
-    onSuccess: invalidate,
-  })
-}
-
-export function useReportAbsence() {
-  const invalidate = useInvalidateAttendance()
-  return useMutation({
-    mutationFn: async (body: AbsenceCreate) => {
-      const { data, error, response } = await api.POST('/api/attendance/absence', { body })
       if (!data) throw new ApiError(error, response.status)
       return data
     },

@@ -85,22 +85,6 @@
   font-size: var(--font-size-base);
 }
 
-.reported {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  font-size: var(--font-size-sm);
-}
-
-.reported svg {
-  flex-shrink: 0;
-  width: 1.125rem;
-  height: 1.125rem;
-}
-
 /* --- Kort --- */
 
 .card {
@@ -190,10 +174,6 @@
 .present {
   background: var(--color-success-bar);
   color: #fff;
-}
-
-.absent {
-  background: var(--color-error-bar);
 }
 
 .missing {

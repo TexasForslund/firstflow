@@ -65,12 +65,6 @@
   color: var(--color-primary-on-light);
 }
 
-.absent,
-.sick {
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-
 .unread {
   background: var(--color-primary-light);
   color: var(--color-primary-on-light);

@@ -58,14 +58,6 @@
   background: var(--color-success-bar);
 }
 
-.statusAway {
-  color: var(--color-error);
-}
-
-.statusAway::before {
-  background: var(--color-error-bar);
-}
-
 .statusNone {
   color: var(--color-text-secondary);
   font-weight: 500;

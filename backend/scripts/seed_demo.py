@@ -11,7 +11,7 @@ veckoredovisning, med redovisning tisdag och fredag. Varje skola får två arbet
 var sin handledare, och eleverna i EE22 är placerade där under en pågående period. Eleverna i
 EE21 har ingen placering, så att det syns hur det ser ut innan läraren har placerat dem.
 Varje skola får också en skolmall för frågor, "Kort veckoredovisning".
-Eleverna i EE22 har närvaro sedan placeringen började, med en sjukdag och en elev som
+Eleverna i EE22 har närvaro sedan placeringen började, med en missad dag och en elev som
 slutat checka in.
 """
 
@@ -277,7 +277,7 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
 def _ensure_attendance(db: Session, school: School) -> int:
     """Ger placeringarna i EE22 närvaro fram till i går, och några incheckningar i dag.
 
-    Mönstret visar det läraren behöver se: de flesta checkar in, en elev har varit sjuk en
+    Mönstret visar det läraren behöver se: de flesta checkar in, en elev missade en
     dag och en elev har slutat checka in de senaste dagarna. Returnerar antal nya dagar.
     """
     school_class = db.scalar(
@@ -305,19 +305,16 @@ def _ensure_attendance(db: Session, school: School) -> int:
             if is_today and i >= 2:
                 continue  # i dag har bara de två första checkat in än
             if i == 1 and n == 3:
-                db.add(
-                    Attendance(placement_id=placement.id, date=day, status=AttendanceStatus.SICK)
+                continue  # en elev glömde checka in en dag
+            at = datetime.combine(day, dt_time(7, 30 + (i * 7 + n * 3) % 25), time.SCHOOL_TZ)
+            db.add(
+                Attendance(
+                    placement_id=placement.id,
+                    date=day,
+                    status=AttendanceStatus.PRESENT,
+                    checked_in_at=at,
                 )
-            else:
-                at = datetime.combine(day, dt_time(7, 30 + (i * 7 + n * 3) % 25), time.SCHOOL_TZ)
-                db.add(
-                    Attendance(
-                        placement_id=placement.id,
-                        date=day,
-                        status=AttendanceStatus.PRESENT,
-                        checked_in_at=at,
-                    )
-                )
+            )
             created += 1
     db.flush()
     return created
