@@ -58,7 +58,7 @@ Därmed går en ny skola att sätta upp helt i gränssnittet: skola, skoladmin, 
 
 ---
 
-## F4. Min APL och handledarvy 🚧 Granskas (Texas + Claude)
+## F4. Min APL och handledarvy 🚧 Granskas ([PR #23](https://github.com/TexasForslund/firstflow/pull/23), Texas + Claude)
 
 Byggd 2026-10-26 mot B3 (PR #22). Ingen ändring i backend.
 

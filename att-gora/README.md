@@ -34,7 +34,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B3:** arbetsplatser, handledare och placeringar (#22).
 
 **Granskas (Texas + Claude):**
-- **F4:** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
+- **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
 
 **Nästa steg:**
 - **Texas + Claude:**
