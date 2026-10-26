@@ -166,7 +166,6 @@ def test_student_attendance_defaults_to_current_placement(
 ) -> None:
     for day, s in [
         (date(2026, 10, 12), AttendanceStatus.PRESENT),
-        (date(2026, 10, 13), AttendanceStatus.SICK),
         (TODAY, AttendanceStatus.PRESENT),
     ]:
         db.add(
@@ -174,7 +173,7 @@ def test_student_attendance_defaults_to_current_placement(
                 placement_id=w.placement.id,
                 date=day,
                 status=s,
-                checked_in_at=NOW if s == AttendanceStatus.PRESENT else None,
+                checked_in_at=NOW,
             )
         )
     db.flush()
@@ -183,10 +182,9 @@ def test_student_attendance_defaults_to_current_placement(
     assert (body["from_date"], body["to_date"]) == ("2026-10-12", "2026-10-21")
     summary = body["summary"]
     # 12–21 oktober har åtta vardagar.
-    assert (summary["expected_days"], summary["present"], summary["sick"]) == (8, 2, 1)
-    assert summary["missing"] == 5
+    assert (summary["expected_days"], summary["present"], summary["missing"]) == (8, 2, 6)
     assert summary["today"] == "present"
-    assert [d["date"] for d in body["days"]] == ["2026-10-21", "2026-10-13", "2026-10-12"]
+    assert [d["date"] for d in body["days"]] == ["2026-10-21", "2026-10-12"]
 
 
 def test_admin_sees_student_attendance(client: TestClient, login: Login, w: World) -> None:
@@ -201,16 +199,33 @@ def test_other_teacher_cannot_see_student_attendance(
     assert client.get(f"/api/students/{w.student.id}/attendance").status_code == 404
 
 
-def test_student_reports_only_from_taught_classes(
+def test_teacher_of_current_class_sees_all_reports(
     client: TestClient, login: Login, w: World, db: Session
 ) -> None:
     add_report(db, w, w.ee22, date(2026, 10, 16))
     add_report(db, w, w.other_class, date(2026, 10, 20))
     login(w.teacher)
     body = client.get(f"/api/students/{w.student.id}/reports").json()
-    assert [(r["class_name"], r["due_date"], r["is_read"]) for r in body] == [
-        ("EE22", "2026-10-16", False)
+    # Samma inskickningstid i testet, så ordningen avgörs inte här.
+    assert sorted((r["class_name"], r["due_date"], r["is_read"]) for r in body) == [
+        ("BA23", "2026-10-20", False),
+        ("EE22", "2026-10-16", False),
     ]
+
+
+def test_former_teacher_sees_only_own_class_reports(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    add_report(db, w, w.ee22, date(2026, 10, 16))
+    other = add_report(db, w, w.other_class, date(2026, 10, 20))
+    # Eleven flyttar till BA23. Ingrid undervisar inte där, men eleven är kopplad till henne.
+    db.execute(class_students.delete().where(class_students.c.student_id == w.student.id))
+    db.execute(class_students.insert().values(class_id=w.other_class.id, student_id=w.student.id))
+    db.flush()
+    login(w.teacher)
+    body = client.get(f"/api/students/{w.student.id}/reports").json()
+    assert [r["class_name"] for r in body] == ["EE22"]
+    assert client.get(f"/api/reports/{other.id}").status_code == 404
 
 
 def test_only_teachers_list_student_reports(client: TestClient, login: Login, w: World) -> None:
@@ -218,3 +233,20 @@ def test_only_teachers_list_student_reports(client: TestClient, login: Login, w:
     assert client.get(f"/api/students/{w.student.id}/reports").status_code == 403
     login(w.student)
     assert client.get(f"/api/students/{w.student.id}/reports").status_code == 403
+
+
+def test_reports_follow_student_to_new_class(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    """Byter eleven klass ser den nya läraren redovisningarna från den gamla klassen."""
+    report = add_report(db, w, w.ee22, date(2026, 10, 16))
+    db.execute(class_students.delete().where(class_students.c.student_id == w.student.id))
+    db.execute(class_students.insert().values(class_id=w.other_class.id, student_id=w.student.id))
+    db.flush()
+
+    login(w.other_teacher)
+    body = client.get(f"/api/students/{w.student.id}/reports").json()
+    assert [(r["id"], r["class_name"]) for r in body] == [(str(report.id), "EE22")]
+    detail = client.get(f"/api/reports/{report.id}")
+    assert detail.status_code == 200
+    assert detail.json()["class_name"] == "EE22"

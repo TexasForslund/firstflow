@@ -17,8 +17,10 @@ from app.models.placement import Placement
 
 class AttendanceStatus(StrEnum):
     PRESENT = "present"  # incheckad
-    ABSENT = "absent"  # anmäld frånvaro
-    SICK = "sick"  # anmäld sjuk
+    # Frånvaroanmälan är borttagen (Texas, 2026-10-26). Värdena finns kvar i databasen men
+    # sätts inte längre.
+    ABSENT = "absent"
+    SICK = "sick"
 
 
 class Attendance(Base):

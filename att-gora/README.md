@@ -43,7 +43,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - Ta bort frånvaroanmälan helt och låt redovisningarna följa eleven vid klassbyte (Texas, 2026-10-26).
+  - Frånvaroanmälan borttagen och redovisningarna följer eleven vid klassbyte (granskas).
   - F6: lärarens översikt med riktig data.
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.

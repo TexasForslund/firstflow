@@ -2,7 +2,6 @@ import { BriefcaseBusiness, CalendarCheck, FileText, GraduationCap, MapPin, User
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
-import type { AttendanceStatus } from '../../api/attendance'
 import { useSchoolTeachers } from '../../api/classes'
 import {
   useSetTeachers,
@@ -153,12 +152,6 @@ function PlacementCard({ studentId }: { studentId: string }) {
   )
 }
 
-const dayText: Record<AttendanceStatus, string> = {
-  present: 'Incheckad',
-  absent: 'Frånvaro',
-  sick: 'Sjuk',
-}
-
 function AttendanceCard({ studentId }: { studentId: string }) {
   const query = useStudentAttendance(studentId)
   const [showAll, setShowAll] = useState(false)
@@ -181,12 +174,9 @@ function AttendanceCard({ studentId }: { studentId: string }) {
       {query.data?.summary.has_placement &&
         (() => {
           const { summary, days } = query.data
-          const away = summary.absent + summary.sick
-          const total = Math.max(summary.expected_days, summary.present + away)
+          const total = Math.max(summary.expected_days, summary.present)
           const parts = [
             `${summary.present} närvarande`,
-            summary.sick > 0 && `${summary.sick} sjuk`,
-            summary.absent > 0 && `${summary.absent} frånvaro`,
             summary.missing > 0 && `${summary.missing} ej incheckad`,
           ].filter(Boolean)
           const shown = showAll ? days : days.slice(0, 5)
@@ -195,7 +185,7 @@ function AttendanceCard({ studentId }: { studentId: string }) {
               <div className={`${styles.cardBody} ${own.attendance}`}>
                 <SegmentedBar
                   present={summary.present}
-                  absent={away}
+                  absent={0}
                   total={total}
                   label={`${summary.present} av ${total} dagar närvarande`}
                 />
@@ -209,11 +199,10 @@ function AttendanceCard({ studentId }: { studentId: string }) {
                     <li key={day.date} className={styles.row}>
                       <span className={styles.rowText}>
                         <span className={styles.name}>{shortDate(day.date)}</span>
-                        {day.note && <span className={styles.meta}>{day.note}</span>}
                       </span>
-                      <span className={`${own.status} ${own[day.status]}`}>
+                      <span className={`${own.status} ${own.present}`}>
                         <CalendarCheck aria-hidden="true" />
-                        {dayText[day.status]}
+                        Incheckad
                         {day.checked_in_at &&
                           ` ${new Date(day.checked_in_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`}
                       </span>

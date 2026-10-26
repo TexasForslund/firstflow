@@ -93,19 +93,12 @@ export function MyStudents() {
   )
 }
 
-/** Dagens status: incheckad med tid, frånvarande, sjuk eller inte incheckad. */
+/** Dagens status: incheckad med tid eller inte incheckad. */
 function TodayStatus({ row, loading }: { row: SupervisorAttendance | undefined; loading: boolean }) {
   if (loading) return <span className={own.status}>…</span>
-  if (!row?.status) return <span className={`${own.status} ${own.statusNone}`}>Inte incheckad</span>
-  if (row.status === 'present') {
-    const at = row.checked_in_at
-      ? new Date(row.checked_in_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
-      : ''
-    return <span className={`${own.status} ${own.statusPresent}`}>Incheckad {at}</span>
-  }
-  return (
-    <span className={`${own.status} ${own.statusAway}`} title={row.note ?? undefined}>
-      {row.status === 'sick' ? 'Sjuk' : 'Frånvarande'}
-    </span>
-  )
+  if (row?.status !== 'present') return <span className={`${own.status} ${own.statusNone}`}>Inte incheckad</span>
+  const at = row.checked_in_at
+    ? new Date(row.checked_in_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+    : ''
+  return <span className={`${own.status} ${own.statusPresent}`}>Incheckad {at}</span>
 }

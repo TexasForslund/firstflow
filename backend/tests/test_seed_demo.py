@@ -92,4 +92,4 @@ def test_seed_gives_ee22_attendance_once(db: Session) -> None:
     assert db.scalar(select(func.count(Attendance.id))) == first
     assert first > 0
     statuses = set(db.scalars(select(Attendance.status)))
-    assert AttendanceStatus.SICK in statuses
+    assert statuses == {AttendanceStatus.PRESENT}

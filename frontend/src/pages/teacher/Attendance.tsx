@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
-import { useClassAttendance, type AttendanceStatus, type StudentAttendance } from '../../api/attendance'
+import { useClassAttendance, type StudentAttendance } from '../../api/attendance'
 import { useClasses } from '../../api/classes'
 import { Avatar, Card, Combobox, matches, SearchInput, SegmentedBar } from '../../components'
 import styles from '../classes/Classes.module.css'
@@ -27,12 +27,6 @@ function presetRange(preset: Preset, today: string): [string, string] | null {
   }
   if (preset === '4weeks') return [addDays(today, -27), today]
   return null
-}
-
-const todayText: Record<AttendanceStatus, string> = {
-  present: 'Incheckad i dag',
-  absent: 'Frånvarande i dag',
-  sick: 'Sjuk i dag',
 }
 
 /** Närvaro per elev i en klass under en period. Avvikelser överst. */
@@ -63,7 +57,7 @@ export function Attendance() {
         <p className={styles.subtitle}>
           {query.data
             ? `${checkedInToday} av ${placed.length} elever på APL har checkat in i dag`
-            : 'Incheckningar och frånvaro per elev'}
+            : 'Incheckningar per elev'}
         </p>
       </header>
 
@@ -167,14 +161,8 @@ export function Attendance() {
 }
 
 function StudentRow({ row }: { row: StudentAttendance }) {
-  const away = row.absent + row.sick
-  const total = Math.max(row.expected_days, row.present + away)
-  const parts = [
-    `${row.present} närvarande`,
-    row.sick > 0 && `${row.sick} sjuk`,
-    row.absent > 0 && `${row.absent} frånvaro`,
-    row.missing > 0 && `${row.missing} ej incheckad`,
-  ].filter(Boolean)
+  const total = Math.max(row.expected_days, row.present)
+  const parts = [`${row.present} närvarande`, row.missing > 0 && `${row.missing} ej incheckad`].filter(Boolean)
 
   return (
     <li className={`${styles.row} ${own.row}`}>
@@ -183,7 +171,11 @@ function StudentRow({ row }: { row: StudentAttendance }) {
         <span className={styles.rowText}>
           <span className={styles.name}>{row.student.name}</span>
           <span className={styles.meta}>
-            {row.has_placement ? (row.today ? todayText[row.today] : 'Inte incheckad i dag') : 'Ingen praktikplats'}
+            {row.has_placement
+              ? row.today === 'present'
+                ? 'Incheckad i dag'
+                : 'Inte incheckad i dag'
+              : 'Ingen praktikplats'}
           </span>
         </span>
       </Link>
@@ -191,7 +183,7 @@ function StudentRow({ row }: { row: StudentAttendance }) {
         <span className={own.stats}>
           <SegmentedBar
             present={row.present}
-            absent={away}
+            absent={0}
             total={total}
             label={`${row.present} av ${total} dagar närvarande`}
           />

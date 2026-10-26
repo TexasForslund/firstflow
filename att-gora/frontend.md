@@ -58,7 +58,7 @@ Därmed går en ny skola att sätta upp helt i gränssnittet: skola, skoladmin, 
 
 ---
 
-## F4. Min APL och handledarvy 🚧 Granskas ([PR #23](https://github.com/TexasForslund/firstflow/pull/23), Texas + Claude)
+## F4. Min APL och handledarvy ✅ Klar ([PR #23](https://github.com/TexasForslund/firstflow/pull/23), Texas + Claude)
 
 Byggd 2026-10-26 mot B3 (PR #22). Ingen ändring i backend.
 
@@ -79,10 +79,10 @@ Ursprunglig spec:
 
 ---
 
-## F5. Incheckning och närvaro 🚧 Granskas ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude)
+## F5. Incheckning och närvaro ✅ Klar ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude)
 
 **Byggd 2026-10-26** mot B4:
-- Elev, `/check-in`: stor knapp Checka in, sedan "Incheckad 07:52". Anmäl frånvaro (sjuk eller annan, datum, kommentar). Veckans dagar som prickar (grönt incheckad, rött frånvaro, streckad inte incheckad).
+- Elev, `/check-in`: stor knapp Checka in, sedan "Incheckad 07:52". Veckans dagar som prickar (grönt incheckad, streckad inte incheckad). Anmäl frånvaro är borttaget (Texas, 2026-10-26).
 - Lärare, `/attendance` (ny i menyn, även för skoladmin och rektor via adressen): välj klass och period (den här veckan, senaste fyra veckorna eller egna datum). En rad per elev med närvarostapel och siffror, elever med flest dagar utan incheckning överst och märkta Följ upp.
 - Handledare, `/my-students`: dagens status per elev (incheckad med tid, sjuk, frånvarande eller inte incheckad).
 
@@ -190,19 +190,19 @@ Sidan Inställningar för alla roller (Texas, 2026-10-20):
 
 ---
 
-## Förbättringar efter genomgång med Texas (2026-10-26) 🚧 Granskas
+## Förbättringar efter genomgång med Texas (2026-10-26) ✅ Klar ([PR #27](https://github.com/TexasForslund/firstflow/pull/27))
 
 - Rullistor har vit bakgrund och ram, som datumfälten.
 - Sökbara val (`Combobox`) för arbetsplats och handledare, och sökfält för elever i klassvyn och på Närvaro.
 - Vänstermenyn kan fällas ihop så att bara ikonerna syns. Valet sparas i webbläsaren.
 - Elevraden i klassvyn visar bara ikon och företagsnamn. Handledare och period syns i panelen.
 - APL-villkor har förklaringar till vad varje inställning styr.
-- Anmäl frånvaro är borttaget från elevens Incheckning (Texas, 2026-10-26). Endpointen `POST /api/attendance/absence` finns kvar i backend tills vidare.
+- Anmäl frånvaro är borttaget helt (Texas, 2026-10-26). Närvaro, elevsidan och handledarens Mina elever visar bara incheckad eller ej incheckad.
 - Elevens incheckning: en ruta mitt på skärmen första gången eleven öppnar appen en APL-dag efter 08:30. Stängs den visas en rad högst upp på varje sida tills eleven har checkat in. Animation när eleven checkar in.
 
 ---
 
-## F16. Elevsidan och Elevhistorik 🚧 Granskas (Texas + Claude, 2026-10-26)
+## F16. Elevsidan och Elevhistorik ✅ Klar ([PR #29](https://github.com/TexasForslund/firstflow/pull/29), Texas + Claude, 2026-10-26)
 
 Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (allt om en elev). Alla klick på en elev leder till elevsidan.
 
@@ -211,11 +211,11 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 - **En klass per elev:** läggs en elev som går i en annan klass till i klassvyn visas "X går i EE22. Vill du flytta eleven hit?" med knappen Flytta. Skoladmin väljer en klass (inte flera) när en elev läggs in.
 - Veckoredovisningens sidopanel visar elevens riktiga praktikplats.
 
-**Inte byggt:** antal projekt per elev (väntar på B12). Byter eleven klass ligger redovisningarna kvar på den gamla klassen, så den nya läraren ser dem inte.
+**Inte byggt:** antal projekt per elev (väntar på B12). Byter eleven klass följer redovisningarna med till den nya läraren (Texas, 2026-10-26). Den nya klassens flik Redovisningar visar bara det som skrevs i klassen, men elevsidan visar allt.
 
 ---
 
-## F15. Inbjudan av handledare, Företag och notiser 🚧 Granskas (Texas + Claude, 2026-10-26)
+## F15. Inbjudan av handledare, Företag och notiser ✅ Klar ([PR #28](https://github.com/TexasForslund/firstflow/pull/28), Texas + Claude, 2026-10-26)
 
 - **Praktikplatser** (lärare, skoladmin): Bjud in handledare med e-post, listan Skickade inbjudningar (väntar, konto skapat, utgången, återkallad) med Skicka igen och Återkalla, och Dina företag med profil och handledare. Ny arbetsplats och Lägg till handledare är borttagna.
 - **`/invite/:token`** (ingen inloggning): handledaren skapar konto och företagsprofil, och hamnar sedan på Mina elever.

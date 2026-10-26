@@ -857,30 +857,9 @@ export interface paths {
         /**
          * Check In
          * @description Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med
-         *     den befintliga incheckningen. En anmäld frånvaro samma dag ersätts.
+         *     den befintliga incheckningen.
          */
         post: operations["check_in_api_attendance_check_in_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/attendance/absence": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Report Absence
-         * @description Anmäler frånvaro eller sjukdom för en dag i placeringen. Går att ändra till den andra
-         *     sortens frånvaro, men inte om eleven redan är incheckad den dagen.
-         */
-        post: operations["report_absence_api_attendance_absence_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1177,7 +1156,8 @@ export interface paths {
         };
         /**
          * List Student Reports
-         * @description Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först.
+         * @description Elevens inskickade redovisningar, senaste först. Går eleven i en klass som läraren
+         *     undervisar syns alla, även från tidigare klasser. Annars bara från lärarens klasser.
          */
         get: operations["list_student_reports_api_students__student_id__reports_get"];
         put?: never;
@@ -1192,21 +1172,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AbsenceCreate */
-        AbsenceCreate: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "absent" | "sick";
-            /** Note */
-            note?: string | null;
-        };
         /** AcceptInvite */
         AcceptInvite: {
             /** Name */
@@ -1299,8 +1264,6 @@ export interface components {
             status: components["schemas"]["AttendanceStatus"];
             /** Checked In At */
             checked_in_at: string | null;
-            /** Note */
-            note: string | null;
         };
         /**
          * AttendanceStatus
@@ -2255,13 +2218,9 @@ export interface components {
             expected_days: number;
             /** Present */
             present: number;
-            /** Absent */
-            absent: number;
-            /** Sick */
-            sick: number;
             /**
              * Missing
-             * @description Ej incheckad: förväntade dagar utan incheckning eller anmälan
+             * @description Ej incheckad: förväntade dagar utan incheckning
              */
             missing: number;
             /** @description Dagens status. null = inget registrerat */
@@ -2404,8 +2363,6 @@ export interface components {
             status: components["schemas"]["AttendanceStatus"] | null;
             /** Checked In At */
             checked_in_at: string | null;
-            /** Note */
-            note: string | null;
         };
         /** SupervisorRead */
         SupervisorRead: {
@@ -4112,39 +4069,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AttendanceDay"];
-                };
-            };
-        };
-    };
-    report_absence_api_attendance_absence_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AbsenceCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AttendanceDay"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

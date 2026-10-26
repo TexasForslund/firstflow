@@ -2346,7 +2346,7 @@
           "attendance"
         ],
         "summary": "Check In",
-        "description": "Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med\nden befintliga incheckningen. En anmäld frånvaro samma dag ersätts.",
+        "description": "Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med\nden befintliga incheckningen.",
         "operationId": "check_in_api_attendance_check_in_post",
         "responses": {
           "200": {
@@ -2355,53 +2355,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AttendanceDay"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "APIKeyCookie": []
-          }
-        ]
-      }
-    },
-    "/api/attendance/absence": {
-      "post": {
-        "tags": [
-          "attendance"
-        ],
-        "summary": "Report Absence",
-        "description": "Anmäler frånvaro eller sjukdom för en dag i placeringen. Går att ändra till den andra\nsortens frånvaro, men inte om eleven redan är incheckad den dagen.",
-        "operationId": "report_absence_api_attendance_absence_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AbsenceCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AttendanceDay"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3131,7 +3084,7 @@
           "reports"
         ],
         "summary": "List Student Reports",
-        "description": "Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först.",
+        "description": "Elevens inskickade redovisningar, senaste först. Går eleven i en klass som läraren\nundervisar syns alla, även från tidigare klasser. Annars bara från lärarens klasser.",
         "operationId": "list_student_reports_api_students__student_id__reports_get",
         "security": [
           {
@@ -3181,41 +3134,6 @@
   },
   "components": {
     "schemas": {
-      "AbsenceCreate": {
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date",
-            "title": "Date"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "absent",
-              "sick"
-            ],
-            "title": "Status"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 300
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          }
-        },
-        "type": "object",
-        "required": [
-          "date",
-          "status"
-        ],
-        "title": "AbsenceCreate"
-      },
       "AcceptInvite": {
         "properties": {
           "name": {
@@ -3498,25 +3416,13 @@
               }
             ],
             "title": "Checked In At"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
           }
         },
         "type": "object",
         "required": [
           "date",
           "status",
-          "checked_in_at",
-          "note"
+          "checked_in_at"
         ],
         "title": "AttendanceDay"
       },
@@ -5518,18 +5424,10 @@
             "type": "integer",
             "title": "Present"
           },
-          "absent": {
-            "type": "integer",
-            "title": "Absent"
-          },
-          "sick": {
-            "type": "integer",
-            "title": "Sick"
-          },
           "missing": {
             "type": "integer",
             "title": "Missing",
-            "description": "Ej incheckad: förväntade dagar utan incheckning eller anmälan"
+            "description": "Ej incheckad: förväntade dagar utan incheckning"
           },
           "today": {
             "anyOf": [
@@ -5549,8 +5447,6 @@
           "has_placement",
           "expected_days",
           "present",
-          "absent",
-          "sick",
           "missing",
           "today"
         ],
@@ -5845,17 +5741,6 @@
               }
             ],
             "title": "Checked In At"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
           }
         },
         "type": "object",
@@ -5864,8 +5749,7 @@
           "student",
           "workplace_name",
           "status",
-          "checked_in_at",
-          "note"
+          "checked_in_at"
         ],
         "title": "SupervisorAttendance"
       },

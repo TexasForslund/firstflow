@@ -125,19 +125,6 @@ def test_check_in_today(client: TestClient, login: Login, world: World) -> None:
     assert again.json()["checked_in_at"] == body["checked_in_at"]
 
 
-def test_check_in_replaces_absence(
-    client: TestClient, login: Login, world: World, db: Session
-) -> None:
-    login(world.student)
-    absence = {"date": "2026-10-21", "status": "sick", "note": "Feber"}
-    assert client.post("/api/attendance/absence", json=absence).status_code == 200
-    response = client.post("/api/attendance/check-in")
-    assert response.status_code == 200
-    assert response.json()["status"] == "present"
-    assert response.json()["note"] is None
-    assert db.query(Attendance).count() == 1
-
-
 def test_no_check_in_on_weekend(client: TestClient, login: Login, world: World) -> None:
     login(world.student)
     with patch("app.core.time.today", return_value=date(2026, 10, 24)):
@@ -157,8 +144,6 @@ def test_no_check_in_without_placement(client: TestClient, login: Login, world: 
 def test_only_students_check_in(client: TestClient, login: Login, world: World, role: str) -> None:
     login(getattr(world, role))
     assert client.post("/api/attendance/check-in").status_code == 403
-    response = client.post("/api/attendance/absence", json={"date": "2026-10-21", "status": "sick"})
-    assert response.status_code == 403
 
 
 def test_requires_login(client: TestClient, world: World) -> None:
@@ -169,58 +154,11 @@ def test_requires_login(client: TestClient, world: World) -> None:
 # --- Frånvaro ------------------------------------------------------------------------------
 
 
-def test_report_absence_and_change_it(client: TestClient, login: Login, world: World) -> None:
+def test_absence_cannot_be_reported(client: TestClient, login: Login, world: World) -> None:
+    """Frånvaroanmälan är borttagen (Texas, 2026-10-26)."""
     login(world.student)
-    tomorrow = {"date": "2026-10-22", "status": "absent", "note": "  Tandläkare  "}
-    response = client.post("/api/attendance/absence", json=tomorrow)
-    assert response.status_code == 200
-    assert response.json() == {
-        "date": "2026-10-22",
-        "status": "absent",
-        "checked_in_at": None,
-        "note": "Tandläkare",
-    }
-    changed = client.post("/api/attendance/absence", json={"date": "2026-10-22", "status": "sick"})
-    assert changed.json()["status"] == "sick"
-    assert changed.json()["note"] is None
-
-
-def test_absence_cannot_replace_check_in(client: TestClient, login: Login, world: World) -> None:
-    login(world.student)
-    client.post("/api/attendance/check-in")
-    response = client.post("/api/attendance/absence", json={"date": "2026-10-21", "status": "sick"})
-    assert response.status_code == 409
-
-
-@pytest.mark.parametrize(
-    ("day", "detail"),
-    [
-        ("2026-10-25", "Det finns ingen APL på helger"),
-        ("2026-10-13", "Frånvaro kan anmälas högst 7 dagar bakåt"),
-        ("2026-11-23", "Du har ingen APL den dagen"),
-    ],
-)
-def test_absence_rules(
-    client: TestClient, login: Login, world: World, day: str, detail: str
-) -> None:
-    login(world.student)
-    response = client.post("/api/attendance/absence", json={"date": day, "status": "absent"})
-    assert response.status_code == 422
-    assert response.json()["detail"] == detail
-
-
-def test_absence_up_to_seven_days_back(client: TestClient, login: Login, world: World) -> None:
-    login(world.student)
-    response = client.post("/api/attendance/absence", json={"date": "2026-10-14", "status": "sick"})
-    assert response.status_code == 200
-
-
-def test_absence_status_must_be_absence(client: TestClient, login: Login, world: World) -> None:
-    login(world.student)
-    response = client.post(
-        "/api/attendance/absence", json={"date": "2026-10-22", "status": "present"}
-    )
-    assert response.status_code == 422
+    response = client.post("/api/attendance/absence", json={"date": "2026-10-22", "status": "sick"})
+    assert response.status_code in (404, 405)
 
 
 # --- Elevens egen närvaro ------------------------------------------------------------------
@@ -228,7 +166,6 @@ def test_absence_status_must_be_absence(client: TestClient, login: Login, world:
 
 def test_my_attendance(client: TestClient, login: Login, world: World) -> None:
     login(world.student)
-    client.post("/api/attendance/absence", json={"date": "2026-10-22", "status": "absent"})
     client.post("/api/attendance/check-in")
     body = client.get("/api/me/attendance").json()
     assert body["placement_id"] == str(world.placement.id)
@@ -237,7 +174,6 @@ def test_my_attendance(client: TestClient, login: Login, world: World) -> None:
     assert body["can_check_in_today"] is True
     assert [(d["date"], d["status"]) for d in body["days"]] == [
         ("2026-10-21", "present"),
-        ("2026-10-22", "absent"),
     ]
 
 
@@ -270,11 +206,9 @@ def test_class_attendance_counts(
     # Vecka 1 (12–16 okt) och 19–21 okt: 8 vardagar fram till och med i dag.
     for offset in range(5):
         add(db, world.placement, START + timedelta(days=offset), AttendanceStatus.PRESENT)
-    add(db, world.placement, date(2026, 10, 19), AttendanceStatus.SICK)
-    add(db, world.placement, date(2026, 10, 20), AttendanceStatus.ABSENT)
     add(db, world.placement, TODAY, AttendanceStatus.PRESENT)
-    # Framtida frånvaro räknas inte.
-    add(db, world.placement, date(2026, 10, 22), AttendanceStatus.ABSENT)
+    # En gammal anmäld frånvaro räknas som ej incheckad.
+    add(db, world.placement, date(2026, 10, 20), AttendanceStatus.SICK)
 
     login(world.teacher)
     response = client.get(
@@ -286,8 +220,8 @@ def test_class_attendance_counts(
     assert body["check_in_required"] is True
     by_id = {s["student"]["id"]: s for s in body["students"]}
     hugo = by_id[str(world.student.id)]
-    assert (hugo["expected_days"], hugo["present"], hugo["sick"], hugo["absent"]) == (8, 6, 1, 1)
-    assert hugo["missing"] == 0
+    assert (hugo["expected_days"], hugo["present"], hugo["missing"]) == (8, 6, 2)
+    assert "sick" not in hugo
     assert hugo["today"] == "present"
     maja = by_id[str(world.second.id)]
     assert (maja["expected_days"], maja["present"], maja["missing"]) == (8, 0, 8)
@@ -372,11 +306,11 @@ def test_supervisor_sees_todays_check_ins(
 def test_supervisor_sees_other_day(
     client: TestClient, login: Login, world: World, db: Session
 ) -> None:
-    add(db, world.placement, date(2026, 10, 20), AttendanceStatus.SICK)
+    add(db, world.placement, date(2026, 10, 20), AttendanceStatus.PRESENT)
     login(world.supervisor)
     body = client.get("/api/supervisor/attendance", params={"date": "2026-10-20"}).json()
     hugo = next(r for r in body if r["student"]["id"] == str(world.student.id))
-    assert hugo["status"] == "sick"
+    assert hugo["status"] == "present"
 
 
 def test_other_supervisor_sees_nothing(client: TestClient, login: Login, world: World) -> None:

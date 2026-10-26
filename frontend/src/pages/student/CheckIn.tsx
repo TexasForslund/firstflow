@@ -1,10 +1,9 @@
-import { CalendarOff, Check, MapPinCheck, Thermometer } from 'lucide-react'
+import { CalendarOff, Check, MapPinCheck } from 'lucide-react'
 
 import {
   useCheckIn,
   useMyAttendance,
   type AttendanceDay,
-  type AttendanceStatus,
   type MyAttendance,
 } from '../../api/attendance'
 import { parseDay } from '../reports/answers'
@@ -25,13 +24,7 @@ function time(iso: string) {
   return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
 }
 
-const statusText: Record<AttendanceStatus, string> = {
-  present: 'Incheckad',
-  absent: 'Frånvarande',
-  sick: 'Sjuk',
-}
-
-/** Elevens incheckning: en stor knapp, anmälan av frånvaro och veckans dagar. Mobilen först. */
+/** Elevens incheckning: en stor knapp och veckans dagar. Mobilen först. */
 export function CheckIn() {
   const query = useMyAttendance()
   const data = query.data
@@ -101,12 +94,6 @@ function Today({ data }: { data: MyAttendance }) {
 
   return (
     <section className={styles.checkInBlock} aria-label="Checka in">
-      {today && (
-        <p className={styles.reported} role="status">
-          {today.status === 'sick' ? <Thermometer aria-hidden="true" /> : <CalendarOff aria-hidden="true" />}
-          Du har anmält dig {today.status === 'sick' ? 'sjuk' : 'frånvarande'} i dag. Kom du ändå? Checka in.
-        </p>
-      )}
       <button
         type="button"
         className={styles.checkInButton}
@@ -154,9 +141,9 @@ function Week({ data }: { data: MyAttendance }) {
           if (!inPlacement(day)) {
             state = 'none'
             text = 'Ingen APL'
-          } else if (row) {
-            state = row.status === 'present' ? 'present' : 'absent'
-            text = statusText[row.status]
+          } else if (row?.status === 'present') {
+            state = 'present'
+            text = 'Incheckad'
           } else if (past) {
             state = 'missing'
             text = 'Inte incheckad'

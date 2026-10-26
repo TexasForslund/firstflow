@@ -1,14 +1,14 @@
 """Närvaro och incheckning (B4).
 
-Eleven checkar in på sin pågående placering eller anmäler frånvaro. Läraren ser närvaron per
+Eleven checkar in på sin pågående placering. Läraren ser närvaron per
 elev i klassen, och handledaren ser dagens incheckningar för sina elever.
 
 Regler (Texas, 2026-10-26):
 - Bara vardagar. Ingen APL på helger.
 - Incheckningen gäller i dag och tiden sätts av servern. Ingen plats (GPS) sparas.
-- Frånvaro anmäls för i dag och framåt inom placeringen, och upp till sju dagar bakåt.
-- En incheckning ersätter en anmäld frånvaro samma dag, men inte tvärtom.
-- "Ej incheckad" = förväntade APL-dagar minus registrerade dagar. Förväntade dagar räknas
+- Eleven anmäler inte frånvaro i Firstflow (Texas, 2026-10-26). Frånvaro sköts som i dag,
+  utanför Firstflow.
+- "Ej incheckad" = förväntade APL-dagar minus incheckade dagar. Förväntade dagar räknas
   från klassens dagar per vecka, eftersom vi inte vet vilka veckodagar eleven har APL förrän
   det finns ett schema. Räknas bara när klassen kräver incheckning.
 
@@ -17,11 +17,11 @@ elever som hen handleder. Annat svarar 404.
 """
 
 from datetime import date, datetime, timedelta
-from typing import Annotated, Literal
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -44,7 +44,6 @@ student_router = APIRouter(prefix="/students/{student_id}/attendance", tags=["at
 Student = Annotated[User, Depends(require_roles(UserRole.STUDENT))]
 Supervisor = Annotated[User, Depends(require_roles(UserRole.SUPERVISOR))]
 
-ABSENCE_DAYS_BACK = 7
 DEFAULT_PERIOD_DAYS = 28
 MAX_PERIOD_DAYS = 366
 
@@ -58,20 +57,6 @@ class AttendanceDay(BaseModel):
     date: date
     status: AttendanceStatus
     checked_in_at: datetime | None
-    note: str | None
-
-
-class AbsenceCreate(BaseModel):
-    date: date
-    status: Literal[AttendanceStatus.ABSENT, AttendanceStatus.SICK]
-    note: str | None = Field(default=None, max_length=300)
-
-    @field_validator("note")
-    @classmethod
-    def strip_note(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        return value.strip() or None
 
 
 class MyAttendance(BaseModel):
@@ -94,11 +79,7 @@ class StudentAttendance(BaseModel):
     has_placement: bool = Field(description="Eleven har en placering under perioden")
     expected_days: int
     present: int
-    absent: int
-    sick: int
-    missing: int = Field(
-        description="Ej incheckad: förväntade dagar utan incheckning eller anmälan"
-    )
+    missing: int = Field(description="Ej incheckad: förväntade dagar utan incheckning")
     today: AttendanceStatus | None = Field(description="Dagens status. null = inget registrerat")
 
 
@@ -116,13 +97,10 @@ class SupervisorAttendance(BaseModel):
     workplace_name: str
     status: AttendanceStatus | None
     checked_in_at: datetime | None
-    note: str | None
 
 
 def _day(row: Attendance) -> AttendanceDay:
-    return AttendanceDay(
-        date=row.date, status=row.status, checked_in_at=row.checked_in_at, note=row.note
-    )
+    return AttendanceDay(date=row.date, status=row.status, checked_in_at=row.checked_in_at)
 
 
 def _is_weekday(day: date) -> bool:
@@ -177,7 +155,7 @@ def _existing(db: DbSession, placement_id: UUID, day: date) -> Attendance | None
 @router.post("/check-in", response_model=AttendanceDay)
 def check_in(db: DbSession, user: Student) -> AttendanceDay:
     """Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med
-    den befintliga incheckningen. En anmäld frånvaro samma dag ersätts."""
+    den befintliga incheckningen."""
     today = time.today()
     if not _is_weekday(today):
         raise HTTPException(
@@ -197,38 +175,6 @@ def check_in(db: DbSession, user: Student) -> AttendanceDay:
     row.status = AttendanceStatus.PRESENT
     row.checked_in_at = time.now()
     row.note = None
-    db.commit()
-    return _day(row)
-
-
-@router.post("/absence", response_model=AttendanceDay)
-def report_absence(body: AbsenceCreate, db: DbSession, user: Student) -> AttendanceDay:
-    """Anmäler frånvaro eller sjukdom för en dag i placeringen. Går att ändra till den andra
-    sortens frånvaro, men inte om eleven redan är incheckad den dagen."""
-    today = time.today()
-    if not _is_weekday(body.date):
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Det finns ingen APL på helger"
-        )
-    if body.date < today - timedelta(days=ABSENCE_DAYS_BACK):
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=f"Frånvaro kan anmälas högst {ABSENCE_DAYS_BACK} dagar bakåt",
-        )
-    placement = _placement_on(db, user.id, body.date)
-    if placement is None:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Du har ingen APL den dagen"
-        )
-    row = _existing(db, placement.id, body.date)
-    if row is not None and row.status == AttendanceStatus.PRESENT:
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="Du är redan incheckad den dagen")
-    if row is None:
-        row = Attendance(placement_id=placement.id, date=body.date)
-        db.add(row)
-    row.status = body.status
-    row.checked_in_at = None
-    row.note = body.note
     db.commit()
     return _day(row)
 
@@ -345,16 +291,14 @@ def class_attendance(
             if student_id == student.id and day <= counted_to:
                 counts[AttendanceStatus(s)] += 1
         expected = _expected_days(own, from_date, counted_to, school_class.apl_days_per_week)
-        registered = sum(counts.values())
-        missing = max(0, expected - registered) if school_class.check_in_required else 0
+        present = counts[AttendanceStatus.PRESENT]
+        missing = max(0, expected - present) if school_class.check_in_required else 0
         result.append(
             StudentAttendance(
                 student=Ref(id=student.id, name=student.name),
                 has_placement=bool(own),
                 expected_days=expected,
                 present=counts[AttendanceStatus.PRESENT],
-                absent=counts[AttendanceStatus.ABSENT],
-                sick=counts[AttendanceStatus.SICK],
                 missing=missing,
                 today=today_status.get(student.id),
             )
@@ -407,7 +351,6 @@ def supervisor_attendance(
                 workplace_name=p.workplace.name,
                 status=row.status if row else None,
                 checked_in_at=row.checked_in_at if row else None,
-                note=row.note if row else None,
             )
         )
     return result
@@ -486,9 +429,7 @@ def student_attendance(
             has_placement=bool(in_period),
             expected_days=expected,
             present=counts[AttendanceStatus.PRESENT],
-            absent=counts[AttendanceStatus.ABSENT],
-            sick=counts[AttendanceStatus.SICK],
-            missing=max(0, expected - sum(counts.values())) if required else 0,
+            missing=max(0, expected - counts[AttendanceStatus.PRESENT]) if required else 0,
             today=today_row.status if today_row else None,
         ),
         days=[_day(r) for r in rows],

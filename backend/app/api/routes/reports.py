@@ -22,7 +22,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field, StringConstraints
-from sqlalchemy import exists, func, select
+from sqlalchemy import exists, func, select, true
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -156,6 +156,25 @@ def _teaches(db: DbSession, user: User, class_id: UUID) -> bool:
     )
 
 
+def _teaches_student_now(db: DbSession, user: User, student_id: UUID) -> bool:
+    """Läraren undervisar klassen som eleven går i nu.
+
+    Då ser läraren alla elevens redovisningar, även från en tidigare klass. Redovisningarna
+    följer eleven när hen byter klass (Texas, 2026-10-26).
+    """
+    return bool(
+        db.scalar(
+            select(
+                exists().where(
+                    class_students.c.student_id == student_id,
+                    class_teachers.c.class_id == class_students.c.class_id,
+                    class_teachers.c.teacher_id == user.id,
+                )
+            )
+        )
+    )
+
+
 def _in_class(db: DbSession, student: User, class_id: UUID) -> bool:
     return bool(
         db.scalar(
@@ -219,7 +238,9 @@ def _get_report(db: DbSession, user: User, report_id: UUID, *, for_update: bool 
     if (
         user.role == UserRole.TEACHER
         and report.status == ReportStatus.SUBMITTED
-        and _teaches(db, user, report.class_id)
+        and (
+            _teaches(db, user, report.class_id) or _teaches_student_now(db, user, report.student_id)
+        )
     ):
         return report
     raise _not_found()
@@ -562,9 +583,11 @@ class StudentReportSummary(ReportSummary):
 def list_student_reports(
     student_id: UUID, db: DbSession, user: Teacher
 ) -> list[StudentReportSummary]:
-    """Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först."""
+    """Elevens inskickade redovisningar, senaste först. Går eleven i en klass som läraren
+    undervisar syns alla, även från tidigare klasser. Annars bara från lärarens klasser."""
     student = get_student_for(db, user, student_id)
     taught = select(class_teachers.c.class_id).where(class_teachers.c.teacher_id == user.id)
+    in_class = true() if _teaches_student_now(db, user, student.id) else Report.class_id.in_(taught)
     is_read = (
         exists()
         .where(ReportRead.report_id == Report.id, ReportRead.user_id == user.id)
@@ -582,7 +605,7 @@ def list_student_reports(
         .where(
             Report.student_id == student.id,
             Report.status == ReportStatus.SUBMITTED,
-            Report.class_id.in_(taught),
+            in_class,
         )
         .order_by(Report.submitted_at.desc())
     )
