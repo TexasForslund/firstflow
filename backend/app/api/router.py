@@ -11,6 +11,7 @@ from app.api.routes import (
     schools,
     students,
     superadmin,
+    templates,
 )
 
 api_router = APIRouter(prefix="/api")
@@ -22,6 +23,8 @@ api_router.include_router(classes.router)
 api_router.include_router(students.router)
 api_router.include_router(me.router)
 api_router.include_router(forms.router)
+api_router.include_router(templates.router)
+api_router.include_router(templates.class_router)
 api_router.include_router(reports.router)
 api_router.include_router(reports.class_router)
 api_router.include_router(placements.workplace_router)

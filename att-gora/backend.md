@@ -101,7 +101,7 @@ Låser upp: F5.
 
 ---
 
-## B5. Frågor och veckoredovisning 🚧 B5a klar (PR #14), B5b kvar (Texas + Claude)
+## B5. Frågor och veckoredovisning 🚧 B5a klar (PR #14), mallar granskas, resten av B5b kvar (Texas + Claude)
 
 **Genomgången är gjord** (Texas och Claude, 2026-10-20). Besluten, frågetyperna och datamodellen står i [docs/design/fragor-typeform.md](../docs/design/fragor-typeform.md). Läs den innan bygget börjar. Veckoredovisning lämnas bara på vardagar.
 
@@ -118,7 +118,15 @@ Viktigast från genomgången:
 - Eleven: redovisningsdagarna fyra veckor bakåt, en redovisning per vald dag, svar sparas vid Nästa, skicka in. Inskickad redovisning är låst.
 - Läraren: klassens inskickade redovisningar, oläst och läst, kommentarer från elev och lärare.
 
-**B5b, senare:** mallar (skoladmin skapar skolans mallar, läraren sparar egna mallar och mallen ersätter klassens frågor, se [fragor-typeform.md](../docs/design/fragor-typeform.md)), förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
+**B5b del 1, frågemallar** 🚧 Granskas (Texas + Claude, 2026-10-26):
+- `QuestionTemplate` i `app/models/template.py`: skolans mallar (`owner_id` null) och lärarens egna. Endpoints i `app/api/routes/templates.py`.
+- `GET /api/templates` (lärare, skoladmin): skolans mallar först, sedan egna. `POST /api/templates` med `{name, class_id}` sparar klassens utkast som mall. Skoladmin skapar skolans mallar, läraren egna.
+- `PATCH` och `DELETE /api/templates/{id}`: skoladmin ändrar skolans mallar, läraren sina egna. En lärare som försöker ändra en skolmall får 403. Andras egna mallar och andra skolors mallar ger 404.
+- `POST /api/classes/{class_id}/form/apply-template` med `{template_id}`: kopierar mallen till klassens utkast med nya id:n för frågor och alternativ, och logiken pekas om. Mallen ersätter utkastet, och läraren publicerar som vanligt.
+- `seed_demo`: skolmallen "Kort veckoredovisning" på varje skola.
+- Frontend i fliken Frågor: **Använd mall** (erbjuder att spara nuvarande frågor som mall först) och **Spara som mall**. Byt namn och ta bort görs i dialogen Använd mall. Skoladmin hanterar skolans mallar där.
+
+**B5b, senare:** förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
 
 **Att planera:** redovisningar och kommentarer hindrar att ett elevkonto raderas (`RESTRICT`). Gallring och radering av elevdata planeras tillsammans med mellanarkivet ([mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md)).
 
