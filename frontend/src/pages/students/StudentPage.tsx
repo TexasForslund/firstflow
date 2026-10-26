@@ -1,40 +1,69 @@
-import { BriefcaseBusiness, CalendarCheck, FileText, GraduationCap, MapPin, Users } from 'lucide-react'
+import { BriefcaseBusiness, CalendarCheck, Download, FileText, MapPin, MapPinCheck, Users } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
+import type { AttentionItem } from '../../api/overview'
 import { useSchoolTeachers } from '../../api/classes'
 import {
   useSetTeachers,
   useStudent,
   useStudentAttendance,
+  useStudentAttention,
   useStudentPlacements,
   useStudentReports,
   type Student,
+  type StudentReportSummary,
 } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, SegmentedBar, Tag } from '../../components'
+import { Avatar, Button, Card, matches, SearchInput, SegmentedBar, SelectField, Tag } from '../../components'
 import styles from '../classes/Classes.module.css'
 import { NotFound } from '../NotFound'
-import { currentPlacement, periodStatus, periodText, periodWeek } from '../placements/period'
+import {
+  currentPlacement,
+  periodCountdown,
+  periodProgress,
+  periodStatus,
+  periodText,
+  periodWeek,
+  todayIso,
+} from '../placements/period'
 import { CheckList } from './CheckList'
 import own from './StudentPage.module.css'
 
+const REPORTS_PER_PAGE = 10
+
+function parseDay(iso: string) {
+  return new Date(`${iso.slice(0, 10)}T12:00:00`)
+}
+
+function longDate(iso: string) {
+  const text = parseDay(iso).toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'long' })
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 function shortDate(iso: string) {
-  return new Date(`${iso.slice(0, 10)}T12:00:00`).toLocaleDateString('sv-SE', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  })
+  return parseDay(iso).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function dateTime(iso: string) {
+  const at = new Date(iso)
+  return `${at.toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })} ${at.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`
+}
+
+function plural(count: number, one: string, many: string) {
+  return `${count} ${count === 1 ? one : many}`
 }
 
 /**
  * Elevsidan: allt om en elev på ett ställe, dit alla klick på en elev leder.
- * Praktikplats, närvaro, redovisningar, klass och lärare (Texas, 2026-10-26).
+ * Redovisningarna har mest plats till vänster. Till höger uppmärksamhet, närvaro och
+ * praktikplats (Texas, 2026-10-26).
  */
 export function StudentPage() {
   const { studentId = '' } = useParams()
   const { data: user } = useCurrentUser()
   const query = useStudent(studentId)
+  const [editTeachers, setEditTeachers] = useState(false)
 
   if (query.isPending) return <p className={styles.state}>Laddar eleven…</p>
   if (query.isError) return <NotFound what="Eleven" />
@@ -45,217 +74,484 @@ export function StudentPage() {
   const schoolClass = student.classes[0]
 
   return (
-    <div className={styles.page}>
-      <header className={styles.titleRow} style={{ justifyContent: 'flex-start' }}>
-        <Avatar name={student.name} size="lg" />
-        <div className={styles.header}>
-          <h1 className={styles.title}>{student.name}</h1>
-          <p className={styles.subtitle}>
+    <div className={own.page}>
+      <p className={own.breadcrumb}>
+        <Link to={isTeacher ? '/student-history' : '/students'}>{isTeacher ? 'Elevhistorik' : 'Elever'}</Link> /{' '}
+        {student.name}
+      </p>
+
+      <header className={own.header}>
+        <Avatar name={student.name} size="md" />
+        <div className={own.heading}>
+          <h1 className={own.title}>{student.name}</h1>
+          <p className={own.subtitle}>
             {student.email}
             {student.school_name ? ` · ${student.school_name}` : ''}
           </p>
         </div>
-        {schoolClass && (
-          <Link to={`/classes/${schoolClass.id}`} className={`${styles.tagLink} ${own.classTag}`}>
-            <Tag icon={<Users aria-hidden="true" />}>{schoolClass.name}</Tag>
-          </Link>
-        )}
+        <div className={own.headerActions}>
+          {schoolClass && (
+            <Link to={`/classes/${schoolClass.id}`} className={styles.tagLink}>
+              <Tag icon={<Users aria-hidden="true" />}>{schoolClass.name}</Tag>
+            </Link>
+          )}
+          <Button icon={<Download aria-hidden="true" />} disabled title="Kommer snart">
+            Exportera
+          </Button>
+        </div>
       </header>
 
-      <div className={own.grid}>
-        <PlacementCard studentId={student.id} />
-        <AttendanceCard studentId={student.id} />
-      </div>
-
-      {isTeacher && <ReportsCard studentId={student.id} />}
-
-      {isAdmin ? (
-        <TeachersEditor student={student} schoolId={user?.school_id} />
-      ) : (
-        <Card>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Lärare</h2>
-          </div>
-          <div className={styles.cardBody}>
-            {student.teachers.length === 0 ? (
-              <p className={styles.hint}>Eleven har ingen lärare kopplad.</p>
+      <div className={own.columns}>
+        <div className={own.main}>
+          {isTeacher ? (
+            <ReportsSection studentId={student.id} />
+          ) : (
+            <Card>
+              <p className={styles.empty}>Redovisningarna syns för elevens lärare.</p>
+            </Card>
+          )}
+        </div>
+        <div className={own.side}>
+          <AttentionBox studentId={student.id} />
+          <AttendanceCard studentId={student.id} />
+          <PlacementCard studentId={student.id} />
+          {isAdmin &&
+            (editTeachers ? (
+              <TeachersEditor student={student} schoolId={user?.school_id} />
             ) : (
-              <div className={styles.tags}>
-                {student.teachers.map((t) => (
-                  <Tag key={t.id} icon={<GraduationCap aria-hidden="true" />}>
-                    {t.name}
-                  </Tag>
-                ))}
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
+              <button type="button" className={own.textLink} onClick={() => setEditTeachers(true)}>
+                Ändra lärare ({student.teachers.length})
+              </button>
+            ))}
+        </div>
+      </div>
     </div>
   )
 }
 
-function PlacementCard({ studentId }: { studentId: string }) {
-  const query = useStudentPlacements(studentId)
-  const placements = query.data ?? []
-  const current = currentPlacement(placements)
-  const others = placements.filter((p) => p.id !== current?.id)
+// --- Redovisningar --------------------------------------------------------------------------
+
+type Show = 'all' | 'unread' | 'comments' | 'late' | 'missing'
+type Period = 'all' | 'week' | 'month'
+
+type Entry = { kind: 'report'; date: string; report: StudentReportSummary } | { kind: 'missing'; date: string }
+
+function weekStart(today: string) {
+  const d = parseDay(today)
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+  return d.toISOString().slice(0, 10)
+}
+
+function daysBefore(today: string, days: number) {
+  const d = parseDay(today)
+  d.setDate(d.getDate() - days)
+  return d.toISOString().slice(0, 10)
+}
+
+function ReportsSection({ studentId }: { studentId: string }) {
+  const reports = useStudentReports(studentId, true)
+  const attention = useStudentAttention(studentId)
+  const [search, setSearch] = useState('')
+  const [period, setPeriod] = useState<Period>('all')
+  const [questionId, setQuestionId] = useState('')
+  const [show, setShow] = useState<Show>('all')
+  const [shown, setShown] = useState(REPORTS_PER_PAGE)
+
+  const list = reports.data ?? []
+  const missingDays = attention.data?.missing_report_days ?? []
+  const today = todayIso()
+  const from = period === 'week' ? weekStart(today) : period === 'month' ? daysBefore(today, 27) : ''
+
+  // Frågorna som finns i elevens svar, för filtret Fråga.
+  const questions = new Map<string, string>()
+  for (const r of list)
+    for (const a of r.answers) if (!questions.has(a.question_id)) questions.set(a.question_id, a.question)
+
+  const entries: Entry[] = [
+    ...list.map((report) => ({ kind: 'report' as const, date: report.due_date, report })),
+    ...missingDays.map((date) => ({ kind: 'missing' as const, date })),
+  ].sort((a, b) => b.date.localeCompare(a.date))
+
+  const inPeriod = entries.filter((e) => !from || e.date >= from)
+  const counts: Record<Show, number> = {
+    all: inPeriod.filter((e) => e.kind === 'report').length,
+    unread: inPeriod.filter((e) => e.kind === 'report' && !e.report.is_read).length,
+    comments: inPeriod.filter((e) => e.kind === 'report' && e.report.comment_count > 0).length,
+    late: inPeriod.filter((e) => e.kind === 'report' && e.report.is_late).length,
+    missing: inPeriod.filter((e) => e.kind === 'missing').length,
+  }
+  const filtering = search.trim() !== '' || questionId !== ''
+  const visible = inPeriod.filter((e) => {
+    if (e.kind === 'missing') return (show === 'all' || show === 'missing') && !filtering
+    const r = e.report
+    if (show === 'missing') return false
+    if (show === 'unread' && r.is_read) return false
+    if (show === 'comments' && r.comment_count === 0) return false
+    if (show === 'late' && !r.is_late) return false
+    const answers = questionId ? r.answers.filter((a) => a.question_id === questionId) : r.answers
+    if (questionId && answers.length === 0) return false
+    if (search.trim() && !answers.some((a) => matches(a.text, search))) return false
+    return true
+  })
+
+  const chips: { id: Show; label: string }[] = [
+    { id: 'all', label: 'Alla' },
+    { id: 'unread', label: 'Olästa' },
+    { id: 'comments', label: 'Med kommentarer' },
+    { id: 'late', label: 'Sena' },
+    { id: 'missing', label: 'Saknas' },
+  ]
 
   return (
-    <Card>
-      <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>Praktikplats</h2>
+    <section className={own.reports} aria-labelledby="reports-title">
+      <div className={own.reportsHeading}>
+        <h2 id="reports-title" className={own.reportsTitle}>
+          Redovisningar
+        </h2>
+        {reports.isSuccess && (
+          <span className={own.muted}>
+            {plural(list.length, 'inlämnad', 'inlämnade')}
+            {counts.unread > 0 ? ` · ${counts.unread} oläst${counts.unread === 1 ? '' : 'a'}` : ''}
+            {missingDays.length > 0 ? ` · ${missingDays.length} saknas` : ''}
+          </span>
+        )}
       </div>
-      {query.isPending && <p className={styles.empty}>Laddar…</p>}
-      {query.isSuccess && !current && (
-        <p className={styles.empty}>Eleven har ingen praktikplats. Den tilldelas i klassvyn.</p>
-      )}
-      {current && (
-        <div className={`${styles.cardBody} ${own.placement}`}>
-          <p className={own.company}>
-            <BriefcaseBusiness aria-hidden="true" />
-            {current.workplace.name}
-          </p>
-          {current.workplace.address && (
-            <p className={own.muted}>
-              <MapPin aria-hidden="true" />
-              {current.workplace.address}
-            </p>
-          )}
-          <p className={own.muted}>
-            {periodText(current.start_date, current.end_date)}
-            {periodStatus(current.start_date, current.end_date) === 'active' &&
-              (() => {
-                const { week, weeks } = periodWeek(current.start_date, current.end_date)
-                return ` · vecka ${week} av ${weeks}`
-              })()}
-            {periodStatus(current.start_date, current.end_date) === 'upcoming' && ' · har inte börjat'}
-          </p>
-          <p className={own.muted}>
-            Handledare: {current.supervisor.name} ({current.supervisor.email})
-          </p>
+
+      <div className={own.filters}>
+        <div className={own.filterRow}>
+          <div className={own.search}>
+            <SearchInput label="Sök i svaren" placeholder="Sök i svaren" value={search} onChange={setSearch} />
+          </div>
+          <SelectField label="Period" value={period} onChange={(v) => setPeriod(v as Period)}>
+            <option value="all">Hela tiden</option>
+            <option value="week">Den här veckan</option>
+            <option value="month">Senaste fyra veckorna</option>
+          </SelectField>
+          <SelectField label="Fråga" value={questionId} onChange={setQuestionId}>
+            <option value="">Alla frågor</option>
+            {[...questions].map(([id, title]) => (
+              <option key={id} value={id}>
+                {title}
+              </option>
+            ))}
+          </SelectField>
         </div>
+        <div className={own.chips} role="group" aria-label="Visa">
+          {chips.map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              aria-pressed={show === chip.id}
+              className={`${own.chip} ${show === chip.id ? own.chipOn : ''}`}
+              onClick={() => {
+                setShow(chip.id)
+                setShown(REPORTS_PER_PAGE)
+              }}
+            >
+              {chip.label} <span className={own.chipCount}>{counts[chip.id]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {reports.isPending && <p className={own.muted}>Laddar redovisningar…</p>}
+      {reports.isError && <p className={own.muted}>Redovisningarna gick inte att hämta.</p>}
+      {reports.isSuccess && visible.length === 0 && (
+        <Card>
+          <p className={styles.empty}>
+            {entries.length === 0
+              ? 'Eleven har inte lämnat någon redovisning än.'
+              : 'Inga redovisningar matchar filtret.'}
+          </p>
+        </Card>
       )}
-      {others.length > 0 && (
-        <ul className={styles.list}>
-          {others.map((p) => (
-            <li key={p.id} className={styles.row}>
-              <span className={styles.rowText}>
-                <span className={styles.name}>{p.workplace.name}</span>
-                <span className={styles.meta}>{periodText(p.start_date, p.end_date)}</span>
+
+      {visible.slice(0, shown).map((entry) =>
+        entry.kind === 'missing' ? (
+          <article key={`missing-${entry.date}`} className={own.missing}>
+            <span className={own.reportDate}>{longDate(entry.date)}</span>
+            <span className={`${own.badge} ${own.badgeMissing}`}>Saknas</span>
+            <span className={own.missingText}>Eleven har inte lämnat redovisningen</span>
+          </article>
+        ) : (
+          <ReportCard key={entry.report.id} report={entry.report} questionId={questionId} />
+        ),
+      )}
+
+      {visible.length > shown && (
+        <button type="button" className={own.more} onClick={() => setShown(shown + REPORTS_PER_PAGE)}>
+          Visa fler
+        </button>
+      )}
+    </section>
+  )
+}
+
+function ReportCard({ report, questionId }: { report: StudentReportSummary; questionId: string }) {
+  const answers = (questionId ? report.answers.filter((a) => a.question_id === questionId) : report.answers).slice(0, 2)
+  return (
+    <Card>
+      <article aria-labelledby={`report-${report.id}`}>
+        <div className={own.reportBody}>
+          <div className={own.reportTop}>
+            <span id={`report-${report.id}`} className={own.reportDate}>
+              {longDate(report.due_date)}
+            </span>
+            {!report.is_read && <span className={`${own.badge} ${own.badgeUnread}`}>Oläst</span>}
+            {report.is_late && <span className={`${own.badge} ${own.badgeLate}`}>Sen</span>}
+            <span className={own.sent}>Inskickad {dateTime(report.submitted_at)}</span>
+          </div>
+          {answers.map((answer, i) => (
+            <div key={answer.question_id} className={i === 1 ? own.faded : undefined} aria-hidden={i === 1}>
+              <p className={own.question}>{answer.question}</p>
+              <p className={own.answer}>{answer.text}</p>
+            </div>
+          ))}
+          {answers.length === 0 && <p className={own.muted}>Inga textsvar i den här redovisningen.</p>}
+        </div>
+        <div className={own.reportFooter}>
+          <span className={own.muted}>
+            {report.comment_count > 0 ? plural(report.comment_count, 'kommentar', 'kommentarer') : 'Inga kommentarer'}
+            {report.class_name ? ` · ${report.class_name}` : ''}
+          </span>
+          <Link
+            to={`/reports/${report.id}`}
+            className={own.open}
+            aria-label={`Öppna redovisningen för ${shortDate(report.due_date)}`}
+          >
+            Öppna
+          </Link>
+        </div>
+      </article>
+    </Card>
+  )
+}
+
+// --- Högerkolumnen --------------------------------------------------------------------------
+
+function attentionText(item: AttentionItem) {
+  switch (item.reason) {
+    case 'missing_check_ins':
+      return { title: `Ej incheckad ${plural(item.count, 'dag', 'dagar')}`, text: 'De senaste fyra veckorna' }
+    case 'missing_reports':
+      return {
+        title: `${plural(item.count, 'redovisning', 'redovisningar')} saknas`,
+        text: 'Syns i listan till vänster',
+      }
+    case 'no_placement':
+      return { title: 'Ingen praktikplats', text: 'Tilldelas i klassvyn' }
+  }
+}
+
+const attentionIcon = {
+  missing_check_ins: { icon: MapPinCheck, tone: 'sky' },
+  missing_reports: { icon: FileText, tone: 'butter' },
+  no_placement: { icon: BriefcaseBusiness, tone: 'mint' },
+} as const
+
+function AttentionBox({ studentId }: { studentId: string }) {
+  const query = useStudentAttention(studentId)
+  const items = query.data?.items ?? []
+  if (items.length === 0) return null
+  return (
+    <section className={own.attention} aria-labelledby="attention-title">
+      <h2 id="attention-title" className={own.attentionTitle}>
+        Behöver uppmärksamhet
+      </h2>
+      <ul className={own.attentionList}>
+        {items.map((item) => {
+          const { icon: Icon, tone } = attentionIcon[item.reason]
+          const text = attentionText(item)
+          return (
+            <li key={item.reason} className={own.attentionItem}>
+              <span className={`${own.iconBox} ${own[tone]}`}>
+                <Icon aria-hidden="true" />
+              </span>
+              <span className={own.attentionText}>
+                <span className={own.attentionName}>{text.title}</span>
+                <span className={own.muted}>{text.text}</span>
               </span>
             </li>
-          ))}
-        </ul>
-      )}
-    </Card>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
 
 function AttendanceCard({ studentId }: { studentId: string }) {
   const query = useStudentAttendance(studentId)
   const [showAll, setShowAll] = useState(false)
+  const data = query.data
+  const summary = data?.summary
+  const total = summary ? Math.max(summary.expected_days, summary.present) : 0
+  const percent = summary && total > 0 ? Math.round((summary.present / total) * 100) : null
+  const present = new Set(data?.days.filter((d) => d.status === 'present').map((d) => d.date))
+
+  // Den här veckans vardagar.
+  const today = todayIso()
+  const monday = parseDay(weekStart(today))
+  const week = Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    const iso = d.toISOString().slice(0, 10)
+    const label = d.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.', '')
+    const state = present.has(iso) ? 'present' : iso <= today ? 'missing' : 'future'
+    return { iso, label: label.charAt(0).toUpperCase() + label.slice(1), state }
+  })
 
   return (
     <Card>
-      <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>Närvaro</h2>
-        {query.data && (
-          <span className={styles.count}>
-            {shortDate(query.data.from_date)} – {shortDate(query.data.to_date)}
+      <div className={own.sideCard}>
+        <div className={own.sideHead}>
+          <span className={`${own.iconBox} ${own.sky}`}>
+            <CalendarCheck aria-hidden="true" />
           </span>
+          <h2 className={own.sideTitle}>Närvaro</h2>
+          {data && <span className={own.sideMeta}>Sedan {shortDate(data.from_date)}</span>}
+        </div>
+        {query.isPending && <p className={own.muted}>Laddar…</p>}
+        {data && !summary?.has_placement && <p className={own.muted}>Eleven har ingen praktikplats under perioden.</p>}
+        {data && summary?.has_placement && (
+          <>
+            <div className={own.bigNumber}>
+              <span className={own.percent}>{percent === null ? '–' : `${percent}%`}</span>
+              <span className={own.muted}>
+                {summary.present} av {plural(total, 'dag', 'dagar')}
+              </span>
+            </div>
+            <SegmentedBar
+              present={summary.present}
+              absent={0}
+              total={total}
+              label={`${summary.present} av ${total} dagar incheckad`}
+            />
+            <div className={own.week}>
+              <span className={own.weekTitle}>Den här veckan</span>
+              <ul className={own.weekDays}>
+                {week.map((day) => (
+                  <li key={day.iso} className={own.weekDay}>
+                    {day.label}
+                    <span
+                      className={`${own.dot} ${own[day.state]}`}
+                      aria-label={
+                        day.state === 'present' ? 'Incheckad' : day.state === 'missing' ? 'Ej incheckad' : 'Kommande'
+                      }
+                      role="img"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {data.days.length > 0 && (
+              <button type="button" className={own.textLink} onClick={() => setShowAll(!showAll)}>
+                {showAll ? 'Dölj dagarna' : `Visa alla ${plural(data.days.length, 'incheckning', 'incheckningar')}`}
+              </button>
+            )}
+            {showAll && (
+              <ul className={own.dayList}>
+                {data.days.map((day) => (
+                  <li key={day.date}>
+                    <span>{shortDate(day.date)}</span>
+                    <span className={own.muted}>
+                      {day.checked_in_at
+                        ? new Date(day.checked_in_at).toLocaleTimeString('sv-SE', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
-      {query.isPending && <p className={styles.empty}>Laddar…</p>}
-      {query.isError && <p className={styles.empty}>Närvaron gick inte att hämta.</p>}
-      {query.data && !query.data.summary.has_placement && (
-        <p className={styles.empty}>Ingen närvaro att visa. Eleven har ingen praktikplats under perioden.</p>
-      )}
-      {query.data?.summary.has_placement &&
-        (() => {
-          const { summary, days } = query.data
-          const total = Math.max(summary.expected_days, summary.present)
-          const parts = [
-            `${summary.present} närvarande`,
-            summary.missing > 0 && `${summary.missing} ej incheckad`,
-          ].filter(Boolean)
-          const shown = showAll ? days : days.slice(0, 5)
-          return (
-            <>
-              <div className={`${styles.cardBody} ${own.attendance}`}>
-                <SegmentedBar
-                  present={summary.present}
-                  absent={0}
-                  total={total}
-                  label={`${summary.present} av ${total} dagar närvarande`}
-                />
-                <p className={own.muted}>
-                  {parts.join(' · ')} av {summary.expected_days} APL-dagar
-                </p>
-              </div>
-              {shown.length > 0 && (
-                <ul className={styles.list}>
-                  {shown.map((day) => (
-                    <li key={day.date} className={styles.row}>
-                      <span className={styles.rowText}>
-                        <span className={styles.name}>{shortDate(day.date)}</span>
-                      </span>
-                      <span className={`${own.status} ${own.present}`}>
-                        <CalendarCheck aria-hidden="true" />
-                        Incheckad
-                        {day.checked_in_at &&
-                          ` ${new Date(day.checked_in_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {days.length > 5 && (
-                <div className={styles.cardBody}>
-                  <button type="button" className={styles.textButton} onClick={() => setShowAll(!showAll)}>
-                    {showAll ? 'Visa färre' : `Visa alla ${days.length} dagar`}
-                  </button>
-                </div>
-              )}
-            </>
-          )
-        })()}
     </Card>
   )
 }
 
-function ReportsCard({ studentId }: { studentId: string }) {
-  const query = useStudentReports(studentId, true)
-  const reports = query.data ?? []
+function PlacementCard({ studentId }: { studentId: string }) {
+  const query = useStudentPlacements(studentId)
+  // currentPlacement vill ha listan i datumordning, API:t ger senaste först.
+  const placements = [...(query.data ?? [])].sort((a, b) => a.start_date.localeCompare(b.start_date))
+  const current = currentPlacement(placements)
+  const others = placements.filter((p) => p.id !== current?.id)
+  const status = current ? periodStatus(current.start_date, current.end_date) : null
 
   return (
     <Card>
-      <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>Redovisningar</h2>
-        <span className={styles.count}>{reports.length}</span>
-      </div>
-      {query.isPending && <p className={styles.empty}>Laddar…</p>}
-      {query.isSuccess && reports.length === 0 && <p className={styles.empty}>Eleven har inte lämnat någon redovisning än.</p>}
-      {reports.length > 0 && (
-        <ul className={styles.list}>
-          {reports.map((r) => (
-            <li key={r.id} className={styles.row}>
-              <Link to={`/reports/${r.id}`} className={styles.rowLink}>
-                <FileText aria-hidden="true" className={own.reportIcon} />
-                <span className={styles.rowText}>
-                  <span className={styles.name}>Redovisning {shortDate(r.due_date)}</span>
-                  <span className={styles.meta}>
-                    {r.class_name}
-                    {r.is_late ? ' · Sen' : ''}
-                    {r.comment_count > 0 ? ` · ${r.comment_count} kommentarer` : ''}
+      <div className={own.sideCard}>
+        <div className={own.sideHead}>
+          <span className={`${own.iconBox} ${own.mint}`}>
+            <BriefcaseBusiness aria-hidden="true" />
+          </span>
+          <h2 className={own.sideTitle}>Praktikplats</h2>
+        </div>
+        {query.isPending && <p className={own.muted}>Laddar…</p>}
+        {query.isSuccess && !current && (
+          <p className={own.muted}>Eleven har ingen praktikplats. Den tilldelas i klassvyn.</p>
+        )}
+        {current && (
+          <>
+            <div>
+              <p className={own.company}>{current.workplace.name}</p>
+              {current.workplace.address && (
+                <p className={own.address}>
+                  <MapPin aria-hidden="true" />
+                  {current.workplace.address}
+                </p>
+              )}
+            </div>
+            <div className={own.progress}>
+              <div className={own.progressTop}>
+                <span>{periodText(current.start_date, current.end_date)}</span>
+                {status === 'active' && (
+                  <span className={own.mintText}>
+                    Vecka {periodWeek(current.start_date, current.end_date).week} av{' '}
+                    {periodWeek(current.start_date, current.end_date).weeks}
                   </span>
-                </span>
-              </Link>
-              {!r.is_read && <span className={`${own.status} ${own.unread}`}>Oläst</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+                )}
+              </div>
+              <div
+                className={own.track}
+                role="img"
+                aria-label={`${Math.round(periodProgress(current.start_date, current.end_date) * 100)} procent av perioden`}
+              >
+                <div
+                  className={own.fill}
+                  style={{ width: `${Math.round(periodProgress(current.start_date, current.end_date) * 100)}%` }}
+                />
+              </div>
+              <span className={own.mutedSmall}>{periodCountdown(current.start_date, current.end_date)}</span>
+            </div>
+            <div className={own.supervisor}>
+              <Avatar name={current.supervisor.name} size="sm" color="yellow" />
+              <span className={own.supervisorText}>
+                <span className={own.supervisorName}>{current.supervisor.name}</span>
+                <span className={own.muted}>Handledare</span>
+                <a href={`mailto:${current.supervisor.email}`} className={own.email}>
+                  {current.supervisor.email}
+                </a>
+              </span>
+            </div>
+          </>
+        )}
+        {others.length > 0 && (
+          <div className={own.others}>
+            <span className={own.weekTitle}>Andra placeringar</span>
+            <ul>
+              {others.map((p) => (
+                <li key={p.id}>
+                  <span>{p.workplace.name}</span>
+                  <span className={own.muted}>{periodText(p.start_date, p.end_date)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </Card>
   )
 }

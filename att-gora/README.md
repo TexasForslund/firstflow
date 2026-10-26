@@ -45,6 +45,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 **Nästa steg:**
 - **Texas + Claude:**
   - F6: lärarens översikt med riktig data (granskas).
+  - F17: elevsidan version 2, enligt Texas skiss (granskas).
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
 - **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.

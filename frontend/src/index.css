@@ -32,6 +32,16 @@
   --color-track: #d9d9d9;
   --color-attention-bg: #fff1ea;
   --color-attention: #b8401f;
+
+  /* Mjuka färger som skiljer block åt, t.ex. på elevsidan (Texas, 2026-10-26). Lila är kvar för
+     aktiva val och länkar. Varje bakgrund har en mörkare textton. */
+  --color-mint-bg: #e6f6ec;
+  --color-mint: #146c34;
+  --color-sky-bg: #e7f0fe;
+  --color-sky: #1f5fbf;
+  --color-butter-bg: #fff5d6;
+  --color-butter: #8a5a00;
+  --color-butter-border: #e0b84d;
   --color-choice-selected: #ffe1e1;
   --color-star: #f5b21b;
   --color-star-empty: #d9d9de;
@@ -209,6 +219,9 @@ html[data-contrast='high'] {
   --color-border: #75737d;
   --color-primary-on-light: #4a2bd6;
   --color-attention: #8f2e12;
+  --color-mint: #0e5226;
+  --color-sky: #17478f;
+  --color-butter: #6b4600;
 }
 
 html[data-contrast='high'] :focus-visible {

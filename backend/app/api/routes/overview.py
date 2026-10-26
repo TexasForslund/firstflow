@@ -20,17 +20,18 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles
 from app.api.routes.attendance import DEFAULT_PERIOD_DAYS, class_student_attendance
-from app.api.routes.reports import PersonBrief, due_days
+from app.api.routes.reports import PersonBrief, due_days, text_answers
+from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
 from app.models.attendance import Attendance, AttendanceStatus
 from app.models.placement import Placement
 from app.models.report import FormVersion, Report, ReportComment, ReportRead, ReportStatus
-from app.models.school_class import SchoolClass, class_teachers
+from app.models.school_class import SchoolClass, class_students, class_teachers
 from app.models.user import User, UserRole
-from app.services.report_forms import QuestionType, parse_questions
 
 router = APIRouter(prefix="/teacher/overview", tags=["overview"])
+student_router = APIRouter(prefix="/students/{student_id}/attention", tags=["overview"])
 
 Teacher = Annotated[User, Depends(require_roles(UserRole.TEACHER))]
 
@@ -87,21 +88,10 @@ class TeacherOverview(BaseModel):
 
 
 def _preview(report: Report) -> list[AnswerPreview]:
-    answers = {a.question_id: a for a in report.answers}
-    result = []
-    for question in parse_questions(report.form_version.questions):
-        if question.type not in (QuestionType.SHORT_TEXT, QuestionType.LONG_TEXT):
-            continue
-        answer = answers.get(question.id)
-        if answer is None or not answer.text:
-            continue
-        text = answer.text.strip()
-        if len(text) > PREVIEW_LENGTH:
-            text = text[:PREVIEW_LENGTH].rstrip() + "…"
-        result.append(AnswerPreview(question=question.title, text=text))
-        if len(result) == PREVIEW_ANSWERS:
-            break
-    return result
+    return [
+        AnswerPreview(question=a.question, text=a.text)
+        for a in text_answers(report, limit=PREVIEW_ANSWERS, length=PREVIEW_LENGTH)
+    ]
 
 
 @router.get("", response_model=TeacherOverview)
@@ -277,3 +267,93 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
             for report, count in reports
         ],
     )
+
+
+# --- Elevsidan ----------------------------------------------------------------------------
+
+
+class StudentAttention(BaseModel):
+    """Det som behöver följas upp för en elev, med samma regler som lärarens översikt."""
+
+    items: list[AttentionItem]
+    missing_report_days: list[date] = Field(
+        description="Redovisningsdagar före i dag utan inskickad redovisning, senaste först"
+    )
+
+
+@student_router.get("", response_model=StudentAttention)
+def student_attention(student_id: UUID, db: DbSession, user: CanViewStudent) -> StudentAttention:
+    """Elevens uppmärksamhetspunkter i klassen eleven går i. Samma behörighet som elevsidan."""
+    student = get_student_for(db, user, student_id)
+    today = time.today()
+    school_class = db.scalar(
+        select(SchoolClass)
+        .join(class_students, class_students.c.class_id == SchoolClass.id)
+        .where(class_students.c.student_id == student.id)
+        .options(selectinload(SchoolClass.students))
+    )
+    if school_class is None:
+        return StudentAttention(items=[], missing_report_days=[])
+    me = PersonBrief(id=student.id, name=student.name)
+    items: list[AttentionItem] = []
+
+    from_date = today - timedelta(days=DEFAULT_PERIOD_DAYS - 1)
+    for row in class_student_attendance(db, school_class, from_date, today):
+        if row.student.id == student.id and row.missing >= ATTENTION_MISSING_CHECK_INS:
+            items.append(
+                AttentionItem(
+                    student=me,
+                    class_name=school_class.name,
+                    reason=AttentionReason.MISSING_CHECK_INS,
+                    count=row.missing,
+                )
+            )
+
+    missing_days: list[date] = []
+    published = db.scalar(select(exists().where(FormVersion.class_id == school_class.id)))
+    if published:
+        submitted = set(
+            db.scalars(
+                select(Report.due_date).where(
+                    Report.class_id == school_class.id,
+                    Report.student_id == student.id,
+                    Report.status == ReportStatus.SUBMITTED,
+                )
+            )
+        )
+        missing_days = sorted(
+            (
+                d
+                for d in due_days(db, student, school_class, today)
+                if d < today and d not in submitted
+            ),
+            reverse=True,
+        )
+        if missing_days:
+            items.append(
+                AttentionItem(
+                    student=me,
+                    class_name=school_class.name,
+                    reason=AttentionReason.MISSING_REPORTS,
+                    count=len(missing_days),
+                )
+            )
+
+    members = [s.id for s in school_class.students if s.is_active]
+    placed = set(
+        db.scalars(
+            select(Placement.student_id).where(
+                Placement.student_id.in_(members), Placement.end_date >= today
+            )
+        )
+    )
+    if student.id not in placed and placed:
+        items.append(
+            AttentionItem(
+                student=me,
+                class_name=school_class.name,
+                reason=AttentionReason.NO_PLACEMENT,
+                count=0,
+            )
+        )
+    return StudentAttention(items=items, missing_report_days=missing_days)

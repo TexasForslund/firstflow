@@ -1188,6 +1188,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/students/{student_id}/attention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Attention
+         * @description Elevens uppmärksamhetspunkter i klassen eleven går i. Samma behörighet som elevsidan.
+         */
+        get: operations["student_attention_api_students__student_id__attention_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2341,6 +2361,19 @@ export interface components {
              */
             days: components["schemas"]["AttendanceDay"][];
         };
+        /**
+         * StudentAttention
+         * @description Det som behöver följas upp för en elev, med samma regler som lärarens översikt.
+         */
+        StudentAttention: {
+            /** Items */
+            items: components["schemas"]["AttentionItem"][];
+            /**
+             * Missing Report Days
+             * @description Redovisningsdagar före i dag utan inskickad redovisning, senaste först
+             */
+            missing_report_days: string[];
+        };
         /** StudentCreate */
         StudentCreate: {
             /** Email */
@@ -2417,6 +2450,11 @@ export interface components {
             comment_count: number;
             /** Class Name */
             class_name: string;
+            /**
+             * Answers
+             * @description Alla textsvar, för sök och filter på elevsidan
+             */
+            answers: components["schemas"]["TextAnswer"][];
         };
         /**
          * SupervisedStudent
@@ -2568,6 +2606,18 @@ export interface components {
          * @enum {string}
          */
         TemplateScope: "school" | "personal";
+        /** TextAnswer */
+        TextAnswer: {
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Question */
+            question: string;
+            /** Text */
+            text: string;
+        };
         /** UserRead */
         UserRead: {
             /**
@@ -4660,6 +4710,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TeacherOverview"];
+                };
+            };
+        };
+    };
+    student_attention_api_students__student_id__attention_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentAttention"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

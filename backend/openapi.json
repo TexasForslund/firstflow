@@ -3157,6 +3157,55 @@
           }
         ]
       }
+    },
+    "/api/students/{student_id}/attention": {
+      "get": {
+        "tags": [
+          "overview"
+        ],
+        "summary": "Student Attention",
+        "description": "Elevens uppmärksamhetspunkter i klassen eleven går i. Samma behörighet som elevsidan.",
+        "operationId": "student_attention_api_students__student_id__attention_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentAttention"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5656,6 +5705,33 @@
         "title": "StudentAttendanceDetail",
         "description": "Närvaron för en elev, för elevsidan."
       },
+      "StudentAttention": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AttentionItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "missing_report_days": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Missing Report Days",
+            "description": "Redovisningsdagar före i dag utan inskickad redovisning, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "missing_report_days"
+        ],
+        "title": "StudentAttention",
+        "description": "Det som behöver följas upp för en elev, med samma regler som lärarens översikt."
+      },
       "StudentCreate": {
         "properties": {
           "email": {
@@ -5821,6 +5897,14 @@
           "class_name": {
             "type": "string",
             "title": "Class Name"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/TextAnswer"
+            },
+            "type": "array",
+            "title": "Answers",
+            "description": "Alla textsvar, för sök och filter på elevsidan"
           }
         },
         "type": "object",
@@ -5832,7 +5916,8 @@
           "is_late",
           "is_read",
           "comment_count",
-          "class_name"
+          "class_name",
+          "answers"
         ],
         "title": "StudentReportSummary"
       },
@@ -6187,6 +6272,30 @@
           "personal"
         ],
         "title": "TemplateScope"
+      },
+      "TextAnswer": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Question Id"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "question",
+          "text"
+        ],
+        "title": "TextAnswer"
       },
       "UserRead": {
         "properties": {

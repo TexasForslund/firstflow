@@ -46,6 +46,7 @@ from app.services.report_forms import (
     AnswerError,
     AnswerValue,
     Question,
+    QuestionType,
     is_required,
     normalize_answer,
     parse_questions,
@@ -58,6 +59,7 @@ class_router = APIRouter(prefix="/classes/{class_id}/reports", tags=["reports"])
 
 # Hur långt bakåt eleven kan lämna en redovisning som inte är gjord.
 REPORT_WINDOW_DAYS = 28
+STUDENT_PAGE_ANSWER_LENGTH = 1000
 
 Student = Annotated[User, Depends(require_roles(UserRole.STUDENT))]
 Teacher = Annotated[User, Depends(require_roles(UserRole.TEACHER))]
@@ -582,8 +584,35 @@ def list_class_reports(
     ]
 
 
+class TextAnswer(BaseModel):
+    question_id: UUID
+    question: str
+    text: str
+
+
+def text_answers(report: Report, *, limit: int | None = None, length: int) -> list[TextAnswer]:
+    """Redovisningens textsvar i frågornas ordning, förkortade till `length` tecken.
+    `report.form_version` och `report.answers` måste vara laddade."""
+    answers = {a.question_id: a for a in report.answers}
+    result: list[TextAnswer] = []
+    for question in parse_questions(report.form_version.questions):
+        if question.type not in (QuestionType.SHORT_TEXT, QuestionType.LONG_TEXT):
+            continue
+        answer = answers.get(question.id)
+        text = (answer.text or "").strip() if answer else ""
+        if not text:
+            continue
+        if len(text) > length:
+            text = text[:length].rstrip() + "…"
+        result.append(TextAnswer(question_id=question.id, question=question.title, text=text))
+        if limit is not None and len(result) == limit:
+            break
+    return result
+
+
 class StudentReportSummary(ReportSummary):
     class_name: str
+    answers: list[TextAnswer] = Field(description="Alla textsvar, för sök och filter på elevsidan")
 
 
 @student_router.get("", response_model=list[StudentReportSummary])
@@ -608,7 +637,12 @@ def list_student_reports(
     )
     query = (
         select(Report, is_read, comment_count)
-        .options(selectinload(Report.student), selectinload(Report.school_class))
+        .options(
+            selectinload(Report.student),
+            selectinload(Report.school_class),
+            selectinload(Report.form_version),
+            selectinload(Report.answers),
+        )
         .where(
             Report.student_id == student.id,
             Report.status == ReportStatus.SUBMITTED,
@@ -626,6 +660,7 @@ def list_student_reports(
             is_read=read,
             comment_count=count,
             class_name=report.school_class.name,
+            answers=text_answers(report, length=STUDENT_PAGE_ANSWER_LENGTH),
         )
         for report, read, count in db.execute(query).all()
     ]
