@@ -55,7 +55,7 @@ Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo
 
 ---
 
-## B3. Praktikperiod och APL-plats 🚧 Granskas ([PR #22](https://github.com/TexasForslund/firstflow/pull/22), Hannes + Claude)
+## B3. Praktikperiod och APL-plats ✅ Klar (PR #22, Hannes + Claude)
 
 Låser upp: F4 och praktikplatsen i klassvyn (F12).
 

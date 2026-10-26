@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, X } from 'lucide-react'
+import { BriefcaseBusiness, ChevronDown, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 
@@ -11,16 +11,19 @@ import {
   useUnassignTeacher,
   type Person,
 } from '../../api/classes'
+import { useClassPlacements, type Placement } from '../../api/placements'
 import { useClassReports } from '../../api/reports'
 import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, Card, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
 import { NotFound } from '../NotFound'
+import { currentPlacement, periodText } from '../placements/period'
 import { AplTermsForm } from './AplTermsForm'
 import { ClassReports } from './ClassReports'
 import { FormBuilder } from './questions/FormBuilder'
 import { aplSummary } from './aplTerms'
 import styles from './Classes.module.css'
+import { PlacementPanel } from './PlacementPanel'
 
 type TabId = 'students' | 'reports' | 'terms' | 'questions' | 'teachers'
 
@@ -32,6 +35,7 @@ export function ClassPage() {
   // Bara läraren läser redovisningarna. Antalet olästa visas på fliken.
   const isTeacher = user?.role === 'teacher'
   const unread = useClassReports(classId, { unreadOnly: true }, isTeacher)
+  const placements = useClassPlacements(classId, query.isSuccess)
 
   if (query.isPending) return <p className={styles.state}>Laddar klassen…</p>
   if (query.isError) return <NotFound what="Klassen" />
@@ -93,7 +97,14 @@ export function ClassPage() {
               ) : (
                 <ul className={styles.list}>
                   {cls.students.map((student) => (
-                    <StudentRow key={student.id} classId={cls.id} student={student} canEdit={canEdit} />
+                    <StudentRow
+                      key={student.id}
+                      classId={cls.id}
+                      student={student}
+                      canEdit={canEdit}
+                      placements={(placements.data ?? []).filter((p) => p.student.id === student.id)}
+                      placementsLoading={placements.isPending}
+                    />
                   ))}
                 </ul>
               )}
@@ -112,51 +123,98 @@ export function ClassPage() {
   )
 }
 
-function StudentRow({ classId, student, canEdit }: { classId: string; student: Person; canEdit: boolean }) {
+interface StudentRowProps {
+  classId: string
+  student: Person
+  canEdit: boolean
+  placements: Placement[]
+  placementsLoading: boolean
+}
+
+function StudentRow({ classId, student, canEdit, placements, placementsLoading }: StudentRowProps) {
   const [confirming, setConfirming] = useState(false)
+  const [open, setOpen] = useState(false)
   const remove = useRemoveStudent(classId)
-  return (
-    <li className={styles.row}>
-      <Link to={`/students/${student.id}`} className={styles.rowLink}>
-        <Avatar name={student.name} />
-        <span className={styles.rowText}>
-          <span className={styles.name}>{student.name}</span>
-          <span className={styles.meta}>{student.email}</span>
-        </span>
-      </Link>
-      {/* Tilldelning av praktikplats och projekt kopplas in med B3 och B12. */}
-      <span className={styles.placement}>
-        <BriefcaseBusiness aria-hidden="true" />
-        <span>Ingen praktikplats</span>
+  const current = currentPlacement(placements)
+  const panelId = `placement-${student.id}`
+
+  const placementLabel = placementsLoading ? (
+    <span>…</span>
+  ) : current ? (
+    <span className={styles.placementText}>
+      <span className={styles.placementName}>{current.workplace.name}</span>
+      <span>
+        {current.supervisor.name} · {periodText(current.start_date, current.end_date)}
       </span>
-      {canEdit && (
-        <span className={styles.rowActions}>
-          {confirming ? (
-            <>
-              <span className={styles.confirmText}>Ta bort ur klassen?</span>
+    </span>
+  ) : (
+    <span>{canEdit ? 'Tilldela praktikplats' : 'Ingen praktikplats'}</span>
+  )
+
+  return (
+    <li>
+      <div className={styles.row}>
+        <Link to={`/students/${student.id}`} className={styles.rowLink}>
+          <Avatar name={student.name} />
+          <span className={styles.rowText}>
+            <span className={styles.name}>{student.name}</span>
+            <span className={styles.meta}>{student.email}</span>
+          </span>
+        </Link>
+        {/* Projekt kopplas in med B12. */}
+        {canEdit ? (
+          <button
+            type="button"
+            className={`${styles.placement} ${styles.placementButton} ${current ? '' : styles.placementEmpty}`}
+            aria-expanded={open}
+            aria-controls={panelId}
+            aria-label={`Praktikplats för ${student.name}`}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <BriefcaseBusiness aria-hidden="true" />
+            {placementLabel}
+            <ChevronDown aria-hidden="true" className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`} />
+          </button>
+        ) : (
+          <span className={styles.placement}>
+            <BriefcaseBusiness aria-hidden="true" />
+            {placementLabel}
+          </span>
+        )}
+        {canEdit && (
+          <span className={styles.rowActions}>
+            {confirming ? (
+              <>
+                <span className={styles.confirmText}>Ta bort ur klassen?</span>
+                <button
+                  type="button"
+                  className={styles.dangerButton}
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate(student.id)}
+                >
+                  Ta bort
+                </button>
+                <button type="button" className={styles.textButton} onClick={() => setConfirming(false)}>
+                  Avbryt
+                </button>
+              </>
+            ) : (
               <button
                 type="button"
-                className={styles.dangerButton}
-                disabled={remove.isPending}
-                onClick={() => remove.mutate(student.id)}
+                className={styles.iconButton}
+                aria-label={`Ta bort ${student.name} ur klassen`}
+                onClick={() => setConfirming(true)}
               >
-                Ta bort
+                <X aria-hidden="true" />
               </button>
-              <button type="button" className={styles.textButton} onClick={() => setConfirming(false)}>
-                Avbryt
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              className={styles.iconButton}
-              aria-label={`Ta bort ${student.name} ur klassen`}
-              onClick={() => setConfirming(true)}
-            >
-              <X aria-hidden="true" />
-            </button>
-          )}
-        </span>
+            )}
+          </span>
+        )}
+      </div>
+      {canEdit && open && (
+        <div id={panelId}>
+          <PlacementPanel student={student} placements={placements} />
+        </div>
       )}
     </li>
   )

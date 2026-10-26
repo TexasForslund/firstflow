@@ -58,9 +58,19 @@ Därmed går en ny skola att sätta upp helt i gränssnittet: skola, skoladmin, 
 
 ---
 
-## F4. Min APL och handledarvy ⬜
+## F4. Min APL och handledarvy 🚧 Granskas ([PR #23](https://github.com/TexasForslund/firstflow/pull/23), Texas + Claude)
 
-Väntar på: B3.
+Byggd 2026-10-26 mot B3 (PR #22). Ingen ändring i backend.
+
+- **Elev, `/my-apl`:** kortet med pågående APL (arbetsplats, adress, period, vecka X av Y och hur många dagar som är kvar) och handledaren. Utan pågående placering visas den närmaste kommande. Kommande och tidigare placeringar listas under.
+- **Handledare, `/my-students`:** dagens elever grupperade per arbetsplats, med period och vecka.
+- **Lärare och skoladmin, `/placements`:** skolans arbetsplatser med handledare. Ny arbetsplats och Lägg till handledare. Rektor ser sidan utan att kunna ändra.
+- **Klassvyn, fliken Elever:** elevraden visar pågående eller nästa placering. Knappen öppnar en panel med elevens placeringar (Ta bort) och formuläret Ny placering: arbetsplats, handledare på arbetsplatsen, start- och slutdatum. Överlappande period och fel handledare ger tydliga felmeddelanden.
+- Elever ser inte längre `/placements`, bara Min APL.
+
+**Inte byggt:** elevens praktikplats på elevsidan (`/students/:id`). Det finns inget endpoint för en enskild elevs placeringar. Tas med när det behövs.
+
+Ursprunglig spec:
 
 - Elev, `/my-apl`: arbetsplats, period och handledare från `GET /api/me/placements`.
 - Handledare, `/my-students`: elever från `GET /api/supervisor/students`.

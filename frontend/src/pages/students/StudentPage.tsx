@@ -80,7 +80,7 @@ export function StudentPage() {
         <div className={styles.cardHeader}>
           <h2 className={styles.cardTitle}>APL och närvaro</h2>
         </div>
-        <p className={styles.empty}>Praktikplats, period och närvaro visas här när de är byggda (F4 och F5).</p>
+        <p className={styles.empty}>Praktikplatsen syns och tilldelas i klassvyn. Närvaro visas här när den är byggd (F5).</p>
       </Card>
     </div>
   )
