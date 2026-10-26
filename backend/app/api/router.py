@@ -6,6 +6,7 @@ from app.api.routes import (
     classes,
     forms,
     health,
+    invitations,
     me,
     placements,
     reports,
@@ -34,3 +35,7 @@ api_router.include_router(attendance.router)
 api_router.include_router(attendance.me_router)
 api_router.include_router(attendance.class_router)
 api_router.include_router(attendance.supervisor_router)
+api_router.include_router(invitations.router)
+api_router.include_router(invitations.public_router)
+api_router.include_router(invitations.supervisor_router)
+api_router.include_router(invitations.notification_router)

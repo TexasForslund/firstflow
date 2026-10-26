@@ -18,7 +18,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field, field_validator, model_validator
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -44,6 +44,7 @@ CanViewWorkplaces = Annotated[
     Depends(require_roles(UserRole.SCHOOL_ADMIN, UserRole.PRINCIPAL, UserRole.TEACHER)),
 ]
 CanEditPlacements = Annotated[User, Depends(require_roles(UserRole.SCHOOL_ADMIN, UserRole.TEACHER))]
+SchoolAdmin = Annotated[User, Depends(require_roles(UserRole.SCHOOL_ADMIN))]
 Student = Annotated[User, Depends(require_roles(UserRole.STUDENT))]
 Supervisor = Annotated[User, Depends(require_roles(UserRole.SUPERVISOR))]
 
@@ -62,6 +63,8 @@ class WorkplaceRead(BaseModel):
     id: UUID
     name: str
     address: str | None
+    industry: str | None
+    description: str | None
     supervisors: list[SupervisorRead]
 
 
@@ -150,6 +153,8 @@ def _workplace_read(workplace: Workplace) -> WorkplaceRead:
         id=workplace.id,
         name=workplace.name,
         address=workplace.address,
+        industry=workplace.industry,
+        description=workplace.description,
         supervisors=_active(workplace.supervisors),
     )
 
@@ -170,11 +175,18 @@ def _placement_read(placement: Placement) -> PlacementRead:
     )
 
 
+def _visible_to_teacher(teacher: User):  # noqa: ANN202
+    """Läraren ser företag hen har bjudit in, och företag utan ägare (t.ex. från skoladmin)."""
+    return or_(Workplace.owner_teacher_id == teacher.id, Workplace.owner_teacher_id.is_(None))
+
+
 def _get_workplace(db: DbSession, user: User, workplace_id: UUID) -> Workplace:
     workplace = db.get(Workplace, workplace_id)
     if workplace is None:
         raise _not_found()
     require_same_school(user, workplace.school_id)
+    if user.role == UserRole.TEACHER and workplace.owner_teacher_id not in (None, user.id):
+        raise _not_found()
     return workplace
 
 
@@ -208,19 +220,17 @@ def _require_student_access(db: DbSession, user: User, student_id: UUID) -> User
 @workplace_router.get("", response_model=list[WorkplaceRead])
 def list_workplaces(db: DbSession, user: CanViewWorkplaces) -> list[WorkplaceRead]:
     """Skolans arbetsplatser med sina handledare."""
+    query = select(Workplace).where(Workplace.school_id == user.school_id)
+    if user.role == UserRole.TEACHER:
+        query = query.where(_visible_to_teacher(user))
     workplaces = db.scalars(
-        select(Workplace)
-        .where(Workplace.school_id == user.school_id)
-        .options(selectinload(Workplace.supervisors))
-        .order_by(Workplace.name)
+        query.options(selectinload(Workplace.supervisors)).order_by(Workplace.name)
     )
     return [_workplace_read(w) for w in workplaces]
 
 
 @workplace_router.post("", response_model=WorkplaceRead, status_code=status.HTTP_201_CREATED)
-def create_workplace(
-    body: WorkplaceCreate, db: DbSession, user: CanEditPlacements
-) -> WorkplaceRead:
+def create_workplace(body: WorkplaceCreate, db: DbSession, user: SchoolAdmin) -> WorkplaceRead:
     workplace = Workplace(school_id=user.school_id, name=body.name, address=body.address)
     db.add(workplace)
     db.commit()
@@ -233,7 +243,7 @@ def create_workplace(
     status_code=status.HTTP_201_CREATED,
 )
 def add_supervisor(
-    workplace_id: UUID, body: AccountCreate, db: DbSession, user: CanEditPlacements
+    workplace_id: UUID, body: AccountCreate, db: DbSession, user: SchoolAdmin
 ) -> WorkplaceRead:
     """Lägger till en handledare på arbetsplatsen.
 

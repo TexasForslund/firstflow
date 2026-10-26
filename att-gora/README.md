@@ -34,6 +34,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B3:** arbetsplatser, handledare och placeringar (#22).
 
 **Granskas (Texas + Claude):**
+- **B14 och F15: inbjudan av handledare.** Läraren bjuder in med e-post, handledaren skapar konto och företagsprofil via länken, läraren får en notis. Handledaren bjuder in upp till tre kollegor. Inbjudan av handledare togs över från Hannes B6.
 - **B4 och F5 (#26): närvaro och incheckning.** Eleven checkar in och anmäler frånvaro, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
 - **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
 

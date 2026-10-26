@@ -55,6 +55,7 @@ export const navByRole: Record<Role, NavItem[]> = {
   ],
   supervisor: [
     { to: '/my-students', label: 'Mina elever', icon: students },
+    { to: '/company', label: 'Företag', icon: placements },
     { to: '/messages', label: 'Meddelanden', icon: messages },
     { to: '/contracts', label: 'Kontrakt', icon: contracts },
   ],

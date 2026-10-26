@@ -124,6 +124,8 @@ def test_school_staff_list_own_schools_workplaces(
             "id": str(world.workplace.id),
             "name": "Elbolaget",
             "address": None,
+            "industry": None,
+            "description": None,
             "supervisors": [
                 {
                     "id": str(world.supervisor.id),
@@ -147,8 +149,8 @@ def test_workplaces_require_login(client: TestClient) -> None:
     assert client.get("/api/workplaces").status_code == 401
 
 
-def test_teacher_creates_workplace(client: TestClient, login: Login, world: World) -> None:
-    login(world.teacher)
+def test_admin_creates_workplace(client: TestClient, login: Login, world: World) -> None:
+    login(world.admin)
     response = client.post(
         "/api/workplaces", json={"name": "  Kramfors El  ", "address": " Storgatan 1 "}
     )
@@ -159,18 +161,40 @@ def test_teacher_creates_workplace(client: TestClient, login: Login, world: Worl
     assert names == ["Elbolaget", "Kramfors El"]
 
 
-def test_principal_cannot_create_workplace(client: TestClient, login: Login, world: World) -> None:
-    login(world.principal)
+@pytest.mark.parametrize("who", ["teacher", "principal"])
+def test_only_admin_creates_workplace(
+    client: TestClient, login: Login, world: World, who: str
+) -> None:
+    """Lärare skapar inte arbetsplatser själva. De bjuder in handledare (Texas, 2026-10-26)."""
+    login(getattr(world, who))
     assert client.post("/api/workplaces", json={"name": "X"}).status_code == 403
+    response = client.post(
+        f"/api/workplaces/{world.workplace.id}/supervisors",
+        json={"name": "Anna", "email": "anna@x.se"},
+    )
+    assert response.status_code == 403
+
+
+def test_teacher_sees_only_own_and_shared_workplaces(
+    client: TestClient, login: Login, world: World, db: Session
+) -> None:
+    world.workplace.owner_teacher_id = world.other_teacher.id
+    db.flush()
+    login(world.teacher)
+    assert client.get("/api/workplaces").json() == []
+    login(world.other_teacher)
+    assert [w["name"] for w in client.get("/api/workplaces").json()] == ["Elbolaget"]
+    login(world.admin)
+    assert [w["name"] for w in client.get("/api/workplaces").json()] == ["Elbolaget"]
 
 
 def test_blank_workplace_name_is_rejected(client: TestClient, login: Login, world: World) -> None:
-    login(world.teacher)
+    login(world.admin)
     assert client.post("/api/workplaces", json={"name": "   "}).status_code == 422
 
 
-def test_teacher_adds_new_supervisor(client: TestClient, login: Login, world: World) -> None:
-    login(world.teacher)
+def test_admin_adds_new_supervisor(client: TestClient, login: Login, world: World) -> None:
+    login(world.admin)
     response = client.post(
         f"/api/workplaces/{world.workplace.id}/supervisors",
         json={"name": "Anna Ek", "email": "Anna@Elbolaget.se"},
@@ -184,7 +208,7 @@ def test_existing_supervisor_is_linked(
     client: TestClient, db: Session, login: Login, world: World
 ) -> None:
     """Samma handledare kan ta emot elever från flera skolor."""
-    login(world.teacher)
+    login(world.admin)
     response = client.post(
         f"/api/workplaces/{world.workplace.id}/supervisors",
         json={"name": "Annat namn", "email": "lisa@umeabygg.se"},
@@ -198,7 +222,7 @@ def test_existing_supervisor_is_linked(
 def test_supervisor_email_of_other_role_conflicts(
     client: TestClient, login: Login, world: World
 ) -> None:
-    login(world.teacher)
+    login(world.admin)
     response = client.post(
         f"/api/workplaces/{world.workplace.id}/supervisors",
         json={"name": "Hugo", "email": "hugo@kramfors.se"},
@@ -209,7 +233,7 @@ def test_supervisor_email_of_other_role_conflicts(
 def test_other_schools_workplace_is_not_found(
     client: TestClient, login: Login, world: World
 ) -> None:
-    login(world.teacher)
+    login(world.admin)
     response = client.post(
         f"/api/workplaces/{world.umea_workplace.id}/supervisors",
         json={"name": "Anna", "email": "anna@x.se"},

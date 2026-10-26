@@ -6,6 +6,7 @@ import type { Role } from './auth/roles'
 import { SchoolPage } from './pages/admin/SchoolPage'
 import { Schools } from './pages/admin/Schools'
 import { Users } from './pages/admin/Users'
+import { AcceptInvite } from './pages/auth/AcceptInvite'
 import { Login } from './pages/auth/Login'
 import { ClassList } from './pages/classes/ClassList'
 import { ClassPage } from './pages/classes/ClassPage'
@@ -20,6 +21,7 @@ import { CheckIn } from './pages/student/CheckIn'
 import { MyApl } from './pages/student/MyApl'
 import { MyReports } from './pages/student/MyReports'
 import { ReportPost } from './pages/student/ReportPost'
+import { Company } from './pages/supervisor/Company'
 import { MyStudents } from './pages/supervisor/MyStudents'
 import { Attendance } from './pages/teacher/Attendance'
 import { Overview } from './pages/teacher/Overview'
@@ -39,6 +41,8 @@ function placeholder(path: string, roles: Role[], title: string, description: st
 
 const routes: RouteObject[] = [
   { path: '/login', element: <Login /> },
+  // Länken i inbjudningsmejlet. Kräver ingen inloggning.
+  { path: '/invite/:token', element: <AcceptInvite /> },
   {
     path: '/',
     element: <RequireAuth />,
@@ -75,6 +79,7 @@ const routes: RouteObject[] = [
 
       // Handledare (F4)
       { path: 'my-students', element: only(['supervisor'], <MyStudents />) },
+      { path: 'company', element: only(['supervisor'], <Company />) },
 
       // Skolans ledning och administration
       { path: 'users', element: only(['school_admin', 'principal'], <Users />) },
