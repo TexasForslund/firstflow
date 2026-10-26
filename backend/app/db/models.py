@@ -1,5 +1,6 @@
 # Samlar alla modeller så att Alembic hittar dem vid autogenerate.
 from app.db.base import Base  # noqa: F401
+from app.models.attendance import Attendance  # noqa: F401
 from app.models.placement import (  # noqa: F401
     Placement,
     Workplace,

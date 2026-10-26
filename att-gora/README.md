@@ -34,14 +34,16 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B3:** arbetsplatser, handledare och placeringar (#22).
 
 **Granskas (Texas + Claude):**
+- **B4 och F5: närvaro och incheckning.** Eleven checkar in och anmäler frånvaro, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
 - **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
 
 **Nästa steg:**
 - **Texas + Claude:**
   - B5b: mallar (beslut finns i fragor-typeform.md), förslag utifrån läroplanen och extra frågor per elev.
+  - F6: lärarens dashboard med riktig närvaro, när B4 och F5 är mergade.
   - Gå igenom [ideer.md](ideer.md) med Texas.
-- **Hannes + Claude:** B4 (närvaro) och sedan B6 (inbjudningar och lösenord). B4 blockerar F5 och lärarens dashboard (F6), alltså demon. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
-- **Väntar på B4 och B12:**
+- **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
+- **Väntar på B12:**
   - elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt)
   - projektval i redovisningen
   - handledarens åtkomst till redovisningar

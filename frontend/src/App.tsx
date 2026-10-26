@@ -16,10 +16,12 @@ import { Placeholder } from './pages/Placeholder'
 import { Placements } from './pages/placements/Placements'
 import { Settings } from './pages/settings/Settings'
 import { AnswerReport } from './pages/student/AnswerReport'
+import { CheckIn } from './pages/student/CheckIn'
 import { MyApl } from './pages/student/MyApl'
 import { MyReports } from './pages/student/MyReports'
 import { ReportPost } from './pages/student/ReportPost'
 import { MyStudents } from './pages/supervisor/MyStudents'
+import { Attendance } from './pages/teacher/Attendance'
 import { Overview } from './pages/teacher/Overview'
 import { StudentHistory } from './pages/teacher/StudentHistory'
 import { ReportRoute } from './pages/teacher/TeacherReport'
@@ -47,6 +49,7 @@ const routes: RouteObject[] = [
       { path: 'overview', element: only(staff, <Overview />) },
       { path: 'reports/:reportId', element: only(staff, <ReportRoute />) },
       { path: 'student-history', element: only(staff, <StudentHistory />) },
+      { path: 'attendance', element: only(['teacher', 'school_admin', 'principal'], <Attendance />) },
       placeholder('reports', staff, 'Veckoredovisningar', 'Alla veckoredovisningar, med filter per klass, elev och vecka.'),
       placeholder('projects', staff, 'Projekt', 'Projekt som tilldelas elever och kopplas till veckoredovisningar.'),
 
@@ -68,7 +71,7 @@ const routes: RouteObject[] = [
       { path: 'my-reports/:reportId', element: only(['student'], <ReportPost />) },
       { path: 'my-reports/:reportId/answer', element: only(['student'], <AnswerReport />) },
       { path: 'my-apl', element: only(['student'], <MyApl />) },
-      placeholder('check-in', ['student'], 'Incheckning', 'Checka in för dagens APL. Kommer i F5.'),
+      { path: 'check-in', element: only(['student'], <CheckIn />) },
 
       // Handledare (F4)
       { path: 'my-students', element: only(['supervisor'], <MyStudents />) },

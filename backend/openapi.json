@@ -2053,10 +2053,289 @@
           }
         ]
       }
+    },
+    "/api/attendance/check-in": {
+      "post": {
+        "tags": [
+          "attendance"
+        ],
+        "summary": "Check In",
+        "description": "Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med\nden befintliga incheckningen. En anmäld frånvaro samma dag ersätts.",
+        "operationId": "check_in_api_attendance_check_in_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceDay"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/attendance/absence": {
+      "post": {
+        "tags": [
+          "attendance"
+        ],
+        "summary": "Report Absence",
+        "description": "Anmäler frånvaro eller sjukdom för en dag i placeringen. Går att ändra till den andra\nsortens frånvaro, men inte om eleven redan är incheckad den dagen.",
+        "operationId": "report_absence_api_attendance_absence_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbsenceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceDay"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/me/attendance": {
+      "get": {
+        "tags": [
+          "attendance"
+        ],
+        "summary": "My Attendance",
+        "description": "Elevens dagar under den pågående placeringen.",
+        "operationId": "my_attendance_api_me_attendance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyAttendance"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/classes/{class_id}/attendance": {
+      "get": {
+        "tags": [
+          "attendance"
+        ],
+        "summary": "Class Attendance",
+        "description": "Närvaron per elev i klassen under perioden. Standard är de senaste fyra veckorna.",
+        "operationId": "class_attendance_api_classes__class_id__attendance_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassAttendance"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/supervisor/attendance": {
+      "get": {
+        "tags": [
+          "attendance"
+        ],
+        "summary": "Supervisor Attendance",
+        "description": "Dagens incheckningar och anmälningar för elever som handledaren har den dagen.",
+        "operationId": "supervisor_attendance_api_supervisor_attendance_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupervisorAttendance"
+                  },
+                  "title": "Response Supervisor Attendance Api Supervisor Attendance Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AbsenceCreate": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "absent",
+              "sick"
+            ],
+            "title": "Status"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "status"
+        ],
+        "title": "AbsenceCreate"
+      },
       "AccountCreate": {
         "properties": {
           "email": {
@@ -2271,6 +2550,58 @@
         "title": "AplTerms",
         "description": "APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än."
       },
+      "AttendanceDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AttendanceStatus"
+          },
+          "checked_in_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked In At"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "status",
+          "checked_in_at",
+          "note"
+        ],
+        "title": "AttendanceDay"
+      },
+      "AttendanceStatus": {
+        "type": "string",
+        "enum": [
+          "present",
+          "absent",
+          "sick"
+        ],
+        "title": "AttendanceStatus"
+      },
       "Choice": {
         "properties": {
           "id": {
@@ -2435,6 +2766,51 @@
           "logic"
         ],
         "title": "ChoiceQuestion"
+      },
+      "ClassAttendance": {
+        "properties": {
+          "from_date": {
+            "type": "string",
+            "format": "date",
+            "title": "From Date"
+          },
+          "to_date": {
+            "type": "string",
+            "format": "date",
+            "title": "To Date"
+          },
+          "check_in_required": {
+            "type": "boolean",
+            "title": "Check In Required"
+          },
+          "apl_days_per_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apl Days Per Week"
+          },
+          "students": {
+            "items": {
+              "$ref": "#/components/schemas/StudentAttendance"
+            },
+            "type": "array",
+            "title": "Students"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_date",
+          "to_date",
+          "check_in_required",
+          "apl_days_per_week",
+          "students"
+        ],
+        "title": "ClassAttendance"
       },
       "ClassCreate": {
         "properties": {
@@ -3081,6 +3457,93 @@
         ],
         "title": "MeRead",
         "description": "Den inloggade användaren med egna inställningar. Visas bara för användaren själv."
+      },
+      "MyAttendance": {
+        "properties": {
+          "placement_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement Id",
+            "description": "Pågående placering. null = ingen APL i dag"
+          },
+          "workplace_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workplace Name"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "check_in_required": {
+            "type": "boolean",
+            "title": "Check In Required"
+          },
+          "today": {
+            "type": "string",
+            "format": "date",
+            "title": "Today"
+          },
+          "can_check_in_today": {
+            "type": "boolean",
+            "title": "Can Check In Today",
+            "description": "Vardag med pågående placering"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceDay"
+            },
+            "type": "array",
+            "title": "Days",
+            "description": "Registrerade dagar i placeringen, i datumordning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "placement_id",
+          "workplace_name",
+          "start_date",
+          "end_date",
+          "check_in_required",
+          "today",
+          "can_check_in_today",
+          "days"
+        ],
+        "title": "MyAttendance",
+        "description": "Elevens närvaro under den pågående placeringen."
       },
       "MyPlacement": {
         "properties": {
@@ -3838,6 +4301,62 @@
         "title": "StatementQuestion",
         "description": "Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar."
       },
+      "StudentAttendance": {
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "has_placement": {
+            "type": "boolean",
+            "title": "Has Placement",
+            "description": "Eleven har en placering under perioden"
+          },
+          "expected_days": {
+            "type": "integer",
+            "title": "Expected Days"
+          },
+          "present": {
+            "type": "integer",
+            "title": "Present"
+          },
+          "absent": {
+            "type": "integer",
+            "title": "Absent"
+          },
+          "sick": {
+            "type": "integer",
+            "title": "Sick"
+          },
+          "missing": {
+            "type": "integer",
+            "title": "Missing",
+            "description": "Ej incheckad: förväntade dagar utan incheckning eller anmälan"
+          },
+          "today": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dagens status. null = inget registrerat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student",
+          "has_placement",
+          "expected_days",
+          "present",
+          "absent",
+          "sick",
+          "missing",
+          "today"
+        ],
+        "title": "StudentAttendance"
+      },
       "StudentCreate": {
         "properties": {
           "email": {
@@ -3978,6 +4497,65 @@
         ],
         "title": "SupervisedStudent",
         "description": "En elev som handledaren har just nu."
+      },
+      "SupervisorAttendance": {
+        "properties": {
+          "placement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Placement Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "workplace_name": {
+            "type": "string",
+            "title": "Workplace Name"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AttendanceStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "checked_in_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked In At"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "placement_id",
+          "student",
+          "workplace_name",
+          "status",
+          "checked_in_at",
+          "note"
+        ],
+        "title": "SupervisorAttendance"
       },
       "SupervisorRead": {
         "properties": {

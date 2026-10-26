@@ -81,7 +81,17 @@ Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar 
 
 ---
 
-## B4. Närvaro och incheckning ⬜
+## B4. Närvaro och incheckning 🚧 Granskas (Texas + Claude, tagen från Hannes 2026-10-26)
+
+**Byggd 2026-10-26.** Modell `Attendance` i `app/models/attendance.py`, endpoints i `app/api/routes/attendance.py`:
+- `POST /api/attendance/check-in` (elev), `POST /api/attendance/absence` (elev, `{date, status: absent|sick, note}`), `GET /api/me/attendance` (elev).
+- `GET /api/classes/{class_id}/attendance?from=&to=` (samma behörighet som klassvyn): per elev förväntade dagar, närvarande, frånvarande, sjuk, ej incheckad och dagens status. Standard är de senaste fyra veckorna.
+- `GET /api/supervisor/attendance?date=` (handledare): dagens status för handledarens elever.
+- Regler (Texas, 2026-10-26): bara vardagar. Frånvaro i dag och framåt inom placeringen, och högst sju dagar bakåt. En incheckning ersätter frånvaro samma dag, men inte tvärtom. "Ej incheckad" = förväntade dagar (från klassens dagar per vecka) minus registrerade, och räknas bara när klassen kräver incheckning.
+- En placering med närvaro går inte att ta bort (409).
+- `seed_demo`: närvaro för EE22 med en sjukdag och en elev som slutat checka in.
+
+Ursprunglig spec:
 
 Låser upp: F5.
 

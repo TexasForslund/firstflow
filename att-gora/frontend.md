@@ -79,7 +79,15 @@ Ursprunglig spec:
 
 ---
 
-## F5. Incheckning och närvaro ⬜
+## F5. Incheckning och närvaro 🚧 Granskas (Texas + Claude)
+
+**Byggd 2026-10-26** mot B4:
+- Elev, `/check-in`: stor knapp Checka in, sedan "Incheckad 07:52". Anmäl frånvaro (sjuk eller annan, datum, kommentar). Veckans dagar som prickar (grönt incheckad, rött frånvaro, streckad inte incheckad).
+- Lärare, `/attendance` (ny i menyn, även för skoladmin och rektor via adressen): välj klass och period (den här veckan, senaste fyra veckorna eller egna datum). En rad per elev med närvarostapel och siffror, elever med flest dagar utan incheckning överst och märkta Följ upp.
+- Handledare, `/my-students`: dagens status per elev (incheckad med tid, sjuk, frånvarande eller inte incheckad).
+
+Ursprunglig spec:
+
 
 Väntar på: B4.
 
