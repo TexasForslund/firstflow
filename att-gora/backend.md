@@ -296,7 +296,7 @@ Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 20
 
 ---
 
-## B15. Lärarens översikt 🚧 Granskas (Texas + Claude, 2026-10-26)
+## B15. Lärarens översikt ✅ Klar ([PR #31](https://github.com/TexasForslund/firstflow/pull/31), Texas + Claude, 2026-10-26)
 
 `GET /api/teacher/overview` (bara lärare, klasserna hen undervisar) i `app/api/routes/overview.py`:
 - `on_apl`, `checked_in` och `classes`: elever med en placering som pågår i dag (bara vardagar) och dagens incheckningar, totalt och per klass.

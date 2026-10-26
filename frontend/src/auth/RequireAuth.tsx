@@ -9,7 +9,7 @@ import { useTeacherOverview } from '../api/overview'
 import { AppShell } from '../layout/AppShell'
 import { CheckInPrompt } from '../pages/student/CheckInPrompt'
 import { applyPreferences } from './preferences'
-import { navByRole, startPath, type Role } from './roles'
+import { navByRole, roleLabel, startPath, type Role } from './roles'
 import { useCurrentUser } from './useCurrentUser'
 import styles from './RequireAuth.module.css'
 
@@ -58,9 +58,16 @@ export function RequireAuth() {
   return (
     <AppShell
       userName={user.name}
-      nav={navByRole[user.role].map((item) =>
-        item.to === '/overview' ? { ...item, count: overview.data?.attention.length } : item,
-      )}
+      userSubtitle={[roleLabel[user.role], user.school_name].filter(Boolean).join(' · ')}
+      nav={navByRole[user.role].map((item) => {
+        const data = overview.data
+        if (item.to === '/overview') return { ...item, count: data?.attention.length }
+        // Dagens incheckningar, t.ex. "3/5". Bara när någon har APL i dag.
+        if (item.to === '/attendance' && isTeacher && data && data.on_apl > 0) {
+          return { ...item, meta: `${data.checked_in}/${data.on_apl}` }
+        }
+        return item
+      })}
       classes={
         isTeacher
           ? (classes.data ?? []).map((c) => ({ id: c.id, name: c.name, count: c.student_count }))

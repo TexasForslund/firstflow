@@ -97,7 +97,7 @@ Väntar på: B4.
 
 ---
 
-## F6. Demo till fas 0: lärarens översikt 🚧 Granskas (Texas + Claude, 2026-10-26)
+## F6. Demo till fas 0: lärarens översikt ✅ Klar ([PR #31](https://github.com/TexasForslund/firstflow/pull/31), Texas + Claude, 2026-10-26)
 
 Översikten (`/overview`) har riktig data från `GET /api/teacher/overview`, enligt skissen `larare-oversikt.png` (flik A). Flikarna B och C och kortet Meddelanden är borttagna (Texas, 2026-10-26). Meddelanden kommer tillbaka när de är byggda.
 
@@ -222,7 +222,22 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ---
 
-## F17. Elevsidan, version 2 🚧 Granskas (Texas + Claude, 2026-10-26)
+## F18. Ny sidomeny 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+Skissen "Firstflow – Sidomeny skiss", alternativ A, är vald av Texas.
+
+- Menyn är 280 px bred i stället för 380.
+- Lärarens val är grupperade:
+  - **I dag:** Översikt, Närvaro med dagens "3/5" och Meddelanden.
+  - **Elever:** Elevhistorik och Mina klasser, som går att fälla ihop.
+  - **APL:** Praktikplatser, Projekt och Kontrakt.
+- Siffrorna har färg efter vad de gäller: persika för att följa upp, lila för olästa och gult för att signera.
+- "Välkommen tillbaka" och profilrutan är borttagna. Namn, roll och skola ligger längst ned, och ett klick där öppnar Inställningar och Logga ut. Bredvid finns knappen som fäller ihop menyn.
+- Andra roller har samma stil utan grupper.
+
+---
+
+## F17. Elevsidan, version 2 ✅ Klar ([PR #32](https://github.com/TexasForslund/firstflow/pull/32), Texas + Claude, 2026-10-26)
 
 Skissen är gjord och godkänd av Texas (Design-ytan "Firstflow – Elevsida skiss").
 

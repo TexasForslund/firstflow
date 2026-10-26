@@ -41,11 +41,12 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **F16 (#29): elevsidan och Elevhistorik.** En elev går i en klass och flyttas efter bekräftelse. Elevsidan samlar praktikplats, närvaro, redovisningar och lärare. Elevhistorik har riktig data.
 - **B5b del 1 (#24), frågemallar:** skolans mallar och lärarens egna. Använd mall och Spara som mall i fliken Frågor.
 - **#30:** frånvaroanmälan borttagen, och redovisningarna följer eleven vid klassbyte.
+- **F6 (#31):** lärarens översikt med riktig data.
+- **F17 (#32):** elevsidan version 2 enligt Texas skiss.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - F6: lärarens översikt med riktig data (granskas).
-  - F17: elevsidan version 2, enligt Texas skiss (granskas).
+  - F18: ny sidomeny enligt Texas val av skiss A (granskas).
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
 - **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.

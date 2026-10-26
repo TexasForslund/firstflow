@@ -10,13 +10,16 @@
 }
 
 /* ─── Sidomeny ─────────────────────────────────────────────── */
+/* Grupperad meny enligt Texas skiss (2026-10-26): I dag, Elever, APL, och kontot längst ned. */
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
   z-index: 30;
+  display: flex;
+  flex-direction: column;
   width: var(--sidebar-width);
   overflow-y: auto;
-  padding: var(--space-16) var(--space-10) var(--space-10);
+  padding: var(--space-8) var(--space-4) var(--space-4);
   background: var(--color-sidebar);
   border-right: 1px solid var(--color-border);
 }
@@ -26,15 +29,235 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
+  padding: 0 var(--space-2);
 }
 
 .logo {
   display: inline-flex;
 }
 
+.topActions,
+.mobileActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nav {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+.groupLabel {
+  padding: 0 var(--space-3) var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 2.75rem;
+  margin-bottom: 0.125rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.navItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.active,
+.active:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-weight: 500;
+}
+
+.navIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  stroke-width: 1.7;
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.navCount {
+  display: inline-flex;
+}
+
+.navMeta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-secondary);
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.classList {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0 0 var(--space-1) 1.375rem;
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-border);
+}
+
+.classItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+}
+
+.classItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.noClasses {
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.classCount {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-none);
+}
+
+.createClass {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.createClass svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.createClass:hover {
+  color: var(--color-text);
+}
+
+/* Kontot längst ned */
+.account {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-6);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.accountButton {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.accountButton:hover {
+  background: var(--color-surface-hover);
+}
+
+.accountText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.accountName {
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountSubtitle {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountMenu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--space-2));
+  left: 0;
+  z-index: 2;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.accountItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  text-align: left;
+}
+
+.accountItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.accountItem svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
 .collapseButton {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 2.5rem;
@@ -49,145 +272,8 @@
 }
 
 .collapseButton svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.topActions,
-.mobileActions {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.navCount {
-  display: inline-flex;
-}
-
-.user {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding-bottom: var(--space-5);
-  margin-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.welcome {
-  font-size: var(--font-size-sm);
-}
-
-.userName {
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  letter-spacing: var(--tracking-title);
-}
-
-.nav {
-  margin-bottom: var(--space-16);
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: calc(100% + var(--space-6));
-  min-height: 2.875rem;
-  margin: 0 calc(var(--space-3) * -1) var(--space-2);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-md);
-  color: var(--color-text);
-  text-align: left;
-  transition: background-color 0.15s;
-}
-
-.navItem:hover {
-  background: var(--color-surface-hover);
-}
-
-.active,
-.active:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary-on-light);
-}
-
-.navIcon {
-  width: 1.375rem;
-  height: 1.375rem;
-  flex-shrink: 0;
-  stroke-width: 1.6;
-}
-
-.navLabel {
-  flex: 1;
-}
-
-.section {
-  margin-bottom: var(--space-12);
-}
-
-.sectionLabel {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  letter-spacing: var(--tracking-body);
-}
-
-.sectionLabel::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border);
-}
-
-.classItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 2.5rem;
-  margin: 0 calc(var(--space-3) * -1);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-md);
-}
-
-.classItem:hover {
-  background: var(--color-surface-hover);
-}
-
-.noClasses {
-  margin-bottom: var(--space-2);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-.classCount {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: var(--tracking-none);
-}
-
-.createClass {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 2.75rem;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-base);
-}
-
-.createClass svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.createClass:hover {
-  color: var(--color-text);
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 /* ─── Innehåll ─────────────────────────────────────────────── */
@@ -344,56 +430,61 @@
 /* ─── Hopfälld meny: bara ikoner (stor skärm) ──────────────── */
 @media (min-width: 1025px) {
   .collapsed {
-    --sidebar-width: 5.5rem;
+    --sidebar-width: 4.5rem;
   }
 
   .collapsed .sidebar {
-    padding: var(--space-8) var(--space-3);
+    padding: var(--space-6) var(--space-2) var(--space-3);
   }
 
   .collapsed .sidebarTop {
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
+    padding: 0;
   }
 
-  .collapsed .topActions {
-    flex-direction: column;
-  }
-
-  .collapsed .user {
-    justify-content: center;
-  }
-
-  .collapsed .user > div:last-child,
   .collapsed .navLabel,
-  .collapsed .sectionLabel,
-  .collapsed .classesSection {
+  .collapsed .navMeta,
+  .collapsed .groupLabel,
+  .collapsed .classes,
+  .collapsed .accountText {
     display: none;
+  }
+
+  .collapsed .group + .group {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .collapsed .nav {
+    gap: var(--space-4);
   }
 
   .collapsed .navItem {
     position: relative;
     justify-content: center;
-    width: 100%;
-    margin: 0 0 var(--space-2);
     padding: 0;
   }
 
   .collapsed .navCount {
     position: absolute;
-    top: 0.125rem;
-    right: 0.125rem;
+    top: 0;
+    right: 0;
     transform: scale(0.8);
   }
 
-  .collapsed .nav {
-    margin-bottom: var(--space-8);
+  .collapsed .account {
+    flex-direction: column;
   }
 
-  .collapsed .section {
-    margin-bottom: var(--space-6);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--color-border);
+  .collapsed .accountButton {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .collapsed .accountMenu {
+    right: auto;
+    width: 13rem;
   }
 }
 
@@ -401,5 +492,11 @@
   .collapseButton,
   .topActions {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
   }
 }
