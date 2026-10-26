@@ -209,6 +209,18 @@ def _first_due_date(db: DbSession, student: User, class_id: UUID, today: date) -
     return first
 
 
+def due_days(db: DbSession, student: User, school_class: SchoolClass, today: date) -> list[date]:
+    """Redovisningsdagarna de senaste fyra veckorna för eleven i klassen, enligt klassens
+    APL-villkor. Klassen måste ha ett publicerat formulär, det kontrollerar den som anropar."""
+    weekdays = set(school_class.report_due_weekdays)
+    first = _first_due_date(db, student, school_class.id, today)
+    return [
+        day
+        for offset in range(REPORT_WINDOW_DAYS)
+        if (day := today - timedelta(days=offset)) >= first and day.weekday() in weekdays
+    ]
+
+
 def _get_report(db: DbSession, user: User, report_id: UUID, *, for_update: bool = False) -> Report:
     """Redovisningen om användaren får se den, annars 404."""
     query = (
@@ -324,12 +336,7 @@ def my_reports(db: DbSession, user: Student) -> list[DueReport]:
 
     slots = set(reports)
     for class_id in published:
-        weekdays = set(by_id[class_id].report_due_weekdays)
-        first = _first_due_date(db, user, class_id, today)
-        for offset in range(REPORT_WINDOW_DAYS):
-            day = today - timedelta(days=offset)
-            if day >= first and day.weekday() in weekdays:
-                slots.add((class_id, day))
+        slots.update((class_id, day) for day in due_days(db, user, by_id[class_id], today))
 
     items = []
     for class_id, day in slots:

@@ -1,35 +1,6 @@
 .page {
+  width: 100%;
   max-width: calc(var(--main-column) + var(--column-gap) + var(--side-column));
-}
-
-/* ─── Flikar ───────────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  max-width: var(--main-column);
-  padding: var(--space-2);
-  margin-bottom: var(--space-12);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.tab {
-  min-height: 2.75rem;
-  padding: 0 var(--space-5);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-md);
-  white-space: nowrap;
-}
-
-.tab:hover {
-  background: var(--color-surface);
-}
-
-.tabActive,
-.tabActive:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary-on-light);
 }
 
 /* ─── Rubrik ───────────────────────────────────────────────── */
@@ -68,7 +39,8 @@
 /* ─── Kolumner ─────────────────────────────────────────────── */
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, var(--main-column)) minmax(18rem, var(--side-column));
+  /* Huvudkolumnen får mest plats även när den har lite innehåll. */
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
   gap: var(--column-gap);
   align-items: start;
 }
@@ -221,157 +193,44 @@
   font-variant-numeric: tabular-nums;
 }
 
-.messages {
-  margin-top: var(--space-5);
-}
-
-.messages li + li {
-  border-top: 1px solid var(--color-border);
-}
-
-.message {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-4) 0;
-}
-
-.messageText {
-  display: grid;
-  flex: 1;
-  min-width: 0;
-}
-
-.messageName {
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  letter-spacing: var(--tracking-title);
-}
-
-.messagePreview {
-  font-size: var(--font-size-base);
+/* ─── Tillstånd och små delar ─────────────────────────────── */
+.state {
   color: var(--color-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.message:hover .messageName {
-  text-decoration: underline;
-}
-
-.message > span:last-child:not(.messageText) {
-  align-self: flex-start;
-}
-
-/* ─── B: Kortöversikt ──────────────────────────────────────── */
-.groupTitle {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  letter-spacing: var(--tracking-section);
-  margin: var(--space-4) 0 var(--space-4);
-}
-
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: var(--space-4);
-}
-
-.studentCard {
-  display: grid;
-  gap: var(--space-1);
-  height: 100%;
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: border-color 0.15s;
-}
-
-.studentCard:hover {
-  border-color: var(--color-primary);
-}
-
-.studentCardTop {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.studentName {
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  letter-spacing: var(--tracking-title);
-}
-
-.studentWorkplace {
-  font-size: var(--font-size-sm);
+.empty {
+  padding: var(--space-6);
   color: var(--color-text-secondary);
-  margin-bottom: var(--space-2);
 }
 
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+.more {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.dot {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: var(--radius-full);
+.attentionClass {
+  margin-left: var(--space-2);
+  color: var(--color-text-secondary);
+  font-weight: 400;
 }
 
-.dot.present { background: var(--color-success-bar); }
-.dot.absent { background: var(--color-error-bar); }
-.dot.pending { background: var(--color-track); }
-
-/* ─── C: Per elev ──────────────────────────────────────────── */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-base);
-}
-
-.table th {
-  padding: var(--space-4) var(--space-6);
-  text-align: left;
-  font-size: var(--font-size-sm);
+.showAll {
+  margin-top: var(--space-4);
+  color: var(--color-attention);
   font-weight: 500;
-  color: var(--color-text-secondary);
-  background: var(--color-sidebar);
-  border-bottom: 1px solid var(--color-border);
 }
 
-.table td {
-  padding: var(--space-3) var(--space-6);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.tableStudent {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.tableStudent:hover .tableName {
+.showAll:hover {
   text-decoration: underline;
 }
 
-.tableName {
-  display: block;
-  font-weight: 600;
+.noApl {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
 }
 
-.tableClass {
-  display: block;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+.classLink:hover {
+  text-decoration: underline;
 }
 
 /* ─── Mindre skärmar ───────────────────────────────────────── */
@@ -380,7 +239,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* Kolumnerna löses upp så att ordningen blir: uppmärksamhet, närvaro, meddelanden, redovisningar */
+  /* Kolumnerna löses upp så att ordningen blir: uppmärksamhet, närvaro, redovisningar */
   .columns {
     gap: var(--space-5);
   }
@@ -400,18 +259,6 @@
     font-size: var(--font-size-xl);
   }
 
-  .tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    margin-bottom: var(--space-8);
-    scrollbar-width: none;
-  }
-
-  .tab {
-    padding: 0 var(--space-3);
-    font-size: var(--font-size-sm);
-  }
-
   .stats {
     gap: var(--space-2) var(--space-6);
   }
@@ -424,8 +271,7 @@
     padding: 0 var(--space-4);
   }
 
-  .attentionItem,
-  .message {
+  .attentionItem {
     gap: var(--space-3);
   }
 
@@ -437,13 +283,4 @@
     font-size: var(--font-size-2xl);
   }
 
-  .table th,
-  .table td {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
-  }
-
-  .hideSmall {
-    display: none;
-  }
 }

@@ -44,7 +44,7 @@ Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11
 
 **Klassen är navet** (Texas, 2026-10-20). Klassvyn har flikarna Elever, APL-villkor, Frågor och Lärare (bara skoladmin). Läraren styr klassen därifrån: vilka elever som går i den, varje elevs praktikplats (B3) och projekt (B12), klassens APL-villkor (dagar per vecka, incheckning och vilka veckodagar veckoredovisning ska lämnas) och frågorna vid redovisning (B5). Läraren har ingen egen elevlista. `/students` är skoladmins, rektorns och SYV:s elevregister.
 
-Översikten och veckoredovisningen har kvar demodatan tills F11. Elevhistoriken har riktig data sedan F16.
+Veckoredovisningen har kvar demodata i sin sidopanel tills F11. Översikten har riktig data sedan F6. Elevhistoriken har riktig data sedan F16.
 
 ---
 
@@ -97,9 +97,16 @@ Väntar på: B4.
 
 ---
 
-## F6. Demo till fas 0 ⬜
+## F6. Demo till fas 0: lärarens översikt 🚧 Granskas (Texas + Claude, 2026-10-26)
 
-När F1–F5 fungerar mot demodatan från `scripts/seed_demo.py` är det den demo som fas 0 behöver. Lägg då till en dashboard för läraren med överblick: antal elever på APL, dagens incheckningar och frånvaro.
+Översikten (`/overview`) har riktig data från `GET /api/teacher/overview`, enligt skissen `larare-oversikt.png` (flik A). Flikarna B och C och kortet Meddelanden är borttagna (Texas, 2026-10-26). Meddelanden kommer tillbaka när de är byggda.
+
+- Överst: elever på APL i dag, incheckade och ej incheckade.
+- **Behöver uppmärksamhet**, viktigast först: minst två missade incheckningar de senaste fyra veckorna, redovisningar som inte är lämnade, och elever utan praktikplats när andra i klassen har en. Varje rad leder till elevsidan. Siffran vid Översikt i menyn är antalet.
+- **Veckoredovisningar att läsa:** de tio senaste olästa, med de två första textsvaren och knappen Öppna.
+- **Dagens närvaro:** procent incheckade och siffror per klass med APL i dag.
+
+Ursprunglig spec: När F1–F5 fungerar mot demodatan från `scripts/seed_demo.py` är det den demo som fas 0 behöver. Lägg då till en dashboard för läraren med överblick: antal elever på APL, dagens incheckningar och frånvaro.
 
 ---
 

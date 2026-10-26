@@ -3130,6 +3130,33 @@
           }
         }
       }
+    },
+    "/api/teacher/overview": {
+      "get": {
+        "tags": [
+          "overview"
+        ],
+        "summary": "Teacher Overview",
+        "description": "Översikten för lärarens klasser. Bara klasser på lärarens egen skola.",
+        "operationId": "teacher_overview_api_teacher_overview_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherOverview"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3188,6 +3215,24 @@
           "name"
         ],
         "title": "AccountCreate"
+      },
+      "AnswerPreview": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "text"
+        ],
+        "title": "AnswerPreview"
       },
       "AnswerRead": {
         "properties": {
@@ -3434,6 +3479,42 @@
           "sick"
         ],
         "title": "AttendanceStatus"
+      },
+      "AttentionItem": {
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "class_name": {
+            "type": "string",
+            "title": "Class Name"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/AttentionReason"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Antal missade incheckningar eller redovisningar. 0 annars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student",
+          "class_name",
+          "reason",
+          "count"
+        ],
+        "title": "AttentionItem"
+      },
+      "AttentionReason": {
+        "type": "string",
+        "enum": [
+          "missing_check_ins",
+          "missing_reports",
+          "no_placement"
+        ],
+        "title": "AttentionReason"
       },
       "Choice": {
         "properties": {
@@ -3736,6 +3817,36 @@
           "teacher_names"
         ],
         "title": "ClassSummary"
+      },
+      "ClassToday": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "on_apl": {
+            "type": "integer",
+            "title": "On Apl",
+            "description": "Elever med en placering som pågår i dag"
+          },
+          "checked_in": {
+            "type": "integer",
+            "title": "Checked In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "on_apl",
+          "checked_in"
+        ],
+        "title": "ClassToday"
       },
       "Colleague": {
         "properties": {
@@ -4685,6 +4796,60 @@
           "read"
         ],
         "title": "NotificationRead"
+      },
+      "OverviewReport": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "class_name": {
+            "type": "string",
+            "title": "Class Name"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          },
+          "comment_count": {
+            "type": "integer",
+            "title": "Comment Count"
+          },
+          "preview": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerPreview"
+            },
+            "type": "array",
+            "title": "Preview",
+            "description": "De första textsvaren, förkortade"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "class_name",
+          "due_date",
+          "submitted_at",
+          "is_late",
+          "comment_count",
+          "preview"
+        ],
+        "title": "OverviewReport"
       },
       "PersonBrief": {
         "properties": {
@@ -5872,6 +6037,60 @@
           "teacher_id"
         ],
         "title": "TeacherAssign"
+      },
+      "TeacherOverview": {
+        "properties": {
+          "today": {
+            "type": "string",
+            "format": "date",
+            "title": "Today"
+          },
+          "on_apl": {
+            "type": "integer",
+            "title": "On Apl"
+          },
+          "checked_in": {
+            "type": "integer",
+            "title": "Checked In"
+          },
+          "classes": {
+            "items": {
+              "$ref": "#/components/schemas/ClassToday"
+            },
+            "type": "array",
+            "title": "Classes"
+          },
+          "attention": {
+            "items": {
+              "$ref": "#/components/schemas/AttentionItem"
+            },
+            "type": "array",
+            "title": "Attention"
+          },
+          "unread_reports": {
+            "type": "integer",
+            "title": "Unread Reports"
+          },
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/OverviewReport"
+            },
+            "type": "array",
+            "title": "Reports",
+            "description": "Olästa redovisningar, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "today",
+          "on_apl",
+          "checked_in",
+          "classes",
+          "attention",
+          "unread_reports",
+          "reports"
+        ],
+        "title": "TeacherOverview"
       },
       "TeachersSet": {
         "properties": {

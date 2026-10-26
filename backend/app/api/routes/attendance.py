@@ -255,6 +255,20 @@ def class_attendance(
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Perioden får vara högst ett år"
         )
+    return ClassAttendance(
+        from_date=from_date,
+        to_date=to_date,
+        check_in_required=school_class.check_in_required,
+        apl_days_per_week=school_class.apl_days_per_week,
+        students=class_student_attendance(db, school_class, from_date, to_date),
+    )
+
+
+def class_student_attendance(
+    db: DbSession, school_class: SchoolClass, from_date: date, to_date: date
+) -> list[StudentAttendance]:
+    """Närvaron per aktiv elev i klassen under perioden. Används också av lärarens översikt."""
+    today = time.today()
     # Framtida dagar räknas inte som förväntade.
     counted_to = min(to_date, today)
 
@@ -303,13 +317,7 @@ def class_attendance(
                 today=today_status.get(student.id),
             )
         )
-    return ClassAttendance(
-        from_date=from_date,
-        to_date=to_date,
-        check_in_required=school_class.check_in_required,
-        apl_days_per_week=school_class.apl_days_per_week,
-        students=result,
-    )
+    return result
 
 
 # --- Handledaren ---------------------------------------------------------------------------
