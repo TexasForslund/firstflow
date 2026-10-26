@@ -1,6 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.models.attendance import Attendance, AttendanceStatus
 from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
@@ -82,3 +83,13 @@ def test_seed_gives_every_school_one_school_template(db: Session) -> None:
         assert [(t.name, t.owner_id, len(t.questions)) for t in templates] == [
             ("Kort veckoredovisning", None, 4)
         ]
+
+
+def test_seed_gives_ee22_attendance_once(db: Session) -> None:
+    seed(db)
+    first = db.scalar(select(func.count(Attendance.id)))
+    seed(db)
+    assert db.scalar(select(func.count(Attendance.id))) == first
+    assert first > 0
+    statuses = set(db.scalars(select(Attendance.status)))
+    assert AttendanceStatus.SICK in statuses

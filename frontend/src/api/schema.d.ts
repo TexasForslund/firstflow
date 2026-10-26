@@ -336,6 +336,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/students/{student_id}/placements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Placements
+         * @description Elevens praktikplatser, senaste först. Samma behörighet som elevsidan.
+         */
+        get: operations["student_placements_api_students__student_id__placements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/preferences": {
         parameters: {
             query?: never;
@@ -825,10 +845,377 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attendance/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check In
+         * @description Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med
+         *     den befintliga incheckningen. En anmäld frånvaro samma dag ersätts.
+         */
+        post: operations["check_in_api_attendance_check_in_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/absence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report Absence
+         * @description Anmäler frånvaro eller sjukdom för en dag i placeringen. Går att ändra till den andra
+         *     sortens frånvaro, men inte om eleven redan är incheckad den dagen.
+         */
+        post: operations["report_absence_api_attendance_absence_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Attendance
+         * @description Elevens dagar under den pågående placeringen.
+         */
+        get: operations["my_attendance_api_me_attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Class Attendance
+         * @description Närvaron per elev i klassen under perioden. Standard är de senaste fyra veckorna.
+         */
+        get: operations["class_attendance_api_classes__class_id__attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervisor Attendance
+         * @description Dagens incheckningar och anmälningar för elever som handledaren har den dagen.
+         */
+        get: operations["supervisor_attendance_api_supervisor_attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Invitations
+         * @description Inbjudningar som användaren har skickat, senaste först. Ersatta inbjudningar visas inte.
+         */
+        get: operations["list_invitations_api_invitations_get"];
+        put?: never;
+        /**
+         * Invite Supervisor
+         * @description Bjuder in en handledare. Hen skapar konto och företagsprofil via länken i mejlet.
+         */
+        post: operations["invite_supervisor_api_invitations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invitations/{invitation_id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resend Invitation
+         * @description Skickar mejlet igen med en ny länk. Den gamla länken slutar fungera.
+         */
+        post: operations["resend_invitation_api_invitations__invitation_id__resend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invitations/{invitation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke Invitation
+         * @description Återkallar en inbjudan som inte är använd. Länken slutar fungera.
+         */
+        delete: operations["revoke_invitation_api_invitations__invitation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invite/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Invite
+         * @description Vem som bjöd in och till vad, så att sidan kan visa rätt formulär.
+         */
+        get: operations["preview_invite_api_invite__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invite/{token}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Invite
+         * @description Skapar handledarens konto (och företagsprofil) och loggar in hen.
+         */
+        post: operations["accept_invite_api_invite__token__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/workplaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Workplaces
+         * @description Handledarens arbetsplatser med företagsprofil, kollegor och väntande inbjudningar.
+         */
+        get: operations["my_workplaces_api_supervisor_workplaces_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/workplaces/{workplace_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Profile
+         * @description Handledaren ändrar företagsprofilen.
+         */
+        put: operations["update_profile_api_supervisor_workplaces__workplace_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/workplaces/{workplace_id}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Invite Colleague
+         * @description Bjuder in en kollega som handledare på arbetsplatsen. Högst tre kollegor.
+         */
+        post: operations["invite_colleague_api_supervisor_workplaces__workplace_id__invitations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Notifications
+         * @description De senaste 30 notiserna och antal olästa.
+         */
+        get: operations["list_notifications_api_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark All Read */
+        post: operations["mark_all_read_api_notifications_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Attendance
+         * @description Elevens närvaro. Utan period gäller den pågående eller senaste placeringen.
+         */
+        get: operations["student_attendance_api_students__student_id__attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Student Reports
+         * @description Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först.
+         */
+        get: operations["list_student_reports_api_students__student_id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AbsenceCreate */
+        AbsenceCreate: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "absent" | "sick";
+            /** Note */
+            note?: string | null;
+        };
+        /** AcceptInvite */
+        AcceptInvite: {
+            /** Name */
+            name: string;
+            /** Password */
+            password: string;
+            /** @description Krävs när en ny handledare bjuds in av en lärare */
+            company?: components["schemas"]["CompanyProfile"] | null;
+        };
         /** AccountCreate */
         AccountCreate: {
             /** Email */
@@ -902,6 +1289,24 @@ export interface components {
              */
             template_id: string;
         };
+        /** AttendanceDay */
+        AttendanceDay: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            status: components["schemas"]["AttendanceStatus"];
+            /** Checked In At */
+            checked_in_at: string | null;
+            /** Note */
+            note: string | null;
+        };
+        /**
+         * AttendanceStatus
+         * @enum {string}
+         */
+        AttendanceStatus: "present" | "absent" | "sick";
         /** Choice */
         Choice: {
             /**
@@ -994,6 +1399,25 @@ export interface components {
             /** Logic */
             logic: components["schemas"]["LogicRule"][];
         };
+        /** ClassAttendance */
+        ClassAttendance: {
+            /**
+             * From Date
+             * Format: date
+             */
+            from_date: string;
+            /**
+             * To Date
+             * Format: date
+             */
+            to_date: string;
+            /** Check In Required */
+            check_in_required: boolean;
+            /** Apl Days Per Week */
+            apl_days_per_week: number | null;
+            /** Students */
+            students: components["schemas"]["StudentAttendance"][];
+        };
         /** ClassCreate */
         ClassCreate: {
             /** Name */
@@ -1033,6 +1457,18 @@ export interface components {
             /** Teacher Names */
             teacher_names: string[];
         };
+        /** Colleague */
+        Colleague: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+        };
         /** CommentCreate */
         CommentCreate: {
             /** Body */
@@ -1054,6 +1490,17 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** CompanyProfile */
+        CompanyProfile: {
+            /** Name */
+            name: string;
+            /** Address */
+            address?: string | null;
+            /** Industry */
+            industry?: string | null;
+            /** Description */
+            description?: string | null;
         };
         /**
          * DisplayPreferences
@@ -1147,6 +1594,11 @@ export interface components {
             /** Is Late */
             is_late: boolean;
         };
+        /** Email */
+        Email: {
+            /** Email */
+            email: string;
+        };
         /**
          * FormContent
          * @description Formulärets frågor i ordning.
@@ -1190,6 +1642,59 @@ export interface components {
              * @enum {string}
              */
             database: "ok" | "unavailable";
+        };
+        /**
+         * InvitationKind
+         * @enum {string}
+         */
+        InvitationKind: "supervisor" | "colleague";
+        /** InvitationRead */
+        InvitationRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Email */
+            email: string;
+            status: components["schemas"]["InvitationStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Accepted At */
+            accepted_at: string | null;
+            /**
+             * Workplace Name
+             * @description Företaget, när inbjudan är accepterad
+             */
+            workplace_name: string | null;
+        };
+        /**
+         * InvitationStatus
+         * @enum {string}
+         */
+        InvitationStatus: "pending" | "accepted" | "expired" | "revoked";
+        /** InvitePreview */
+        InvitePreview: {
+            kind: components["schemas"]["InvitationKind"];
+            /** Email */
+            email: string;
+            /** Invited By Name */
+            invited_by_name: string;
+            /** School Name */
+            school_name: string;
+            /**
+             * Workplace Name
+             * @description Arbetsplatsen när en kollega bjuds in
+             */
+            workplace_name: string | null;
         };
         /**
          * LogicRule
@@ -1286,6 +1791,40 @@ export interface components {
             preferences: components["schemas"]["DisplayPreferences-Output"];
         };
         /**
+         * MyAttendance
+         * @description Elevens närvaro under den pågående placeringen.
+         */
+        MyAttendance: {
+            /**
+             * Placement Id
+             * @description Pågående placering. null = ingen APL i dag
+             */
+            placement_id: string | null;
+            /** Workplace Name */
+            workplace_name: string | null;
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Check In Required */
+            check_in_required: boolean;
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /**
+             * Can Check In Today
+             * @description Vardag med pågående placering
+             */
+            can_check_in_today: boolean;
+            /**
+             * Days
+             * @description Registrerade dagar i placeringen, i datumordning
+             */
+            days: components["schemas"]["AttendanceDay"][];
+        };
+        /**
          * MyPlacement
          * @description Elevens egen placering. Handledarens namn räcker för eleven.
          */
@@ -1308,6 +1847,32 @@ export interface components {
              * Format: date
              */
             end_date: string;
+        };
+        /** NotificationList */
+        NotificationList: {
+            /** Unread */
+            unread: number;
+            /** Items */
+            items: components["schemas"]["NotificationRead"][];
+        };
+        /** NotificationRead */
+        NotificationRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Text */
+            text: string;
+            /** Link */
+            link: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Read */
+            read: boolean;
         };
         /** PersonBrief */
         PersonBrief: {
@@ -1678,6 +2243,54 @@ export interface components {
              */
             type: "statement";
         };
+        /** StudentAttendance */
+        StudentAttendance: {
+            student: components["schemas"]["Ref"];
+            /**
+             * Has Placement
+             * @description Eleven har en placering under perioden
+             */
+            has_placement: boolean;
+            /** Expected Days */
+            expected_days: number;
+            /** Present */
+            present: number;
+            /** Absent */
+            absent: number;
+            /** Sick */
+            sick: number;
+            /**
+             * Missing
+             * @description Ej incheckad: förväntade dagar utan incheckning eller anmälan
+             */
+            missing: number;
+            /** @description Dagens status. null = inget registrerat */
+            today: components["schemas"]["AttendanceStatus"] | null;
+        };
+        /**
+         * StudentAttendanceDetail
+         * @description Närvaron för en elev, för elevsidan.
+         */
+        StudentAttendanceDetail: {
+            /**
+             * From Date
+             * Format: date
+             */
+            from_date: string;
+            /**
+             * To Date
+             * Format: date
+             */
+            to_date: string;
+            /** Check In Required */
+            check_in_required: boolean;
+            summary: components["schemas"]["StudentAttendance"];
+            /**
+             * Days
+             * @description Registrerade dagar i perioden, senaste först
+             */
+            days: components["schemas"]["AttendanceDay"][];
+        };
         /** StudentCreate */
         StudentCreate: {
             /** Email */
@@ -1696,6 +2309,12 @@ export interface components {
              * Format: uuid
              */
             student_id: string;
+            /**
+             * Move
+             * @description Flytta eleven hit om hen går i en annan klass. Annars svarar det 409.
+             * @default false
+             */
+            move: boolean;
         };
         /** StudentRead */
         StudentRead: {
@@ -1714,6 +2333,40 @@ export interface components {
             classes: components["schemas"]["Ref"][];
             /** Teachers */
             teachers: components["schemas"]["Ref"][];
+            /** @description Pågående eller nästa praktikplats */
+            workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Report Count
+             * @description Inskickade veckoredovisningar
+             */
+            report_count: number;
+        };
+        /** StudentReportSummary */
+        StudentReportSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["PersonBrief"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /** Is Read */
+            is_read: boolean;
+            /** Comment Count */
+            comment_count: number;
+            /** Class Name */
+            class_name: string;
         };
         /**
          * SupervisedStudent
@@ -1738,6 +2391,22 @@ export interface components {
              */
             end_date: string;
         };
+        /** SupervisorAttendance */
+        SupervisorAttendance: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            student: components["schemas"]["Ref"];
+            /** Workplace Name */
+            workplace_name: string;
+            status: components["schemas"]["AttendanceStatus"] | null;
+            /** Checked In At */
+            checked_in_at: string | null;
+            /** Note */
+            note: string | null;
+        };
         /** SupervisorRead */
         SupervisorRead: {
             /**
@@ -1749,6 +2418,33 @@ export interface components {
             name: string;
             /** Email */
             email: string;
+        };
+        /** SupervisorWorkplace */
+        SupervisorWorkplace: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Address */
+            address: string | null;
+            /** Industry */
+            industry: string | null;
+            /** Description */
+            description: string | null;
+            /** School Name */
+            school_name: string;
+            /** Supervisors */
+            supervisors: components["schemas"]["Colleague"][];
+            /** Pending Invitations */
+            pending_invitations: components["schemas"]["InvitationRead"][];
+            /**
+             * Can Invite
+             * @description Färre än tre kollegor, inklusive väntande inbjudningar
+             */
+            can_invite: boolean;
         };
         /** TeacherAssign */
         TeacherAssign: {
@@ -1855,6 +2551,10 @@ export interface components {
             name: string;
             /** Address */
             address: string | null;
+            /** Industry */
+            industry: string | null;
+            /** Description */
+            description: string | null;
             /** Supervisors */
             supervisors: components["schemas"]["SupervisorRead"][];
         };
@@ -2548,6 +3248,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    student_placements_api_students__student_id__placements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacementRead"][];
                 };
             };
             /** @description Validation Error */
@@ -3361,6 +4092,516 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupervisedStudent"][];
+                };
+            };
+        };
+    };
+    check_in_api_attendance_check_in_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDay"];
+                };
+            };
+        };
+    };
+    report_absence_api_attendance_absence_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AbsenceCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDay"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_attendance_api_me_attendance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAttendance"];
+                };
+            };
+        };
+    };
+    class_attendance_api_classes__class_id__attendance_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassAttendance"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    supervisor_attendance_api_supervisor_attendance_get: {
+        parameters: {
+            query?: {
+                date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorAttendance"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_invitations_api_invitations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationRead"][];
+                };
+            };
+        };
+    };
+    invite_supervisor_api_invitations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Email"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resend_invitation_api_invitations__invitation_id__resend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_invitation_api_invitations__invitation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_invite_api_invite__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitePreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_invite_api_invite__token__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInvite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_workplaces_api_supervisor_workplaces_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorWorkplace"][];
+                };
+            };
+        };
+    };
+    update_profile_api_supervisor_workplaces__workplace_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompanyProfile"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorWorkplace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invite_colleague_api_supervisor_workplaces__workplace_id__invitations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Email"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorWorkplace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_notifications_api_notifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationList"];
+                };
+            };
+        };
+    };
+    mark_all_read_api_notifications_read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    student_attendance_api_students__student_id__attendance_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentAttendanceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_student_reports_api_students__student_id__reports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentReportSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

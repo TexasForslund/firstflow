@@ -1,7 +1,17 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import CheckConstraint, Column, Date, DateTime, ForeignKey, String, Table, func
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    String,
+    Table,
+    Text,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -20,7 +30,12 @@ workplace_supervisors = Table(
 
 
 class Workplace(Base):
-    """En APL-plats, t.ex. ett företag. Hör till en skola."""
+    """En APL-plats, t.ex. ett företag. Hör till en skola.
+
+    Handledaren skapar företagsprofilen när hen tackar ja till lärarens inbjudan. Företaget syns
+    då bara för läraren som bjöd in (`owner_teacher_id`) och för skolans ledning (Texas,
+    2026-10-26). Utan ägare, t.ex. om skoladmin bjöd in, syns det för skolans alla lärare.
+    """
 
     __tablename__ = "workplaces"
 
@@ -30,6 +45,11 @@ class Workplace(Base):
     )
     name: Mapped[str] = mapped_column(String(200))
     address: Mapped[str | None] = mapped_column(String(300))
+    industry: Mapped[str | None] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(Text)
+    owner_teacher_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     supervisors: Mapped[list[User]] = relationship(

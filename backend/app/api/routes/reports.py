@@ -29,6 +29,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import require_roles, require_same_school
 from app.api.routes.classes import get_accessible_class
 from app.api.routes.forms import latest_version
+from app.api.routes.students import get_student_for
 from app.core import time
 from app.db.session import DbSession
 from app.models.report import (
@@ -52,6 +53,7 @@ from app.services.report_forms import (
 )
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+student_router = APIRouter(prefix="/students/{student_id}/reports", tags=["reports"])
 class_router = APIRouter(prefix="/classes/{class_id}/reports", tags=["reports"])
 
 # Hur långt bakåt eleven kan lämna en redovisning som inte är gjord.
@@ -547,6 +549,53 @@ def list_class_reports(
             is_late=_is_late(report.due_date, report.submitted_at),
             is_read=read,
             comment_count=count,
+        )
+        for report, read, count in db.execute(query).all()
+    ]
+
+
+class StudentReportSummary(ReportSummary):
+    class_name: str
+
+
+@student_router.get("", response_model=list[StudentReportSummary])
+def list_student_reports(
+    student_id: UUID, db: DbSession, user: Teacher
+) -> list[StudentReportSummary]:
+    """Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först."""
+    student = get_student_for(db, user, student_id)
+    taught = select(class_teachers.c.class_id).where(class_teachers.c.teacher_id == user.id)
+    is_read = (
+        exists()
+        .where(ReportRead.report_id == Report.id, ReportRead.user_id == user.id)
+        .label("is_read")
+    )
+    comment_count = (
+        select(func.count())
+        .where(ReportComment.report_id == Report.id)
+        .scalar_subquery()
+        .label("comment_count")
+    )
+    query = (
+        select(Report, is_read, comment_count)
+        .options(selectinload(Report.student), selectinload(Report.school_class))
+        .where(
+            Report.student_id == student.id,
+            Report.status == ReportStatus.SUBMITTED,
+            Report.class_id.in_(taught),
+        )
+        .order_by(Report.submitted_at.desc())
+    )
+    return [
+        StudentReportSummary(
+            id=report.id,
+            student=PersonBrief(id=report.student.id, name=report.student.name),
+            due_date=report.due_date,
+            submitted_at=report.submitted_at,
+            is_late=_is_late(report.due_date, report.submitted_at),
+            is_read=read,
+            comment_count=count,
+            class_name=report.school_class.name,
         )
         for report, read, count in db.execute(query).all()
     ]

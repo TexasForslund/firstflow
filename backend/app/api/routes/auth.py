@@ -25,14 +25,9 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=200)
 
 
-@router.post("/login", response_model=MeRead)
-def login(body: LoginRequest, db: DbSession, response: Response) -> MeRead:
-    user = db.scalar(select(User).where(User.email == normalize_email(body.email)))
-    password_ok = verify_password(body.password, user.password_hash if user else None)
-    school_active = user is None or user.school is None or user.school.is_active
-    if user is None or not password_ok or not user.is_active or not school_active:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Fel e-post eller lösenord")
-
+def start_session(db: DbSession, user: User, response: Response) -> None:
+    """Loggar in användaren: skapar en session och sätter cookien. Används även när en
+    handledare har tackat ja till en inbjudan."""
     now = datetime.now(UTC)
     # Städa bort användarens utgångna sessioner i samma veva.
     db.execute(
@@ -51,6 +46,17 @@ def login(body: LoginRequest, db: DbSession, response: Response) -> MeRead:
         secure=settings.session_cookie_secure,
         samesite="lax",
     )
+
+
+@router.post("/login", response_model=MeRead)
+def login(body: LoginRequest, db: DbSession, response: Response) -> MeRead:
+    user = db.scalar(select(User).where(User.email == normalize_email(body.email)))
+    password_ok = verify_password(body.password, user.password_hash if user else None)
+    school_active = user is None or user.school is None or user.school.is_active
+    if user is None or not password_ok or not user.is_active or not school_active:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Fel e-post eller lösenord")
+
+    start_session(db, user, response)
     return me_read(user)
 
 

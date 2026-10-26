@@ -50,12 +50,14 @@ Användare med rollerna `teacher`, `student` och `supervisor`. `POST /api/auth/l
 - `POST/DELETE /api/classes/{id}/teachers`: skoladmin kopplar lärare på samma skola.
 - `PUT /api/classes/{id}/apl-terms`: klassens APL-villkor (dagar per vecka, incheckning och vilka veckodagar veckoredovisning ska lämnas). Läraren för klassen och skoladmin. Villkoren finns också i `GET /api/classes/{id}` som `apl_terms`.
 - `GET /api/students/{id}`: elevsidan, med klasser och lärare. Läraren ser elever som är kopplade till hen eller går i hens klasser.
+- **En klass per elev** (Texas, 2026-10-26): unik nyckel på `class_students.student_id` (migreringen tar bort dubbletter först). Går eleven i en annan klass svarar `POST /api/classes/{id}/students` 409, och med `move: true` flyttas eleven. `class_ids` vid `POST /api/students` får ha högst en klass.
+- Elevsidan (Texas + Claude, 2026-10-26): `GET /api/students/{id}` har `workplace` (pågående eller nästa placering) och `report_count` (inskickade redovisningar). Nya endpoints med samma behörighet som elevsidan: `GET /api/students/{id}/placements` och `GET /api/students/{id}/attendance` (standard: pågående placering fram till i dag, annars de senaste fyra veckorna). `GET /api/students/{id}/reports` är bara för lärare och visar redovisningar från klasser läraren undervisar.
 
 Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo.py` skapar EE22 och EE21 med fem elever var på båda skolorna.
 
 ---
 
-## B3. Praktikperiod och APL-plats 🚧 Granskas ([PR #22](https://github.com/TexasForslund/firstflow/pull/22), Hannes + Claude)
+## B3. Praktikperiod och APL-plats ✅ Klar (PR #22, Hannes + Claude)
 
 Låser upp: F4 och praktikplatsen i klassvyn (F12).
 
@@ -81,7 +83,17 @@ Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar 
 
 ---
 
-## B4. Närvaro och incheckning ⬜
+## B4. Närvaro och incheckning 🚧 Granskas ([PR #26](https://github.com/TexasForslund/firstflow/pull/26), Texas + Claude, tagen från Hannes 2026-10-26)
+
+**Byggd 2026-10-26.** Modell `Attendance` i `app/models/attendance.py`, endpoints i `app/api/routes/attendance.py`:
+- `POST /api/attendance/check-in` (elev), `POST /api/attendance/absence` (elev, `{date, status: absent|sick, note}`), `GET /api/me/attendance` (elev).
+- `GET /api/classes/{class_id}/attendance?from=&to=` (samma behörighet som klassvyn): per elev förväntade dagar, närvarande, frånvarande, sjuk, ej incheckad och dagens status. Standard är de senaste fyra veckorna.
+- `GET /api/supervisor/attendance?date=` (handledare): dagens status för handledarens elever.
+- Regler (Texas, 2026-10-26): bara vardagar. Frånvaro i dag och framåt inom placeringen, och högst sju dagar bakåt. En incheckning ersätter frånvaro samma dag, men inte tvärtom. "Ej incheckad" = förväntade dagar (från klassens dagar per vecka) minus registrerade, och räknas bara när klassen kräver incheckning.
+- En placering med närvaro går inte att ta bort (409).
+- `seed_demo`: närvaro för EE22 med en sjukdag och en elev som slutat checka in.
+
+Ursprunglig spec:
 
 Låser upp: F5.
 
@@ -143,6 +155,8 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
 ---
 
 ## B6. Inför pilot ⬜
+
+**Inbjudan av handledare togs över av Texas + Claude 2026-10-26** och är byggd (se B14 nedan). Kvar för Hannes: inbjudan och lösenord för elever och personal, glömt lösenord, begränsning av inloggningsförsök och loggning.
 
 Behövs innan riktiga elever loggar in, men stoppar inte B2–B5:
 
@@ -259,3 +273,21 @@ Läraren skapar projekt och tilldelar dem till elever från klassvyn, på samma 
 Ägare: bestäms. Tillagd från lärarskisserna.
 
 Ett endpoint som ger lärarens lista över saker att följa upp, viktigast först: upprepad frånvaro som inte är anmäld, saknade veckoredovisningar, närvaro som handledaren inte bekräftat och kontrakt som saknar underskrift. Bygger på B4, B5 och avtalshanteringen (B8).
+
+---
+
+## B14. Inbjudan av handledare och företagsprofil 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 2026-10-26).
+
+- `Invitation` och `Notification` i `app/models/invitation.py`. Endpoints i `app/api/routes/invitations.py`.
+- `POST /api/invitations` med `{email}` (lärare, skoladmin): skickar ett mejl med en engångslänk `/invite/<token>`. Token är slumpad, bara hashen sparas och länken gäller i 14 dagar. En ny inbjudan till samma adress ersätter den gamla.
+- `GET /api/invitations`, `POST /api/invitations/{id}/resend` (ny länk) och `DELETE /api/invitations/{id}` (återkalla).
+- `GET /api/invite/{token}` och `POST /api/invite/{token}/accept` (ingen inloggning): handledaren skapar konto (minst 10 tecken i lösenordet) och företagsprofil (namn, adress, bransch, beskrivning) och blir inloggad. Läraren får en notis.
+- Företaget (`Workplace.owner_teacher_id`) syns bara för läraren som bjöd in, och för skoladmin och rektor. Bjöd skoladmin in syns det för skolans alla lärare.
+- `GET/PUT /api/supervisor/workplaces` och `POST /api/supervisor/workplaces/{id}/invitations`: handledaren ändrar profilen och bjuder in upp till tre kollegor.
+- `GET /api/notifications` och `POST /api/notifications/read`.
+- `POST /api/workplaces` och `POST /api/workplaces/{id}/supervisors` får bara skoladmin använda.
+- E-post: `app/services/email.py`. Utan `SMTP_HOST` skrivs mejlet och länken till loggen (inte i produktion). SMTP sätts upp senare (D4).
+
+**Inte byggt:** en handledare som redan har ett konto kan inte bjudas in till ett nytt företag eller av en annan lärare (409). Det behövs när samma handledare tar emot elever från flera lärare.

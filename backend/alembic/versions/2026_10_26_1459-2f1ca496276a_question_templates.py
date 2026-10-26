@@ -1,7 +1,7 @@
 """question templates
 
 Revision ID: 2f1ca496276a
-Revises: db5b2311c44b
+Revises: ed47a7539069
 Create Date: 2026-10-26 14:59:28.083204
 
 """
@@ -15,7 +15,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "2f1ca496276a"
-down_revision: str | Sequence[str] | None = "db5b2311c44b"
+down_revision: str | Sequence[str] | None = "ed47a7539069"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

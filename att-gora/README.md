@@ -30,15 +30,25 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **F14:** Inställningar med visning i fyra lägen (Mindre, Standard, Större, Störst), kontrast, rörelse, textavstånd och konto. Sparas per konto (#19, #20).
 - Demodatan (`seed_demo`) ger varje klass ett publicerat formulär med redovisning tisdag och fredag.
 
-**Granskas (Texas + Claude):**
-- **B5b del 1, frågemallar:** skolans mallar och lärarens egna. Använd mall och Spara som mall i fliken Frågor.
+**Klart och mergat (Hannes + Claude):**
+- **B3:** arbetsplatser, handledare och placeringar (#22).
+
+**Klart och mergat (Texas + Claude, 2026-10-26):**
+- **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
+- **B4 och F5 (#26): närvaro och incheckning.** Eleven checkar in, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
+- **Förbättringar efter genomgång (#27):** sökbara rullistor, hopfällbar meny och incheckningsruta.
+- **B14 och F15 (#28): inbjudan av handledare.** Läraren bjuder in med e-post, handledaren skapar konto och företagsprofil via länken, läraren får en notis. Handledaren bjuder in upp till tre kollegor. Inbjudan av handledare togs över från Hannes B6.
+- **F16 (#29): elevsidan och Elevhistorik.** En elev går i en klass och flyttas efter bekräftelse. Elevsidan samlar praktikplats, närvaro, redovisningar och lärare. Elevhistorik har riktig data.
+- **B5b del 1 (#24), frågemallar:** skolans mallar och lärarens egna. Använd mall och Spara som mall i fliken Frågor.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - B5b: förslag utifrån läroplanen och extra frågor per elev (mallarna granskas).
+  - Ta bort frånvaroanmälan helt och låt redovisningarna följa eleven vid klassbyte (Texas, 2026-10-26).
+  - F6: lärarens översikt med riktig data.
+  - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
-- **Hannes + Claude:** B3 (praktikplats) är byggd och ligger för granskning i #22 (2026-10-21). Sedan B4 (närvaro) och B6 (inbjudningar och lösenord). Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
-- **Väntar på B3, B4 och B12:**
+- **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
+- **Väntar på B12:**
   - elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt)
   - projektval i redovisningen
   - handledarens åtkomst till redovisningar

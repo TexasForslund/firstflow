@@ -6,6 +6,8 @@ import type { components } from './schema'
 
 export type Student = components['schemas']['StudentRead']
 export type StudentCreate = components['schemas']['StudentCreate']
+export type StudentAttendanceDetail = components['schemas']['StudentAttendanceDetail']
+export type StudentReportSummary = components['schemas']['StudentReportSummary']
 
 /**
  * Elever. Läraren får elever som är kopplade till hen, skolans personal får skolans alla.
@@ -68,6 +70,49 @@ export function useSetTeachers(studentId: string) {
     onSuccess: (student) => {
       queryClient.setQueryData(['students', studentId], student)
       queryClient.invalidateQueries({ queryKey: ['students', 'list'] })
+    },
+  })
+}
+
+// --- Elevsidan ---
+
+export function useStudentPlacements(studentId: string) {
+  return useQuery({
+    queryKey: ['students', studentId, 'placements'],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/students/{student_id}/placements', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+export function useStudentAttendance(studentId: string) {
+  return useQuery({
+    queryKey: ['students', studentId, 'attendance'],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/students/{student_id}/attendance', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+/** Bara lärare ser redovisningar. */
+export function useStudentReports(studentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['students', studentId, 'reports'],
+    enabled,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/students/{student_id}/reports', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
     },
   })
 }
