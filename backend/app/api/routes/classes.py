@@ -14,7 +14,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import Table, func, select
+from sqlalchemy import Table, delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
@@ -211,6 +211,10 @@ def get_class(class_id: UUID, db: DbSession, user: CanViewClasses) -> ClassDetai
 
 class StudentLink(BaseModel):
     student_id: UUID
+    move: bool = Field(
+        default=False,
+        description="Flytta eleven hit om hen går i en annan klass. Annars svarar det 409.",
+    )
 
 
 @router.post("/{class_id}/students", response_model=PersonRead, status_code=status.HTTP_201_CREATED)
@@ -238,6 +242,24 @@ def add_student(class_id: UUID, body: StudentLink, db: DbSession, user: CanEditC
         )
         if linked is None:
             raise _not_found()
+    # En elev går i en klass (Texas, 2026-10-26). Går eleven i en annan klass flyttas hen,
+    # men bara när anropet ber om det, så att läraren hinner bekräfta.
+    current = db.scalar(
+        select(SchoolClass)
+        .join(class_students, class_students.c.class_id == SchoolClass.id)
+        .where(class_students.c.student_id == student.id)
+    )
+    if current is not None and current.id != school_class.id:
+        if not body.move:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                detail=f"{student.name} går i {current.name}. En elev kan bara gå i en klass.",
+            )
+        db.execute(
+            delete(class_students).where(
+                class_students.c.class_id == current.id, class_students.c.student_id == student.id
+            )
+        )
     _link(db, class_students, school_class.id, "student_id", student.id)
     db.commit()
     return student

@@ -163,7 +163,7 @@ def _workplace_ref(workplace: Workplace) -> WorkplaceRef:
     return WorkplaceRef(id=workplace.id, name=workplace.name, address=workplace.address)
 
 
-def _placement_read(placement: Placement) -> PlacementRead:
+def placement_read(placement: Placement) -> PlacementRead:
     supervisor = placement.supervisor
     return PlacementRead(
         id=placement.id,
@@ -316,7 +316,7 @@ def create_placement(
     )
     db.add(placement)
     db.commit()
-    return _placement_read(placement)
+    return placement_read(placement)
 
 
 @router.delete("/{placement_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -354,7 +354,7 @@ def list_class_placements(
         )
         .order_by(User.name, Placement.start_date)
     )
-    return [_placement_read(p) for p in placements]
+    return [placement_read(p) for p in placements]
 
 
 @me_router.get("", response_model=list[MyPlacement])

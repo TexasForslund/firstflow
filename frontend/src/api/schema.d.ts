@@ -336,6 +336,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/students/{student_id}/placements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Placements
+         * @description Elevens praktikplatser, senaste först. Samma behörighet som elevsidan.
+         */
+        get: operations["student_placements_api_students__student_id__placements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me/preferences": {
         parameters: {
             query?: never;
@@ -1053,6 +1073,46 @@ export interface paths {
         put?: never;
         /** Mark All Read */
         post: operations["mark_all_read_api_notifications_read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Attendance
+         * @description Elevens närvaro. Utan period gäller den pågående eller senaste placeringen.
+         */
+        get: operations["student_attendance_api_students__student_id__attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Student Reports
+         * @description Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först.
+         */
+        get: operations["list_student_reports_api_students__student_id__reports_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2130,6 +2190,30 @@ export interface components {
             /** @description Dagens status. null = inget registrerat */
             today: components["schemas"]["AttendanceStatus"] | null;
         };
+        /**
+         * StudentAttendanceDetail
+         * @description Närvaron för en elev, för elevsidan.
+         */
+        StudentAttendanceDetail: {
+            /**
+             * From Date
+             * Format: date
+             */
+            from_date: string;
+            /**
+             * To Date
+             * Format: date
+             */
+            to_date: string;
+            /** Check In Required */
+            check_in_required: boolean;
+            summary: components["schemas"]["StudentAttendance"];
+            /**
+             * Days
+             * @description Registrerade dagar i perioden, senaste först
+             */
+            days: components["schemas"]["AttendanceDay"][];
+        };
         /** StudentCreate */
         StudentCreate: {
             /** Email */
@@ -2148,6 +2232,12 @@ export interface components {
              * Format: uuid
              */
             student_id: string;
+            /**
+             * Move
+             * @description Flytta eleven hit om hen går i en annan klass. Annars svarar det 409.
+             * @default false
+             */
+            move: boolean;
         };
         /** StudentRead */
         StudentRead: {
@@ -2166,6 +2256,40 @@ export interface components {
             classes: components["schemas"]["Ref"][];
             /** Teachers */
             teachers: components["schemas"]["Ref"][];
+            /** @description Pågående eller nästa praktikplats */
+            workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Report Count
+             * @description Inskickade veckoredovisningar
+             */
+            report_count: number;
+        };
+        /** StudentReportSummary */
+        StudentReportSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["PersonBrief"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /** Is Read */
+            is_read: boolean;
+            /** Comment Count */
+            comment_count: number;
+            /** Class Name */
+            class_name: string;
         };
         /**
          * SupervisedStudent
@@ -3009,6 +3133,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    student_placements_api_students__student_id__placements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacementRead"][];
                 };
             };
             /** @description Validation Error */
@@ -4116,6 +4271,71 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    student_attendance_api_students__student_id__attendance_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentAttendanceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_student_reports_api_students__student_id__reports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentReportSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

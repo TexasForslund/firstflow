@@ -27,6 +27,7 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles
 from app.api.routes.classes import CanViewClasses, get_accessible_class
+from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
 from app.models.attendance import Attendance, AttendanceStatus
@@ -38,6 +39,7 @@ router = APIRouter(prefix="/attendance", tags=["attendance"])
 me_router = APIRouter(prefix="/me/attendance", tags=["attendance"])
 class_router = APIRouter(prefix="/classes/{class_id}/attendance", tags=["attendance"])
 supervisor_router = APIRouter(prefix="/supervisor/attendance", tags=["attendance"])
+student_router = APIRouter(prefix="/students/{student_id}/attendance", tags=["attendance"])
 
 Student = Annotated[User, Depends(require_roles(UserRole.STUDENT))]
 Supervisor = Annotated[User, Depends(require_roles(UserRole.SUPERVISOR))]
@@ -409,3 +411,85 @@ def supervisor_attendance(
             )
         )
     return result
+
+
+# --- Elevsidan ----------------------------------------------------------------------------
+
+
+class StudentAttendanceDetail(BaseModel):
+    """Närvaron för en elev, för elevsidan."""
+
+    from_date: date
+    to_date: date
+    check_in_required: bool
+    summary: StudentAttendance
+    days: list[AttendanceDay] = Field(description="Registrerade dagar i perioden, senaste först")
+
+
+@student_router.get("", response_model=StudentAttendanceDetail)
+def student_attendance(
+    student_id: UUID,
+    db: DbSession,
+    user: CanViewStudent,
+    from_date: Annotated[date | None, Query(alias="from")] = None,
+    to_date: Annotated[date | None, Query(alias="to")] = None,
+) -> StudentAttendanceDetail:
+    """Elevens närvaro. Utan period gäller den pågående eller senaste placeringen."""
+    student = get_student_for(db, user, student_id)
+    today = time.today()
+    placements = db.scalars(
+        select(Placement).where(Placement.student_id == student.id).order_by(Placement.start_date)
+    ).all()
+    if from_date is None or to_date is None:
+        started = [p for p in placements if p.start_date <= today]
+        if started:
+            current = started[-1]
+            from_date = from_date or current.start_date
+            to_date = to_date or min(current.end_date, today)
+        else:
+            to_date = to_date or today
+            from_date = from_date or to_date - timedelta(days=DEFAULT_PERIOD_DAYS - 1)
+    if from_date > to_date:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Periodens start är efter slutet"
+        )
+    school_class = db.scalar(
+        select(SchoolClass)
+        .join(class_students, class_students.c.class_id == SchoolClass.id)
+        .where(class_students.c.student_id == student.id)
+    )
+    required = school_class.check_in_required if school_class else True
+    per_week = school_class.apl_days_per_week if school_class else None
+    counted_to = min(to_date, today)
+    in_period = [p for p in placements if p.start_date <= to_date and p.end_date >= from_date]
+    rows = db.scalars(
+        select(Attendance)
+        .where(
+            Attendance.placement_id.in_([p.id for p in placements]),
+            Attendance.date >= from_date,
+            Attendance.date <= to_date,
+        )
+        .order_by(Attendance.date.desc())
+    ).all()
+    counts = {s: 0 for s in AttendanceStatus}
+    for row in rows:
+        if row.date <= counted_to:
+            counts[AttendanceStatus(row.status)] += 1
+    expected = _expected_days(in_period, from_date, counted_to, per_week)
+    today_row = next((r for r in rows if r.date == today), None)
+    return StudentAttendanceDetail(
+        from_date=from_date,
+        to_date=to_date,
+        check_in_required=required,
+        summary=StudentAttendance(
+            student=Ref(id=student.id, name=student.name),
+            has_placement=bool(in_period),
+            expected_days=expected,
+            present=counts[AttendanceStatus.PRESENT],
+            absent=counts[AttendanceStatus.ABSENT],
+            sick=counts[AttendanceStatus.SICK],
+            missing=max(0, expected - sum(counts.values())) if required else 0,
+            today=today_row.status if today_row else None,
+        ),
+        days=[_day(r) for r in rows],
+    )

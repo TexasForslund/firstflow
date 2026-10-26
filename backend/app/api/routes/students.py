@@ -16,12 +16,16 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 
 from app.api.deps import require_roles, require_same_school
+from app.api.routes.placements import PlacementRead, placement_read
+from app.core import time
 from app.db.session import DbSession
+from app.models.placement import Placement, Workplace
+from app.models.report import Report, ReportStatus
 from app.models.school_class import SchoolClass, class_students, class_teachers, teacher_students
 from app.models.user import User, UserRole
 from app.services.accounts import AccountCreate, create_account
@@ -63,11 +67,14 @@ class StudentRead(BaseModel):
     school_name: str | None
     classes: list[Ref]
     teachers: list[Ref]
+    workplace: Ref | None = Field(description="Pågående eller nästa praktikplats")
+    report_count: int = Field(description="Inskickade veckoredovisningar")
 
 
 class StudentCreate(AccountCreate):
     teacher_ids: list[UUID] = Field(default_factory=list, max_length=20)
-    class_ids: list[UUID] = Field(default_factory=list, max_length=20)
+    # En elev går i en klass (Texas, 2026-10-26). Listan har högst ett id.
+    class_ids: list[UUID] = Field(default_factory=list, max_length=1)
 
 
 class TeachersSet(BaseModel):
@@ -119,6 +126,23 @@ def _describe(db: DbSession, students: list[User]) -> list[StudentRead]:
         .order_by(User.name)
     ):
         teachers[student_id].append(Ref(id=teacher_id, name=name))
+    # Pågående praktikplats, annars den närmaste kommande.
+    today = time.today()
+    workplaces: dict[UUID, Ref] = {}
+    for student_id, workplace_id, name in db.execute(
+        select(Placement.student_id, Workplace.id, Workplace.name)
+        .join(Workplace, Workplace.id == Placement.workplace_id)
+        .where(Placement.student_id.in_(ids), Placement.end_date >= today)
+        .order_by(Placement.start_date.desc())
+    ):
+        workplaces[student_id] = Ref(id=workplace_id, name=name)
+    report_counts = dict(
+        db.execute(
+            select(Report.student_id, func.count(Report.id))
+            .where(Report.student_id.in_(ids), Report.status == ReportStatus.SUBMITTED)
+            .group_by(Report.student_id)
+        ).all()
+    )
     return [
         StudentRead(
             id=s.id,
@@ -127,12 +151,14 @@ def _describe(db: DbSession, students: list[User]) -> list[StudentRead]:
             school_name=s.school_name,
             classes=classes[s.id],
             teachers=teachers[s.id],
+            workplace=workplaces.get(s.id),
+            report_count=report_counts.get(s.id, 0),
         )
         for s in students
     ]
 
 
-def _get_student(db: DbSession, user: User, student_id: UUID) -> User:
+def get_student_for(db: DbSession, user: User, student_id: UUID) -> User:
     """Eleven om användaren får se hen, annars 404."""
     student = db.get(User, student_id)
     if student is None or student.role != UserRole.STUDENT or not student.is_active:
@@ -242,7 +268,7 @@ def create_student(body: StudentCreate, db: DbSession, user: SchoolAdmin) -> Stu
 
 @router.get("/{student_id}", response_model=StudentRead)
 def get_student(student_id: UUID, db: DbSession, user: CanViewStudent) -> StudentRead:
-    student = _get_student(db, user, student_id)
+    student = get_student_for(db, user, student_id)
     described = _describe(db, [student])[0]
     if user.role == UserRole.TEACHER and student.id not in _linked_student_ids(db, user):
         # Läraren undervisar eleven men ansvarar inte för hen: visa bara lärarens klasser.
@@ -256,7 +282,7 @@ def set_teachers(
     student_id: UUID, body: TeachersSet, db: DbSession, user: SchoolAdmin
 ) -> StudentRead:
     """Sätter elevens lärare. Listan ersätter de tidigare."""
-    student = _get_student(db, user, student_id)
+    student = get_student_for(db, user, student_id)
     teachers = _school_teachers(db, student.school_id, body.teacher_ids)
     db.execute(teacher_students.delete().where(teacher_students.c.student_id == student.id))
     for teacher in teachers:
@@ -267,3 +293,22 @@ def set_teachers(
         )
     db.commit()
     return _describe(db, [student])[0]
+
+
+@router.get("/{student_id}/placements", response_model=list[PlacementRead])
+def student_placements(
+    student_id: UUID, db: DbSession, user: CanViewStudent
+) -> list[PlacementRead]:
+    """Elevens praktikplatser, senaste först. Samma behörighet som elevsidan."""
+    student = get_student_for(db, user, student_id)
+    placements = db.scalars(
+        select(Placement)
+        .where(Placement.student_id == student.id)
+        .options(
+            selectinload(Placement.student),
+            selectinload(Placement.workplace),
+            selectinload(Placement.supervisor),
+        )
+        .order_by(Placement.start_date.desc())
+    )
+    return [placement_read(p) for p in placements]

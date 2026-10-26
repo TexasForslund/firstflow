@@ -1,0 +1,90 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.classTag {
+  margin-left: auto;
+}
+
+.placement,
+.attendance {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.company {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.company svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-primary);
+}
+
+.muted {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.muted svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.status {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.status svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.present {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.absent,
+.sick {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.unread {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.reportIcon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-primary);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
