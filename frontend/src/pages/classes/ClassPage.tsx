@@ -11,6 +11,7 @@ import {
   useUnassignTeacher,
   type Person,
 } from '../../api/classes'
+import { ApiError } from '../../api/errors'
 import { useClassPlacements, type Placement } from '../../api/placements'
 import { useClassReports } from '../../api/reports'
 import { useStudents } from '../../api/students'
@@ -227,6 +228,25 @@ function AddStudentForm({ classId, inClass, isTeacher }: { classId: string; inCl
   const students = useStudents()
   const add = useAddStudent(classId)
   const [added, setAdded] = useState<string | null>(null)
+  // Eleven går i en annan klass. Läraren får bekräfta flytten (en elev går i en klass).
+  const [moving, setMoving] = useState<{ id: string; label: string; message: string } | null>(null)
+
+  function addStudent(option: SearchSelectOption, move = false) {
+    setAdded(null)
+    setMoving(null)
+    add.mutate(
+      { studentId: option.id, move },
+      {
+        onSuccess: () => setAdded(move ? `${option.label} är flyttad till klassen.` : `${option.label} är tillagd i klassen.`),
+        onError: (error) => {
+          if (error instanceof ApiError && error.status === 409) {
+            setMoving({ id: option.id, label: option.label, message: error.message })
+          }
+        },
+      },
+    )
+  }
+
   const candidates: SearchSelectOption[] = (students.data ?? [])
     .filter((s) => !inClass.some((c) => c.id === s.id))
     .map((s) => ({
@@ -255,18 +275,34 @@ function AddStudentForm({ classId, inClass, isTeacher }: { classId: string; inCl
           onSelect={(option) => {
             // Fältet stängs inte av medan eleven läggs till, så att fokus stannar kvar.
             if (add.isPending) return
-            setAdded(null)
-            add.mutate(option.id, { onSuccess: () => setAdded(option.label) })
+            addStudent(option)
           }}
         />
-        {add.isError && (
+        {moving && (
+          <div className={styles.moveConfirm} role="alert">
+            <p>{moving.message} Vill du flytta eleven hit?</p>
+            <span className={styles.rowActions}>
+              <Button
+                variant="primary"
+                disabled={add.isPending}
+                onClick={() => addStudent({ id: moving.id, label: moving.label }, true)}
+              >
+                Flytta {moving.label}
+              </Button>
+              <button type="button" className={styles.textButton} onClick={() => setMoving(null)}>
+                Avbryt
+              </button>
+            </span>
+          </div>
+        )}
+        {add.isError && !moving && (
           <p className={styles.formError} role="alert">
             {add.error.message}
           </p>
         )}
         {added && (
           <p className={styles.formSuccess} role="status">
-            {added} är tillagd i klassen.
+            {added}
           </p>
         )}
         <p className={styles.hint}>

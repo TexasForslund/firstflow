@@ -4,8 +4,10 @@ import { useParams } from 'react-router'
 
 import type { Question } from '../../api/forms'
 import { useMarkRead, useReport } from '../../api/reports'
+import { useStudentPlacements } from '../../api/students'
 import { Avatar, ButtonLink, Card, CardFooter, Collapsible } from '../../components'
 import { NotFound } from '../NotFound'
+import { currentPlacement, periodText } from '../placements/period'
 import { longDate, reportTitle } from '../reports/answers'
 import { AnswerContent, Comments } from '../reports/AnswerView'
 import { WeeklyReport } from './WeeklyReport'
@@ -90,11 +92,8 @@ function TeacherReport({ reportId }: { reportId: string }) {
             </div>
             <p className={styles.submitted}>Inskickad {submitted}</p>
 
-            {/* Närvaro (B4), praktikplats (B3) och projekt (B12) kopplas in när de finns. */}
             <h2 className={styles.sideHeading}>Praktikplats kopplad till {firstName}</h2>
-            <p className={styles.notYet}>
-              <BriefcaseBusiness aria-hidden="true" /> Ingen praktikplats tilldelad än
-            </p>
+            <StudentWorkplace studentId={detail.student.id} />
           </div>
           <CardFooter>
             <ButtonLink to={`/students/${detail.student.id}`} icon={<ArrowUpRight aria-hidden="true" />}>
@@ -104,5 +103,20 @@ function TeacherReport({ reportId }: { reportId: string }) {
         </Card>
       </aside>
     </div>
+  )
+}
+
+function StudentWorkplace({ studentId }: { studentId: string }) {
+  const placements = useStudentPlacements(studentId)
+  const current = currentPlacement(placements.data ?? [])
+  return (
+    <p className={styles.notYet}>
+      <BriefcaseBusiness aria-hidden="true" />{' '}
+      {placements.isPending
+        ? 'Hämtar…'
+        : current
+          ? `${current.workplace.name}, ${periodText(current.start_date, current.end_date)}`
+          : 'Ingen praktikplats tilldelad än'}
+    </p>
   )
 }

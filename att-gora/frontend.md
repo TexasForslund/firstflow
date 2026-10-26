@@ -44,7 +44,7 @@ Alla sju roller har en meny. Lärarens sidor visar fortfarande demodata (F3, F11
 
 **Klassen är navet** (Texas, 2026-10-20). Klassvyn har flikarna Elever, APL-villkor, Frågor och Lärare (bara skoladmin). Läraren styr klassen därifrån: vilka elever som går i den, varje elevs praktikplats (B3) och projekt (B12), klassens APL-villkor (dagar per vecka, incheckning och vilka veckodagar veckoredovisning ska lämnas) och frågorna vid redovisning (B5). Läraren har ingen egen elevlista. `/students` är skoladmins, rektorns och SYV:s elevregister.
 
-Översikten, veckoredovisningen och elevhistoriken har kvar demodatan tills F11.
+Översikten och veckoredovisningen har kvar demodatan tills F11. Elevhistoriken har riktig data sedan F16.
 
 ---
 
@@ -68,7 +68,7 @@ Byggd 2026-10-26 mot B3 (PR #22). Ingen ändring i backend.
 - **Klassvyn, fliken Elever:** elevraden visar pågående eller nästa placering. Knappen öppnar en panel med elevens placeringar (Ta bort) och formuläret Ny placering: arbetsplats, handledare på arbetsplatsen, start- och slutdatum. Överlappande period och fel handledare ger tydliga felmeddelanden.
 - Elever ser inte längre `/placements`, bara Min APL.
 
-**Inte byggt:** elevens praktikplats på elevsidan (`/students/:id`). Det finns inget endpoint för en enskild elevs placeringar. Tas med när det behövs.
+Elevens praktikplats på elevsidan (`/students/:id`) är byggd i F16.
 
 Ursprunglig spec:
 
@@ -199,6 +199,19 @@ Sidan Inställningar för alla roller (Texas, 2026-10-20):
 - APL-villkor har förklaringar till vad varje inställning styr.
 - Anmäl frånvaro är borttaget från elevens Incheckning (Texas, 2026-10-26). Endpointen `POST /api/attendance/absence` finns kvar i backend tills vidare.
 - Elevens incheckning: en ruta mitt på skärmen första gången eleven öppnar appen en APL-dag efter 08:30. Stängs den visas en rad högst upp på varje sida tills eleven har checkat in. Animation när eleven checkar in.
+
+---
+
+## F16. Elevsidan och Elevhistorik 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (allt om en elev). Alla klick på en elev leder till elevsidan.
+
+- **Elevsidan** (`/students/:id`): klassen i rubriken, Praktikplats (pågående eller nästa, med adress, period, vecka och handledare, och tidigare placeringar), Närvaro (stapel och siffror för perioden, de senaste dagarna och Visa alla), Redovisningar (bara lärare, länk till varje redovisning) och Lärare. Skoladmin redigerar elevens lärare som förut.
+- **Elevhistorik** (`/student-history`): riktig data i stället för demodata. Filter på klass och elev (sökbara), filterchips, grupper per klass och en rad per elev med praktikplats och antal redovisningar.
+- **En klass per elev:** läggs en elev som går i en annan klass till i klassvyn visas "X går i EE22. Vill du flytta eleven hit?" med knappen Flytta. Skoladmin väljer en klass (inte flera) när en elev läggs in.
+- Veckoredovisningens sidopanel visar elevens riktiga praktikplats.
+
+**Inte byggt:** antal projekt per elev (väntar på B12). Byter eleven klass ligger redovisningarna kvar på den gamla klassen, så den nya läraren ser dem inte.
 
 ---
 

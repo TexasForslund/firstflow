@@ -1001,6 +1001,59 @@
         }
       }
     },
+    "/api/students/{student_id}/placements": {
+      "get": {
+        "tags": [
+          "students"
+        ],
+        "summary": "Student Placements",
+        "description": "Elevens praktikplatser, senaste först. Samma behörighet som elevsidan.",
+        "operationId": "student_placements_api_students__student_id__placements_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlacementRead"
+                  },
+                  "title": "Response Student Placements Api Students  Student Id  Placements Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/me/preferences": {
       "put": {
         "tags": [
@@ -2754,6 +2807,142 @@
             "APIKeyCookie": []
           }
         ]
+      }
+    },
+    "/api/students/{student_id}/attendance": {
+      "get": {
+        "tags": [
+          "attendance"
+        ],
+        "summary": "Student Attendance",
+        "description": "Elevens närvaro. Utan period gäller den pågående eller senaste placeringen.",
+        "operationId": "student_attendance_api_students__student_id__attendance_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentAttendanceDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/reports": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "List Student Reports",
+        "description": "Elevens inskickade redovisningar i klasser som läraren undervisar, senaste först.",
+        "operationId": "list_student_reports_api_students__student_id__reports_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StudentReportSummary"
+                  },
+                  "title": "Response List Student Reports Api Students  Student Id  Reports Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -5120,6 +5309,45 @@
         ],
         "title": "StudentAttendance"
       },
+      "StudentAttendanceDetail": {
+        "properties": {
+          "from_date": {
+            "type": "string",
+            "format": "date",
+            "title": "From Date"
+          },
+          "to_date": {
+            "type": "string",
+            "format": "date",
+            "title": "To Date"
+          },
+          "check_in_required": {
+            "type": "boolean",
+            "title": "Check In Required"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/StudentAttendance"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceDay"
+            },
+            "type": "array",
+            "title": "Days",
+            "description": "Registrerade dagar i perioden, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_date",
+          "to_date",
+          "check_in_required",
+          "summary",
+          "days"
+        ],
+        "title": "StudentAttendanceDetail",
+        "description": "Närvaron för en elev, för elevsidan."
+      },
       "StudentCreate": {
         "properties": {
           "email": {
@@ -5149,7 +5377,7 @@
               "format": "uuid"
             },
             "type": "array",
-            "maxItems": 20,
+            "maxItems": 1,
             "title": "Class Ids"
           }
         },
@@ -5166,6 +5394,12 @@
             "type": "string",
             "format": "uuid",
             "title": "Student Id"
+          },
+          "move": {
+            "type": "boolean",
+            "title": "Move",
+            "description": "Flytta eleven hit om hen går i en annan klass. Annars svarar det 409.",
+            "default": false
           }
         },
         "type": "object",
@@ -5213,6 +5447,22 @@
             },
             "type": "array",
             "title": "Teachers"
+          },
+          "workplace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Ref"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pågående eller nästa praktikplats"
+          },
+          "report_count": {
+            "type": "integer",
+            "title": "Report Count",
+            "description": "Inskickade veckoredovisningar"
           }
         },
         "type": "object",
@@ -5222,9 +5472,61 @@
           "email",
           "school_name",
           "classes",
-          "teachers"
+          "teachers",
+          "workplace",
+          "report_count"
         ],
         "title": "StudentRead"
+      },
+      "StudentReportSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          },
+          "is_read": {
+            "type": "boolean",
+            "title": "Is Read"
+          },
+          "comment_count": {
+            "type": "integer",
+            "title": "Comment Count"
+          },
+          "class_name": {
+            "type": "string",
+            "title": "Class Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "due_date",
+          "submitted_at",
+          "is_late",
+          "is_read",
+          "comment_count",
+          "class_name"
+        ],
+        "title": "StudentReportSummary"
       },
       "SupervisedStudent": {
         "properties": {

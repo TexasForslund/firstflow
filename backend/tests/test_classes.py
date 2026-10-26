@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.school import School
@@ -389,9 +390,8 @@ def test_superadmin_only_reads_classes(
     assert client.delete(f"/api/classes/{cid}/students/{world.student.id}").status_code == 403
 
 
-def test_teacher_sees_only_own_classes_of_shared_student(
-    client: TestClient, db: Session, login: Login, world: World
-) -> None:
+def test_student_can_only_be_in_one_class(db: Session, world: World) -> None:
+    """En elev går i en klass (Texas, 2026-10-26). Databasen stoppar en andra klass."""
     other_class = SchoolClass(
         school_id=world.kramfors.id,
         name="EE21",
@@ -399,11 +399,8 @@ def test_teacher_sees_only_own_classes_of_shared_student(
         students=[world.student],
     )
     db.add(other_class)
-    db.flush()
-    # other_teacher har EE21 men är inte kopplad till eleven: ser bara sin klass.
-    login(world.other_teacher)
-    classes = client.get(f"/api/students/{world.student.id}").json()["classes"]
-    assert [c["name"] for c in classes] == ["EE21"]
+    with pytest.raises(IntegrityError):
+        db.flush()
 
 
 def test_teacher_cannot_unassign_teachers(client: TestClient, login: Login, world: World) -> None:
