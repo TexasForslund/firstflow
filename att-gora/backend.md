@@ -1,6 +1,6 @@
 # Backend – att göra
 
-Ägare: Se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md). B1b, B2 och B5 görs av Texas + Claude, B3, B4 och B6 av Hannes + Claude. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
+Ägare: Se arbetsuppdelningen i [CLAUDE.md](../CLAUDE.md). B1b, B2, B4 och B5 görs av Texas + Claude, B3 och B6 av Hannes + Claude. B4 flyttades från Hannes 2026-10-26. Läs [README.md](README.md) först. Konventioner finns i [CLAUDE.md](../CLAUDE.md).
 
 Gäller alla uppgifter:
 
@@ -55,7 +55,7 @@ Rektor har läsrätt. Allt annat utanför ens behörighet svarar 404. `seed_demo
 
 ---
 
-## B3. Praktikperiod och APL-plats 🚧 Granskas ([PR #22](https://github.com/TexasForslund/firstflow/pull/22), Hannes + Claude)
+## B3. Praktikperiod och APL-plats ✅ Klar (PR #22, Hannes + Claude)
 
 Låser upp: F4 och praktikplatsen i klassvyn (F12).
 
@@ -81,7 +81,7 @@ Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar 
 
 ---
 
-## B4. Närvaro och incheckning ⬜
+## B4. Närvaro och incheckning ⬜ (Texas + Claude, flyttad från Hannes 2026-10-26)
 
 Låser upp: F5.
 
