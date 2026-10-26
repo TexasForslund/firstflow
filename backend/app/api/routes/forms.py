@@ -66,6 +66,18 @@ def _read(db: DbSession, class_id: UUID) -> FormRead:
     )
 
 
+def draft_questions(db: DbSession, class_id: UUID) -> list[Any]:
+    """Klassens frågor som läraren ser dem: utkastet, annars den senast publicerade versionen."""
+    return _draft_questions(db, class_id, latest_version(db, class_id))
+
+
+def replace_draft(db: DbSession, class_id: UUID, questions: list[Any], user: User) -> FormRead:
+    """Ersätter klassens utkast, t.ex. med en mall. Eleverna ser inget förrän det publiceras."""
+    _save(db, class_id, questions, user)
+    db.commit()
+    return _read(db, class_id)
+
+
 @router.get("", response_model=FormRead)
 def get_form(class_id: UUID, db: DbSession, user: CanViewClasses) -> FormRead:
     """Utkastet och vilken version som är publicerad."""

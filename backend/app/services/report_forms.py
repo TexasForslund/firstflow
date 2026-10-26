@@ -13,7 +13,7 @@ Se docs/design/fragor-typeform.md.
 
 from enum import StrEnum
 from typing import Annotated, Any, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, TypeAdapter, model_validator
 
@@ -175,6 +175,40 @@ def parse_questions(raw: list[dict[str, Any]]) -> list[Any]:
 
 def dump_questions(questions: list[Any]) -> list[dict[str, Any]]:
     return QuestionList.dump_python(questions, mode="json")
+
+
+def copy_with_new_ids(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Kopierar frågor med nya id:n för frågor och alternativ, och pekar om logiken.
+
+    Används när en mall kopieras till en klass. Med nya id:n blir det nya frågor i klassen,
+    så att de aldrig krockar med frågor som klassen redan har publicerat (t.ex. med en
+    annan frågetyp). Gamla svar behåller sina frågor i de tidigare versionerna.
+    """
+    questions = parse_questions(raw)
+    question_ids = {q.id: uuid4() for q in questions}
+    copies = []
+    for question in questions:
+        choice_ids: dict[str, str] = {}
+        update: dict[str, Any] = {"id": question_ids[question.id]}
+        if question.type == QuestionType.CHOICE:
+            new_choices = []
+            for c in question.choices:
+                new_id = uuid4()
+                choice_ids[str(c.id)] = str(new_id)
+                new_choices.append(c.model_copy(update={"id": new_id}))
+            update["choices"] = new_choices
+        if hasattr(question, "logic"):
+            update["logic"] = [
+                rule.model_copy(
+                    update={
+                        "when": choice_ids.get(rule.when, rule.when),
+                        "goto": question_ids.get(rule.goto) if rule.goto else None,
+                    }
+                )
+                for rule in question.logic
+            ]
+        copies.append(question.model_copy(update=update))
+    return dump_questions(copies)
 
 
 # --- Svar ---------------------------------------------------------------------------------

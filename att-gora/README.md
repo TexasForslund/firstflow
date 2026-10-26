@@ -33,16 +33,19 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 **Klart och mergat (Hannes + Claude):**
 - **B3:** arbetsplatser, handledare och placeringar (#22).
 
-**Granskas (Texas + Claude):**
-- **F16: elevsidan och Elevhistorik.** En elev går i en klass och flyttas efter bekräftelse. Elevsidan samlar praktikplats, närvaro, redovisningar och lärare. Elevhistorik har riktig data.
-- **B14 och F15: inbjudan av handledare.** Läraren bjuder in med e-post, handledaren skapar konto och företagsprofil via länken, läraren får en notis. Handledaren bjuder in upp till tre kollegor. Inbjudan av handledare togs över från Hannes B6.
-- **B4 och F5 (#26): närvaro och incheckning.** Eleven checkar in och anmäler frånvaro, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
+**Klart och mergat (Texas + Claude, 2026-10-26):**
 - **F4 (#23):** Min APL för eleven, Mina elever för handledaren, sidan Praktikplatser och tilldelning av praktikplats i klassvyn.
+- **B4 och F5 (#26): närvaro och incheckning.** Eleven checkar in, läraren ser närvaron per elev på sidan Närvaro, och handledaren ser dagens status.
+- **Förbättringar efter genomgång (#27):** sökbara rullistor, hopfällbar meny och incheckningsruta.
+- **B14 och F15 (#28): inbjudan av handledare.** Läraren bjuder in med e-post, handledaren skapar konto och företagsprofil via länken, läraren får en notis. Handledaren bjuder in upp till tre kollegor. Inbjudan av handledare togs över från Hannes B6.
+- **F16 (#29): elevsidan och Elevhistorik.** En elev går i en klass och flyttas efter bekräftelse. Elevsidan samlar praktikplats, närvaro, redovisningar och lärare. Elevhistorik har riktig data.
+- **B5b del 1 (#24), frågemallar:** skolans mallar och lärarens egna. Använd mall och Spara som mall i fliken Frågor.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - B5b: mallar (beslut finns i fragor-typeform.md), förslag utifrån läroplanen och extra frågor per elev.
-  - F6: lärarens dashboard med riktig närvaro, när B4 och F5 är mergade.
+  - Ta bort frånvaroanmälan helt och låt redovisningarna följa eleven vid klassbyte (Texas, 2026-10-26).
+  - F6: lärarens översikt med riktig data.
+  - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
 - **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
 - **Väntar på B12:**

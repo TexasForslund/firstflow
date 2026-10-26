@@ -10,6 +10,7 @@ Varje skola får två klasser med fem elever var. Varje klass får ett publicera
 veckoredovisning, med redovisning tisdag och fredag. Varje skola får två arbetsplatser med
 var sin handledare, och eleverna i EE22 är placerade där under en pågående period. Eleverna i
 EE21 har ingen placering, så att det syns hur det ser ut innan läraren har placerat dem.
+Varje skola får också en skolmall för frågor, "Kort veckoredovisning".
 Eleverna i EE22 har närvaro sedan placeringen började, med en sjukdag och en elev som
 slutat checka in.
 """
@@ -33,6 +34,7 @@ from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
 from app.models.school_class import SchoolClass, teacher_students
+from app.models.template import QuestionTemplate
 from app.models.user import User, UserRole
 from app.services.accounts import create_account
 from app.services.report_forms import FormContent, dump_questions
@@ -185,6 +187,41 @@ def _ensure_forms(db: Session, school: School) -> list[str]:
     return created
 
 
+SCHOOL_TEMPLATE = "Kort veckoredovisning"
+
+
+def _template_questions() -> list[dict[str, Any]]:
+    """En kortare skolmall än klassens formulär, så att det syns när mallen används."""
+    ids = [str(uuid.uuid4()) for _ in range(4)]
+    questions = [
+        {"id": ids[0], "type": "long_text", "title": "Vad har du gjort den här veckan?"},
+        {"id": ids[1], "type": "rating", "title": "Hur har veckan gått?",
+         "description": "1 = inte alls bra, 5 = mycket bra"},
+        {"id": ids[2], "type": "yes_no", "title": "Behöver du hjälp med något?",
+         "logic": [{"when": "no", "goto": None}]},
+        {"id": ids[3], "type": "long_text", "title": "Vad behöver du hjälp med?"},
+    ]  # fmt: skip
+    return dump_questions(FormContent.model_validate({"questions": questions}).questions)
+
+
+def _ensure_template(db: Session, school: School) -> bool:
+    """Ger skolan en skolmall om den saknas. Returnerar True om mallen skapades."""
+    exists = db.scalar(
+        select(QuestionTemplate.id).where(
+            QuestionTemplate.school_id == school.id,
+            QuestionTemplate.owner_id.is_(None),
+            QuestionTemplate.name == SCHOOL_TEMPLATE,
+        )
+    )
+    if exists:
+        return False
+    db.add(
+        QuestionTemplate(school_id=school.id, name=SCHOOL_TEMPLATE, questions=_template_questions())
+    )
+    db.flush()
+    return True
+
+
 def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
     """Skapar skolans arbetsplatser och placerar eleverna i EE22 där. Returnerar nya platser."""
     created: list[str] = []
@@ -310,6 +347,8 @@ def seed(db: Session) -> list[tuple[str, str, str]]:
             created.append((f"klass {class_name}", "–", school.name))
         for class_name in _ensure_forms(db, school):
             created.append((f"formulär {class_name}", "–", school.name))
+        if _ensure_template(db, school):
+            created.append((f"mall {SCHOOL_TEMPLATE}", "–", school.name))
         # Handledare hör inte till någon skola. De kopplas till skolan via arbetsplatsen.
         for _, _, prefix, name in WORKPLACES[key]:
             add(f"{prefix}@{DOMAIN}", name, UserRole.SUPERVISOR, None)
@@ -332,11 +371,12 @@ def main() -> None:
     classes = sum(1 for item in created if item[0].startswith("klass "))
     forms = sum(1 for item in created if item[0].startswith("formulär "))
     workplaces = sum(1 for item in created if item[0].startswith("arbetsplats "))
+    templates = sum(1 for item in created if item[0].startswith("mall "))
     attendance = sum(1 for item in created if item[0].startswith("närvaro "))
-    accounts = len(created) - classes - forms - workplaces - attendance
+    accounts = len(created) - classes - forms - workplaces - templates - attendance
     print(
-        f"Skapade {accounts} demokonton, {classes} klasser, {forms} formulär"
-        f" och {workplaces} arbetsplatser."
+        f"Skapade {accounts} demokonton, {classes} klasser, {forms} formulär,"
+        f" {workplaces} arbetsplatser och {templates} skolmallar."
         + (" Närvaro för eleverna i EE22." if attendance else "")
     )
     print(f"Lösenord för alla konton: {DEMO_PASSWORD}\n")

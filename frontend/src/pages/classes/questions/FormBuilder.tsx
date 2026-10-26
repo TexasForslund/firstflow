@@ -1,4 +1,4 @@
-import { CircleCheck, Eye, LoaderCircle, Plus } from 'lucide-react'
+import { BookmarkPlus, CircleCheck, Eye, LayoutTemplate, LoaderCircle, Plus } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -18,6 +18,7 @@ import styles from './FormBuilder.module.css'
 import { QuestionCanvas } from './QuestionCanvas'
 import { QuestionList } from './QuestionList'
 import { QuestionSettings } from './QuestionSettings'
+import { SaveTemplateDialog, UseTemplateDialog } from './TemplateDialogs'
 import { duplicateQuestion, newQuestion, QUESTION_TYPES, questionProblems, questionTitle, sanitizeLogic } from './questionTypes'
 import { TypeBadge } from './TypeBadge'
 
@@ -54,6 +55,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
   const [notice, setNotice] = useState<string | null>(null)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [previewing, setPreviewing] = useState(false)
+  const [templateDialog, setTemplateDialog] = useState<'use' | 'save' | null>(null)
 
   // Senaste versionen av frågorna, och en kö så att sparningar alltid kommer i ordning.
   const latest = useRef(questions)
@@ -177,6 +179,18 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     })
   }
 
+  function templateApplied(form: FormRead, name: string) {
+    const replaced = form.draft.questions
+    latest.current = replaced
+    dirtyRef.current = false
+    setQuestions(replaced)
+    setDirty(false)
+    setSelectedId(replaced[0]?.id ?? null)
+    setTemplateDialog(null)
+    publish.reset()
+    setNotice(`Frågorna från mallen ${name} finns nu i utkastet. Ändra dem om du vill och publicera när du är klar.`)
+  }
+
   const index = questions.findIndex((q) => q.id === selectedId)
   const selected = index >= 0 ? questions[index] : null
   const hasChanges = dirty || meta.has_unpublished_changes
@@ -199,6 +213,16 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
           />
         </div>
         <div className={styles.barActions}>
+          <Button icon={<LayoutTemplate aria-hidden="true" />} onClick={() => setTemplateDialog('use')}>
+            Använd mall
+          </Button>
+          <Button
+            icon={<BookmarkPlus aria-hidden="true" />}
+            onClick={() => setTemplateDialog('save')}
+            disabled={questions.length === 0}
+          >
+            Spara som mall
+          </Button>
           <Button
             icon={<Eye aria-hidden="true" />}
             onClick={() => setPreviewing(true)}
@@ -285,6 +309,26 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
       </div>
 
       {adding && <AddQuestionDialog onPick={addQuestion} onClose={() => setAdding(false)} />}
+      {templateDialog === 'use' && (
+        <UseTemplateDialog
+          classId={classId}
+          hasQuestions={questions.length > 0}
+          flush={flush}
+          onApplied={templateApplied}
+          onClose={() => setTemplateDialog(null)}
+        />
+      )}
+      {templateDialog === 'save' && (
+        <SaveTemplateDialog
+          classId={classId}
+          flush={flush}
+          onSaved={(name) => {
+            setTemplateDialog(null)
+            setNotice(`Frågorna är sparade som mallen ${name}.`)
+          }}
+          onClose={() => setTemplateDialog(null)}
+        />
+      )}
       {previewing && (
         // Samma vy som eleven får. Inget sparas.
         <ReportStepper

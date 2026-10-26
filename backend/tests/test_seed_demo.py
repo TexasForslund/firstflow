@@ -6,6 +6,7 @@ from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
 from app.models.school_class import SchoolClass
+from app.models.template import QuestionTemplate
 from app.models.user import User, UserRole
 from scripts.seed_demo import seed
 
@@ -70,6 +71,18 @@ def test_seed_places_ee22_students_with_supervisors(db: Session) -> None:
         )
     )
     assert len(schools) == 2
+
+
+def test_seed_gives_every_school_one_school_template(db: Session) -> None:
+    seed(db)
+    seed(db)
+    for school in db.scalars(select(School)):
+        templates = db.scalars(
+            select(QuestionTemplate).where(QuestionTemplate.school_id == school.id)
+        ).all()
+        assert [(t.name, t.owner_id, len(t.questions)) for t in templates] == [
+            ("Kort veckoredovisning", None, 4)
+        ]
 
 
 def test_seed_gives_ee22_attendance_once(db: Session) -> None:
