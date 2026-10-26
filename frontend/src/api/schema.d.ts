@@ -756,10 +756,127 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attendance/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check In
+         * @description Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med
+         *     den befintliga incheckningen. En anmäld frånvaro samma dag ersätts.
+         */
+        post: operations["check_in_api_attendance_check_in_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/absence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report Absence
+         * @description Anmäler frånvaro eller sjukdom för en dag i placeringen. Går att ändra till den andra
+         *     sortens frånvaro, men inte om eleven redan är incheckad den dagen.
+         */
+        post: operations["report_absence_api_attendance_absence_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Attendance
+         * @description Elevens dagar under den pågående placeringen.
+         */
+        get: operations["my_attendance_api_me_attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Class Attendance
+         * @description Närvaron per elev i klassen under perioden. Standard är de senaste fyra veckorna.
+         */
+        get: operations["class_attendance_api_classes__class_id__attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervisor Attendance
+         * @description Dagens incheckningar och anmälningar för elever som handledaren har den dagen.
+         */
+        get: operations["supervisor_attendance_api_supervisor_attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AbsenceCreate */
+        AbsenceCreate: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "absent" | "sick";
+            /** Note */
+            note?: string | null;
+        };
         /** AccountCreate */
         AccountCreate: {
             /** Email */
@@ -825,6 +942,24 @@ export interface components {
              */
             report_due_weekdays?: number[];
         };
+        /** AttendanceDay */
+        AttendanceDay: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            status: components["schemas"]["AttendanceStatus"];
+            /** Checked In At */
+            checked_in_at: string | null;
+            /** Note */
+            note: string | null;
+        };
+        /**
+         * AttendanceStatus
+         * @enum {string}
+         */
+        AttendanceStatus: "present" | "absent" | "sick";
         /** Choice */
         Choice: {
             /**
@@ -916,6 +1051,25 @@ export interface components {
             allow_other: boolean;
             /** Logic */
             logic: components["schemas"]["LogicRule"][];
+        };
+        /** ClassAttendance */
+        ClassAttendance: {
+            /**
+             * From Date
+             * Format: date
+             */
+            from_date: string;
+            /**
+             * To Date
+             * Format: date
+             */
+            to_date: string;
+            /** Check In Required */
+            check_in_required: boolean;
+            /** Apl Days Per Week */
+            apl_days_per_week: number | null;
+            /** Students */
+            students: components["schemas"]["StudentAttendance"][];
         };
         /** ClassCreate */
         ClassCreate: {
@@ -1207,6 +1361,40 @@ export interface components {
             /** School Name */
             school_name: string | null;
             preferences: components["schemas"]["DisplayPreferences-Output"];
+        };
+        /**
+         * MyAttendance
+         * @description Elevens närvaro under den pågående placeringen.
+         */
+        MyAttendance: {
+            /**
+             * Placement Id
+             * @description Pågående placering. null = ingen APL i dag
+             */
+            placement_id: string | null;
+            /** Workplace Name */
+            workplace_name: string | null;
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Check In Required */
+            check_in_required: boolean;
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /**
+             * Can Check In Today
+             * @description Vardag med pågående placering
+             */
+            can_check_in_today: boolean;
+            /**
+             * Days
+             * @description Registrerade dagar i placeringen, i datumordning
+             */
+            days: components["schemas"]["AttendanceDay"][];
         };
         /**
          * MyPlacement
@@ -1601,6 +1789,30 @@ export interface components {
              */
             type: "statement";
         };
+        /** StudentAttendance */
+        StudentAttendance: {
+            student: components["schemas"]["Ref"];
+            /**
+             * Has Placement
+             * @description Eleven har en placering under perioden
+             */
+            has_placement: boolean;
+            /** Expected Days */
+            expected_days: number;
+            /** Present */
+            present: number;
+            /** Absent */
+            absent: number;
+            /** Sick */
+            sick: number;
+            /**
+             * Missing
+             * @description Ej incheckad: förväntade dagar utan incheckning eller anmälan
+             */
+            missing: number;
+            /** @description Dagens status. null = inget registrerat */
+            today: components["schemas"]["AttendanceStatus"] | null;
+        };
         /** StudentCreate */
         StudentCreate: {
             /** Email */
@@ -1660,6 +1872,22 @@ export interface components {
              * Format: date
              */
             end_date: string;
+        };
+        /** SupervisorAttendance */
+        SupervisorAttendance: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            student: components["schemas"]["Ref"];
+            /** Workplace Name */
+            workplace_name: string;
+            status: components["schemas"]["AttendanceStatus"] | null;
+            /** Checked In At */
+            checked_in_at: string | null;
+            /** Note */
+            note: string | null;
         };
         /** SupervisorRead */
         SupervisorRead: {
@@ -3094,6 +3322,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupervisedStudent"][];
+                };
+            };
+        };
+    };
+    check_in_api_attendance_check_in_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDay"];
+                };
+            };
+        };
+    };
+    report_absence_api_attendance_absence_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AbsenceCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceDay"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_attendance_api_me_attendance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAttendance"];
+                };
+            };
+        };
+    };
+    class_attendance_api_classes__class_id__attendance_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassAttendance"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    supervisor_attendance_api_supervisor_attendance_get: {
+        parameters: {
+            query?: {
+                date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorAttendance"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

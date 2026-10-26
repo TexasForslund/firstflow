@@ -27,6 +27,7 @@ from app.api.routes.classes import CanViewClasses, get_accessible_class
 from app.core import time
 from app.core.security import normalize_email
 from app.db.session import DbSession
+from app.models.attendance import Attendance
 from app.models.placement import Placement, Workplace, workplace_supervisors
 from app.models.school_class import class_students, class_teachers
 from app.models.user import User, UserRole
@@ -315,6 +316,11 @@ def delete_placement(placement_id: UUID, db: DbSession, user: CanEditPlacements)
     if placement is None:
         raise _not_found()
     _require_student_access(db, user, placement.student_id)
+    if db.scalar(select(Attendance.id).where(Attendance.placement_id == placement.id).limit(1)):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Eleven har närvaro registrerad på placeringen. Den går inte att ta bort.",
+        )
     db.delete(placement)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -46,6 +46,7 @@ const {
 export const navByRole: Record<Role, NavItem[]> = {
   teacher: [
     { to: '/overview', label: 'Översikt', icon: overview, count: attention.length, countLabel: 'att följa upp' },
+    { to: '/attendance', label: 'Närvaro', icon: checkIn },
     { to: '/messages', label: 'Meddelanden', icon: messages, count: unreadMessages, countLabel: 'olästa' },
     { to: '/student-history', label: 'Elevhistorik', icon: history },
     { to: '/projects', label: 'Projekt', icon: projects },

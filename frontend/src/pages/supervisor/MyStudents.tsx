@@ -1,5 +1,6 @@
 import { MapPin } from 'lucide-react'
 
+import { useSupervisorAttendance, type SupervisorAttendance } from '../../api/attendance'
 import { useSupervisedStudents, type SupervisedStudent } from '../../api/placements'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Card } from '../../components'
@@ -11,6 +12,8 @@ import own from './MyStudents.module.css'
 export function MyStudents() {
   const { data: user } = useCurrentUser()
   const query = useSupervisedStudents()
+  const attendance = useSupervisorAttendance()
+  const todayByPlacement = new Map((attendance.data ?? []).map((a) => [a.placement_id, a]))
   const students = query.data ?? []
   const firstName = user?.name.split(' ')[0] ?? ''
 
@@ -75,10 +78,10 @@ export function MyStudents() {
                     </span>
                   </span>
                   <span className={own.progress}>
-                    <span className={own.week}>
-                      Vecka {week} av {weeks}
+                    <TodayStatus row={todayByPlacement.get(s.placement_id)} loading={attendance.isPending} />
+                    <span className={own.countdown}>
+                      Vecka {week} av {weeks} · {periodCountdown(s.start_date, s.end_date)}
                     </span>
-                    <span className={own.countdown}>{periodCountdown(s.start_date, s.end_date)}</span>
                   </span>
                 </li>
               )
@@ -87,5 +90,22 @@ export function MyStudents() {
         </Card>
       ))}
     </div>
+  )
+}
+
+/** Dagens status: incheckad med tid, frånvarande, sjuk eller inte incheckad. */
+function TodayStatus({ row, loading }: { row: SupervisorAttendance | undefined; loading: boolean }) {
+  if (loading) return <span className={own.status}>…</span>
+  if (!row?.status) return <span className={`${own.status} ${own.statusNone}`}>Inte incheckad</span>
+  if (row.status === 'present') {
+    const at = row.checked_in_at
+      ? new Date(row.checked_in_at).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+      : ''
+    return <span className={`${own.status} ${own.statusPresent}`}>Incheckad {at}</span>
+  }
+  return (
+    <span className={`${own.status} ${own.statusAway}`} title={row.note ?? undefined}>
+      {row.status === 'sick' ? 'Sjuk' : 'Frånvarande'}
+    </span>
   )
 }

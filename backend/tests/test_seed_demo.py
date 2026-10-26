@@ -1,6 +1,7 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.models.attendance import Attendance, AttendanceStatus
 from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
@@ -69,3 +70,13 @@ def test_seed_places_ee22_students_with_supervisors(db: Session) -> None:
         )
     )
     assert len(schools) == 2
+
+
+def test_seed_gives_ee22_attendance_once(db: Session) -> None:
+    seed(db)
+    first = db.scalar(select(func.count(Attendance.id)))
+    seed(db)
+    assert db.scalar(select(func.count(Attendance.id))) == first
+    assert first > 0
+    statuses = set(db.scalars(select(Attendance.status)))
+    assert AttendanceStatus.SICK in statuses
