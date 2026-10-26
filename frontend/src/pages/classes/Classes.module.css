@@ -431,10 +431,6 @@
 }
 
 @media (max-width: 640px) {
-  .placement span {
-    display: none;
-  }
-
   .tab {
     padding: 0 var(--space-3);
     font-size: var(--font-size-sm);
@@ -583,4 +579,141 @@
 
 .reportRow .rowText {
   flex: 1;
+}
+
+/* ─── Praktikplats i elevraden (F4) ──────────────────────── */
+.placementButton {
+  width: 21rem;
+  min-height: 2.75rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.placementButton:hover {
+  background: var(--color-surface);
+}
+
+.placementEmpty {
+  color: var(--color-primary-on-light);
+  border-color: transparent;
+  background: var(--color-primary-light);
+}
+
+.placementEmpty:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.placement svg {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.placementText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.placementButton > span:not(.placementText) {
+  flex: 1;
+}
+
+.placementText > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placementName {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.placementPanel {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0 var(--space-6) var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+  border: 1px solid var(--color-border);
+}
+
+.placementList {
+  display: grid;
+}
+
+.placementItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+.placementItem:first-child {
+  padding-top: 0;
+}
+
+.placementItem + .placementItem {
+  border-top: 1px solid var(--color-border);
+}
+
+.placementItem > .rowText {
+  flex: 1;
+}
+
+.placementItem .meta {
+  white-space: normal;
+}
+
+.assignForm {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.assignTitle {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.assignForm .formError,
+.assignForm .formSuccess {
+  margin-top: 0;
+}
+
+.inlineLink {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .row {
+    flex-wrap: wrap;
+  }
+
+  /* Praktikplatsen får en egen rad under namnet på mobil. */
+  .row .placement {
+    order: 3;
+    flex-basis: 100%;
+    width: auto;
+  }
+
+  .placementPanel {
+    margin-left: var(--space-4);
+    margin-right: var(--space-4);
+    padding: var(--space-4);
+  }
 }

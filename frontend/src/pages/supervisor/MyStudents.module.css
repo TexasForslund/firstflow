@@ -1,0 +1,36 @@
+.workplaceHeading {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.address {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.address svg {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.progress {
+  display: grid;
+  flex-shrink: 0;
+  justify-items: end;
+  text-align: right;
+}
+
+.week {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.countdown {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
