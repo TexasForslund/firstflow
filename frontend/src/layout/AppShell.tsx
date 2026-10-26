@@ -1,5 +1,5 @@
-import { LogOut, Menu, Plus, Settings, X, type LucideIcon } from 'lucide-react'
-import { useState, type MouseEvent } from 'react'
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Plus, Settings, X, type LucideIcon } from 'lucide-react'
+import { useState, type MouseEvent, type ReactNode } from 'react'
 import { Link, NavLink, Outlet } from 'react-router'
 
 import { Avatar, CountBadge, Logo } from '../components'
@@ -27,10 +27,34 @@ interface AppShellProps {
   onLogout: () => void
   /** Flikrad längst ned i mobilen, som i appar. Används i elevens vy. */
   tabBar?: boolean
+  /** Innehåll överst i huvudytan på alla sidor, t.ex. elevens incheckning. */
+  top?: ReactNode
 }
 
-export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellProps) {
+const COLLAPSED_KEY = 'firstflow-sidebar-collapsed'
+
+function readCollapsed() {
+  try {
+    return localStorage.getItem(COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function AppShell({ userName, nav, classes, onLogout, tabBar, top }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  // Fälls ihop på stor skärm så att bara ikonerna syns. Valet sparas i webbläsaren.
+  const [collapsed, setCollapsed] = useState(readCollapsed)
+
+  function toggleCollapsed() {
+    const next = !collapsed
+    setCollapsed(next)
+    try {
+      localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0')
+    } catch {
+      // Utan lagring gäller valet bara tills sidan laddas om.
+    }
+  }
 
   // Stäng mobilmenyn när användaren klickar på en länk i den.
   function closeOnLink(event: MouseEvent<HTMLElement>) {
@@ -38,7 +62,7 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
   }
 
   return (
-    <div className={`${styles.shell} ${tabBar ? styles.withTabBar : ''}`}>
+    <div className={`${styles.shell} ${tabBar ? styles.withTabBar : ''} ${collapsed ? styles.collapsed : ''}`}>
       <header className={styles.mobileBar}>
         <Link to="/" aria-label="Firstflow, till startsidan">
           <Logo height={28} />
@@ -58,12 +82,25 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
       {menuOpen && <div className={styles.backdrop} onClick={() => setMenuOpen(false)} aria-hidden="true" />}
 
       <aside id="sidebar" className={`${styles.sidebar} ${menuOpen ? styles.open : ''}`} onClick={closeOnLink}>
-        <Link to="/" className={styles.logo} aria-label="Firstflow, till startsidan">
-          <Logo height={30} />
-        </Link>
+        <div className={styles.sidebarTop}>
+          <Link to="/" className={styles.logo} aria-label="Firstflow, till startsidan">
+            <Logo height={30} symbolOnly={collapsed} />
+          </Link>
+          <button
+            type="button"
+            className={styles.collapseButton}
+            aria-label={collapsed ? 'Visa hela menyn' : 'Fäll ihop menyn'}
+            title={collapsed ? 'Visa hela menyn' : 'Fäll ihop menyn'}
+            aria-expanded={!collapsed}
+            aria-controls="sidebar"
+            onClick={toggleCollapsed}
+          >
+            {collapsed ? <PanelLeftOpen aria-hidden="true" /> : <PanelLeftClose aria-hidden="true" />}
+          </button>
+        </div>
 
-        <div className={styles.user}>
-          <Avatar name={userName} size="lg" color="pink" />
+        <div className={styles.user} title={collapsed ? userName : undefined}>
+          <Avatar name={userName} size={collapsed ? 'md' : 'lg'} color="pink" />
           <div>
             <p className={styles.welcome}>Välkommen tillbaka</p>
             <p className={styles.userName}>{userName}</p>
@@ -74,10 +111,18 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
           <ul>
             {nav.map(({ to, label, icon: Icon, count, countLabel }) => (
               <li key={to}>
-                <NavLink to={to} className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
+                <NavLink
+                  to={to}
+                  title={collapsed ? label : undefined}
+                  className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+                >
                   <Icon aria-hidden="true" className={styles.navIcon} />
                   <span className={styles.navLabel}>{label}</span>
-                  {count ? <CountBadge count={count} label={countLabel} /> : null}
+                  {count ? (
+                    <span className={styles.navCount}>
+                      <CountBadge count={count} label={countLabel} />
+                    </span>
+                  ) : null}
                 </NavLink>
               </li>
             ))}
@@ -85,7 +130,7 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
         </nav>
 
         {classes && (
-          <section className={styles.section} aria-labelledby="your-classes">
+          <section className={`${styles.section} ${styles.classesSection}`} aria-labelledby="your-classes">
             <h2 id="your-classes" className={styles.sectionLabel}>
               Dina klasser
             </h2>
@@ -118,13 +163,22 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
           </h2>
           <ul>
             <li>
-              <NavLink to="/settings" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
+              <NavLink
+                to="/settings"
+                title={collapsed ? 'Inställningar' : undefined}
+                className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+              >
                 <Settings aria-hidden="true" className={styles.navIcon} />
                 <span className={styles.navLabel}>Inställningar</span>
               </NavLink>
             </li>
             <li>
-              <button type="button" className={styles.navItem} onClick={onLogout}>
+              <button
+                type="button"
+                className={styles.navItem}
+                onClick={onLogout}
+                title={collapsed ? 'Logga ut' : undefined}
+              >
                 <LogOut aria-hidden="true" className={styles.navIcon} />
                 <span className={styles.navLabel}>Logga ut</span>
               </button>
@@ -134,6 +188,7 @@ export function AppShell({ userName, nav, classes, onLogout, tabBar }: AppShellP
       </aside>
 
       <main className={styles.main}>
+        {top}
         <Outlet />
       </main>
 

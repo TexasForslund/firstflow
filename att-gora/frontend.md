@@ -187,3 +187,15 @@ Sidan Inställningar för alla roller (Texas, 2026-10-20):
 - **Visning:** fyra lägen (Mindre, Standard, Större, Störst) och fyra inställningar med namn som känns igen från mobilen: Textstorlek, Öka kontrasten, Minska rörelse och Mer luft i texten (WCAG 1.4.12). Sparas på kontot och gäller på alla enheter. Inget mörkt läge (Texas).
 - **Konto:** namn, e-post, roll och skola visas men ändras av skolans administratör. Logga ut från andra enheter.
 - **Senare:** aviseringar (väntar på e-post i B6 och D4) och fler språk.
+
+---
+
+## Förbättringar efter genomgång med Texas (2026-10-26) 🚧 Granskas
+
+- Rullistor har vit bakgrund och ram, som datumfälten.
+- Sökbara val (`Combobox`) för arbetsplats och handledare, och sökfält för elever i klassvyn och på Närvaro.
+- Vänstermenyn kan fällas ihop så att bara ikonerna syns. Valet sparas i webbläsaren.
+- Elevraden i klassvyn visar bara ikon och företagsnamn. Handledare och period syns i panelen.
+- APL-villkor har förklaringar till vad varje inställning styr.
+- Anmäl frånvaro är borttaget från elevens Incheckning (Texas, 2026-10-26). Endpointen `POST /api/attendance/absence` finns kvar i backend tills vidare.
+- Elevens incheckning: en ruta mitt på skärmen första gången eleven öppnar appen en APL-dag efter 08:30. Stängs den visas en rad högst upp på varje sida tills eleven har checkat in. Animation när eleven checkar in.

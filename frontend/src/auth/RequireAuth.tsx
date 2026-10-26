@@ -6,6 +6,7 @@ import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
 import { useClasses } from '../api/classes'
 import { AppShell } from '../layout/AppShell'
+import { CheckInPrompt } from '../pages/student/CheckInPrompt'
 import { applyPreferences } from './preferences'
 import { navByRole, startPath, type Role } from './roles'
 import { useCurrentUser } from './useCurrentUser'
@@ -63,6 +64,7 @@ export function RequireAuth() {
       }
       onLogout={() => logout.mutate()}
       tabBar={user.role === 'student'}
+      top={user.role === 'student' ? <CheckInPrompt firstName={user.name.split(' ')[0]} /> : undefined}
     />
   )
 }

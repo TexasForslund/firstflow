@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 
 import { useClassAttendance, type AttendanceStatus, type StudentAttendance } from '../../api/attendance'
 import { useClasses } from '../../api/classes'
-import { Avatar, Card, SegmentedBar, SelectField } from '../../components'
+import { Avatar, Card, Combobox, matches, SearchInput, SegmentedBar } from '../../components'
 import styles from '../classes/Classes.module.css'
 import { todayIso } from '../placements/period'
 import { parseDay } from '../reports/answers'
@@ -42,16 +42,18 @@ export function Attendance() {
   const today = todayIso()
   const [preset, setPreset] = useState<Preset>('4weeks')
   const [custom, setCustom] = useState<[string, string]>([addDays(today, -27), today])
+  const [search, setSearch] = useState('')
 
   const list = classes.data ?? []
   const classId = params.get('class') ?? list[0]?.id ?? ''
   const [from, to] = presetRange(preset, today) ?? custom
   const query = useClassAttendance(classId, from, to)
 
-  const students = [...(query.data?.students ?? [])].sort(
+  const all = query.data?.students ?? []
+  const students = all.filter((s) => matches(s.student.name, search)).sort(
     (a, b) => b.missing - a.missing || a.student.name.localeCompare(b.student.name, 'sv'),
   )
-  const placed = students.filter((s) => s.has_placement)
+  const placed = all.filter((s) => s.has_placement)
   const checkedInToday = placed.filter((s) => s.today === 'present').length
 
   return (
@@ -74,17 +76,13 @@ export function Attendance() {
       {list.length > 0 && (
         <div className={own.filters}>
           <div className={own.classSelect}>
-            <SelectField
+            <Combobox
               label="Klass"
               value={classId}
-              onChange={(id) => setParams({ class: id }, { replace: true })}
-            >
-              {list.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </SelectField>
+              onChange={(id) => id && setParams({ class: id }, { replace: true })}
+              placeholder="Sök klass"
+              options={list.map((c) => ({ id: c.id, label: c.name, description: `${c.student_count} elever` }))}
+            />
           </div>
           <fieldset className={own.presets}>
             <legend className={own.legend}>Period</legend>
@@ -148,8 +146,13 @@ export function Attendance() {
               Klassen kräver inte incheckning, så dagar utan incheckning räknas inte som avvikelse.
             </p>
           )}
+          {all.length > 0 && (
+            <div className={own.search}>
+              <SearchInput label="Sök elev" placeholder="Sök elev" value={search} onChange={setSearch} />
+            </div>
+          )}
           {students.length === 0 ? (
-            <p className={styles.empty}>Klassen har inga elever.</p>
+            <p className={styles.empty}>{all.length === 0 ? 'Klassen har inga elever.' : 'Ingen elev matchar sökningen.'}</p>
           ) : (
             <ul className={styles.list}>
               {students.map((s) => (

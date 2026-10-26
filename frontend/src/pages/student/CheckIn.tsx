@@ -1,19 +1,15 @@
 import { CalendarOff, Check, MapPinCheck, Thermometer } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
 
 import {
   useCheckIn,
   useMyAttendance,
-  useReportAbsence,
   type AttendanceDay,
   type AttendanceStatus,
   type MyAttendance,
 } from '../../api/attendance'
-import { Button } from '../../components'
 import { parseDay } from '../reports/answers'
 import styles from './CheckIn.module.css'
-
-const ABSENCE_DAYS_BACK = 7
+import { CheckInSuccess } from './CheckInSuccess'
 
 function isoDay(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -66,7 +62,6 @@ export function CheckIn() {
         <>
           <Today data={data} />
           <Week data={data} />
-          <AbsenceForm data={data} />
         </>
       )}
     </div>
@@ -89,9 +84,13 @@ function Today({ data }: { data: MyAttendance }) {
   if (today?.status === 'present') {
     return (
       <section className={`${styles.card} ${styles.done}`} role="status">
-        <span className={styles.doneIcon}>
-          <Check aria-hidden="true" />
-        </span>
+        {checkIn.isSuccess ? (
+          <CheckInSuccess size="md" />
+        ) : (
+          <span className={styles.doneIcon}>
+            <Check aria-hidden="true" />
+          </span>
+        )}
         <span>
           <p className={styles.cardTitle}>Incheckad {today.checked_in_at && time(today.checked_in_at)}</p>
           <p className={styles.muted}>{data.workplace_name}</p>
@@ -177,110 +176,6 @@ function Week({ data }: { data: MyAttendance }) {
           )
         })}
       </ol>
-    </section>
-  )
-}
-
-function AbsenceForm({ data }: { data: MyAttendance }) {
-  const report = useReportAbsence()
-  const [open, setOpen] = useState(false)
-  const [date, setDate] = useState(data.today)
-  const [status, setStatus] = useState<'absent' | 'sick'>('sick')
-  const [note, setNote] = useState('')
-  const [done, setDone] = useState<string | null>(null)
-
-  const min = [addDays(data.today, -ABSENCE_DAYS_BACK), data.start_date!].sort().at(-1)
-  const max = data.end_date!
-
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    setDone(null)
-    report.mutate(
-      { date, status, note: note.trim() || null },
-      {
-        onSuccess: (day) => {
-          const when =
-            day.date === data.today
-              ? 'i dag'
-              : parseDay(day.date).toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'long' })
-          setDone(`Du är anmäld ${day.status === 'sick' ? 'sjuk' : 'frånvarande'} ${when}.`)
-          setOpen(false)
-          setNote('')
-        },
-      },
-    )
-  }
-
-  if (!open) {
-    return (
-      <div className={styles.absenceClosed}>
-        {done && (
-          <p className={styles.success} role="status">
-            {done}
-          </p>
-        )}
-        <Button onClick={() => setOpen(true)}>Anmäl frånvaro</Button>
-      </div>
-    )
-  }
-
-  return (
-    <section className={styles.card} aria-labelledby="absence-title">
-      <h2 id="absence-title" className={styles.cardTitle}>
-        Anmäl frånvaro
-      </h2>
-      <form className={styles.form} onSubmit={submit}>
-        <fieldset className={styles.choices}>
-          <legend className={styles.label}>Varför?</legend>
-          {(['sick', 'absent'] as const).map((value) => (
-            <label key={value} className={`${styles.choice} ${status === value ? styles.choiceOn : ''}`}>
-              <input
-                type="radio"
-                name="status"
-                value={value}
-                checked={status === value}
-                onChange={() => setStatus(value)}
-              />
-              {value === 'sick' ? 'Sjuk' : 'Annan frånvaro'}
-            </label>
-          ))}
-        </fieldset>
-        <label className={styles.field}>
-          <span className={styles.label}>Datum</span>
-          <input
-            type="date"
-            className={styles.input}
-            value={date}
-            min={min}
-            max={max}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </label>
-        <label className={styles.field}>
-          <span className={styles.label}>Kommentar (valfri)</span>
-          <input
-            type="text"
-            className={styles.input}
-            value={note}
-            maxLength={300}
-            placeholder={status === 'absent' ? 'Till exempel tandläkare' : ''}
-            onChange={(e) => setNote(e.target.value)}
-          />
-          <span className={styles.hint}>Din lärare och handledare ser kommentaren.</span>
-        </label>
-        {report.isError && (
-          <p className={styles.error} role="alert">
-            {report.error.message}
-          </p>
-        )}
-        <div className={styles.actions}>
-          <Button onClick={() => setOpen(false)}>Avbryt</Button>
-          <Button type="submit" variant="primary" disabled={report.isPending}>
-            Anmäl
-          </Button>
-        </div>
-      </form>
     </section>
   )
 }

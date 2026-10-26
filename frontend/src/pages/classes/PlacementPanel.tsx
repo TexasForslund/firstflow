@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import type { Person } from '../../api/classes'
 import { ApiError } from '../../api/errors'
 import { useCreatePlacement, useDeletePlacement, useWorkplaces, type Placement } from '../../api/placements'
-import { Button, SelectField, TextField } from '../../components'
+import { Button, Combobox, TextField } from '../../components'
 import { periodCountdown, periodText } from '../placements/period'
 import styles from './Classes.module.css'
 
@@ -140,22 +140,21 @@ function AssignForm({ student }: { student: Person }) {
     <form className={styles.assignForm} onSubmit={submit} aria-label={`Placera ${student.name}`}>
       <p className={styles.assignTitle}>Ny placering</p>
       <div className={styles.formGrid}>
-        <SelectField label="Arbetsplats" value={workplaceId} onChange={chooseWorkplace}>
-          <option value="">Välj arbetsplats</option>
-          {usable.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.name}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField label="Handledare" value={supervisorId} onChange={setSupervisorId}>
-          <option value="">{workplace ? 'Välj handledare' : 'Välj arbetsplats först'}</option>
-          {supervisors.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </SelectField>
+        <Combobox
+          label="Arbetsplats"
+          value={workplaceId}
+          onChange={chooseWorkplace}
+          placeholder="Sök arbetsplats"
+          options={usable.map((w) => ({ id: w.id, label: w.name, description: w.address ?? undefined }))}
+        />
+        <Combobox
+          label="Handledare"
+          value={supervisorId}
+          onChange={setSupervisorId}
+          placeholder={workplace ? 'Sök handledare' : 'Välj arbetsplats först'}
+          disabled={!workplace}
+          options={supervisors.map((s) => ({ id: s.id, label: s.name, description: s.email }))}
+        />
         <TextField label="Startdatum" type="date" value={start} onChange={(e) => setStart(e.target.value)} required />
         <TextField
           label="Slutdatum"
