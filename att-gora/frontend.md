@@ -197,4 +197,5 @@ Sidan Inställningar för alla roller (Texas, 2026-10-20):
 - Vänstermenyn kan fällas ihop så att bara ikonerna syns. Valet sparas i webbläsaren.
 - Elevraden i klassvyn visar bara ikon och företagsnamn. Handledare och period syns i panelen.
 - APL-villkor har förklaringar till vad varje inställning styr.
+- Anmäl frånvaro är borttaget från elevens Incheckning (Texas, 2026-10-26). Endpointen `POST /api/attendance/absence` finns kvar i backend tills vidare.
 - Elevens incheckning: en ruta mitt på skärmen första gången eleven öppnar appen en APL-dag efter 08:30. Stängs den visas en rad högst upp på varje sida tills eleven har checkat in. Animation när eleven checkar in.
