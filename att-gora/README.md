@@ -11,7 +11,7 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 
 Ordningen följer fas 1 i [roadmapen](../docs/produktvision-och-roadmap.md): inloggning, klasser och elever, praktikperiod och APL-plats, närvaro, frågor och redovisning.
 
-## Läget just nu (2026-10-20)
+## Läget just nu (2026-10-26)
 
 Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
@@ -30,9 +30,12 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **F14:** Inställningar med visning i fyra lägen (Mindre, Standard, Större, Störst), kontrast, rörelse, textavstånd och konto. Sparas per konto (#19, #20).
 - Demodatan (`seed_demo`) ger varje klass ett publicerat formulär med redovisning tisdag och fredag.
 
+**Granskas (Texas + Claude):**
+- **B5b del 1, frågemallar:** skolans mallar och lärarens egna. Använd mall och Spara som mall i fliken Frågor.
+
 **Nästa steg:**
 - **Texas + Claude:**
-  - B5b: mallar (beslut finns i fragor-typeform.md), förslag utifrån läroplanen och extra frågor per elev.
+  - B5b: förslag utifrån läroplanen och extra frågor per elev (mallarna granskas).
   - Gå igenom [ideer.md](ideer.md) med Texas.
 - **Hannes + Claude:** B3 (praktikplats) är byggd och ligger för granskning i #22 (2026-10-21). Sedan B4 (närvaro) och B6 (inbjudningar och lösenord). Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
 - **Väntar på B3, B4 och B12:**
