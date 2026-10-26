@@ -43,10 +43,12 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **#30:** frånvaroanmälan borttagen, och redovisningarna följer eleven vid klassbyte.
 - **F6 (#31):** lärarens översikt med riktig data.
 - **F17 (#32):** elevsidan version 2 enligt Texas skiss.
+- **F18 (#33):** ny sidomeny.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - F18: ny sidomeny enligt Texas val av skiss A (granskas).
+  - B12 och F19: projekt, och visningsdata med klassen EL23 (granskas).
+  - B8 och F9: kontrakt och avtal för signering, med testläge tills signeringstjänsten är vald (Texas, 2026-10-26).
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
 - **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.

@@ -1208,6 +1208,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Projects
+         * @description Lärarens egna projekt, senast skapade först.
+         */
+        get: operations["list_projects_api_projects_get"];
+        put?: never;
+        /** Create Project */
+        post: operations["create_project_api_projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Project
+         * @description Ersätter projektets uppgifter och elever. Bara läraren som skapade projektet.
+         */
+        put: operations["update_project_api_projects__project_id__put"];
+        post?: never;
+        /**
+         * Delete Project
+         * @description Tar bort projektet. Redovisningarna finns kvar, utan projekt.
+         */
+        delete: operations["delete_project_api_projects__project_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/students/{student_id}/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Projects
+         * @description Elevens projekt på skolan. Samma behörighet som elevsidan.
+         */
+        get: operations["student_projects_api_students__student_id__projects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1942,6 +2007,7 @@ export interface components {
             is_late: boolean;
             /** Comment Count */
             comment_count: number;
+            project: components["schemas"]["PersonBrief"] | null;
             /**
              * Preview
              * @description De första textsvaren, förkortade
@@ -2022,6 +2088,44 @@ export interface components {
              */
             end_date: string;
         };
+        /** ProjectRead */
+        ProjectRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Deadline */
+            deadline: string | null;
+            /** Tags */
+            tags: string[];
+            /** Students */
+            students: components["schemas"]["Ref"][];
+            /**
+             * Report Count
+             * @description Inskickade redovisningar kopplade till projektet
+             */
+            report_count: number;
+            /** Is Owner */
+            is_owner: boolean;
+        };
+        /** ProjectWrite */
+        ProjectWrite: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Deadline */
+            deadline?: string | null;
+            /** Tags */
+            tags?: string[];
+            /** Student Ids */
+            student_ids?: string[];
+        };
         /** RatingQuestion */
         "RatingQuestion-Input": {
             /**
@@ -2100,6 +2204,8 @@ export interface components {
             class_id: string;
             /** Class Name */
             class_name: string;
+            /** @description Projektet redovisningen gäller (B12) */
+            project: components["schemas"]["PersonBrief"] | null;
             student: components["schemas"]["PersonBrief"];
             /**
              * Due Date
@@ -2423,6 +2529,11 @@ export interface components {
              * @description Inskickade veckoredovisningar
              */
             report_count: number;
+            /**
+             * Project Count
+             * @description Projekt som eleven är med i
+             */
+            project_count: number;
         };
         /** StudentReportSummary */
         StudentReportSummary: {
@@ -2450,6 +2561,7 @@ export interface components {
             comment_count: number;
             /** Class Name */
             class_name: string;
+            project: components["schemas"]["PersonBrief"] | null;
             /**
              * Answers
              * @description Alla textsvar, för sök och filter på elevsidan
@@ -4732,6 +4844,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentAttention"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_projects_api_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"][];
+                };
+            };
+        };
+    };
+    create_project_api_projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_project_api_projects__project_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_project_api_projects__project_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    student_projects_api_students__student_id__projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"][];
                 };
             };
             /** @description Validation Error */

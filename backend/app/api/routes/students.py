@@ -25,6 +25,7 @@ from app.api.routes.placements import PlacementRead, placement_read
 from app.core import time
 from app.db.session import DbSession
 from app.models.placement import Placement, Workplace
+from app.models.project import project_students
 from app.models.report import Report, ReportStatus
 from app.models.school_class import SchoolClass, class_students, class_teachers, teacher_students
 from app.models.user import User, UserRole
@@ -69,6 +70,7 @@ class StudentRead(BaseModel):
     teachers: list[Ref]
     workplace: Ref | None = Field(description="Pågående eller nästa praktikplats")
     report_count: int = Field(description="Inskickade veckoredovisningar")
+    project_count: int = Field(description="Projekt som eleven är med i")
 
 
 class StudentCreate(AccountCreate):
@@ -143,6 +145,13 @@ def _describe(db: DbSession, students: list[User]) -> list[StudentRead]:
             .group_by(Report.student_id)
         ).all()
     )
+    project_counts = dict(
+        db.execute(
+            select(project_students.c.student_id, func.count())
+            .where(project_students.c.student_id.in_(ids))
+            .group_by(project_students.c.student_id)
+        ).all()
+    )
     return [
         StudentRead(
             id=s.id,
@@ -153,6 +162,7 @@ def _describe(db: DbSession, students: list[User]) -> list[StudentRead]:
             teachers=teachers[s.id],
             workplace=workplaces.get(s.id),
             report_count=report_counts.get(s.id, 0),
+            project_count=project_counts.get(s.id, 0),
         )
         for s in students
     ]

@@ -74,6 +74,7 @@ class OverviewReport(BaseModel):
     submitted_at: datetime
     is_late: bool
     comment_count: int
+    project: PersonBrief | None
     preview: list[AnswerPreview] = Field(description="De första textsvaren, förkortade")
 
 
@@ -242,6 +243,7 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
             selectinload(Report.school_class),
             selectinload(Report.form_version),
             selectinload(Report.answers),
+            selectinload(Report.project),
         )
         .limit(REPORT_LIMIT)
     ).all()
@@ -262,6 +264,9 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
                 submitted_at=report.submitted_at,
                 is_late=time.local_date(report.submitted_at) > report.due_date,
                 comment_count=count,
+                project=PersonBrief(id=report.project.id, name=report.project.name)
+                if report.project
+                else None,
                 preview=_preview(report),
             )
             for report, count in reports

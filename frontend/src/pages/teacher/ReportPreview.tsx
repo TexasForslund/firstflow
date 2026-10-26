@@ -33,6 +33,7 @@ export function ReportPreview({ report }: { report: OverviewReport }) {
               <p className={styles.meta}>
                 {submittedText(report.submitted_at)}
                 {report.is_late ? ' · Sen' : ''}
+                {report.project ? ` · ${report.project.name}` : ''}
               </p>
             </div>
           </header>

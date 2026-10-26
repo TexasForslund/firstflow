@@ -94,6 +94,7 @@ class ReportDetail(BaseModel):
     id: UUID
     class_id: UUID
     class_name: str
+    project: PersonBrief | None = Field(description="Projektet redovisningen gäller (B12)")
     student: PersonBrief
     due_date: date
     status: ReportStatus
@@ -233,6 +234,7 @@ def _get_report(db: DbSession, user: User, report_id: UUID, *, for_update: bool 
             selectinload(Report.student),
             selectinload(Report.form_version),
             selectinload(Report.answers),
+            selectinload(Report.project),
             selectinload(Report.comments).selectinload(ReportComment.author),
         )
     )
@@ -270,6 +272,9 @@ def _detail(db: DbSession, user: User, report: Report) -> ReportDetail:
         id=report.id,
         class_id=report.class_id,
         class_name=report.school_class.name,
+        project=PersonBrief(id=report.project.id, name=report.project.name)
+        if report.project
+        else None,
         student=PersonBrief(id=report.student.id, name=report.student.name),
         due_date=report.due_date,
         status=report.status,
@@ -612,6 +617,7 @@ def text_answers(report: Report, *, limit: int | None = None, length: int) -> li
 
 class StudentReportSummary(ReportSummary):
     class_name: str
+    project: PersonBrief | None
     answers: list[TextAnswer] = Field(description="Alla textsvar, för sök och filter på elevsidan")
 
 
@@ -642,6 +648,7 @@ def list_student_reports(
             selectinload(Report.school_class),
             selectinload(Report.form_version),
             selectinload(Report.answers),
+            selectinload(Report.project),
         )
         .where(
             Report.student_id == student.id,
@@ -661,6 +668,9 @@ def list_student_reports(
             comment_count=count,
             class_name=report.school_class.name,
             answers=text_answers(report, length=STUDENT_PAGE_ANSWER_LENGTH),
+            project=PersonBrief(id=report.project.id, name=report.project.name)
+            if report.project
+            else None,
         )
         for report, read, count in db.execute(query).all()
     ]

@@ -1,4 +1,4 @@
-import { ArrowUpRight, BriefcaseBusiness, FileText, User, Users } from 'lucide-react'
+import { ArrowUpRight, BriefcaseBusiness, FileText, Folder, User, Users } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 
 import { useClasses } from '../../api/classes'
@@ -118,6 +118,9 @@ export function StudentHistory() {
                 <div className={styles.chips}>
                   <InfoChip icon={<BriefcaseBusiness aria-hidden="true" />}>
                     {student.workplace?.name ?? 'Ingen praktikplats'}
+                  </InfoChip>
+                  <InfoChip icon={<Folder aria-hidden="true" />}>
+                    {student.project_count}: Projekt tilldelade
                   </InfoChip>
                   <InfoChip icon={<FileText aria-hidden="true" />}>
                     {student.report_count}: {student.report_count === 1 ? 'Redovisning' : 'Redovisningar'}
