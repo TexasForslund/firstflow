@@ -275,6 +275,14 @@ Enkel första version, beslutad av Texas 2026-10-26:
 
 **Inte byggt:** eleven väljer projekt i redovisningen (B5b, projektval) och en sammanställning per projekt. Idéerna står i [ideer.md](ideer.md), punkt 2.
 
+**Nästa steg, beslutat av Texas 2026-10-26:**
+- **Eleven väljer projekt** i redovisningen. Det blir ett första steg, "Vilket projekt gäller det?", som hoppas över om eleven bara har ett projekt. Eleven ser sina projekt i Min APL.
+- **Gemensamma projekt** för lärare, handledare och elev:
+  - Handledaren får sidan Projekt och kan skapa och ändra projekt för sina elever. Ett sådant projekt kopplas till företaget.
+  - Båda kan ändra ett projekt, men bara den som skapade det kan ta bort det.
+  - Var och en lägger bara till och tar bort sina egna elever.
+- **Handledaren ser alla redovisningar** som eleven skapar, inte bara de som hör till ett projekt.
+
 **Visningsdata:** `uv run python -m scripts.seed_showcase` ersätter Kramforsskolans demoklasser med klassen EL23. Den har sex elever, tretton veckors APL, närvaro, redovisningar med svar och kommentarer, och fyra projekt. Logga in som `larare.kramfors@demo.firstflow.se`.
 
 ---

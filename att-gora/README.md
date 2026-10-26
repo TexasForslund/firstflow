@@ -47,8 +47,15 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - B12 och F19: projekt, och visningsdata med klassen EL23 (granskas).
-  - B8 och F9: kontrakt och avtal för signering, med testläge tills signeringstjänsten är vald (Texas, 2026-10-26).
+  - B12 och F19: projekt, och visningsdata med klassen EL23 (granskas i #34).
+  - **Nästa pass:**
+    - Projektval för eleven.
+    - Gemensamma projekt med handledaren.
+    - Handledaren ser elevens redovisningar.
+    - Besluten står under B12 i backend.md.
+  - **Därefter B8 och F9: kontrakt och avtal för signering**, med testläge tills signeringstjänsten är vald (Texas, 2026-10-26). Läraren laddar upp en PDF, väljer elev och företag med handledare, och ser vem som har signerat. Två frågor är öppna:
+    - Ska skolan signera som tredje part?
+    - Ska vårdnadshavare kunna läggas till för elever under 18?
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
 - **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
