@@ -25,6 +25,8 @@ import { Company } from './pages/supervisor/Company'
 import { MyStudents } from './pages/supervisor/MyStudents'
 import { Attendance } from './pages/teacher/Attendance'
 import { Overview } from './pages/teacher/Overview'
+import { ContractPage } from './pages/contracts/ContractPage'
+import { Contracts } from './pages/contracts/Contracts'
 import { ProjectPage } from './pages/projects/ProjectPage'
 import { Projects } from './pages/projects/Projects'
 import { StudentHistory } from './pages/teacher/StudentHistory'
@@ -70,7 +72,8 @@ const routes: RouteObject[] = [
       // Flera roller
       placeholder('messages', ['teacher', 'student', 'supervisor', 'syv'], 'Meddelanden', 'Meddelanden mellan lärare, elever och handledare.'),
       { path: 'placements', element: only(['teacher', 'school_admin', 'principal'], <Placements />) },
-      placeholder('contracts', ['teacher', 'supervisor', 'school_admin'], 'Kontrakt', 'Utbildningskontrakt och APL-avtal att signera.'),
+      { path: 'contracts', element: only(['teacher', 'supervisor', 'student', 'school_admin'], <Contracts />) },
+      { path: 'contracts/:contractId', element: only(['teacher', 'supervisor', 'student'], <ContractPage />) },
       { path: 'settings', element: only(anyRole, <Settings />) },
 
       // Elev (F4, F5, F10, F13)

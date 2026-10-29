@@ -1,5 +1,7 @@
-import { BriefcaseBusiness, CalendarDays, MapPin } from 'lucide-react'
+import { BriefcaseBusiness, CalendarDays, ChevronRight, FileSignature, MapPin } from 'lucide-react'
+import { Link } from 'react-router'
 
+import { statusText, useContracts } from '../../api/contracts'
 import { useMyPlacements, type MyPlacement } from '../../api/placements'
 import { Avatar } from '../../components'
 import { periodCountdown, periodProgress, periodStatus, periodText, periodWeek, todayIso } from '../placements/period'
@@ -34,11 +36,45 @@ export function MyApl() {
         </div>
       )}
 
+      <MyContracts />
+
       {main && <CurrentPlacement placement={main} today={today} />}
 
       {later.length > 0 && <PlacementList title="Kommande" items={later} />}
       {ended.length > 0 && <PlacementList title="Tidigare" items={ended} />}
     </div>
+  )
+}
+
+/** Elevens kontrakt. Ett kontrakt som väntar på eleven visas överst med Läs och signera. */
+function MyContracts() {
+  const contracts = useContracts()
+  const items = contracts.data ?? []
+  if (items.length === 0) return null
+  return (
+    <section className={styles.card} aria-labelledby="contracts-title">
+      <h2 id="contracts-title" className={styles.cardTitle}>
+        Kontrakt
+      </h2>
+      <ul className={styles.contracts}>
+        {items.map((c) => (
+          <li key={c.id}>
+            <Link to={`/contracts/${c.id}`} className={styles.contract} data-turn={c.my_turn ? '' : undefined}>
+              <FileSignature aria-hidden="true" />
+              <span className={styles.contractText}>
+                <span className={styles.contractTitle}>{c.my_turn ? 'Läs och signera ditt kontrakt' : c.title}</span>
+                <span className={styles.contractMeta}>
+                  {c.workplace?.name}
+                  {c.workplace && ' · '}
+                  {c.my_turn ? 'Väntar på dig' : statusText(c)}
+                </span>
+              </span>
+              <ChevronRight aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

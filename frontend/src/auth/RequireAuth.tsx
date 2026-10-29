@@ -5,6 +5,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
 import { useClasses } from '../api/classes'
+import { useContracts } from '../api/contracts'
 import { useTeacherOverview } from '../api/overview'
 import { AppShell } from '../layout/AppShell'
 import { CheckInPrompt } from '../pages/student/CheckInPrompt'
@@ -21,6 +22,8 @@ export function RequireAuth() {
   const isTeacher = me.data?.role === 'teacher'
   const classes = useClasses(isTeacher)
   const overview = useTeacherOverview(isTeacher)
+  const role = me.data?.role
+  const contracts = useContracts(role === 'teacher' || role === 'supervisor' || role === 'student')
   const preferences = me.data?.preferences
 
   // Användarens visningsinställningar gäller på alla enheter.
@@ -62,6 +65,19 @@ export function RequireAuth() {
       nav={navByRole[user.role].map((item) => {
         const data = overview.data
         if (item.to === '/overview') return { ...item, count: data?.attention.length }
+        // Läraren: kontrakt som väntar på signering. Elev och handledare: kontrakt som väntar på dem.
+        if (item.to === '/contracts') {
+          const list = contracts.data ?? []
+          const count = isTeacher
+            ? list.filter((c) => c.status === 'waiting').length
+            : list.filter((c) => c.my_turn).length
+          return {
+            ...item,
+            count,
+            countLabel: isTeacher ? 'väntar på signering' : 'att signera',
+            tone: 'butter' as const,
+          }
+        }
         // Dagens incheckningar, t.ex. "3/5". Bara när någon har APL i dag.
         if (item.to === '/attendance' && isTeacher && data && data.on_apl > 0) {
           return { ...item, meta: `${data.checked_in}/${data.on_apl}` }
@@ -69,9 +85,7 @@ export function RequireAuth() {
         return item
       })}
       classes={
-        isTeacher
-          ? (classes.data ?? []).map((c) => ({ id: c.id, name: c.name, count: c.student_count }))
-          : undefined
+        isTeacher ? (classes.data ?? []).map((c) => ({ id: c.id, name: c.name, count: c.student_count })) : undefined
       }
       onLogout={() => logout.mutate()}
       tabBar={user.role === 'student'}

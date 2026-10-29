@@ -1,5 +1,5 @@
 import type { components } from '../api/schema'
-import { contractsToSign, unreadMessages } from '../demo/data'
+import { unreadMessages } from '../demo/data'
 import type { NavItem } from '../layout/AppShell'
 import { navIcons } from '../layout/navIcons'
 
@@ -72,9 +72,6 @@ export const navByRole: Record<Role, NavItem[]> = {
       to: '/contracts',
       label: 'Kontrakt',
       icon: contracts,
-      count: contractsToSign,
-      countLabel: 'att signera',
-      tone: 'butter',
     },
   ],
   supervisor: [

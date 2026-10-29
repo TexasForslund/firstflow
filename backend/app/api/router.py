@@ -4,6 +4,7 @@ from app.api.routes import (
     attendance,
     auth,
     classes,
+    contracts,
     forms,
     health,
     invitations,
@@ -50,3 +51,4 @@ api_router.include_router(overview.router)
 api_router.include_router(overview.student_router)
 api_router.include_router(projects.router)
 api_router.include_router(projects.student_router)
+api_router.include_router(contracts.router)

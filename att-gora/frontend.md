@@ -143,13 +143,13 @@ Väntar inte på annat. Görs löpande men formellt när F1–F5 är klara.
 
 ---
 
-## F9. Avtalshantering och signeringsflöde ⬜
+## F9. Avtalshantering och signeringsflöde 🚧 Granskas (Texas + Claude, 2026-10-29)
 
-Väntar på: B8 (avtal-endpoints) och beslut om signeringstjänst (BankID/Scrive/Verified).
-
-**Mål:** Alla parter kan signera APL-kontrakt digitalt.
-
-Se [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md) för kravdetaljer.
+Enligt skissen "Firstflow – Kontrakt skiss":
+- **Kontraktslistan** (`/contracts`): elev med e-post, företag och handledare, signeringar (E, L, H), status och skickat-datum. Sök, filtret "Skickat från" och Väntar, Klara och Alla.
+- **Nytt kontrakt** i en popup som täcker nästan hela skärmen: PDF med förhandsvisning, namn, period, elev, företag och handledare. Period, företag och handledare förväljs från elevens praktikplats. Spara utkast eller Skicka för signering.
+- **Kontraktets sida** (`/contracts/:id`): PDF:en, signering per part, detaljer och händelser. Påminn, Ladda ner PDF och Ta bort.
+- **Eleven och handledaren** signerar på kontraktets sida (testläge). Eleven ser kontraktet överst i Min APL. Sidomenyn visar hur många kontrakt som väntar.
 
 ---
 

@@ -3561,6 +3561,381 @@
           }
         }
       }
+    },
+    "/api/contracts": {
+      "get": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "List Contracts",
+        "description": "Lärarens kontrakt, eller de skickade kontrakt där eleven eller handledaren är part.\nSenast skapade först.",
+        "operationId": "list_contracts_api_contracts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ContractSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Contracts Api Contracts Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Create Contract",
+        "operationId": "create_contract_api_contracts_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_contract_api_contracts_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/contracts/{contract_id}": {
+      "get": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Get Contract",
+        "operationId": "get_contract_api_contracts__contract_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Delete Contract",
+        "description": "Tar bort kontraktet, så länge eleven och handledaren inte har signerat.",
+        "operationId": "delete_contract_api_contracts__contract_id__delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contract_id}/pdf": {
+      "get": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Get Pdf",
+        "description": "PDF:en. Första gången en part hämtar den räknas avtalet som öppnat.",
+        "operationId": "get_pdf_api_contracts__contract_id__pdf_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Download"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contract_id}/send": {
+      "post": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Send Contract",
+        "description": "Skickar ett utkast för signering. Läraren signerar för skolan.",
+        "operationId": "send_contract_api_contracts__contract_id__send_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contract_id}/sign": {
+      "post": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Sign Contract",
+        "description": "Parten signerar (testläge). När alla har signerat får läraren en notis.",
+        "operationId": "sign_contract_api_contracts__contract_id__sign_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contracts/{contract_id}/remind": {
+      "post": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Remind",
+        "description": "Påminner parterna som inte har signerat.",
+        "operationId": "remind_api_contracts__contract_id__remind_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reminded"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3919,6 +4294,76 @@
           "no_placement"
         ],
         "title": "AttentionReason"
+      },
+      "Body_create_contract_api_contracts_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "Avtalet som PDF, högst 10 MB"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Student Id"
+          },
+          "workplace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workplace Id"
+          },
+          "supervisor_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Supervisor Id"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "send": {
+            "type": "boolean",
+            "title": "Send",
+            "description": "Skicka direkt, annars sparas ett utkast",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "title",
+          "student_id",
+          "workplace_id",
+          "supervisor_id"
+        ],
+        "title": "Body_create_contract_api_contracts_post"
       },
       "Choice": {
         "properties": {
@@ -4374,6 +4819,233 @@
           "name"
         ],
         "title": "CompanyProfile"
+      },
+      "ContractDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "waiting",
+              "signed"
+            ],
+            "title": "Status",
+            "description": "draft = utkast, waiting = väntar på signering, signed = alla har signerat"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "workplace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Ref"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "signers": {
+            "items": {
+              "$ref": "#/components/schemas/Signer"
+            },
+            "type": "array",
+            "title": "Signers",
+            "description": "Parterna i ordningen elev, handledare, lärare"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "my_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SignerRole"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Din roll i kontraktet"
+          },
+          "my_turn": {
+            "type": "boolean",
+            "title": "My Turn",
+            "description": "Om kontraktet väntar på din signatur"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "pdf_size": {
+            "type": "integer",
+            "title": "Pdf Size"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "is_owner": {
+            "type": "boolean",
+            "title": "Is Owner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "student",
+          "workplace",
+          "signers",
+          "created_at",
+          "sent_at",
+          "my_role",
+          "my_turn",
+          "start_date",
+          "end_date",
+          "file_name",
+          "pdf_size",
+          "created_by",
+          "is_owner"
+        ],
+        "title": "ContractDetail"
+      },
+      "ContractSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "waiting",
+              "signed"
+            ],
+            "title": "Status",
+            "description": "draft = utkast, waiting = väntar på signering, signed = alla har signerat"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "workplace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Ref"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "signers": {
+            "items": {
+              "$ref": "#/components/schemas/Signer"
+            },
+            "type": "array",
+            "title": "Signers",
+            "description": "Parterna i ordningen elev, handledare, lärare"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "my_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SignerRole"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Din roll i kontraktet"
+          },
+          "my_turn": {
+            "type": "boolean",
+            "title": "My Turn",
+            "description": "Om kontraktet väntar på din signatur"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "student",
+          "workplace",
+          "signers",
+          "created_at",
+          "sent_at",
+          "my_role",
+          "my_turn"
+        ],
+        "title": "ContractSummary"
       },
       "DisplayPreferences-Input": {
         "properties": {
@@ -5266,6 +5938,30 @@
         ],
         "title": "OverviewReport"
       },
+      "Person": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email"
+        ],
+        "title": "Person"
+      },
       "PersonBrief": {
         "properties": {
           "id": {
@@ -5803,6 +6499,20 @@
         ],
         "title": "Ref"
       },
+      "Reminded": {
+        "properties": {
+          "reminded": {
+            "type": "integer",
+            "title": "Reminded",
+            "description": "Antal parter som fick en påminnelse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reminded"
+        ],
+        "title": "Reminded"
+      },
       "ReportDetail": {
         "properties": {
           "id": {
@@ -6227,6 +6937,72 @@
           "required"
         ],
         "title": "ShortTextQuestion"
+      },
+      "SignBody": {
+        "properties": {
+          "confirm": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirm",
+            "description": "Parten har läst avtalet och godkänner det"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirm"
+        ],
+        "title": "SignBody"
+      },
+      "Signer": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/SignerRole"
+          },
+          "person": {
+            "$ref": "#/components/schemas/Person"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
+          },
+          "signed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "person",
+          "opened_at",
+          "signed_at"
+        ],
+        "title": "Signer"
+      },
+      "SignerRole": {
+        "type": "string",
+        "enum": [
+          "student",
+          "supervisor",
+          "teacher"
+        ],
+        "title": "SignerRole"
       },
       "StatementQuestion-Input": {
         "properties": {

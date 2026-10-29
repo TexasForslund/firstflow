@@ -1297,6 +1297,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Contracts
+         * @description Lärarens kontrakt, eller de skickade kontrakt där eleven eller handledaren är part.
+         *     Senast skapade först.
+         */
+        get: operations["list_contracts_api_contracts_get"];
+        put?: never;
+        /** Create Contract */
+        post: operations["create_contract_api_contracts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contracts/{contract_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Contract */
+        get: operations["get_contract_api_contracts__contract_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Contract
+         * @description Tar bort kontraktet, så länge eleven och handledaren inte har signerat.
+         */
+        delete: operations["delete_contract_api_contracts__contract_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contracts/{contract_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Pdf
+         * @description PDF:en. Första gången en part hämtar den räknas avtalet som öppnat.
+         */
+        get: operations["get_pdf_api_contracts__contract_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contracts/{contract_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Contract
+         * @description Skickar ett utkast för signering. Läraren signerar för skolan.
+         */
+        post: operations["send_contract_api_contracts__contract_id__send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contracts/{contract_id}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Contract
+         * @description Parten signerar (testläge). När alla har signerat får läraren en notis.
+         */
+        post: operations["sign_contract_api_contracts__contract_id__sign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contracts/{contract_id}/remind": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remind
+         * @description Påminner parterna som inte har signerat.
+         */
+        post: operations["remind_api_contracts__contract_id__remind_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1423,6 +1546,41 @@ export interface components {
          * @enum {string}
          */
         AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement";
+        /** Body_create_contract_api_contracts_post */
+        Body_create_contract_api_contracts_post: {
+            /**
+             * File
+             * @description Avtalet som PDF, högst 10 MB
+             */
+            file: string;
+            /** Title */
+            title: string;
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+            /**
+             * Workplace Id
+             * Format: uuid
+             */
+            workplace_id: string;
+            /**
+             * Supervisor Id
+             * Format: uuid
+             */
+            supervisor_id: string;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Send
+             * @description Skicka direkt, annars sparas ett utkast
+             * @default false
+             */
+            send: boolean;
+        };
         /** Choice */
         Choice: {
             /**
@@ -1634,6 +1792,91 @@ export interface components {
             industry?: string | null;
             /** Description */
             description?: string | null;
+        };
+        /** ContractDetail */
+        ContractDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Status
+             * @description draft = utkast, waiting = väntar på signering, signed = alla har signerat
+             * @enum {string}
+             */
+            status: "draft" | "waiting" | "signed";
+            student: components["schemas"]["Person"];
+            workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Signers
+             * @description Parterna i ordningen elev, handledare, lärare
+             */
+            signers: components["schemas"]["Signer"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Sent At */
+            sent_at: string | null;
+            /** @description Din roll i kontraktet */
+            my_role: components["schemas"]["SignerRole"] | null;
+            /**
+             * My Turn
+             * @description Om kontraktet väntar på din signatur
+             */
+            my_turn: boolean;
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** File Name */
+            file_name: string;
+            /** Pdf Size */
+            pdf_size: number;
+            created_by: components["schemas"]["Ref"];
+            /** Is Owner */
+            is_owner: boolean;
+        };
+        /** ContractSummary */
+        ContractSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Status
+             * @description draft = utkast, waiting = väntar på signering, signed = alla har signerat
+             * @enum {string}
+             */
+            status: "draft" | "waiting" | "signed";
+            student: components["schemas"]["Person"];
+            workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Signers
+             * @description Parterna i ordningen elev, handledare, lärare
+             */
+            signers: components["schemas"]["Signer"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Sent At */
+            sent_at: string | null;
+            /** @description Din roll i kontraktet */
+            my_role: components["schemas"]["SignerRole"] | null;
+            /**
+             * My Turn
+             * @description Om kontraktet väntar på din signatur
+             */
+            my_turn: boolean;
         };
         /**
          * DisplayPreferences
@@ -2038,6 +2281,18 @@ export interface components {
              */
             preview: components["schemas"]["AnswerPreview"][];
         };
+        /** Person */
+        Person: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+        };
         /** PersonBrief */
         PersonBrief: {
             /**
@@ -2289,6 +2544,14 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** Reminded */
+        Reminded: {
+            /**
+             * Reminded
+             * @description Antal parter som fick en påminnelse
+             */
+            reminded: number;
+        };
         /** ReportDetail */
         ReportDetail: {
             /**
@@ -2476,6 +2739,29 @@ export interface components {
              */
             required: boolean;
         };
+        /** SignBody */
+        SignBody: {
+            /**
+             * Confirm
+             * @description Parten har läst avtalet och godkänner det
+             * @constant
+             */
+            confirm: true;
+        };
+        /** Signer */
+        Signer: {
+            role: components["schemas"]["SignerRole"];
+            person: components["schemas"]["Person"];
+            /** Opened At */
+            opened_at: string | null;
+            /** Signed At */
+            signed_at: string | null;
+        };
+        /**
+         * SignerRole
+         * @enum {string}
+         */
+        SignerRole: "student" | "supervisor" | "teacher";
         /**
          * StatementQuestion
          * @description Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar.
@@ -5156,6 +5442,249 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_contracts_api_contracts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractSummary"][];
+                };
+            };
+        };
+    };
+    create_contract_api_contracts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_create_contract_api_contracts_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_contract_api_contracts__contract_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_contract_api_contracts__contract_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pdf_api_contracts__contract_id__pdf_get: {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_contract_api_contracts__contract_id__send_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sign_contract_api_contracts__contract_id__sign_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remind_api_contracts__contract_id__remind_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Reminded"];
                 };
             };
             /** @description Validation Error */
