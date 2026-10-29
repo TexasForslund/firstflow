@@ -68,7 +68,6 @@ export function ClassReports({ classId, students }: { classId: string; students:
                     {reportTitle(report.due_date)} · {longDate(report.due_date)}
                   </span>
                 </span>
-                {report.is_late && <span className={styles.lateTag}>Sen</span>}
                 {report.comment_count > 0 && (
                   <span className={styles.commentCount} aria-label={`${report.comment_count} kommentarer`}>
                     <MessageCircle aria-hidden="true" />

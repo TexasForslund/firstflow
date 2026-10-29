@@ -196,10 +196,6 @@
   color: var(--color-primary-on-light);
 }
 
-.badgeLate {
-  background: var(--color-attention-bg);
-  color: var(--color-attention);
-}
 
 .badgeMissing {
   background: var(--color-butter-bg);

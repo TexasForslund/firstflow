@@ -143,7 +143,7 @@ export function StudentPage() {
 
 // --- Redovisningar --------------------------------------------------------------------------
 
-type Show = 'all' | 'unread' | 'comments' | 'late' | 'missing'
+type Show = 'all' | 'unread' | 'comments' | 'missing'
 type Period = 'all' | 'week' | 'month'
 
 type Entry = { kind: 'report'; date: string; report: StudentReportSummary } | { kind: 'missing'; date: string }
@@ -190,7 +190,6 @@ function ReportsSection({ studentId }: { studentId: string }) {
     all: inPeriod.filter((e) => e.kind === 'report').length,
     unread: inPeriod.filter((e) => e.kind === 'report' && !e.report.is_read).length,
     comments: inPeriod.filter((e) => e.kind === 'report' && e.report.comment_count > 0).length,
-    late: inPeriod.filter((e) => e.kind === 'report' && e.report.is_late).length,
     missing: inPeriod.filter((e) => e.kind === 'missing').length,
   }
   const filtering = search.trim() !== '' || questionId !== '' || projectId !== ''
@@ -203,7 +202,6 @@ function ReportsSection({ studentId }: { studentId: string }) {
     if (show === 'missing') return false
     if (show === 'unread' && r.is_read) return false
     if (show === 'comments' && r.comment_count === 0) return false
-    if (show === 'late' && !r.is_late) return false
     if (projectId && r.project?.id !== projectId) return false
     const answers = questionId ? r.answers.filter((a) => a.question_id === questionId) : r.answers
     if (questionId && answers.length === 0) return false
@@ -215,7 +213,6 @@ function ReportsSection({ studentId }: { studentId: string }) {
     { id: 'all', label: 'Alla' },
     { id: 'unread', label: 'Olästa' },
     { id: 'comments', label: 'Med kommentarer' },
-    { id: 'late', label: 'Sena' },
     { id: 'missing', label: 'Saknas' },
   ]
 
@@ -325,7 +322,6 @@ function ReportCard({ report, questionId }: { report: StudentReportSummary; ques
               {longDate(report.due_date)}
             </span>
             {!report.is_read && <span className={`${own.badge} ${own.badgeUnread}`}>Oläst</span>}
-            {report.is_late && <span className={`${own.badge} ${own.badgeLate}`}>Sen</span>}
             {report.project && (
               <span className={`${own.badge} ${own.badgeProject}`}>
                 <Folder aria-hidden="true" />

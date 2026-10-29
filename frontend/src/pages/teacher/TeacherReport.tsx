@@ -67,7 +67,6 @@ function TeacherReport({ reportId }: { reportId: string }) {
               {detail.class_name} · {longDate(detail.due_date)}
               {detail.project ? ` · ${detail.project.name}` : ''}
             </span>
-            {detail.is_late && <span className={styles.lateTag}>Sen</span>}
           </div>
           <div className={styles.answers}>
             {shown.map((question) => (
