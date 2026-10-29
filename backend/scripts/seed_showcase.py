@@ -31,7 +31,7 @@ from sqlalchemy.orm import Session
 from app.core import time
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.models.attendance import Attendance, AttendanceStatus
+from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.contract import Contract, ContractSignature, SignerRole
 from app.models.placement import Placement, Workplace
 from app.models.project import Project
@@ -71,6 +71,10 @@ STUDENTS = [
 # Eleven som används live under demon: hen har inte checkat in i dag och har den senaste
 # redovisningen kvar, så att det går att visa hur det syns hos läraren direkt.
 LIVE_STUDENT = "Hugo Karlsson"
+# Eleven som glömde att checka in i måndags, och eleven vars incheckning i går inte stämmer
+# med handledarens svar.
+FORGOT_STUDENT = "Hugo Karlsson"
+CONFLICT_STUDENT = "Elsa Lindqvist"
 
 WORKPLACES = [("Kramfors El & Data", "handledare"), ("Höga Kusten Elinstallation", "handledare.hk")]
 
@@ -296,6 +300,7 @@ def showcase(db: Session) -> dict[str, int]:
 
     today = time.today()
     monday = today - timedelta(days=today.weekday())
+    previous_weekday = today - timedelta(days=3 if today.weekday() == 0 else 1)
     start = monday - timedelta(weeks=APL_WEEKS)
     end = monday + timedelta(weeks=WEEKS_LEFT, days=4)
 
@@ -392,20 +397,47 @@ def showcase(db: Session) -> dict[str, int]:
         db.flush()
 
         # Närvaro: varje vardag fram till i dag. I dag har bara några hunnit checka in.
+        # Handledarna har bekräftat tidigare veckor. Den här veckan har Sofia bekräftat allt
+        # och Gustav ingenting, så att läraren ser incheckningar som väntar (Texas, 2026-10-29).
+        gustav = i < 3
         for day in _weekdays(start, today):
             missed = rng.random() > attend
             if stopped and (today - day).days < 5:
                 missed = True
             if day == today and (i in (2, 4) or name == LIVE_STUDENT):
                 missed = True
+            this_week = day >= monday
+            review = None if this_week and gustav else AttendanceReview.CONFIRMED
+            if name == FORGOT_STUDENT and day == monday and day < today:
+                # Eleven glömde att checka in och handledaren lade till dagen.
+                db.add(
+                    Attendance(
+                        placement_id=placement.id,
+                        date=day,
+                        status=AttendanceStatus.PRESENT,
+                        review=AttendanceReview.CONFIRMED,
+                        reviewed_at=_at(day, 16, 0),
+                        reviewed_by_id=supervisor.id,
+                    )
+                )
+                counts["närvarodagar"] += 1
+                continue
             if missed:
                 continue
+            if name == CONFLICT_STUDENT and day == previous_weekday:
+                # Eleven checkade in, men handledaren säger att eleven inte var på plats.
+                review = AttendanceReview.NOT_PRESENT
+            if day == today and not gustav:
+                review = AttendanceReview.CONFIRMED
             db.add(
                 Attendance(
                     placement_id=placement.id,
                     date=day,
                     status=AttendanceStatus.PRESENT,
                     checked_in_at=_at(day, 7, rng.randint(5, 55)),
+                    review=review,
+                    reviewed_at=_at(day, 16, 0) if review else None,
+                    reviewed_by_id=supervisor.id if review else None,
                 )
             )
             counts["närvarodagar"] += 1
@@ -486,6 +518,21 @@ def showcase(db: Session) -> dict[str, int]:
                     counts["kommentarer"] += 1  # fmt: skip
 
     _contracts(db, school, teacher, students, workplaces, start, end, today)
+
+    # Handledarna har också elever från seed_demo. Deras dagar före den här veckan räknas som
+    # bekräftade, så att listan "Bekräfta närvaro" bara visar veckan.
+    supervisor_ids = [s.id for _, s in workplaces]
+    placement_ids = select(Placement.id).where(Placement.supervisor_id.in_(supervisor_ids))
+    for row in db.scalars(
+        select(Attendance).where(
+            Attendance.placement_id.in_(placement_ids),
+            Attendance.date < monday,
+            Attendance.review.is_(None),
+            Attendance.status == AttendanceStatus.PRESENT,
+        )
+    ):
+        row.review = AttendanceReview.CONFIRMED
+        row.reviewed_by_id = db.get(Placement, row.placement_id).supervisor_id
     db.flush()
     return counts
 

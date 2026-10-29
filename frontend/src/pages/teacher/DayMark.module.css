@@ -1,0 +1,87 @@
+/* Dagens läge som en rund markering (Texas skiss, 2026-10-29). */
+.wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.mark {
+  position: relative;
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+}
+
+.mark svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 3;
+}
+
+.mark[data-state='confirmed'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.mark[data-state='pending'],
+.mark[data-state='conflict'] {
+  border: 2px solid var(--color-sky);
+  color: var(--color-sky);
+}
+
+.mark[data-state='pending'] svg,
+.mark[data-state='conflict'] svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.mark[data-state='not_present'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.mark[data-state='missing'] {
+  border: 1.5px dashed var(--color-text-faded);
+}
+
+.added {
+  position: absolute;
+  right: -0.375rem;
+  bottom: -0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-full);
+  background: var(--color-mint);
+  color: var(--color-bg);
+  font-size: 0.5625rem;
+  font-weight: 700;
+}
+
+.dot {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-full);
+  background: var(--color-error-bar);
+}
+
+.time {
+  color: var(--color-sky);
+  font-size: 0.6875rem;
+}
+
+.time[data-conflict] {
+  color: var(--color-attention);
+}

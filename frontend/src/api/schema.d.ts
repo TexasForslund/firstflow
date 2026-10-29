@@ -906,6 +906,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes/{class_id}/attendance/week": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Class Week
+         * @description Klassens närvaro måndag till fredag, med läget för varje dag.
+         */
+        get: operations["class_week_api_classes__class_id__attendance_week_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/attendance/remind": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remind Supervisors
+         * @description Påminner handledare som har incheckningar att bekräfta för klassens elever, de senaste
+         *     två veckorna.
+         */
+        post: operations["remind_supervisors_api_classes__class_id__attendance_remind_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/supervisor/attendance": {
         parameters: {
             query?: never;
@@ -920,6 +961,31 @@ export interface paths {
         get: operations["supervisor_attendance_api_supervisor_attendance_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/attendance/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Review List
+         * @description Dagar som handledaren kan bekräfta: i dag och de som väntar från tidigare.
+         */
+        get: operations["review_list_api_supervisor_attendance_review_get"];
+        put?: never;
+        /**
+         * Review
+         * @description Bekräftar dagar, lägger till dagar eleven glömde eller säger att eleven inte var på
+         *     plats. Bara för elever handledaren har, vardagar och upp till två veckor bakåt.
+         */
+        post: operations["review_api_supervisor_attendance_review_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1523,7 +1589,13 @@ export interface components {
             status: components["schemas"]["AttendanceStatus"];
             /** Checked In At */
             checked_in_at: string | null;
+            state: components["schemas"]["DayState"];
         };
+        /**
+         * AttendanceReview
+         * @enum {string}
+         */
+        AttendanceReview: "confirmed" | "not_present";
         /**
          * AttendanceStatus
          * @enum {string}
@@ -1555,7 +1627,7 @@ export interface components {
          * AttentionReason
          * @enum {string}
          */
-        AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement" | "unsigned_contract";
+        AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement" | "unsigned_contract" | "unconfirmed_days" | "attendance_conflict";
         /** Body_create_contract_api_contracts_post */
         Body_create_contract_api_contracts_post: {
             /**
@@ -1758,6 +1830,27 @@ export interface components {
             /** Checked In */
             checked_in: number;
         };
+        /** ClassWeek */
+        ClassWeek: {
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /** Days */
+            days: string[];
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** Check In Required */
+            check_in_required: boolean;
+            /** Students */
+            students: components["schemas"]["WeekStudent"][];
+            /** Waiting */
+            waiting: components["schemas"]["WaitingSupervisor"][];
+        };
         /** Colleague */
         Colleague: {
             /**
@@ -1888,6 +1981,11 @@ export interface components {
              */
             my_turn: boolean;
         };
+        /**
+         * DayState
+         * @enum {string}
+         */
+        DayState: "confirmed" | "pending" | "not_present" | "missing";
         /**
          * DisplayPreferences
          * @description Hur Firstflow visas för användaren. Inställningar, Visning.
@@ -2554,14 +2652,6 @@ export interface components {
             /** Name */
             name: string;
         };
-        /** Reminded */
-        Reminded: {
-            /**
-             * Reminded
-             * @description Antal parter som fick en påminnelse
-             */
-            reminded: number;
-        };
         /** ReportDetail */
         ReportDetail: {
             /**
@@ -2655,6 +2745,68 @@ export interface components {
             is_read: boolean;
             /** Comment Count */
             comment_count: number;
+        };
+        /** ReviewBody */
+        ReviewBody: {
+            /** Items */
+            items: components["schemas"]["ReviewVerdict"][];
+        };
+        /** ReviewItem */
+        ReviewItem: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            student: components["schemas"]["Ref"];
+            /** Workplace Name */
+            workplace_name: string;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            state: components["schemas"]["DayState"];
+            /** Checked In At */
+            checked_in_at: string | null;
+        };
+        /** ReviewList */
+        ReviewList: {
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /**
+             * Earliest
+             * Format: date
+             * @description Tidigaste dagen som går att bekräfta
+             */
+            earliest: string;
+            /**
+             * Today Items
+             * @description Alla elever som har APL i dag
+             */
+            today_items: components["schemas"]["ReviewItem"][];
+            /**
+             * Earlier
+             * @description Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar i veckan utan incheckning. Senaste först
+             */
+            earlier: components["schemas"]["ReviewItem"][];
+        };
+        /** ReviewVerdict */
+        ReviewVerdict: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            verdict: components["schemas"]["AttendanceReview"];
         };
         /** SchoolAccountCreate */
         SchoolAccountCreate: {
@@ -2835,8 +2987,24 @@ export interface components {
              * @description Ej incheckad: förväntade dagar utan incheckning
              */
             missing: number;
+            /**
+             * Pending
+             * @description Incheckade dagar som väntar på handledaren
+             * @default 0
+             */
+            pending: number;
+            /**
+             * Not Present
+             * @description Incheckade dagar där handledaren säger att eleven inte var där
+             * @default 0
+             */
+            not_present: number;
             /** @description Dagens status. null = inget registrerat */
             today: components["schemas"]["AttendanceStatus"] | null;
+            /** @default missing */
+            today_state: components["schemas"]["DayState"];
+            /** Today Checked In At */
+            today_checked_in_at?: string | null;
         };
         /**
          * StudentAttendanceDetail
@@ -2999,6 +3167,8 @@ export interface components {
             status: components["schemas"]["AttendanceStatus"] | null;
             /** Checked In At */
             checked_in_at: string | null;
+            /** @default missing */
+            state: components["schemas"]["DayState"];
         };
         /** SupervisorRead */
         SupervisorRead: {
@@ -3058,6 +3228,21 @@ export interface components {
             on_apl: number;
             /** Checked In */
             checked_in: number;
+            /**
+             * Confirmed
+             * @description Incheckade i dag och bekräftade av handledaren
+             */
+            confirmed: number;
+            /**
+             * Pending
+             * @description Incheckade i dag som väntar på handledaren
+             */
+            pending: number;
+            /**
+             * Today Students
+             * @description Elever med APL i dag: väntar och stämmer inte först, sedan ej incheckade
+             */
+            today_students: components["schemas"]["TodayStudent"][];
             /** Classes */
             classes: components["schemas"]["ClassToday"][];
             /** Attention */
@@ -3125,6 +3310,19 @@ export interface components {
             /** Text */
             text: string;
         };
+        /**
+         * TodayStudent
+         * @description En elev som har APL i dag, med dagens läge (Texas, 2026-10-29).
+         */
+        TodayStudent: {
+            student: components["schemas"]["PersonBrief"];
+            /** Class Name */
+            class_name: string;
+            state: components["schemas"]["DayState"];
+            /** Checked In At */
+            checked_in_at: string | null;
+            supervisor: components["schemas"]["PersonBrief"] | null;
+        };
         /** UserRead */
         UserRead: {
             /**
@@ -3160,6 +3358,38 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WaitingSupervisor */
+        WaitingSupervisor: {
+            supervisor: components["schemas"]["Ref"];
+            /**
+             * Count
+             * @description Incheckningar som väntar på handledaren den här veckan
+             */
+            count: number;
+        };
+        /** WeekDay */
+        WeekDay: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * On Apl
+             * @description Eleven har en placering den dagen
+             */
+            on_apl: boolean;
+            state: components["schemas"]["DayState"];
+            /** Checked In At */
+            checked_in_at: string | null;
+        };
+        /** WeekStudent */
+        WeekStudent: {
+            student: components["schemas"]["Ref"];
+            supervisor: components["schemas"]["Ref"] | null;
+            /** Days */
+            days: components["schemas"]["WeekDay"][];
         };
         /** WorkplaceCreate */
         WorkplaceCreate: {
@@ -3251,6 +3481,22 @@ export interface components {
             required: boolean;
             /** Logic */
             logic: components["schemas"]["LogicRule"][];
+        };
+        /** Reminded */
+        app__api__routes__attendance__Reminded: {
+            /**
+             * Reminded
+             * @description Antal handledare som fick en påminnelse
+             */
+            reminded: number;
+        };
+        /** Reminded */
+        app__api__routes__contracts__Reminded: {
+            /**
+             * Reminded
+             * @description Antal parter som fick en påminnelse
+             */
+            reminded: number;
         };
     };
     responses: never;
@@ -4798,6 +5044,71 @@ export interface operations {
             };
         };
     };
+    class_week_api_classes__class_id__attendance_week_get: {
+        parameters: {
+            query?: {
+                /** @description En dag i veckan. Standard är i dag */
+                start?: string | null;
+            };
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassWeek"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remind_supervisors_api_classes__class_id__attendance_remind_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__api__routes__attendance__Reminded"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     supervisor_attendance_api_supervisor_attendance_get: {
         parameters: {
             query?: {
@@ -4816,6 +5127,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupervisorAttendance"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_list_api_supervisor_attendance_review_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewList"];
+                };
+            };
+        };
+    };
+    review_api_supervisor_attendance_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewList"];
                 };
             };
             /** @description Validation Error */
@@ -5694,7 +6058,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Reminded"];
+                    "application/json": components["schemas"]["app__api__routes__contracts__Reminded"];
                 };
             };
             /** @description Validation Error */

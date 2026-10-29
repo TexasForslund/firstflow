@@ -1,0 +1,195 @@
+/* Närvaron vecka för vecka (Texas skiss, 2026-10-29). */
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.heading {
+  display: grid;
+  flex: 1;
+  gap: 0.125rem;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.nav {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.navButton:hover {
+  background: var(--color-surface-hover);
+}
+
+.navButton svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.waiting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.waitingText {
+  flex: 1 1 18rem;
+  font-size: var(--font-size-sm);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table thead th {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.table thead th[data-today] {
+  color: var(--color-primary-on-light);
+}
+
+.table tbody tr {
+  border-top: 1px solid var(--color-border);
+}
+
+.studentCol {
+  text-align: left !important;
+}
+
+.supervisorCol {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: right !important;
+}
+
+.student {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.student:hover {
+  text-decoration: underline;
+}
+
+.noApl {
+  color: var(--color-text-faded);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatch {
+  position: relative;
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: var(--radius-full);
+}
+
+.swatch[data-state='confirmed'] {
+  background: var(--color-mint-bg);
+}
+
+.swatch[data-state='pending'] {
+  border: 2px solid var(--color-sky);
+}
+
+.swatch[data-state='added'] {
+  background: var(--color-mint);
+  color: var(--color-bg);
+  font-size: 0.5625rem;
+  font-weight: 700;
+}
+
+.swatch[data-state='not_present'] {
+  background: var(--color-attention-bg);
+}
+
+.swatch[data-state='conflict'] {
+  border: 2px solid var(--color-sky);
+}
+
+.swatch[data-state='conflict']::after {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-full);
+  background: var(--color-error-bar);
+  content: '';
+}
+
+.swatch[data-state='missing'] {
+  border: 1.5px dashed var(--color-text-faded);
+}

@@ -12,11 +12,21 @@ Regler (Texas, 2026-10-26):
   från klassens dagar per vecka, eftersom vi inte vet vilka veckodagar eleven har APL förrän
   det finns ett schema. Räknas bara när klassen kräver incheckning.
 
+Bekräftad närvaro (Texas, 2026-10-29):
+- Handledaren bekräftar incheckningarna, lägger till dagar eleven glömde och kan säga att
+  eleven inte var på plats. Det går upp till två veckor bakåt (REVIEW_DAYS).
+- En dag har ett läge (DayState): bekräftad, väntar på handledaren, inte på plats eller ej
+  incheckad.
+- En incheckning som väntar räknas som närvaro. En dag där handledaren säger "inte på plats"
+  räknas inte, även om eleven checkade in.
+- Dagar godkänns aldrig automatiskt.
+
 Behörighet: eleven sina egna dagar, läraren klassens elever (samma som klassvyn), handledaren
 elever som hen handleder. Annat svarar 404.
 """
 
 from datetime import date, datetime, timedelta
+from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
@@ -27,10 +37,11 @@ from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles
 from app.api.routes.classes import CanViewClasses, get_accessible_class
+from app.api.routes.invitations import notify
 from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
-from app.models.attendance import Attendance, AttendanceStatus
+from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.placement import Placement
 from app.models.school_class import SchoolClass, class_students
 from app.models.user import User, UserRole
@@ -43,9 +54,12 @@ student_router = APIRouter(prefix="/students/{student_id}/attendance", tags=["at
 
 Student = Annotated[User, Depends(require_roles(UserRole.STUDENT))]
 Supervisor = Annotated[User, Depends(require_roles(UserRole.SUPERVISOR))]
+Teacher = Annotated[User, Depends(require_roles(UserRole.TEACHER))]
 
 DEFAULT_PERIOD_DAYS = 28
 MAX_PERIOD_DAYS = 366
+# Hur många dagar bakåt handledaren kan bekräfta och rätta närvaron, i dag inräknad.
+REVIEW_DAYS = 14
 
 
 class Ref(BaseModel):
@@ -53,10 +67,35 @@ class Ref(BaseModel):
     name: str
 
 
+class DayState(StrEnum):
+    CONFIRMED = "confirmed"  # bekräftad av handledaren
+    PENDING = "pending"  # incheckad, väntar på handledaren
+    NOT_PRESENT = "not_present"  # inte på plats enligt handledaren
+    MISSING = "missing"  # ej incheckad
+
+
+def day_state(row: Attendance | None) -> DayState:
+    if row is None:
+        return DayState.MISSING
+    if row.review == AttendanceReview.NOT_PRESENT:
+        return DayState.NOT_PRESENT
+    if row.status != AttendanceStatus.PRESENT:
+        return DayState.MISSING
+    if row.review == AttendanceReview.CONFIRMED:
+        return DayState.CONFIRMED
+    return DayState.PENDING
+
+
+def counts_as_present(status: str, review: str | None) -> bool:
+    """Närvarande: incheckad eller tillagd av handledaren, och inte "inte på plats"."""
+    return status == AttendanceStatus.PRESENT and review != AttendanceReview.NOT_PRESENT
+
+
 class AttendanceDay(BaseModel):
     date: date
     status: AttendanceStatus
     checked_in_at: datetime | None
+    state: DayState
 
 
 class MyAttendance(BaseModel):
@@ -80,7 +119,13 @@ class StudentAttendance(BaseModel):
     expected_days: int
     present: int
     missing: int = Field(description="Ej incheckad: förväntade dagar utan incheckning")
+    pending: int = Field(default=0, description="Incheckade dagar som väntar på handledaren")
+    not_present: int = Field(
+        default=0, description="Incheckade dagar där handledaren säger att eleven inte var där"
+    )
     today: AttendanceStatus | None = Field(description="Dagens status. null = inget registrerat")
+    today_state: DayState = DayState.MISSING
+    today_checked_in_at: datetime | None = None
 
 
 class ClassAttendance(BaseModel):
@@ -97,10 +142,13 @@ class SupervisorAttendance(BaseModel):
     workplace_name: str
     status: AttendanceStatus | None
     checked_in_at: datetime | None
+    state: DayState = DayState.MISSING
 
 
 def _day(row: Attendance) -> AttendanceDay:
-    return AttendanceDay(date=row.date, status=row.status, checked_in_at=row.checked_in_at)
+    return AttendanceDay(
+        date=row.date, status=row.status, checked_in_at=row.checked_in_at, state=day_state(row)
+    )
 
 
 def _is_weekday(day: date) -> bool:
@@ -282,39 +330,42 @@ def class_student_attendance(
         )
     ).all()
     rows = db.execute(
-        select(Placement.student_id, Attendance.date, Attendance.status)
+        select(Placement.student_id, Attendance)
         .join(Placement, Placement.id == Attendance.placement_id)
         .where(
             Placement.student_id.in_(ids),
-            Attendance.date >= from_date,
-            Attendance.date <= max(counted_to, from_date),
+            Attendance.date >= min(from_date, today),
+            Attendance.date <= max(counted_to, from_date, today),
         )
     ).all()
-    today_rows = db.execute(
-        select(Placement.student_id, Attendance.status)
-        .join(Placement, Placement.id == Attendance.placement_id)
-        .where(Placement.student_id.in_(ids), Attendance.date == today)
-    ).all()
-    today_status = {student_id: s for student_id, s in today_rows}
+    today_rows = {student_id: row for student_id, row in rows if row.date == today}
 
     result = []
     for student in students:
         own = [p for p in placements if p.student_id == student.id]
-        counts = {s: 0 for s in AttendanceStatus}
-        for student_id, day, s in rows:
-            if student_id == student.id and day <= counted_to:
-                counts[AttendanceStatus(s)] += 1
+        mine = [
+            r
+            for student_id, r in rows
+            if student_id == student.id and from_date <= r.date <= counted_to
+        ]
         expected = _expected_days(own, from_date, counted_to, school_class.apl_days_per_week)
-        present = counts[AttendanceStatus.PRESENT]
+        present = sum(1 for r in mine if counts_as_present(r.status, r.review))
         missing = max(0, expected - present) if school_class.check_in_required else 0
+        today_row = today_rows.get(student.id)
         result.append(
             StudentAttendance(
                 student=Ref(id=student.id, name=student.name),
                 has_placement=bool(own),
                 expected_days=expected,
-                present=counts[AttendanceStatus.PRESENT],
+                present=present,
                 missing=missing,
-                today=today_status.get(student.id),
+                pending=sum(1 for r in mine if day_state(r) == DayState.PENDING),
+                not_present=sum(
+                    1 for r in mine if day_state(r) == DayState.NOT_PRESENT and r.checked_in_at
+                ),
+                today=today_row.status if today_row else None,
+                today_state=day_state(today_row),
+                today_checked_in_at=today_row.checked_in_at if today_row else None,
             )
         )
     return result
@@ -359,9 +410,282 @@ def supervisor_attendance(
                 workplace_name=p.workplace.name,
                 status=row.status if row else None,
                 checked_in_at=row.checked_in_at if row else None,
+                state=day_state(row),
             )
         )
     return result
+
+
+class ReviewItem(BaseModel):
+    placement_id: UUID
+    student: Ref
+    workplace_name: str
+    date: date
+    state: DayState
+    checked_in_at: datetime | None
+
+
+class ReviewList(BaseModel):
+    today: date
+    earliest: date = Field(description="Tidigaste dagen som går att bekräfta")
+    today_items: list[ReviewItem] = Field(description="Alla elever som har APL i dag")
+    earlier: list[ReviewItem] = Field(
+        description="Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar "
+        "i veckan utan incheckning. Senaste först"
+    )
+
+
+class ReviewVerdict(BaseModel):
+    placement_id: UUID
+    date: date
+    verdict: AttendanceReview
+
+
+class ReviewBody(BaseModel):
+    items: list[ReviewVerdict] = Field(min_length=1, max_length=100)
+
+
+def _review_list(db: DbSession, user: User) -> ReviewList:
+    today = time.today()
+    earliest = today - timedelta(days=REVIEW_DAYS - 1)
+    monday = today - timedelta(days=today.weekday())
+    placements = db.scalars(
+        select(Placement)
+        .join(User, User.id == Placement.student_id)
+        .where(
+            Placement.supervisor_id == user.id,
+            Placement.start_date <= today,
+            Placement.end_date >= earliest,
+            User.is_active,
+        )
+        .options(selectinload(Placement.student), selectinload(Placement.workplace))
+        .order_by(User.name)
+    ).all()
+    rows = {
+        (r.placement_id, r.date): r
+        for r in db.scalars(
+            select(Attendance).where(
+                Attendance.placement_id.in_([p.id for p in placements]),
+                Attendance.date >= earliest,
+                Attendance.date <= today,
+            )
+        )
+    }
+    today_items: list[ReviewItem] = []
+    earlier: list[ReviewItem] = []
+    for p in placements:
+        first = max(p.start_date, earliest)
+        for offset in range((min(p.end_date, today) - first).days + 1):
+            day = first + timedelta(days=offset)
+            if not _is_weekday(day):
+                continue
+            row = rows.get((p.id, day))
+            state = day_state(row)
+            item = ReviewItem(
+                placement_id=p.id,
+                student=Ref(id=p.student.id, name=p.student.name),
+                workplace_name=p.workplace.name,
+                date=day,
+                state=state,
+                checked_in_at=row.checked_in_at if row else None,
+            )
+            if day == today:
+                today_items.append(item)
+            elif state == DayState.PENDING or (state == DayState.MISSING and day >= monday):
+                earlier.append(item)
+    earlier.sort(key=lambda i: (i.date, i.student.name), reverse=True)
+    return ReviewList(today=today, earliest=earliest, today_items=today_items, earlier=earlier)
+
+
+@supervisor_router.get("/review", response_model=ReviewList)
+def review_list(db: DbSession, user: Supervisor) -> ReviewList:
+    """Dagar som handledaren kan bekräfta: i dag och de som väntar från tidigare."""
+    return _review_list(db, user)
+
+
+@supervisor_router.post("/review", response_model=ReviewList)
+def review(body: ReviewBody, db: DbSession, user: Supervisor) -> ReviewList:
+    """Bekräftar dagar, lägger till dagar eleven glömde eller säger att eleven inte var på
+    plats. Bara för elever handledaren har, vardagar och upp till två veckor bakåt."""
+    today = time.today()
+    earliest = today - timedelta(days=REVIEW_DAYS - 1)
+    now = time.now()
+    for verdict in body.items:
+        placement = db.get(Placement, verdict.placement_id)
+        if placement is None or placement.supervisor_id != user.id:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
+        day = verdict.date
+        if (
+            not _is_weekday(day)
+            or not earliest <= day <= today
+            or not placement.start_date <= day <= placement.end_date
+        ):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Dagen går inte att bekräfta. Det går två veckor bakåt, vardagar.",
+            )
+        row = _existing(db, placement.id, day)
+        if row is None:
+            row = Attendance(placement_id=placement.id, date=day, status=AttendanceStatus.ABSENT)
+            db.add(row)
+        if verdict.verdict == AttendanceReview.CONFIRMED:
+            # Utan incheckning lade handledaren till dagen.
+            row.status = AttendanceStatus.PRESENT
+        elif row.checked_in_at is None:
+            row.status = AttendanceStatus.ABSENT
+        row.review = verdict.verdict
+        row.reviewed_at = now
+        row.reviewed_by_id = user.id
+        db.flush()
+    db.commit()
+    return _review_list(db, user)
+
+
+# --- Lärarens veckovy ----------------------------------------------------------------------
+
+
+class WeekDay(BaseModel):
+    date: date
+    on_apl: bool = Field(description="Eleven har en placering den dagen")
+    state: DayState
+    checked_in_at: datetime | None
+
+
+class WeekStudent(BaseModel):
+    student: Ref
+    supervisor: Ref | None
+    days: list[WeekDay]
+
+
+class WaitingSupervisor(BaseModel):
+    supervisor: Ref
+    count: int = Field(description="Incheckningar som väntar på handledaren den här veckan")
+
+
+class ClassWeek(BaseModel):
+    week_start: date
+    days: list[date]
+    today: date
+    check_in_required: bool
+    students: list[WeekStudent]
+    waiting: list[WaitingSupervisor]
+
+
+class Reminded(BaseModel):
+    reminded: int = Field(description="Antal handledare som fick en påminnelse")
+
+
+@class_router.get("/week", response_model=ClassWeek)
+def class_week(
+    class_id: UUID,
+    db: DbSession,
+    user: CanViewClasses,
+    start: Annotated[date | None, Query(description="En dag i veckan. Standard är i dag")] = None,
+) -> ClassWeek:
+    """Klassens närvaro måndag till fredag, med läget för varje dag."""
+    school_class = get_accessible_class(db, user, class_id)
+    today = time.today()
+    anchor = start or today
+    monday = anchor - timedelta(days=anchor.weekday())
+    days = [monday + timedelta(days=i) for i in range(5)]
+    students = sorted((s for s in school_class.students if s.is_active), key=lambda s: s.name)
+    placements = db.scalars(
+        select(Placement)
+        .where(
+            Placement.student_id.in_([s.id for s in students]),
+            Placement.start_date <= days[-1],
+            Placement.end_date >= days[0],
+        )
+        .options(selectinload(Placement.supervisor))
+    ).all()
+    rows = {
+        (r.placement_id, r.date): r
+        for r in db.scalars(
+            select(Attendance).where(
+                Attendance.placement_id.in_([p.id for p in placements]),
+                Attendance.date >= days[0],
+                Attendance.date <= days[-1],
+            )
+        )
+    }
+    waiting: dict[UUID, WaitingSupervisor] = {}
+    result = []
+    for student in students:
+        own = [p for p in placements if p.student_id == student.id]
+        week_days = []
+        for day in days:
+            placement = next((p for p in own if p.start_date <= day <= p.end_date), None)
+            row = rows.get((placement.id, day)) if placement else None
+            state = day_state(row)
+            if state == DayState.PENDING and placement:
+                entry = waiting.setdefault(
+                    placement.supervisor_id,
+                    WaitingSupervisor(
+                        supervisor=Ref(id=placement.supervisor.id, name=placement.supervisor.name),
+                        count=0,
+                    ),
+                )
+                entry.count += 1
+            week_days.append(
+                WeekDay(
+                    date=day,
+                    on_apl=placement is not None,
+                    state=state,
+                    checked_in_at=row.checked_in_at if row else None,
+                )
+            )
+        current = next((p for p in own if p.start_date <= today <= p.end_date), None) or (
+            own[-1] if own else None
+        )
+        result.append(
+            WeekStudent(
+                student=Ref(id=student.id, name=student.name),
+                supervisor=(
+                    Ref(id=current.supervisor.id, name=current.supervisor.name) if current else None
+                ),
+                days=week_days,
+            )
+        )
+    return ClassWeek(
+        week_start=monday,
+        days=days,
+        today=today,
+        check_in_required=school_class.check_in_required,
+        students=result,
+        waiting=sorted(waiting.values(), key=lambda w: w.supervisor.name),
+    )
+
+
+@class_router.post("/remind", response_model=Reminded)
+def remind_supervisors(class_id: UUID, db: DbSession, user: Teacher) -> Reminded:
+    """Påminner handledare som har incheckningar att bekräfta för klassens elever, de senaste
+    två veckorna."""
+    school_class = get_accessible_class(db, user, class_id)
+    today = time.today()
+    pending = db.execute(
+        select(Placement.supervisor_id, Attendance.id)
+        .join(Attendance, Attendance.placement_id == Placement.id)
+        .where(
+            Placement.student_id.in_([s.id for s in school_class.students if s.is_active]),
+            Attendance.date >= today - timedelta(days=REVIEW_DAYS - 1),
+            Attendance.date <= today,
+            Attendance.status == AttendanceStatus.PRESENT,
+            Attendance.review.is_(None),
+        )
+    ).all()
+    per_supervisor: dict[UUID, int] = {}
+    for supervisor_id, _ in pending:
+        per_supervisor[supervisor_id] = per_supervisor.get(supervisor_id, 0) + 1
+    for supervisor_id, count in per_supervisor.items():
+        days = "dag" if count == 1 else "dagar"
+        notify(
+            db,
+            supervisor_id,
+            f"{user.name} påminner dig om att bekräfta närvaron, {count} {days} väntar",
+            "/attendance-review",
+        )
+    db.commit()
+    return Reminded(reminded=len(per_supervisor))
 
 
 # --- Elevsidan ----------------------------------------------------------------------------
@@ -422,10 +746,8 @@ def student_attendance(
         )
         .order_by(Attendance.date.desc())
     ).all()
-    counts = {s: 0 for s in AttendanceStatus}
-    for row in rows:
-        if row.date <= counted_to:
-            counts[AttendanceStatus(row.status)] += 1
+    counted = [r for r in rows if r.date <= counted_to]
+    present = sum(1 for r in counted if counts_as_present(r.status, r.review))
     expected = _expected_days(in_period, from_date, counted_to, per_week)
     today_row = next((r for r in rows if r.date == today), None)
     return StudentAttendanceDetail(
@@ -436,9 +758,15 @@ def student_attendance(
             student=Ref(id=student.id, name=student.name),
             has_placement=bool(in_period),
             expected_days=expected,
-            present=counts[AttendanceStatus.PRESENT],
-            missing=max(0, expected - counts[AttendanceStatus.PRESENT]) if required else 0,
+            present=present,
+            missing=max(0, expected - present) if required else 0,
+            pending=sum(1 for r in counted if day_state(r) == DayState.PENDING),
+            not_present=sum(
+                1 for r in counted if day_state(r) == DayState.NOT_PRESENT and r.checked_in_at
+            ),
             today=today_row.status if today_row else None,
+            today_state=day_state(today_row),
+            today_checked_in_at=today_row.checked_in_at if today_row else None,
         ),
         days=[_day(r) for r in rows],
     )

@@ -371,6 +371,16 @@ function attentionText(item: AttentionItem) {
       return { title: 'Ingen praktikplats', text: 'Tilldelas i klassvyn' }
     case 'unsigned_contract':
       return { title: 'Kontraktet är inte signerat', text: `Väntar på ${waitingText(item)}` }
+    case 'unconfirmed_days':
+      return {
+        title: `${plural(item.count, 'dag', 'dagar')} väntar på handledaren`,
+        text: 'Incheckad men inte bekräftad',
+      }
+    case 'attendance_conflict':
+      return {
+        title: 'Närvaron stämmer inte',
+        text: `Incheckad ${plural(item.count, 'dag', 'dagar')} som handledaren säger att eleven inte var där`,
+      }
   }
 }
 
@@ -379,6 +389,8 @@ const attentionIcon = {
   missing_reports: { icon: FileText, tone: 'butter' },
   no_placement: { icon: BriefcaseBusiness, tone: 'mint' },
   unsigned_contract: { icon: FileSignature, tone: 'butter' },
+  unconfirmed_days: { icon: MapPinCheck, tone: 'sky' },
+  attendance_conflict: { icon: MapPinCheck, tone: 'sky' },
 } as const
 
 function AttentionBox({ studentId }: { studentId: string }) {

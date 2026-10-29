@@ -5,6 +5,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
 import { useClasses } from '../api/classes'
+import { useReviewList } from '../api/attendance'
 import { useContracts } from '../api/contracts'
 import { useTeacherOverview } from '../api/overview'
 import { AppShell } from '../layout/AppShell'
@@ -24,6 +25,7 @@ export function RequireAuth() {
   const overview = useTeacherOverview(isTeacher)
   const role = me.data?.role
   const contracts = useContracts(role === 'teacher' || role === 'supervisor' || role === 'student')
+  const review = useReviewList(role === 'supervisor')
   const preferences = me.data?.preferences
 
   // Användarens visningsinställningar gäller på alla enheter.
@@ -65,6 +67,15 @@ export function RequireAuth() {
       nav={navByRole[user.role].map((item) => {
         const data = overview.data
         if (item.to === '/overview') return { ...item, count: data?.attention.length }
+        // Handledaren: dagar att bekräfta, i dag och tidigare.
+        if (item.to === '/attendance-review') {
+          const r = review.data
+          const count = r
+            ? r.today_items.filter((i) => i.state === 'pending').length +
+              r.earlier.filter((i) => i.state === 'pending').length
+            : 0
+          return { ...item, count, countLabel: 'att bekräfta', tone: 'butter' as const }
+        }
         // Läraren: kontrakt som väntar på signering. Elev och handledare: kontrakt som väntar på dem.
         if (item.to === '/contracts') {
           const list = contracts.data ?? []

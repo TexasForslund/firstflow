@@ -113,6 +113,14 @@ Låser upp: F5.
 3. Spara ingen plats (GPS). Det är inte nödvändigt för funktionen.
 4. Använd klassens APL-villkor (B2): `check_in_required` avgör om incheckning krävs, och `apl_days_per_week` hur många APL-dagar eleven har per vecka.
 
+
+**B4b. Bekräftad närvaro 🚧 Granskas (Texas + Claude, 2026-10-29).** Skissen "Firstflow – Bekräftad närvaro skiss" är godkänd av Texas.
+- `Attendance.review`: tom = väntar på handledaren, `confirmed` eller `not_present`. Dessutom `reviewed_at` och `reviewed_by_id`. En dag som handledaren lade till är närvarande utan incheckningstid.
+- `GET/POST /api/supervisor/attendance/review`: handledaren ser i dag och dagar som väntar, och bekräftar, lägger till eller säger "inte på plats". Det går två veckor bakåt (`REVIEW_DAYS`), vardagar, inom placeringen.
+- `GET /api/classes/{id}/attendance/week`: veckan per elev med läge per dag, och vilka handledare som har dagar att bekräfta. `POST /api/classes/{id}/attendance/remind` (lärare): notis till de handledarna.
+- En dag som väntar räknas som närvaro. En dag där handledaren säger "inte på plats" räknas inte. Inget godkänns automatiskt.
+- Översikten: `confirmed`, `pending` och `today_students`. "Behöver uppmärksamhet" får `unconfirmed_days` (dagar före i dag som väntar) och `attendance_conflict` (incheckad men inte på plats enligt handledaren).
+
 ---
 
 ## B5. Frågor och veckoredovisning 🚧 B5a klar (PR #14), mallar granskas, resten av B5b kvar (Texas + Claude)
