@@ -27,6 +27,19 @@ export function useProjects() {
   })
 }
 
+/** Elevens pågående projekt. */
+export function useMyProjects(enabled = true) {
+  return useQuery({
+    queryKey: ['me', 'projects'],
+    enabled,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/me/projects')
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
 export function useStudentProjects(studentId: string) {
   return useQuery({
     queryKey: keys.student(studentId),

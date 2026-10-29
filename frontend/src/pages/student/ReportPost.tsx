@@ -30,6 +30,7 @@ export function ReportPost() {
             <h1 className={styles.postFullTitle}>{reportTitle(detail.due_date)}</h1>
             <p className={styles.postMeta}>
               {detail.class_name} · {longDate(detail.due_date)}
+              {detail.project && ` · ${detail.project.name}`}
             </p>
           </div>
           <span className={styles.doneTag}>Inskickad</span>

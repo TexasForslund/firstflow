@@ -5,6 +5,7 @@ import { Button } from '../../components'
 import { NotFound } from '../NotFound'
 import { reportTitle } from '../reports/answers'
 import { ReportStepper } from '../reports/ReportStepper'
+import { ProjectPicker } from './ProjectPicker'
 import styles from './Student.module.css'
 
 /** Eleven svarar på redovisningen, en fråga i taget. Svaret sparas vid varje Nästa. */
@@ -36,6 +37,7 @@ export function AnswerReport() {
         await submit.mutateAsync()
       }}
       onClose={() => navigate('/my-reports')}
+      beforeSubmit={<ProjectPicker reportId={reportId} projectId={detail.project?.id ?? null} />}
       done={{
         title: 'Tack!',
         body: 'Din redovisning är inskickad. Din lärare kan nu läsa och kommentera den.',

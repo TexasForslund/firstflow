@@ -22,6 +22,8 @@ interface Props {
   done: { title: string; body: string; actions: ReactNode }
   /** Visas överst, t.ex. "Förhandsgranskning". */
   badge?: string
+  /** Visas på sista steget ovanför Skicka in, t.ex. valet av projekt. */
+  beforeSubmit?: ReactNode
 }
 
 /**
@@ -29,7 +31,18 @@ interface Props {
  * Föregående, Nästa och till sist Skicka in. Enter, bokstäver, J/N och siffror fungerar
  * på dator, svep åt vänster eller höger i mobilen. Se docs/design/fragor-typeform.md.
  */
-export function ReportStepper({ title, subtitle, questions, initialAnswers = {}, onSave, onSubmit, onClose, done, badge }: Props) {
+export function ReportStepper({
+  title,
+  subtitle,
+  questions,
+  initialAnswers = {},
+  onSave,
+  onSubmit,
+  onClose,
+  done,
+  badge,
+  beforeSubmit,
+}: Props) {
   const [answers, setAnswers] = useState<Answers>(initialAnswers)
   const answersRef = useRef(answers)
   const path = visiblePath(questions, answers)
@@ -235,6 +248,7 @@ export function ReportStepper({ title, subtitle, questions, initialAnswers = {},
                 {error}
               </p>
             )}
+            {isLast && beforeSubmit}
           </section>
 
           <footer className={styles.bottom}>

@@ -32,6 +32,7 @@ from app.api.routes.forms import latest_version
 from app.api.routes.students import get_student_for
 from app.core import time
 from app.db.session import DbSession
+from app.models.project import Project, project_students
 from app.models.report import (
     FormVersion,
     Report,
@@ -466,6 +467,34 @@ def save_answer(
                 set_={**values, "answered_at": func.now()},
             )
         )
+    db.commit()
+    db.expire_all()
+    return _detail(db, user, report)
+
+
+class ReportProject(BaseModel):
+    project_id: UUID | None = Field(description="Projektet, eller null för inget projekt")
+
+
+@router.put("/{report_id}/project", response_model=ReportDetail)
+def set_project(report_id: UUID, body: ReportProject, db: DbSession, user: Student) -> ReportDetail:
+    """Kopplar redovisningen till ett av elevens projekt, eller tar bort kopplingen. Valfritt
+    och bara innan redovisningen är inskickad (Texas, 2026-10-29)."""
+    report = _get_report(db, user, report_id, for_update=True)
+    _require_draft(report)
+    if body.project_id is not None:
+        member = db.scalar(
+            select(Project.id)
+            .join(project_students, project_students.c.project_id == Project.id)
+            .where(
+                Project.id == body.project_id,
+                Project.school_id == user.school_id,
+                project_students.c.student_id == user.id,
+            )
+        )
+        if member is None:
+            raise _not_found()
+    report.project_id = body.project_id
     db.commit()
     db.expire_all()
     return _detail(db, user, report)

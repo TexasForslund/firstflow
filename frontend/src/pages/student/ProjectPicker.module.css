@@ -1,0 +1,60 @@
+/* Valfri koppling till ett projekt på redovisningens sista steg. */
+.picker {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.optional {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.chip:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-weight: 500;
+}
+
+.chip svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}

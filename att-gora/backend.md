@@ -297,7 +297,7 @@ Enkel första version, beslutad av Texas 2026-10-26:
 **Inte byggt:** eleven väljer projekt i redovisningen (B5b, projektval) och en sammanställning per projekt. Idéerna står i [ideer.md](ideer.md), punkt 2.
 
 **Nästa steg, beslutat av Texas 2026-10-26:**
-- **Eleven väljer projekt** i redovisningen. Det blir ett första steg, "Vilket projekt gäller det?", som hoppas över om eleven bara har ett projekt. Eleven ser sina projekt i Min APL.
+- ~~Eleven väljer projekt~~ Byggt (Texas, 2026-10-29): projektet är valfritt. På redovisningens sista steg finns "Koppla till projekt (valfritt)" med elevens pågående projekt. Inget väljs automatiskt. `PUT /api/reports/{id}/project` (eleven, bara utkast) och `GET /api/me/projects`. Eleven ser sina projekt i Min APL och projektet på sina inlägg.
 - **Handledaren ser alla redovisningar** som eleven skapar, inte bara de som hör till ett projekt.
 
 **Visningsdata:** `uv run python -m scripts.seed_showcase` ersätter Kramforsskolans demoklasser med klassen EL23. Den har sex elever, tretton veckors APL, närvaro, redovisningar med svar och kommentarer, fyra pågående projekt (tre med företag och inbjuden handledare) och ett avslutat. Logga in som `larare.kramfors@demo.firstflow.se`.

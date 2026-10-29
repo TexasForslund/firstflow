@@ -1,7 +1,8 @@
-import { BriefcaseBusiness, CalendarDays, ChevronRight, FileSignature, MapPin } from 'lucide-react'
+import { BriefcaseBusiness, CalendarDays, ChevronRight, FileSignature, FolderKanban, MapPin } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { statusText, useContracts } from '../../api/contracts'
+import { useMyProjects } from '../../api/projects'
 import { useMyPlacements, type MyPlacement } from '../../api/placements'
 import { Avatar } from '../../components'
 import { periodCountdown, periodProgress, periodStatus, periodText, periodWeek, todayIso } from '../placements/period'
@@ -37,12 +38,46 @@ export function MyApl() {
       )}
 
       <MyContracts />
+      <MyProjects />
 
       {main && <CurrentPlacement placement={main} today={today} />}
 
       {later.length > 0 && <PlacementList title="Kommande" items={later} />}
       {ended.length > 0 && <PlacementList title="Tidigare" items={ended} />}
     </div>
+  )
+}
+
+/** Elevens pågående projekt (B12). Redovisningar kan kopplas till dem. */
+function MyProjects() {
+  const projects = useMyProjects()
+  const items = projects.data ?? []
+  if (items.length === 0) return null
+  return (
+    <section className={styles.card} aria-labelledby="projects-title">
+      <h2 id="projects-title" className={styles.cardTitle}>
+        Mina projekt
+      </h2>
+      <ul className={styles.contracts}>
+        {items.map((p) => (
+          <li key={p.id} className={styles.project}>
+            <FolderKanban aria-hidden="true" />
+            <span className={styles.contractText}>
+              <span className={styles.contractTitle}>{p.name}</span>
+              <span className={styles.contractMeta}>
+                {[
+                  p.workplace?.name,
+                  p.deadline &&
+                    `klart ${new Date(`${p.deadline}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`,
+                ]
+                  .filter(Boolean)
+                  .join(' · ') || 'Inget slutdatum'}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
