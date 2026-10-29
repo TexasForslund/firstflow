@@ -40,6 +40,23 @@ export function useMyProjects(enabled = true) {
   })
 }
 
+export type MyProject = components['schemas']['MyProject']
+
+/** Ett projekt eleven är med i, med elevens egna redovisningar i projektet. */
+export function useMyProject(projectId: string) {
+  return useQuery({
+    queryKey: ['me', 'projects', projectId],
+    retry: false,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/me/projects/{project_id}', {
+        params: { path: { project_id: projectId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
 export function useStudentProjects(studentId: string) {
   return useQuery({
     queryKey: keys.student(studentId),

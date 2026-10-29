@@ -1427,6 +1427,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Project
+         * @description Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,
+         *     2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.
+         */
+        get: operations["my_project_api_me_projects__project_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contracts": {
         parameters: {
             query?: never;
@@ -2395,6 +2416,87 @@ export interface components {
              * Format: date
              */
             end_date: string;
+        };
+        /** MyProject */
+        MyProject: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Deadline */
+            deadline: string | null;
+            /** Tags */
+            tags: string[];
+            /** Students */
+            students: components["schemas"]["Ref"][];
+            /** @description Läraren som skapade projektet */
+            owner: components["schemas"]["Ref"];
+            /** @description Företaget projektet görs på */
+            workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Supervisors
+             * @description Inbjudna handledare
+             */
+            supervisors: components["schemas"]["Ref"][];
+            /**
+             * Completed At
+             * @description Satt när projektet är avslutat
+             */
+            completed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Report Count
+             * @description Inskickade redovisningar kopplade till projektet
+             */
+            report_count: number;
+            /**
+             * Unread Count
+             * @description Olästa redovisningar för läraren. 0 för handledare
+             */
+            unread_count: number;
+            /** Is Owner */
+            is_owner: boolean;
+            /**
+             * Can Edit Students
+             * @description Om du får ändra elever, företag, handledare och avsluta projektet
+             */
+            can_edit_students: boolean;
+            /**
+             * Reports
+             * @description Elevens egna inskickade redovisningar i projektet, senaste först
+             */
+            reports: components["schemas"]["MyProjectReport"][];
+        };
+        /** MyProjectReport */
+        MyProjectReport: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Comment Count */
+            comment_count: number;
+            /** @description Första textsvaret, förkortat */
+            excerpt: components["schemas"]["TextAnswer"] | null;
         };
         /** NotificationList */
         NotificationList: {
@@ -6013,6 +6115,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectRead"][];
+                };
+            };
+        };
+    };
+    my_project_api_me_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyProject"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

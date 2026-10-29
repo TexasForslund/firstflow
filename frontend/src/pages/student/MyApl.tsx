@@ -60,20 +60,23 @@ function MyProjects() {
       </h2>
       <ul className={styles.contracts}>
         {items.map((p) => (
-          <li key={p.id} className={styles.project}>
-            <FolderKanban aria-hidden="true" />
-            <span className={styles.contractText}>
-              <span className={styles.contractTitle}>{p.name}</span>
-              <span className={styles.contractMeta}>
-                {[
-                  p.workplace?.name,
-                  p.deadline &&
-                    `klart ${new Date(`${p.deadline}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`,
-                ]
-                  .filter(Boolean)
-                  .join(' · ') || 'Inget slutdatum'}
+          <li key={p.id}>
+            <Link to={`/my-projects/${p.id}`} className={styles.project}>
+              <FolderKanban aria-hidden="true" />
+              <span className={styles.contractText}>
+                <span className={styles.contractTitle}>{p.name}</span>
+                <span className={styles.contractMeta}>
+                  {[
+                    p.workplace?.name,
+                    p.deadline &&
+                      `klart ${new Date(`${p.deadline}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ') || 'Inget slutdatum'}
+                </span>
               </span>
-            </span>
+              <ChevronRight aria-hidden="true" className={styles.projectChevron} />
+            </Link>
           </li>
         ))}
       </ul>

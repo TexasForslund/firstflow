@@ -1,0 +1,225 @@
+/* Elevens projekt, skiss B (Texas, 2026-10-29). Mobilen först. */
+.page {
+  display: grid;
+  width: 100%;
+  max-width: 40rem;
+}
+
+.state,
+.meta,
+.empty {
+  color: var(--color-text-secondary);
+}
+
+.top {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-text);
+}
+
+.top[data-tone='mint'] {
+  background: var(--color-mint-bg);
+}
+
+.top[data-tone='sky'] {
+  background: var(--color-sky-bg);
+}
+
+.top[data-tone='butter'] {
+  background: var(--color-butter-bg);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.75rem;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.back svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-primary-on-light);
+}
+
+.top[data-tone='mint'] .icon {
+  color: var(--color-mint);
+}
+
+.top[data-tone='sky'] .icon {
+  color: var(--color-sky);
+}
+
+.top[data-tone='butter'] .icon {
+  color: var(--color-butter);
+}
+
+.icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.15;
+}
+
+.facts,
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  padding: 0.3125rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  font-size: var(--font-size-sm);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary-on-light);
+  font-weight: 600;
+}
+
+.panel {
+  padding-top: var(--space-2);
+}
+
+.empty {
+  padding: var(--space-6) 0;
+}
+
+.list,
+.people {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.row:hover .excerpt {
+  text-decoration: underline;
+}
+
+.rowText {
+  display: grid;
+  flex: 1;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.meta {
+  font-size: var(--font-size-sm);
+}
+
+.excerpt {
+  line-height: 1.45;
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--color-text-faded);
+}
+
+.about {
+  display: grid;
+  gap: var(--space-6);
+  padding-top: var(--space-3);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.description {
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.tag {
+  padding: 0.25rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-sm);
+}
+
+.people {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.personName {
+  flex: 1;
+  min-width: 0;
+}

@@ -245,7 +245,7 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ---
 
-## F20. Handledaren läser och kommenterar redovisningar 🚧 Granskas ([PR #43](https://github.com/TexasForslund/firstflow/pull/43), Texas + Claude, 2026-10-29)
+## F20. Handledaren läser och kommenterar redovisningar ✅ Klar ([PR #43](https://github.com/TexasForslund/firstflow/pull/43), Texas + Claude, 2026-10-29)
 
 Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
 - **Redovisningar** (`/student-reports`) i handledarens sidomeny, med antal olästa. Ett flöde med elevernas inlägg från tiden hos handledaren: namn, dag, projekt, första textsvaret och antal kommentarer. Nya inlägg har en prick. Knappar för Alla elever och en per elev.
@@ -254,9 +254,13 @@ Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
 
 ---
 
-## F21. Eleven öppnar ett projekt från Min APL ⬜
+## F21. Eleven öppnar ett projekt från Min APL 🚧 Granskas (Texas + Claude, 2026-10-29)
 
-Texas, 2026-10-29: i Min APL ser eleven sina projekt men kan inte klicka sig in och läsa om projektet (beskrivning, företag, slutdatum och sina redovisningar i projektet). Behöver en elevvy av projektet och åtkomst för eleven i API:t.
+Enligt skiss B i "Firstflow – Elevens projekt skiss" (Texas, 2026-10-29):
+- **Min APL:** projekten under Mina projekt är klickbara och öppnar `/my-projects/:id`.
+- **Projektet:** en topp i projektets färg med namn, företag, slutdatum och antal egna redovisningar. Flikarna **Mina redovisningar** (först) och **Om projektet** (beskrivning, taggar och vilka som är med: lärare, handledare och andra elever, bara namn).
+- Redovisningarna öppnar elevens inlägg `/my-reports/:id`.
+- API: `GET /api/me/projects/{id}` (elev). Eleven måste vara med i projektet, annars 404. Bara elevens egna redovisningar i projektet.
 
 ---
 

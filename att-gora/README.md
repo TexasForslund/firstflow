@@ -53,11 +53,11 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **#40:** bekräftad närvaro. Handledaren bekräftar, säger "inte på plats" eller lägger till dagar, upp till två veckor bakåt. Läraren ser vad som väntar och en diskret varning när incheckningen och handledaren inte stämmer.
 - **#41:** eleven väljer projekt i ett valfritt sista steg i redovisningen.
 - **#42:** eleven har en egen kontraktsvy utan sök och filter.
+- **B16 och F20 (#43):** handledaren läser och kommenterar redovisningar från tiden hos hen. Eleven får en notis.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - B16 och F20: handledaren läser och kommenterar redovisningar (granskas i #43).
-  - F21: eleven öppnar ett projekt från Min APL.
+  - F21: eleven öppnar ett projekt från Min APL (granskas).
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
   - Påminnelser om incheckning via e-post eller push.
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
