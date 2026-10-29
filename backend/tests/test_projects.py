@@ -330,3 +330,54 @@ def test_project_reports(
     assert len(rows) == 2 and rows[0]["is_read"] is None
     login(company.gustav)
     assert client.get(f"/api/projects/{project_id}/reports").status_code == 404
+
+
+# --- Eleven kopplar en redovisning till ett projekt (Texas, 2026-10-29) ----------------------
+
+
+def test_student_links_report_to_project(
+    client: TestClient, db: Session, login: Login, w: World
+) -> None:
+    login(w.teacher)
+    project_id = client.post("/api/projects", json=body(w)).json()["id"]
+    other_id = client.post(
+        "/api/projects", json=body(w, name="Annat", student_ids=[str(w.maja.id)])
+    ).json()["id"]
+    done = client.post(
+        "/api/projects", json=body(w, name="Klart", student_ids=[str(w.hugo.id)])
+    ).json()["id"]
+    client.put(f"/api/projects/{done}", json=body(w, name="Klart", completed=True))
+
+    version = FormVersion(class_id=w.ee22.id, version=1, questions=[])
+    db.add(version)
+    db.flush()
+    report = Report(
+        class_id=w.ee22.id,
+        student_id=w.hugo.id,
+        form_version_id=version.id,
+        due_date=date(2026, 10, 27),
+    )
+    db.add(report)
+    db.flush()
+
+    login(w.hugo)
+    # Avslutade projekt och andras projekt syns inte.
+    assert [p["id"] for p in client.get("/api/me/projects").json()] == [project_id]
+
+    url = f"/api/reports/{report.id}/project"
+    linked = client.put(url, json={"project_id": project_id})
+    assert linked.status_code == 200, linked.text
+    assert linked.json()["project"]["id"] == project_id
+    assert client.put(url, json={"project_id": other_id}).status_code == 404
+    assert client.put(url, json={"project_id": None}).json()["project"] is None
+
+    # Efter inskick går det inte att ändra.
+    report.status = ReportStatus.SUBMITTED
+    report.submitted_at = datetime(2026, 10, 27, 15, tzinfo=UTC)
+    db.flush()
+    assert client.put(url, json={"project_id": project_id}).status_code == 409
+
+    # Bara eleven själv.
+    login(w.teacher)
+    assert client.put(url, json={"project_id": None}).status_code == 403
+    assert client.get("/api/me/projects").status_code == 403

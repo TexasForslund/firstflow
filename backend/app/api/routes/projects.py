@@ -37,6 +37,7 @@ from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 student_router = APIRouter(prefix="/students/{student_id}/projects", tags=["projects"])
+me_router = APIRouter(prefix="/me/projects", tags=["projects"])
 
 Teacher = Annotated[User, Depends(require_roles(UserRole.TEACHER))]
 Member = Annotated[User, Depends(require_roles(UserRole.TEACHER, UserRole.SUPERVISOR))]
@@ -399,6 +400,26 @@ def student_projects(student_id: UUID, db: DbSession, user: CanViewStudent) -> l
         select(Project)
         .join(project_students, project_students.c.project_id == Project.id)
         .where(project_students.c.student_id == student.id, Project.school_id == student.school_id)
+        .options(*_LOAD)
+        .order_by(Project.deadline.nulls_last(), Project.name)
+    ).all()
+    return _read(db, user, list(projects))
+
+
+@me_router.get("", response_model=list[ProjectRead])
+def my_projects(
+    db: DbSession, user: Annotated[User, Depends(require_roles(UserRole.STUDENT))]
+) -> list[ProjectRead]:
+    """Elevens projekt som pågår, med närmast slutdatum först. För Min APL och för att koppla
+    en redovisning till ett projekt."""
+    projects = db.scalars(
+        select(Project)
+        .join(project_students, project_students.c.project_id == Project.id)
+        .where(
+            project_students.c.student_id == user.id,
+            Project.school_id == user.school_id,
+            Project.completed_at.is_(None),
+        )
         .options(*_LOAD)
         .order_by(Project.deadline.nulls_last(), Project.name)
     ).all()

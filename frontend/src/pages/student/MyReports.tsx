@@ -165,6 +165,7 @@ function PostCard({ item, authorName }: { item: DueReport; authorName: string })
           <p className={styles.postTitle}>{reportTitle(item.due_date)}</p>
           <p className={styles.postMeta}>
             {item.class_name} · {longDate(item.due_date)}
+            {detail?.project && ` · ${detail.project.name}`}
           </p>
         </div>
       </div>

@@ -1760,6 +1760,65 @@
         }
       }
     },
+    "/api/reports/{report_id}/project": {
+      "put": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Set Project",
+        "description": "Kopplar redovisningen till ett av elevens projekt, eller tar bort kopplingen. Valfritt\noch bara innan redovisningen är inskickad (Texas, 2026-10-29).",
+        "operationId": "set_project_api_reports__report_id__project_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportProject"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/{report_id}/submit": {
       "post": {
         "tags": [
@@ -3749,6 +3808,37 @@
             }
           }
         }
+      }
+    },
+    "/api/me/projects": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "My Projects",
+        "description": "Elevens projekt som pågår, med närmast slutdatum först. För Min APL och för att koppla\nen redovisning till ett projekt.",
+        "operationId": "my_projects_api_me_projects_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectRead"
+                  },
+                  "type": "array",
+                  "title": "Response My Projects Api Me Projects Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
       }
     },
     "/api/contracts": {
@@ -6940,6 +7030,28 @@
           "is_read"
         ],
         "title": "ReportDetail"
+      },
+      "ReportProject": {
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id",
+            "description": "Projektet, eller null för inget projekt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "title": "ReportProject"
       },
       "ReportStart": {
         "properties": {

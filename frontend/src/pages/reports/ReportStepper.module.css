@@ -508,3 +508,15 @@
     opacity: 0;
   }
 }
+
+/* Lång text på sista knappen, t.ex. "Skicka in till Laddbox för elbil", kortas med … */
+.nextLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.next {
+  min-width: 0;
+}

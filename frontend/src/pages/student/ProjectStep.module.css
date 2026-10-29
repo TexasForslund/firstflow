@@ -1,0 +1,183 @@
+/* Redovisningens sista steg: välj projekt (Texas skiss A, 2026-10-29). */
+.step {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.kicker {
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.2;
+}
+
+.title:focus {
+  outline: none;
+}
+
+.intro {
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.cards {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 4.75rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 1.125rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.card:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.card[aria-pressed='true'],
+.card[aria-pressed='true']:hover:not(:disabled) {
+  padding: calc(var(--space-3) - 1px) calc(var(--space-4) - 1px);
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.875rem;
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.icon svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.icon[data-tone='mint'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.icon[data-tone='sky'] {
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.icon[data-tone='butter'] {
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.meta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.check {
+  display: inline-flex;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.card[aria-pressed='true'] .check {
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+.check svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 3;
+}
+
+.none {
+  justify-self: center;
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.none[aria-pressed='true'] {
+  color: var(--color-text);
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.card[aria-pressed='true'] .icon[data-tone='primary'] {
+  background: var(--color-bg);
+}
+
+.more {
+  display: inline-flex;
+  justify-self: center;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.more:hover {
+  background: var(--color-surface-hover);
+}
+
+.more svg {
+  width: 1rem;
+  height: 1rem;
+}

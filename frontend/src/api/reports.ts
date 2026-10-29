@@ -74,6 +74,22 @@ export function useSaveAnswer(reportId: string) {
   })
 }
 
+/** Kopplar redovisningen till ett av elevens projekt, eller tar bort kopplingen (null). */
+export function useSetReportProject(reportId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (projectId: string | null) => {
+      const { data, error, response } = await api.PUT('/api/reports/{report_id}/project', {
+        params: { path: { report_id: reportId } },
+        body: { project_id: projectId },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: (report) => queryClient.setQueryData(keys.report(reportId), report),
+  })
+}
+
 export function useSubmitReport(reportId: string) {
   const queryClient = useQueryClient()
   return useMutation({

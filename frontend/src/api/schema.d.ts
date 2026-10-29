@@ -613,6 +613,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/project": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Project
+         * @description Kopplar redovisningen till ett av elevens projekt, eller tar bort kopplingen. Valfritt
+         *     och bara innan redovisningen är inskickad (Texas, 2026-10-29).
+         */
+        put: operations["set_project_api_reports__report_id__project_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/submit": {
         parameters: {
             query?: never;
@@ -1355,6 +1376,27 @@ export interface paths {
          * @description Elevens projekt på skolan. Samma behörighet som elevsidan.
          */
         get: operations["student_projects_api_students__student_id__projects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Projects
+         * @description Elevens projekt som pågår, med närmast slutdatum först. För Min APL och för att koppla
+         *     en redovisning till ett projekt.
+         */
+        get: operations["my_projects_api_me_projects_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2702,6 +2744,14 @@ export interface components {
              * @description Om du (läraren) har läst den. null för eleven
              */
             is_read: boolean | null;
+        };
+        /** ReportProject */
+        ReportProject: {
+            /**
+             * Project Id
+             * @description Projektet, eller null för inget projekt
+             */
+            project_id: string | null;
         };
         /** ReportStart */
         ReportStart: {
@@ -4619,6 +4669,41 @@ export interface operations {
             };
         };
     };
+    set_project_api_reports__report_id__project_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportProject"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     submit_report_api_reports__report_id__submit_post: {
         parameters: {
             query?: never;
@@ -5825,6 +5910,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_projects_api_me_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"][];
                 };
             };
         };
