@@ -192,26 +192,29 @@ Se detaljerad spec i [docs/skoladmin-funktioner.md](../docs/skoladmin-funktioner
 
 ---
 
-## B8. Digital avtalshantering ⬜
+## B8. Digital avtalshantering 🚧 Granskas (Texas + Claude, 2026-10-29)
 
-Väntar inte på annat. Kan parallellköras med B2–B5.
+Se kraven i [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md). Skissen "Firstflow – Kontrakt skiss" är godkänd av Texas.
 
-Se detaljerad spec i [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md).
+**Beslut (Texas, 2026-10-29):**
+- Läraren laddar upp avtalet som PDF. Firstflow fyller inte i mallar än.
+- Tre parter signerar: eleven, handledaren och läraren. Rektor och vårdnadshavare är inte med.
+- Läraren signerar för skolan när hen skickar kontraktet. Eleven och handledaren signerar i valfri ordning.
+- Testläge: signeringen är en knapp. BankID kopplas in när signeringstjänsten är vald.
 
-**Mål:** APL-kontrakt skapas, distribueras och signeras digitalt.
+**Byggt:**
+- Modeller `Contract` och `ContractSignature` i `app/models/contract.py`. PDF:en ligger i databasen (laddas bara när den hämtas), högst 10 MB, och måste börja med `%PDF-`.
+- Endpoints i `app/api/routes/contracts.py`:
+  - `GET /api/contracts`: lärarens kontrakt, eller skickade kontrakt där eleven eller handledaren är part.
+  - `POST /api/contracts` (multipart, lärare): PDF, elev, företag och handledare. `send=true` skickar direkt, annars blir det ett utkast.
+  - `GET /api/contracts/{id}` och `GET /api/contracts/{id}/pdf` (`?download=true` för nedladdning). Första hämtningen räknas som öppnat.
+  - `POST /api/contracts/{id}/send`, `/sign` (`{"confirm": true}`) och `/remind`.
+  - `DELETE /api/contracts/{id}`: bara så länge eleven och handledaren inte har signerat.
+- Eleven måste vara en elev läraren får se, och företaget ett företag läraren får se (404). Handledaren måste höra till företaget (422).
+- Notiser: eleven och handledaren när kontraktet skickas och vid påminnelse, läraren när alla har signerat.
+- Ny dependency: `python-multipart`.
 
-**Gör så här**
-
-1. Modell `Contract`: `id`, `placement_id`, `template_id`, `status` (`draft|sent|partially_signed|fully_signed`), `created_at`, `pdf_path`.
-2. Modell `ContractSignature`: `id`, `contract_id`, `user_id`, `role` (`student|supervisor|teacher|guardian`), `signed_at`, `signature_method` (`bankid|manual`).
-3. Endpoints:
-   - `POST /api/contracts` (lärare): skapa kontrakt från mall för en placering
-   - `GET /api/contracts/{id}` – hämta kontrakt med signeringsstatus
-   - `POST /api/contracts/{id}/sign` – signera (initialt manuell bekräftelse, BankID i nästa steg)
-4. PDF-generering vid skapande (weasyprint). Spara som PDF/A-2b för arkivering.
-5. Notifiera berörda parter via e-post när kontrakt skickas och när alla signerat.
-
-**BankID:** integreras i ett separat steg. Välj signeringstjänst (Scrive/Verified/Nets eID) innan implementation.
+**Inte byggt:** BankID, mallar, PDF/A-arkivering, läsrätt för rektor, skoladmin och SYV, och kontrakt i "Behöver uppmärksamhet" (B13).
 
 ---
 

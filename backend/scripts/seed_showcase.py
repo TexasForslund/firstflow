@@ -32,6 +32,7 @@ from app.core import time
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.attendance import Attendance, AttendanceStatus
+from app.models.contract import Contract, ContractSignature, SignerRole
 from app.models.placement import Placement, Workplace
 from app.models.project import Project
 from app.models.report import (
@@ -46,6 +47,7 @@ from app.models.school import School
 from app.models.school_class import SchoolClass, class_students, teacher_students
 from app.models.user import User
 from app.services.report_forms import FormContent, dump_questions
+from scripts.demo_pdf import make_pdf
 from scripts.seed_demo import ALLOWED_ENVIRONMENTS, DEMO_PASSWORD, DOMAIN, _slug, seed
 
 SCHOOL = "Kramforsskolan"
@@ -110,6 +112,30 @@ DONE_PROJECT = (
     "Gå igenom elsäkerhet, skyddsutrustning och riskbedömning med handledaren första veckorna.",
     ["Elsäkerhet"],
 )
+
+# Kontrakt per elev (Texas, 2026-10-29). Värdet är vilka som har signerat, eller None för ett
+# utkast. "sent" är hur många dagar sedan kontraktet skickades. Hugo får ett kontrakt som väntar
+# på honom, så att demon kan visa hur eleven signerar.
+CONTRACTS: dict[str, tuple[set[str] | None, int]] = {
+    "Hugo Karlsson": ({"teacher"}, 2),
+    "Elsa Lindqvist": ({"teacher"}, 0),
+    "Omar Haddad": ({"teacher", "supervisor"}, 7),
+    "Alva Holm": ({"teacher", "supervisor", "student"}, 95),
+    "Liam Berg": ({"teacher", "supervisor", "student"}, 95),
+    "Maja Nordström": (None, 0),
+}
+
+CONTRACT_TEXT = [
+    "Detta utbildningskontrakt gäller arbetsplatsförlagt lärande (APL) inom Elprogrammet. "
+    "Kontraktet är ett exempel i Firstflows demodata.",
+    "Eleven deltar i verksamheten på arbetsplatsen under APL-perioden och följer arbetsplatsens "
+    "regler för arbetsmiljö och säkerhet.",
+    "Handledaren introducerar eleven, planerar arbetsuppgifterna tillsammans med skolan och "
+    "bekräftar elevens närvaro.",
+    "Skolan ansvarar för att APL:en är kvalitetssäkrad, att eleven har en handledare och att "
+    "läraren följer upp elevens lärande.",
+    "Parterna signerar kontraktet digitalt i Firstflow.",
+]
 
 WORK = {
     "Elinstallation i villa": [
@@ -216,6 +242,7 @@ def _clear(db: Session, school: School, teacher: User, keep: set[uuid.UUID]) -> 
     db.execute(delete(Report).where(Report.id.in_(report_ids)))
     db.execute(delete(FormVersion).where(FormVersion.class_id.in_(class_ids)))
     db.execute(delete(Project).where(Project.school_id == school.id))
+    db.execute(delete(Contract).where(Contract.school_id == school.id))
     workplace_ids = list(db.scalars(select(Workplace.id).where(Workplace.school_id == school.id)))
     placement_ids = list(
         db.scalars(select(Placement.id).where(Placement.workplace_id.in_(workplace_ids)))
@@ -457,8 +484,72 @@ def showcase(db: Session) -> dict[str, int]:
                         )
                     )
                     counts["kommentarer"] += 1  # fmt: skip
+
+    _contracts(db, school, teacher, students, workplaces, start, end, today)
     db.flush()
     return counts
+
+
+def _contracts(  # noqa: PLR0913
+    db: Session,
+    school: School,
+    teacher: User,
+    students: dict[str, User | None],
+    workplaces: list[tuple[Workplace, User]],
+    start: date,
+    end: date,
+    today: date,
+) -> None:
+    for i, (name, *_) in enumerate(STUDENTS):
+        student = students[name]
+        assert student is not None
+        workplace, supervisor = workplaces[0] if i < 3 else workplaces[1]
+        signed, days_ago = CONTRACTS[name]
+        title = f"Utbildningskontrakt APL – {name}"
+        pdf = make_pdf(
+            "Utbildningskontrakt APL",
+            [
+                f"Elev: {name}, klass {CLASS_NAME}",
+                f"Arbetsplats: {workplace.name}, handledare {supervisor.name}",
+                f"Period: {start.isoformat()} till {end.isoformat()}",
+                *CONTRACT_TEXT,
+            ],
+        )
+        sent_at = _at(today - timedelta(days=days_ago), 15, 20) if signed is not None else None
+        signatures = []
+        for role, user, delay in (
+            (SignerRole.STUDENT, student, 18),
+            (SignerRole.SUPERVISOR, supervisor, 26),
+            (SignerRole.TEACHER, teacher, 0),
+        ):
+            done = signed is not None and role.value in signed
+            at = sent_at + timedelta(hours=delay) if sent_at and done else None
+            signatures.append(
+                ContractSignature(
+                    role=role,
+                    user=user,
+                    opened_at=at,
+                    signed_at=at,
+                    method="test" if at else None,
+                )
+            )
+        db.add(
+            Contract(
+                school_id=school.id,
+                created_by=teacher,
+                student=student,
+                workplace=workplace,
+                title=title,
+                start_date=start,
+                end_date=end,
+                file_name=f"Utbildningskontrakt APL {name}.pdf",
+                pdf=pdf,
+                pdf_size=len(pdf),
+                created_at=sent_at or _at(today, 8, 30),
+                sent_at=sent_at,
+                signatures=signatures,
+            )
+        )
 
 
 def main() -> None:
@@ -471,7 +562,7 @@ def main() -> None:
         f"Klassen {CLASS_NAME} på {SCHOOL} har sex elever med APL sedan {APL_WEEKS} veckor:"
         f" {counts['närvarodagar']} incheckningar, {counts['redovisningar']} redovisningar"
         f" ({counts['saknas']} saknas), {counts['kommentarer']} kommentarer och"
-        f" {len(PROJECTS) + 1} projekt."
+        f" {len(PROJECTS) + 1} projekt och {len(CONTRACTS)} kontrakt."
     )
     print(f"Logga in som {TEACHER} med lösenordet {DEMO_PASSWORD}.")
 

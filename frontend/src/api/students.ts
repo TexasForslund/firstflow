@@ -76,9 +76,10 @@ export function useSetTeachers(studentId: string) {
 
 // --- Elevsidan ---
 
-export function useStudentPlacements(studentId: string) {
+export function useStudentPlacements(studentId: string, enabled = true) {
   return useQuery({
     queryKey: ['students', studentId, 'placements'],
+    enabled,
     queryFn: async () => {
       const { data, error, response } = await api.GET('/api/students/{student_id}/placements', {
         params: { path: { student_id: studentId } },
