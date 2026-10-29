@@ -1,15 +1,12 @@
-import { ArrowUpRight, CalendarCheck } from 'lucide-react'
-import { useState } from 'react'
+import { CalendarCheck } from 'lucide-react'
 import { Link } from 'react-router'
 
-import { useTeacherOverview, waitingText, type AttentionItem, type TeacherOverview } from '../../api/overview'
+import { useTeacherOverview, type TeacherOverview } from '../../api/overview'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Card, CardTitle, SegmentedBar } from '../../components'
+import { Card, CardTitle, SegmentedBar } from '../../components'
 import styles from './Overview.module.css'
+import { AttentionTabs } from './AttentionTabs'
 import { ReportPreview } from './ReportPreview'
-
-/** Hur många saker att följa upp som visas innan "Visa alla". */
-const ATTENTION_SHOWN = 6
 
 function dateLabel(iso: string) {
   const text = new Date(`${iso}T12:00:00`).toLocaleDateString('sv-SE', {
@@ -19,24 +16,6 @@ function dateLabel(iso: string) {
   })
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
-
-function plural(count: number, one: string, many: string) {
-  return `${count} ${count === 1 ? one : many}`
-}
-
-function attentionText(item: AttentionItem) {
-  switch (item.reason) {
-    case 'missing_check_ins':
-      return `Ej incheckad ${plural(item.count, 'dag', 'dagar')} de senaste fyra veckorna`
-    case 'missing_reports':
-      return `Har inte lämnat ${plural(item.count, 'redovisning', 'redovisningar')}`
-    case 'no_placement':
-      return 'Har ingen praktikplats'
-    case 'unsigned_contract':
-      return `Kontraktet väntar på ${waitingText(item)}`
-  }
-}
-
 
 /**
  * Lärarens översikt (F6): det läraren behöver titta på i dag, för klasserna hen undervisar.
@@ -75,7 +54,7 @@ export function Overview() {
       <div className={styles.columns}>
         <div className={styles.mainColumn}>
           <div className={styles.orderFirst}>
-            <AttentionCard items={data.attention} />
+            <AttentionTabs items={data.attention} />
           </div>
           <section aria-labelledby="reports-heading" className={styles.orderLast}>
             <div className={styles.sectionHeader}>
@@ -109,50 +88,6 @@ export function Overview() {
         </div>
       </div>
     </div>
-  )
-}
-
-function AttentionCard({ items }: { items: AttentionItem[] }) {
-  const [showAll, setShowAll] = useState(false)
-  const shown = showAll ? items : items.slice(0, ATTENTION_SHOWN)
-
-  return (
-    <section className={styles.attention} aria-labelledby="attention-heading">
-      <h2 id="attention-heading" className={styles.attentionTitle}>
-        Behöver uppmärksamhet
-      </h2>
-      <p className={styles.attentionSubtitle}>
-        {items.length === 0
-          ? 'Inget att följa upp just nu.'
-          : `${plural(items.length, 'sak', 'saker')} att följa upp, viktigast först.`}
-      </p>
-      {items.length > 0 && (
-        <ul className={styles.attentionList}>
-          {shown.map((item) => (
-            <li key={`${item.student.id}-${item.reason}`}>
-              <Link
-                to={item.contract_id ? `/contracts/${item.contract_id}` : `/students/${item.student.id}`}
-                className={styles.attentionItem}
-              >
-                <Avatar name={item.student.name} />
-                <span className={styles.attentionText}>
-                  <span className={styles.attentionName}>
-                    {item.student.name} <span className={styles.attentionClass}>{item.class_name}</span>
-                  </span>
-                  <span className={styles.attentionReason}>{attentionText(item)}</span>
-                </span>
-                <ArrowUpRight aria-hidden="true" className={styles.arrow} />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      {items.length > ATTENTION_SHOWN && (
-        <button type="button" className={styles.showAll} onClick={() => setShowAll(!showAll)}>
-          {showAll ? 'Visa färre' : `Visa alla ${items.length}`}
-        </button>
-      )}
-    </section>
   )
 }
 
