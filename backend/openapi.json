@@ -3213,7 +3213,7 @@
           "projects"
         ],
         "summary": "List Projects",
-        "description": "Lärarens egna projekt, senast skapade först.",
+        "description": "Lärarens egna projekt, eller projekten handledaren är inbjuden till. Senast skapade\nförst.",
         "operationId": "list_projects_api_projects_get",
         "responses": {
           "200": {
@@ -3283,12 +3283,58 @@
       }
     },
     "/api/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Get Project",
+        "operationId": "get_project_api_projects__project_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "tags": [
           "projects"
         ],
         "summary": "Update Project",
-        "description": "Ersätter projektets uppgifter och elever. Bara läraren som skapade projektet.",
+        "description": "Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar\nnamn, beskrivning, slutdatum och taggar, och får 403 om hen skickar något annat.",
         "operationId": "update_project_api_projects__project_id__put",
         "security": [
           {
@@ -3367,6 +3413,88 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/reports": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Project Reports",
+        "description": "Inskickade redovisningar i projektet, senast inskickade först. Bara elever som är med i\nprojektet.",
+        "operationId": "project_reports_api_projects__project_id__reports_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Student Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectReport"
+                  },
+                  "title": "Response Project Reports Api Projects  Project Id  Reports Get"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -5306,14 +5434,65 @@
             "type": "array",
             "title": "Students"
           },
+          "owner": {
+            "$ref": "#/components/schemas/Ref",
+            "description": "Läraren som skapade projektet"
+          },
+          "workplace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Ref"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Företaget projektet görs på"
+          },
+          "supervisors": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Supervisors",
+            "description": "Inbjudna handledare"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At",
+            "description": "Satt när projektet är avslutat"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
           "report_count": {
             "type": "integer",
             "title": "Report Count",
             "description": "Inskickade redovisningar kopplade till projektet"
           },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count",
+            "description": "Olästa redovisningar för läraren. 0 för handledare"
+          },
           "is_owner": {
             "type": "boolean",
             "title": "Is Owner"
+          },
+          "can_edit_students": {
+            "type": "boolean",
+            "title": "Can Edit Students",
+            "description": "Om du får ändra elever, företag, handledare och avsluta projektet"
           }
         },
         "type": "object",
@@ -5324,10 +5503,78 @@
           "deadline",
           "tags",
           "students",
+          "owner",
+          "workplace",
+          "supervisors",
+          "completed_at",
+          "created_at",
           "report_count",
-          "is_owner"
+          "unread_count",
+          "is_owner",
+          "can_edit_students"
         ],
         "title": "ProjectRead"
+      },
+      "ProjectReport": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          },
+          "is_read": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Read",
+            "description": "Om du (läraren) har läst den. null för handledare"
+          },
+          "comment_count": {
+            "type": "integer",
+            "title": "Comment Count"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/TextAnswer"
+            },
+            "type": "array",
+            "title": "Answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "due_date",
+          "submitted_at",
+          "is_late",
+          "is_read",
+          "comment_count",
+          "answers"
+        ],
+        "title": "ProjectReport"
       },
       "ProjectWrite": {
         "properties": {
@@ -5372,20 +5619,73 @@
             "title": "Tags"
           },
           "student_ids": {
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "type": "array",
-            "maxItems": 100,
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Student Ids"
+          },
+          "workplace_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workplace Id"
+          },
+          "clear_workplace": {
+            "type": "boolean",
+            "title": "Clear Workplace",
+            "description": "Tar bort företaget från projektet",
+            "default": false
+          },
+          "supervisor_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supervisor Ids"
+          },
+          "completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed"
           }
         },
         "type": "object",
         "required": [
           "name"
         ],
-        "title": "ProjectWrite"
+        "title": "ProjectWrite",
+        "description": "Fält som är null lämnas som de är. Handledare får bara skicka namn, beskrivning,\nslutdatum och taggar."
       },
       "RatingQuestion-Input": {
         "properties": {

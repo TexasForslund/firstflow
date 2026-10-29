@@ -25,6 +25,7 @@ import { Company } from './pages/supervisor/Company'
 import { MyStudents } from './pages/supervisor/MyStudents'
 import { Attendance } from './pages/teacher/Attendance'
 import { Overview } from './pages/teacher/Overview'
+import { ProjectPage } from './pages/projects/ProjectPage'
 import { Projects } from './pages/projects/Projects'
 import { StudentHistory } from './pages/teacher/StudentHistory'
 import { ReportRoute } from './pages/teacher/TeacherReport'
@@ -56,7 +57,8 @@ const routes: RouteObject[] = [
       { path: 'student-history', element: only(staff, <StudentHistory />) },
       { path: 'attendance', element: only(['teacher', 'school_admin', 'principal'], <Attendance />) },
       placeholder('reports', staff, 'Veckoredovisningar', 'Alla veckoredovisningar, med filter per klass, elev och vecka.'),
-      { path: 'projects', element: only(['teacher'], <Projects />) },
+      { path: 'projects', element: only(['teacher', 'supervisor'], <Projects />) },
+      { path: 'projects/:projectId', element: only(['teacher', 'supervisor'], <ProjectPage />) },
 
       // Klasser och elever (B2/F3)
       { path: 'classes', element: only(['school_admin', 'principal'], <ClassList />) },

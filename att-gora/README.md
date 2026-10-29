@@ -49,8 +49,8 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **Texas + Claude:**
   - B12 och F19: projekt, och visningsdata med klassen EL23 (granskas i #34).
   - **Nästa pass:**
+    - Projekt v2 (lista, egen sida, popup, inbjudna handledare) granskas. Mergas efter mötet med Haldor 30 oktober.
     - Projektval för eleven.
-    - Gemensamma projekt med handledaren.
     - Handledaren ser elevens redovisningar.
     - Besluten står under B12 i backend.md.
   - **Därefter B8 och F9: kontrakt och avtal för signering**, med testläge tills signeringstjänsten är vald (Texas, 2026-10-26). Läraren laddar upp en PDF, väljer elev och företag med handledare, och ser vem som har signerat. Två frågor är öppna:

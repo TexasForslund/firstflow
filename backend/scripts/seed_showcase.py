@@ -78,26 +78,38 @@ PROJECTS = [
         "Dra ny el i en villa under renovering: ritning, kabeldragning, uttag och belysning.",
         ["Elinstallation", "Ritningsläsning"],
         ["Hugo Karlsson", "Elsa Lindqvist", "Liam Berg"],
+        0,
     ),
     (
         "Felsökning och mätning",
         "Felsöka jordfel och kortslutning, och mäta isolationsresistans och kontinuitet.",
         ["Felsökning", "Mätning"],
         ["Omar Haddad", "Maja Nordström"],
+        1,
     ),
     (
         "Laddbox för elbil",
         "Installera laddboxar hos privatkunder och en bostadsrättsförening, med lastbalansering.",
         ["Laddinfrastruktur", "Kundkontakt"],
         ["Alva Holm", "Hugo Karlsson"],
+        1,
     ),
     (
         "Dokumentation och egenkontroll",
         "Fylla i egenkontroller och relationsritningar efter avslutade jobb.",
         ["Dokumentation"],
         ["Maja Nordström", "Omar Haddad", "Alva Holm"],
+        None,
     ),
 ]
+# Index i WORKPLACES för projektets företag, eller None. Företagets handledare är inbjuden.
+
+# Ett avslutat projekt från APL:ens första veckor, utan redovisningar.
+DONE_PROJECT = (
+    "Säkerhet på arbetsplatsen",
+    "Gå igenom elsäkerhet, skyddsutrustning och riskbedömning med handledaren första veckorna.",
+    ["Elsäkerhet"],
+)
 
 WORK = {
     "Elinstallation i villa": [
@@ -304,7 +316,7 @@ def showcase(db: Session) -> dict[str, int]:
         workplaces.append((workplace, supervisor))
 
     projects: dict[str, Project] = {}
-    for name, description, tags, members in PROJECTS:
+    for name, description, tags, members, company in PROJECTS:
         project = Project(
             school_id=school.id,
             owner_id=teacher.id,
@@ -312,10 +324,29 @@ def showcase(db: Session) -> dict[str, int]:
             description=description,
             deadline=end,
             tags=tags,
+            created_at=_at(start, 8, 0),
         )
         project.students = [s for m in members if (s := students[m])]
+        if company is not None:
+            workplace, supervisor = workplaces[company]
+            project.workplace_id = workplace.id
+            project.supervisors = [supervisor]
         db.add(project)
         projects[name] = project
+    name, description, tags = DONE_PROJECT
+    db.add(
+        Project(
+            school_id=school.id,
+            owner_id=teacher.id,
+            name=name,
+            description=description,
+            deadline=start + timedelta(days=18),
+            tags=tags,
+            created_at=_at(start, 8, 0),
+            completed_at=_at(start + timedelta(days=18), 15, 0),
+            students=[s for s in students.values() if s is not None],
+        )
+    )
     db.flush()
 
     counts = {"närvarodagar": 0, "redovisningar": 0, "kommentarer": 0, "saknas": 0}
@@ -440,7 +471,7 @@ def main() -> None:
         f"Klassen {CLASS_NAME} på {SCHOOL} har sex elever med APL sedan {APL_WEEKS} veckor:"
         f" {counts['närvarodagar']} incheckningar, {counts['redovisningar']} redovisningar"
         f" ({counts['saknas']} saknas), {counts['kommentarer']} kommentarer och"
-        f" {len(PROJECTS)} projekt."
+        f" {len(PROJECTS) + 1} projekt."
     )
     print(f"Logga in som {TEACHER} med lösenordet {DEMO_PASSWORD}.")
 
