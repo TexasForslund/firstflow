@@ -33,7 +33,12 @@ def test_showcase_replaces_classes_and_can_run_twice(db: Session) -> None:
     assert db.scalar(attendance) == first["närvarodagar"]
     comments = select(func.count(ReportComment.id)).join(Report).where(in_class)
     assert db.scalar(comments) == first["kommentarer"]
-    assert db.scalar(select(func.count(Project.id)).where(Project.school_id == school.id)) == 4
+    # Fyra pågående projekt och ett avslutat. Tre av dem görs på ett företag med handledaren
+    # inbjuden.
+    projects = db.scalars(select(Project).where(Project.school_id == school.id)).all()
+    assert len(projects) == 5
+    assert sum(p.completed_at is not None for p in projects) == 1
+    assert sum(len(p.supervisors) == 1 for p in projects) == 3
     # Alla redovisningar hör till ett projekt.
     no_project = select(func.count(Report.id)).where(in_class, Report.project_id.is_(None))
     assert db.scalar(no_project) == 0

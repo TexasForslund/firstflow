@@ -1,216 +1,210 @@
-import { CalendarDays, FileText, Folder, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { FolderKanban, Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
-import { useDeleteProject, useProjects, useSaveProject, type Project } from '../../api/projects'
-import { useStudents } from '../../api/students'
-import { Avatar, Button, Card, Tag, TextField } from '../../components'
-import styles from '../classes/Classes.module.css'
-import { CheckList } from '../students/CheckList'
-import own from './Projects.module.css'
+import { useProjects, type Project } from '../../api/projects'
+import { useCurrentUser } from '../../auth/useCurrentUser'
+import { Avatar, Button, matches, SearchInput } from '../../components'
+import { ProjectDialog } from './ProjectDialog'
+import styles from './Projects.module.css'
+import { progress, projectTone, shortDate } from './projectText'
 
-function deadlineText(iso: string) {
-  return new Date(`${iso}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' })
-}
+type Show = 'ongoing' | 'done' | 'all'
 
 /**
- * Projekt (B12). Läraren skapar projekt, kopplar elever och ser hur många redovisningar som hör
- * till projektet. Eleverna leder till elevsidan (Texas, 2026-10-26).
+ * Projekt (B12). En tabell med lärarens projekt, eller projekten handledaren är inbjuden till.
+ * Raden leder till projektets sida. Nytt projekt skapas i en popup (Texas, 2026-10-29).
  */
 export function Projects() {
+  const { data: user } = useCurrentUser()
+  const isTeacher = user?.role === 'teacher'
   const query = useProjects()
+  const [search, setSearch] = useState('')
+  const [show, setShow] = useState<Show>('ongoing')
   const [creating, setCreating] = useState(false)
-  const [editing, setEditing] = useState<string | null>(null)
-  const projects = query.data ?? []
+
+  const projects = useMemo(() => query.data ?? [], [query.data])
+  const ongoing = projects.filter((p) => !p.completed_at)
+  const done = projects.filter((p) => p.completed_at)
+  const visible = (show === 'ongoing' ? ongoing : show === 'done' ? done : projects).filter(
+    (p) =>
+      matches(p.name, search) ||
+      p.students.some((s) => matches(s.name, search)) ||
+      p.tags.some((t) => matches(t, search)) ||
+      (p.workplace != null && matches(p.workplace.name, search)),
+  )
 
   return (
     <div className={styles.page}>
-      <header className={own.header}>
-        <div className={styles.header}>
+      <header className={styles.header}>
+        <div className={styles.heading}>
           <h1 className={styles.title}>Projekt</h1>
           <p className={styles.subtitle}>
-            Projekt som eleverna arbetar med under APL. Redovisningarna kopplas till ett projekt.
+            {isTeacher
+              ? 'Gemensamma projekt för lärare, handledare och elever.'
+              : 'Projekt som du är inbjuden till. Du kan ändra text, slutdatum och taggar.'}
           </p>
         </div>
-        {!creating && (
+        {isTeacher && (
           <Button variant="primary" icon={<Plus aria-hidden="true" />} onClick={() => setCreating(true)}>
             Nytt projekt
           </Button>
         )}
       </header>
 
-      {creating && <ProjectForm onDone={() => setCreating(false)} />}
+      <div className={styles.filters}>
+        <div className={styles.search}>
+          <SearchInput
+            label="Sök projekt eller elev"
+            placeholder="Sök projekt eller elev"
+            value={search}
+            onChange={setSearch}
+          />
+        </div>
+        <div role="group" aria-label="Visa" className={styles.segments}>
+          {(
+            [
+              ['ongoing', 'Pågående', ongoing.length],
+              ['done', 'Avslutade', done.length],
+              ['all', 'Alla', null],
+            ] as const
+          ).map(([value, label, count]) => (
+            <button
+              key={value}
+              type="button"
+              className={styles.segment}
+              aria-pressed={show === value}
+              onClick={() => setShow(value)}
+            >
+              {label}
+              {count !== null && <span className={styles.segmentCount}>{count}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {query.isPending && <p className={styles.state}>Laddar projekt…</p>}
       {query.isError && <p className={styles.state}>Projekten gick inte att hämta. Ladda om sidan.</p>}
-      {query.isSuccess && projects.length === 0 && !creating && (
-        <Card>
-          <p className={styles.empty}>Du har inga projekt än. Skapa ett och koppla eleverna som arbetar med det.</p>
-        </Card>
+      {query.isSuccess && projects.length === 0 && (
+        <p className={styles.emptyBox}>
+          {isTeacher
+            ? 'Du har inga projekt än. Skapa ett och koppla eleverna som arbetar med det.'
+            : 'Du är inte inbjuden till något projekt än. Läraren bjuder in dig.'}
+        </p>
+      )}
+      {query.isSuccess && projects.length > 0 && visible.length === 0 && (
+        <p className={styles.emptyBox}>Inga projekt matchar.</p>
       )}
 
-      <div className={own.grid}>
-        {projects.map((project) =>
-          editing === project.id ? (
-            <ProjectForm key={project.id} project={project} onDone={() => setEditing(null)} />
-          ) : (
-            <ProjectCard key={project.id} project={project} onEdit={() => setEditing(project.id)} />
-          ),
-        )}
-      </div>
+      {visible.length > 0 && (
+        <div className={styles.table} role="table" aria-label="Projekt">
+          <div className={styles.headRow} role="row">
+            <span role="columnheader">Projekt</span>
+            <span role="columnheader">Elever</span>
+            <span role="columnheader">Företag</span>
+            <span role="columnheader">Tidplan</span>
+            <span role="columnheader" className={styles.right}>
+              Redov.
+            </span>
+          </div>
+          {visible.map((project) => (
+            <ProjectRow key={project.id} project={project} showUnread={isTeacher} />
+          ))}
+        </div>
+      )}
+
+      {creating && <ProjectDialog onClose={() => setCreating(false)} />}
     </div>
   )
 }
 
-function ProjectCard({ project, onEdit }: { project: Project; onEdit: () => void }) {
-  const remove = useDeleteProject()
-  const [confirming, setConfirming] = useState(false)
+function ProjectRow({ project, showUnread }: { project: Project; showUnread: boolean }) {
+  const share = progress(project)
+  const shown = project.students.slice(0, 4)
+  const rest = project.students.length - shown.length
 
   return (
-    <Card>
-      <article className={own.card} aria-labelledby={`project-${project.id}`}>
-        <div className={own.cardTop}>
-          <span className={own.icon}>
-            <Folder aria-hidden="true" />
-          </span>
-          <h2 id={`project-${project.id}`} className={own.name}>
-            {project.name}
-          </h2>
-          {project.is_owner && (
-            <button type="button" className={own.iconButton} aria-label={`Ändra ${project.name}`} onClick={onEdit}>
-              <Pencil aria-hidden="true" />
-            </button>
-          )}
-        </div>
-        {project.description && <p className={own.description}>{project.description}</p>}
-        {project.tags.length > 0 && (
-          <div className={styles.tags}>
-            {project.tags.map((tag) => (
-              <Tag key={tag} icon={null}>
-                {tag}
-              </Tag>
-            ))}
-          </div>
-        )}
-        <p className={own.meta}>
-          {project.deadline && (
-            <span>
-              <CalendarDays aria-hidden="true" /> Klart {deadlineText(project.deadline)}
+    <Link to={`/projects/${project.id}`} className={styles.row} role="row">
+      <span className={styles.nameCell} role="cell">
+        <span className={styles.icon} data-tone={projectTone(project.id)}>
+          <FolderKanban aria-hidden="true" />
+        </span>
+        <span className={styles.nameText}>
+          <span className={styles.name}>{project.name}</span>
+          {project.tags.length > 0 && (
+            <span className={styles.tags}>
+              {project.tags.slice(0, 3).map((tag) => (
+                <span key={tag} className={styles.tag}>
+                  {tag}
+                </span>
+              ))}
             </span>
           )}
-          <span>
-            <FileText aria-hidden="true" /> {project.report_count}{' '}
-            {project.report_count === 1 ? 'redovisning' : 'redovisningar'}
-          </span>
-        </p>
-        <ul className={own.students} aria-label="Elever i projektet">
-          {project.students.length === 0 && <li className={own.noStudents}>Inga elever kopplade än.</li>}
-          {project.students.map((student) => (
-            <li key={student.id}>
-              <Link to={`/students/${student.id}`} className={own.student}>
-                <Avatar name={student.name} size="sm" />
-                {student.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        {project.is_owner && (
-          <div className={own.footer}>
-            {confirming ? (
-              <>
-                <span className={styles.confirmText}>Ta bort projektet? Redovisningarna finns kvar.</span>
-                <button
-                  type="button"
-                  className={styles.dangerButton}
-                  disabled={remove.isPending}
-                  onClick={() => remove.mutate(project.id)}
-                >
-                  Ta bort
-                </button>
-                <button type="button" className={styles.textButton} onClick={() => setConfirming(false)}>
-                  Avbryt
-                </button>
-              </>
-            ) : (
-              <button type="button" className={own.removeLink} onClick={() => setConfirming(true)}>
-                <Trash2 aria-hidden="true" /> Ta bort
-              </button>
+        </span>
+      </span>
+
+      <span role="cell" className={styles.avatars}>
+        {project.students.length === 0 ? (
+          <span className={styles.muted}>Inga elever</span>
+        ) : (
+          <>
+            <span className="sr-only">{project.students.map((s) => s.name).join(', ')}</span>
+            {shown.map((s) => (
+              <span key={s.id} className={styles.stacked} aria-hidden="true">
+                <Avatar name={s.name} size="sm" />
+              </span>
+            ))}
+            {rest > 0 && (
+              <span className={styles.more} aria-hidden="true">
+                +{rest}
+              </span>
             )}
-          </div>
+          </>
         )}
-      </article>
-    </Card>
-  )
-}
+      </span>
 
-function ProjectForm({ project, onDone }: { project?: Project; onDone: () => void }) {
-  const save = useSaveProject(project?.id)
-  const students = useStudents()
-  const [name, setName] = useState(project?.name ?? '')
-  const [description, setDescription] = useState(project?.description ?? '')
-  const [deadline, setDeadline] = useState(project?.deadline ?? '')
-  const [tags, setTags] = useState((project?.tags ?? []).join(', '))
-  const [studentIds, setStudentIds] = useState<string[]>(project?.students.map((s) => s.id) ?? [])
-
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    save.mutate(
-      {
-        name,
-        description: description || null,
-        deadline: deadline || null,
-        tags: tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
-        student_ids: studentIds,
-      },
-      { onSuccess: onDone },
-    )
-  }
-
-  return (
-    <Card>
-      <form className={own.form} onSubmit={submit}>
-        <h2 className={styles.cardTitle}>{project ? 'Ändra projekt' : 'Nytt projekt'}</h2>
-        <div className={styles.formGrid}>
-          <TextField label="Namn" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />
-          <TextField label="Klart senast (valfritt)" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
-        </div>
-        <label className={own.textareaField}>
-          <span className={own.label}>Beskrivning</span>
-          <textarea
-            rows={3}
-            maxLength={2000}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </label>
-        <TextField
-          label="Taggar, med kommatecken emellan"
-          placeholder="Elinstallation, Mätning"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-        />
-        <CheckList
-          legend="Elever"
-          options={(students.data ?? []).map((s) => ({ id: s.id, name: s.name }))}
-          selected={studentIds}
-          onChange={setStudentIds}
-          emptyText={students.isPending ? 'Hämtar elever…' : 'Du har inga elever än.'}
-        />
-        {save.isError && (
-          <p className={styles.formError} role="alert">
-            {save.error.message}
-          </p>
+      <span role="cell" className={styles.company}>
+        {project.workplace ? (
+          <>
+            {project.workplace.name}
+            {project.supervisors.length > 0 && (
+              <span className={styles.muted}>{project.supervisors.map((s) => s.name).join(', ')}</span>
+            )}
+          </>
+        ) : (
+          <span className={styles.muted}>Inget företag kopplat</span>
         )}
-        <div className={styles.formActions}>
-          <Button type="submit" variant="primary" disabled={save.isPending}>
-            {project ? 'Spara' : 'Skapa projekt'}
-          </Button>
-          <Button onClick={onDone}>Avbryt</Button>
-        </div>
-      </form>
-    </Card>
+      </span>
+
+      <span role="cell" className={styles.timeline}>
+        <span>
+          {project.completed_at
+            ? `Avslutat ${shortDate(project.completed_at.slice(0, 10))}`
+            : project.deadline
+              ? `Klart ${shortDate(project.deadline)}`
+              : 'Inget slutdatum'}
+        </span>
+        {share !== null && (
+          <span className={styles.track} aria-hidden="true">
+            <span
+              className={styles.bar}
+              style={{ width: `${share}%` }}
+              data-done={project.completed_at ? '' : undefined}
+            />
+          </span>
+        )}
+      </span>
+
+      <span role="cell" className={`${styles.right} ${styles.count}`}>
+        {project.report_count}
+        {showUnread && project.report_count > 0 && (
+          <span className={project.unread_count > 0 ? styles.unread : styles.allRead}>
+            {project.unread_count > 0
+              ? `${project.unread_count} ${project.unread_count === 1 ? 'oläst' : 'olästa'}`
+              : 'Alla lästa'}
+          </span>
+        )}
+      </span>
+    </Link>
   )
 }

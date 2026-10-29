@@ -1217,7 +1217,8 @@ export interface paths {
         };
         /**
          * List Projects
-         * @description Lärarens egna projekt, senast skapade först.
+         * @description Lärarens egna projekt, eller projekten handledaren är inbjuden till. Senast skapade
+         *     först.
          */
         get: operations["list_projects_api_projects_get"];
         put?: never;
@@ -1236,10 +1237,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get Project */
+        get: operations["get_project_api_projects__project_id__get"];
         /**
          * Update Project
-         * @description Ersätter projektets uppgifter och elever. Bara läraren som skapade projektet.
+         * @description Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar
+         *     namn, beskrivning, slutdatum och taggar, och får 403 om hen skickar något annat.
          */
         put: operations["update_project_api_projects__project_id__put"];
         post?: never;
@@ -1248,6 +1251,27 @@ export interface paths {
          * @description Tar bort projektet. Redovisningarna finns kvar, utan projekt.
          */
         delete: operations["delete_project_api_projects__project_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Reports
+         * @description Inskickade redovisningar i projektet, senast inskickade först. Bara elever som är med i
+         *     projektet.
+         */
+        get: operations["project_reports_api_projects__project_id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2105,15 +2129,78 @@ export interface components {
             tags: string[];
             /** Students */
             students: components["schemas"]["Ref"][];
+            /** @description Läraren som skapade projektet */
+            owner: components["schemas"]["Ref"];
+            /** @description Företaget projektet görs på */
+            workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Supervisors
+             * @description Inbjudna handledare
+             */
+            supervisors: components["schemas"]["Ref"][];
+            /**
+             * Completed At
+             * @description Satt när projektet är avslutat
+             */
+            completed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
             /**
              * Report Count
              * @description Inskickade redovisningar kopplade till projektet
              */
             report_count: number;
+            /**
+             * Unread Count
+             * @description Olästa redovisningar för läraren. 0 för handledare
+             */
+            unread_count: number;
             /** Is Owner */
             is_owner: boolean;
+            /**
+             * Can Edit Students
+             * @description Om du får ändra elever, företag, handledare och avsluta projektet
+             */
+            can_edit_students: boolean;
         };
-        /** ProjectWrite */
+        /** ProjectReport */
+        ProjectReport: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["Ref"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /**
+             * Is Read
+             * @description Om du (läraren) har läst den. null för handledare
+             */
+            is_read: boolean | null;
+            /** Comment Count */
+            comment_count: number;
+            /** Answers */
+            answers: components["schemas"]["TextAnswer"][];
+        };
+        /**
+         * ProjectWrite
+         * @description Fält som är null lämnas som de är. Handledare får bara skicka namn, beskrivning,
+         *     slutdatum och taggar.
+         */
         ProjectWrite: {
             /** Name */
             name: string;
@@ -2124,7 +2211,19 @@ export interface components {
             /** Tags */
             tags?: string[];
             /** Student Ids */
-            student_ids?: string[];
+            student_ids?: string[] | null;
+            /** Workplace Id */
+            workplace_id?: string | null;
+            /**
+             * Clear Workplace
+             * @description Tar bort företaget från projektet
+             * @default false
+             */
+            clear_workplace: boolean;
+            /** Supervisor Ids */
+            supervisor_ids?: string[] | null;
+            /** Completed */
+            completed?: boolean | null;
         };
         /** RatingQuestion */
         "RatingQuestion-Input": {
@@ -4910,6 +5009,37 @@ export interface operations {
             };
         };
     };
+    get_project_api_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     update_project_api_projects__project_id__put: {
         parameters: {
             query?: never;
@@ -4962,6 +5092,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_reports_api_projects__project_id__reports_get: {
+        parameters: {
+            query?: {
+                student_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectReport"][];
+                };
             };
             /** @description Validation Error */
             422: {

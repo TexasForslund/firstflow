@@ -6,13 +6,16 @@ import type { components } from './schema'
 
 export type Project = components['schemas']['ProjectRead']
 export type ProjectWrite = components['schemas']['ProjectWrite']
+export type ProjectReport = components['schemas']['ProjectReport']
 
 const keys = {
   mine: ['projects'] as const,
+  one: (projectId: string) => ['projects', projectId] as const,
+  reports: (projectId: string, studentId?: string) => ['projects', projectId, 'reports', studentId ?? 'all'] as const,
   student: (studentId: string) => ['students', studentId, 'projects'] as const,
 }
 
-/** Lärarens egna projekt. */
+/** Lärarens egna projekt, eller projekten handledaren är inbjuden till. */
 export function useProjects() {
   return useQuery({
     queryKey: keys.mine,
@@ -30,6 +33,33 @@ export function useStudentProjects(studentId: string) {
     queryFn: async () => {
       const { data, error, response } = await api.GET('/api/students/{student_id}/projects', {
         params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+export function useProject(projectId: string) {
+  return useQuery({
+    queryKey: keys.one(projectId),
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/projects/{project_id}', {
+        params: { path: { project_id: projectId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+/** Inskickade redovisningar i projektet, valfritt för en elev. */
+export function useProjectReports(projectId: string, studentId?: string) {
+  return useQuery({
+    queryKey: keys.reports(projectId, studentId),
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/projects/{project_id}/reports', {
+        params: { path: { project_id: projectId }, query: { student_id: studentId } },
       })
       if (!data) throw new ApiError(error, response.status)
       return data

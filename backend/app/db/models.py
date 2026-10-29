@@ -7,7 +7,11 @@ from app.models.placement import (  # noqa: F401
     Workplace,
     workplace_supervisors,
 )
-from app.models.project import Project, project_students  # noqa: F401
+from app.models.project import (  # noqa: F401
+    Project,
+    project_students,
+    project_supervisors,
+)
 from app.models.report import (  # noqa: F401
     ClassForm,
     FormVersion,

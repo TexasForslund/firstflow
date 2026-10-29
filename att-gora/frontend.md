@@ -224,7 +224,11 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ## F19. Projekt 🚧 Granskas (Texas + Claude, 2026-10-26)
 
-- **Projektsidan** (`/projects`) visar lärarens projekt som kort med beskrivning, taggar, deadline, antal redovisningar och elever. Varje elev leder till elevsidan. Där finns också Nytt projekt, Ändra och Ta bort.
+- **Projektsidan** (`/projects`), version 2 enligt skissen "Firstflow – Projekt skiss" (Texas, 2026-10-29):
+  - En tabell med projekt, elever, företag, tidplan och redovisningar (olästa för läraren). Sök och filtren Pågående, Avslutade och Alla.
+  - Projektets egen sida `/projects/:id`: faktarutor, redovisningarna i projektet med filter per elev, Om projektet, Elever och Vem kan ändra.
+  - Nytt projekt och Ändra projekt i en popup som täcker nästan hela skärmen. Läraren väljer företag, handledare som kan ändra, elever och om projektet är avslutat.
+  - Handledaren har Projekt i sidomenyn, ser projekten hen är inbjuden till och ändrar text, slutdatum och taggar. Elevvalet syns inte för handledaren.
 - **Elevsidan** har kortet Projekt till höger, projektet på varje redovisning och filtret Projekt.
 - **Elevhistorik** visar "Projekt tilldelade" per elev.
 - **Översikten** visar projektet på redovisningarna.
