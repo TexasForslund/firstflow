@@ -209,15 +209,6 @@ a.workplace:hover {
 }
 
 /* Riktiga redovisningar (F13). */
-.lateTag {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--color-attention-bg);
-  color: var(--color-attention);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  letter-spacing: var(--tracking-none);
-}
 
 .commentsCard {
   margin-top: var(--column-gap);

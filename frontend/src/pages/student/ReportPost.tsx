@@ -32,7 +32,7 @@ export function ReportPost() {
               {detail.class_name} · {longDate(detail.due_date)}
             </p>
           </div>
-          <span className={detail.is_late ? styles.lateTag : styles.doneTag}>{detail.is_late ? 'Sen' : 'Inskickad'}</span>
+          <span className={styles.doneTag}>Inskickad</span>
         </header>
         <AnswerView report={detail} />
       </article>

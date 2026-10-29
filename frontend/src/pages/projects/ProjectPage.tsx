@@ -250,7 +250,6 @@ function ReportCard({ report, canOpen }: { report: ProjectReport; canOpen: boole
             <span className={styles.personName}>{report.student.name}</span>
             <span className={styles.mutedSmall}>
               {dayText(report.due_date)} · {submittedText(report.submitted_at)}
-              {report.is_late && ' · sen'}
             </span>
           </span>
           {report.is_read === false && <span className={styles.unreadBadge}>Oläst</span>}

@@ -167,7 +167,6 @@ function PostCard({ item, authorName }: { item: DueReport; authorName: string })
             {item.class_name} · {longDate(item.due_date)}
           </p>
         </div>
-        {item.is_late && <span className={styles.lateTag}>Sen</span>}
       </div>
       {preview.length > 0 && (
         <div className={styles.postBody}>
