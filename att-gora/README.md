@@ -56,7 +56,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - B16 och F20: handledaren läser och kommenterar redovisningar (granskas).
+  - B16 och F20: handledaren läser och kommenterar redovisningar (granskas i #43).
   - F21: eleven öppnar ett projekt från Min APL.
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
   - Påminnelser om incheckning via e-post eller push.

@@ -245,7 +245,7 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ---
 
-## F20. Handledaren läser och kommenterar redovisningar 🚧 Granskas (Texas + Claude, 2026-10-29)
+## F20. Handledaren läser och kommenterar redovisningar 🚧 Granskas ([PR #43](https://github.com/TexasForslund/firstflow/pull/43), Texas + Claude, 2026-10-29)
 
 Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
 - **Redovisningar** (`/student-reports`) i handledarens sidomeny, med antal olästa. Ett flöde med elevernas inlägg från tiden hos handledaren: namn, dag, projekt, första textsvaret och antal kommentarer. Nya inlägg har en prick. Knappar för Alla elever och en per elev.
