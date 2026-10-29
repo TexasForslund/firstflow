@@ -188,6 +188,12 @@
     padding-inline: var(--space-4);
   }
 
+  /* Flikraden går ut till kanten och scrollar i sidled. */
+  .tabs {
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+  }
+
   .row {
     flex-wrap: wrap;
     gap: var(--space-3);
