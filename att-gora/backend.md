@@ -260,13 +260,30 @@ Trådar mellan lärare och elev, och mellan lärare och handledare. Antal oläst
 
 ---
 
-## B12. Projekt ⬜
+## B12. Projekt 🚧 Granskas (Texas + Claude, 2026-10-26)
 
-Idéer från Texas om projekt finns i [ideer.md](ideer.md) (punkt 2). Ta upp dem innan B12 detaljeras.
+Enkel första version, beslutad av Texas 2026-10-26:
+- Ett projekt har namn, beskrivning, valfri deadline och taggar i fritext. Det kan ha flera elever.
+- Läraren som skapade projektet ändrar och tar bort det. Handledare och SYV kommer in senare.
+- Modell `Project` och `project_students` i `app/models/project.py`. `Report.project_id` är valfri och blir tom om projektet tas bort.
+- Endpoints i `app/api/routes/projects.py`:
+  - `GET` och `POST /api/projects`
+  - `PUT` och `DELETE /api/projects/{id}`
+  - `GET /api/students/{id}/projects`, med elevsidans behörighet
+- Eleverna måste vara elever läraren får se, annars svarar API:t 404.
+- `StudentRead.project_count`. Redovisningarna har `project` i elevens lista, i detaljvyn och på översikten.
 
-Ägare: bestäms. Tillagd från lärarskisserna. Ska diskuteras innan start (Texas).
+**Inte byggt:** eleven väljer projekt i redovisningen (B5b, projektval) och en sammanställning per projekt. Idéerna står i [ideer.md](ideer.md), punkt 2.
 
-Läraren skapar projekt och tilldelar dem till elever från klassvyn, på samma sätt som praktikplats. En elev kan ha flera projekt. Veckoredovisningar kopplas till ett projekt. Elevhistoriken visar antal tilldelade projekt och antal redovisningar per elev. Detaljeras innan start.
+**Nästa steg, beslutat av Texas 2026-10-26:**
+- **Eleven väljer projekt** i redovisningen. Det blir ett första steg, "Vilket projekt gäller det?", som hoppas över om eleven bara har ett projekt. Eleven ser sina projekt i Min APL.
+- **Gemensamma projekt** för lärare, handledare och elev:
+  - Handledaren får sidan Projekt och kan skapa och ändra projekt för sina elever. Ett sådant projekt kopplas till företaget.
+  - Båda kan ändra ett projekt, men bara den som skapade det kan ta bort det.
+  - Var och en lägger bara till och tar bort sina egna elever.
+- **Handledaren ser alla redovisningar** som eleven skapar, inte bara de som hör till ett projekt.
+
+**Visningsdata:** `uv run python -m scripts.seed_showcase` ersätter Kramforsskolans demoklasser med klassen EL23. Den har sex elever, tretton veckors APL, närvaro, redovisningar med svar och kommentarer, och fyra projekt. Logga in som `larare.kramfors@demo.firstflow.se`.
 
 ---
 

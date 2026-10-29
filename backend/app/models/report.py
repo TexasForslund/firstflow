@@ -34,6 +34,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.models.project import Project
 from app.models.school_class import SchoolClass
 from app.models.user import User
 
@@ -110,6 +111,10 @@ class Report(Base):
         ForeignKey("form_versions.id", ondelete="RESTRICT")
     )
     due_date: Mapped[date] = mapped_column(Date)
+    # Projektet redovisningen gäller (B12). Valfritt. Tas projektet bort blir fältet tomt.
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="SET NULL"), index=True
+    )
     status: Mapped[ReportStatus] = mapped_column(String(20), default=ReportStatus.DRAFT)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -117,6 +122,7 @@ class Report(Base):
     school_class: Mapped[SchoolClass] = relationship()
     student: Mapped[User] = relationship()
     form_version: Mapped[FormVersion] = relationship()
+    project: Mapped[Project | None] = relationship()
     answers: Mapped[list["ReportAnswer"]] = relationship(
         cascade="all, delete-orphan", passive_deletes=True
     )

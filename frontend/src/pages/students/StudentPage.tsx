@@ -1,8 +1,9 @@
-import { BriefcaseBusiness, CalendarCheck, Download, FileText, MapPin, MapPinCheck, Users } from 'lucide-react'
+import { BriefcaseBusiness, CalendarCheck, Download, FileText, Folder, MapPin, MapPinCheck, Users } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
 import type { AttentionItem } from '../../api/overview'
+import { useStudentProjects } from '../../api/projects'
 import { useSchoolTeachers } from '../../api/classes'
 import {
   useSetTeachers,
@@ -115,6 +116,7 @@ export function StudentPage() {
           <AttentionBox studentId={student.id} />
           <AttendanceCard studentId={student.id} />
           <PlacementCard studentId={student.id} />
+          <ProjectsCard studentId={student.id} />
           {isAdmin &&
             (editTeachers ? (
               <TeachersEditor student={student} schoolId={user?.school_id} />
@@ -154,6 +156,7 @@ function ReportsSection({ studentId }: { studentId: string }) {
   const [search, setSearch] = useState('')
   const [period, setPeriod] = useState<Period>('all')
   const [questionId, setQuestionId] = useState('')
+  const [projectId, setProjectId] = useState('')
   const [show, setShow] = useState<Show>('all')
   const [shown, setShown] = useState(REPORTS_PER_PAGE)
 
@@ -180,7 +183,10 @@ function ReportsSection({ studentId }: { studentId: string }) {
     late: inPeriod.filter((e) => e.kind === 'report' && e.report.is_late).length,
     missing: inPeriod.filter((e) => e.kind === 'missing').length,
   }
-  const filtering = search.trim() !== '' || questionId !== ''
+  const filtering = search.trim() !== '' || questionId !== '' || projectId !== ''
+  // Projekten som elevens redovisningar hör till, för filtret Projekt.
+  const projects = new Map<string, string>()
+  for (const r of list) if (r.project) projects.set(r.project.id, r.project.name)
   const visible = inPeriod.filter((e) => {
     if (e.kind === 'missing') return (show === 'all' || show === 'missing') && !filtering
     const r = e.report
@@ -188,6 +194,7 @@ function ReportsSection({ studentId }: { studentId: string }) {
     if (show === 'unread' && r.is_read) return false
     if (show === 'comments' && r.comment_count === 0) return false
     if (show === 'late' && !r.is_late) return false
+    if (projectId && r.project?.id !== projectId) return false
     const answers = questionId ? r.answers.filter((a) => a.question_id === questionId) : r.answers
     if (questionId && answers.length === 0) return false
     if (search.trim() && !answers.some((a) => matches(a.text, search))) return false
@@ -227,6 +234,16 @@ function ReportsSection({ studentId }: { studentId: string }) {
             <option value="week">Den här veckan</option>
             <option value="month">Senaste fyra veckorna</option>
           </SelectField>
+          {projects.size > 0 && (
+            <SelectField label="Projekt" value={projectId} onChange={setProjectId}>
+              <option value="">Alla projekt</option>
+              {[...projects].map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </SelectField>
+          )}
           <SelectField label="Fråga" value={questionId} onChange={setQuestionId}>
             <option value="">Alla frågor</option>
             {[...questions].map(([id, title]) => (
@@ -299,6 +316,12 @@ function ReportCard({ report, questionId }: { report: StudentReportSummary; ques
             </span>
             {!report.is_read && <span className={`${own.badge} ${own.badgeUnread}`}>Oläst</span>}
             {report.is_late && <span className={`${own.badge} ${own.badgeLate}`}>Sen</span>}
+            {report.project && (
+              <span className={`${own.badge} ${own.badgeProject}`}>
+                <Folder aria-hidden="true" />
+                {report.project.name}
+              </span>
+            )}
             <span className={own.sent}>Inskickad {dateTime(report.submitted_at)}</span>
           </div>
           {answers.map((answer, i) => (
@@ -550,6 +573,41 @@ function PlacementCard({ studentId }: { studentId: string }) {
               ))}
             </ul>
           </div>
+        )}
+      </div>
+    </Card>
+  )
+}
+
+function ProjectsCard({ studentId }: { studentId: string }) {
+  const query = useStudentProjects(studentId)
+  const projects = query.data ?? []
+  return (
+    <Card>
+      <div className={own.sideCard}>
+        <div className={own.sideHead}>
+          <span className={`${own.iconBox} ${own.lilac}`}>
+            <Folder aria-hidden="true" />
+          </span>
+          <h2 className={own.sideTitle}>Projekt</h2>
+          <Link to="/projects" className={own.sideLink}>
+            Alla projekt
+          </Link>
+        </div>
+        {query.isPending && <p className={own.muted}>Laddar…</p>}
+        {query.isSuccess && projects.length === 0 && <p className={own.muted}>Eleven är inte med i något projekt.</p>}
+        {projects.length > 0 && (
+          <ul className={own.projectList}>
+            {projects.map((project) => (
+              <li key={project.id}>
+                <span className={own.projectName}>{project.name}</span>
+                <span className={own.muted}>
+                  {plural(project.report_count, 'redovisning', 'redovisningar')}
+                  {project.deadline ? ` · klart ${shortDate(project.deadline)}` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </Card>

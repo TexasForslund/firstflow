@@ -222,7 +222,16 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ---
 
-## F18. Ny sidomeny 🚧 Granskas (Texas + Claude, 2026-10-26)
+## F19. Projekt 🚧 Granskas (Texas + Claude, 2026-10-26)
+
+- **Projektsidan** (`/projects`) visar lärarens projekt som kort med beskrivning, taggar, deadline, antal redovisningar och elever. Varje elev leder till elevsidan. Där finns också Nytt projekt, Ändra och Ta bort.
+- **Elevsidan** har kortet Projekt till höger, projektet på varje redovisning och filtret Projekt.
+- **Elevhistorik** visar "Projekt tilldelade" per elev.
+- **Översikten** visar projektet på redovisningarna.
+
+---
+
+## F18. Ny sidomeny ✅ Klar ([PR #33](https://github.com/TexasForslund/firstflow/pull/33), Texas + Claude, 2026-10-26)
 
 Skissen "Firstflow – Sidomeny skiss", alternativ A, är vald av Texas.
 

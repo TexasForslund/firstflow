@@ -303,6 +303,55 @@
   color: var(--color-butter);
 }
 
+.lilac {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.badgeProject {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.badgeProject svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.sideLink {
+  margin-left: auto;
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.sideLink:hover {
+  text-decoration: underline;
+}
+
+.projectList {
+  display: grid;
+}
+
+.projectList li {
+  display: grid;
+  gap: 0.125rem;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.projectList li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.projectName {
+  font-weight: 600;
+}
+
 .mintText {
   color: var(--color-mint);
   font-weight: 500;
