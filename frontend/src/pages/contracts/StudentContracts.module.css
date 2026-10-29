@@ -1,0 +1,206 @@
+/* Elevens kontrakt: mobilen först, inga filter (Texas, 2026-10-29). */
+.page {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 40rem;
+}
+
+.heading {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+}
+
+.subtitle,
+.state,
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.muted {
+  font-size: var(--font-size-sm);
+}
+
+.empty {
+  padding: var(--space-8) var(--space-6);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.icon svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.cardText,
+.listText {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.company {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.signers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.signer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2rem;
+  padding: 0 var(--space-3) 0 var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.signer[data-signed] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font-weight: 500;
+}
+
+.mark {
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1.5px dashed var(--color-text-faded);
+  border-radius: var(--radius-full);
+}
+
+.signer[data-signed] .mark {
+  border: 0;
+  background: var(--color-mint);
+  color: var(--color-bg);
+}
+
+.mark svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.secondary {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.secondary:hover,
+.listRow:hover {
+  background: var(--color-surface-hover);
+}
+
+.secondary svg,
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.signed {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  list-style: none;
+}
+
+.list li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.name {
+  font-weight: 500;
+}

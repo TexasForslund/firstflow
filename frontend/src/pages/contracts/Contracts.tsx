@@ -8,6 +8,7 @@ import { Avatar, Button, matches, SearchInput } from '../../components'
 import styles from './Contracts.module.css'
 import { NewContractDialog } from './NewContractDialog'
 import { SignerDots } from './SignerDots'
+import { StudentContracts } from './StudentContracts'
 
 type Show = 'waiting' | 'signed' | 'all'
 
@@ -19,12 +20,18 @@ function shortDate(iso: string) {
 
 /**
  * Kontrakt (B8/F9) enligt skissen "Firstflow – Kontrakt skiss" (Texas, 2026-10-29). Läraren ser
- * sina kontrakt och skapar nya. Eleven och handledaren ser kontrakten de ska signera.
+ * sina kontrakt och skapar nya. Handledaren ser kontrakten den ska signera. Eleven har en egen
+ * vy utan sök och filter, StudentContracts.
  */
 export function Contracts() {
   const { data: user } = useCurrentUser()
-  const isTeacher = user?.role === 'teacher'
-  const enabled = user?.role === 'teacher' || user?.role === 'supervisor' || user?.role === 'student'
+  if (user?.role === 'student') return <StudentContracts />
+  return <StaffContracts role={user?.role} />
+}
+
+function StaffContracts({ role }: { role: string | undefined }) {
+  const isTeacher = role === 'teacher'
+  const enabled = role === 'teacher' || role === 'supervisor'
   const query = useContracts(enabled)
   const [search, setSearch] = useState('')
   const [from, setFrom] = useState('')

@@ -158,6 +158,7 @@ Enligt skissen "Firstflow – Kontrakt skiss":
 - **Kontraktets sida** (`/contracts/:id`): PDF:en, signering per part, detaljer och händelser. Påminn, Ladda ner PDF och Ta bort.
 - **Behöver uppmärksamhet** på översikten har flikar per typ (Närvaro, Redovisningar, Kontrakt, Praktikplats) med antal, enligt skiss C (Texas, 2026-10-29). Raderna har Öppna, och kontrakten också Påminn.
 - **Eleven och handledaren** signerar på kontraktets sida (testläge). Eleven ser kontraktet överst i Min APL. Sidomenyn visar hur många kontrakt som väntar.
+- **Elevens kontrakt** (`/contracts` för elev): egen vy utan sök och filter (Texas, 2026-10-29). Kontrakt som väntar visas som kort med företag, handledare och signeringarna i ord (Du, Lärare, Handledare). När det är elevens tur finns knappen "Läs och signera". Signerade kontrakt ligger i en lista under.
 
 ---
 
