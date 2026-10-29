@@ -8,8 +8,16 @@ import styles from '../classes/Classes.module.css'
 import { todayIso } from '../placements/period'
 import { parseDay } from '../reports/answers'
 import own from './Attendance.module.css'
+import { WeekAttendance } from './WeekAttendance'
 
 type Preset = 'week' | '4weeks' | 'custom'
+
+const TODAY_TEXT = {
+  confirmed: 'Incheckad och bekräftad i dag',
+  pending: 'Incheckad i dag, väntar på handledaren',
+  not_present: 'Inte på plats i dag enligt handledaren',
+  missing: 'Inte incheckad i dag',
+} as const
 
 /** Elever med så här många dagar utan incheckning lyfts fram. */
 const ATTENTION_MISSING = 2
@@ -48,7 +56,7 @@ export function Attendance() {
     (a, b) => b.missing - a.missing || a.student.name.localeCompare(b.student.name, 'sv'),
   )
   const placed = all.filter((s) => s.has_placement)
-  const checkedInToday = placed.filter((s) => s.today === 'present').length
+  const checkedInToday = placed.filter((s) => s.today_state === 'pending' || s.today_state === 'confirmed').length
 
   return (
     <div className={styles.page}>
@@ -123,6 +131,8 @@ export function Attendance() {
         </div>
       )}
 
+      {classId && <WeekAttendance classId={classId} />}
+
       {query.isPending && classId && <p className={styles.state}>Laddar närvaron…</p>}
       {query.isError && <p className={styles.state}>{query.error.message}</p>}
 
@@ -162,7 +172,11 @@ export function Attendance() {
 
 function StudentRow({ row }: { row: StudentAttendance }) {
   const total = Math.max(row.expected_days, row.present)
-  const parts = [`${row.present} närvarande`, row.missing > 0 && `${row.missing} ej incheckad`].filter(Boolean)
+  const parts = [
+    `${row.present} närvarande`,
+    row.pending > 0 && `${row.pending} väntar på handledaren`,
+    row.missing > 0 && `${row.missing} ej incheckad`,
+  ].filter(Boolean)
 
   return (
     <li className={`${styles.row} ${own.row}`}>
@@ -171,11 +185,7 @@ function StudentRow({ row }: { row: StudentAttendance }) {
         <span className={styles.rowText}>
           <span className={styles.name}>{row.student.name}</span>
           <span className={styles.meta}>
-            {row.has_placement
-              ? row.today === 'present'
-                ? 'Incheckad i dag'
-                : 'Inte incheckad i dag'
-              : 'Ingen praktikplats'}
+            {row.has_placement ? TODAY_TEXT[row.today_state] : 'Ingen praktikplats'}
           </span>
         </span>
       </Link>

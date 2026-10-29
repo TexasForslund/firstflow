@@ -95,6 +95,13 @@ Väntar på: B4.
 - Lärare, `/attendance`: närvaro per elev i klassen för vald period.
 - Handledare: vilka av eleverna som har checkat in i dag.
 
+
+**F5b. Bekräftad närvaro 🚧 Granskas (Texas + Claude, 2026-10-29).**
+- Handledaren: sidan Närvaro (`/attendance-review`) med "I dag" (Bekräfta, Inte på plats, Var här ändå) och "Tidigare dagar" grupperade per dag, med "Bekräfta valda". Sidomenyn visar hur många som väntar.
+- Lärarens översikt: raden överst visar bekräftade, väntar och ej incheckade. "Dagens närvaro" har den stora procentsiffran, en stapel i tre färger och en rad per elev. Om incheckningen och handledaren inte stämmer visas en diskret röd prick.
+- Närvarosidan: veckotabell med ett läge per dag (`DayMark`), bläddring mellan veckor, "Påminn handledarna" och förklaring.
+- "Behöver uppmärksamhet": fliken Närvaro samlar ej incheckade, dagar som väntar på handledaren och dagar som inte stämmer.
+
 ---
 
 ## F6. Demo till fas 0: lärarens översikt ✅ Klar ([PR #31](https://github.com/TexasForslund/firstflow/pull/31), Texas + Claude, 2026-10-26)

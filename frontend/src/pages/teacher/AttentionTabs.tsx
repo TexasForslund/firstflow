@@ -9,11 +9,16 @@ import styles from './AttentionTabs.module.css'
 type Reason = AttentionItem['reason']
 
 /** Flikarna i den ordning de visas. Flikar utan något att följa upp döljs. */
-const TABS: { reason: Reason; label: string; tone: 'sky' | 'butter' | 'primary' | 'mint' }[] = [
-  { reason: 'missing_check_ins', label: 'Närvaro', tone: 'sky' },
-  { reason: 'missing_reports', label: 'Redovisningar', tone: 'butter' },
-  { reason: 'unsigned_contract', label: 'Kontrakt', tone: 'primary' },
-  { reason: 'no_placement', label: 'Praktikplats', tone: 'mint' },
+const TABS: { id: string; reasons: Reason[]; label: string; tone: 'sky' | 'butter' | 'primary' | 'mint' }[] = [
+  {
+    id: 'attendance',
+    reasons: ['attendance_conflict', 'missing_check_ins', 'unconfirmed_days'],
+    label: 'Närvaro',
+    tone: 'sky',
+  },
+  { id: 'reports', reasons: ['missing_reports'], label: 'Redovisningar', tone: 'butter' },
+  { id: 'contracts', reasons: ['unsigned_contract'], label: 'Kontrakt', tone: 'primary' },
+  { id: 'placement', reasons: ['no_placement'], label: 'Praktikplats', tone: 'mint' },
 ]
 
 /** Hur många rader som visas innan "Visa alla". */
@@ -39,6 +44,10 @@ function describe(item: AttentionItem) {
       return `Väntar på ${waitingText(item)} · ${sentText(item.count)}`
     case 'no_placement':
       return 'Har ingen praktikplats'
+    case 'unconfirmed_days':
+      return `${plural(item.count, 'dag', 'dagar')} väntar på handledarens bekräftelse`
+    case 'attendance_conflict':
+      return `Incheckad ${plural(item.count, 'dag', 'dagar')}, men handledaren säger inte på plats`
   }
 }
 
@@ -47,12 +56,14 @@ function describe(item: AttentionItem) {
  * praktikplats. Varje rad har en åtgärd, t.ex. Påminn på kontrakt (Texas skiss C, 2026-10-29).
  */
 export function AttentionTabs({ items }: { items: AttentionItem[] }) {
-  const tabs = TABS.map((tab) => ({ ...tab, items: items.filter((i) => i.reason === tab.reason) })).filter(
-    (tab) => tab.items.length > 0,
-  )
-  const [chosen, setChosen] = useState<Reason | null>(null)
+  const tabs = TABS.map((tab) => ({
+    ...tab,
+    // I fliken visas punkterna i den ordning listan har, viktigast först.
+    items: items.filter((i) => tab.reasons.includes(i.reason)),
+  })).filter((tab) => tab.items.length > 0)
+  const [chosen, setChosen] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
-  const active = tabs.find((t) => t.reason === chosen) ?? tabs[0]
+  const active = tabs.find((t) => t.id === chosen) ?? tabs[0]
 
   return (
     <section className={styles.card} aria-labelledby="attention-heading">
@@ -66,12 +77,12 @@ export function AttentionTabs({ items }: { items: AttentionItem[] }) {
           <div className={styles.tabs} role="group" aria-label="Typ">
             {tabs.map((tab) => (
               <button
-                key={tab.reason}
+                key={tab.id}
                 type="button"
                 className={styles.tab}
-                aria-pressed={tab.reason === active?.reason}
+                aria-pressed={tab.id === active?.id}
                 onClick={() => {
-                  setChosen(tab.reason)
+                  setChosen(tab.id)
                   setShowAll(false)
                 }}
               >

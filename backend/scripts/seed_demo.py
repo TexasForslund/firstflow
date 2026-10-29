@@ -29,7 +29,7 @@ from app.core import time
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal
-from app.models.attendance import Attendance, AttendanceStatus
+from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion
 from app.models.school import School
@@ -286,6 +286,7 @@ def _ensure_attendance(db: Session, school: School) -> int:
     if school_class is None:
         return 0
     today = time.today()
+    monday = today - timedelta(days=today.weekday())
     created = 0
     for i, student in enumerate(school_class.students):
         placement = db.scalar(select(Placement).where(Placement.student_id == student.id))
@@ -313,6 +314,9 @@ def _ensure_attendance(db: Session, school: School) -> int:
                     date=day,
                     status=AttendanceStatus.PRESENT,
                     checked_in_at=at,
+                    # Handledaren har bekräftat tidigare veckor.
+                    review=AttendanceReview.CONFIRMED if day < monday else None,
+                    reviewed_by_id=placement.supervisor_id if day < monday else None,
                 )
             )
             created += 1

@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.models.attendance import Attendance, AttendanceStatus
+from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.contract import Contract, ContractSignature, SignerRole
 from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion, Report, ReportAnswer, ReportRead, ReportStatus
@@ -112,6 +112,8 @@ def w(db: Session, make_school: Callable[..., School], make_user: MakeUser) -> W
                     date=day,
                     status=AttendanceStatus.PRESENT,
                     checked_in_at=NOW,
+                    # Dagar före i dag är bekräftade av handledaren.
+                    review=AttendanceReview.CONFIRMED if day < TODAY else None,
                 )
             )
     db.flush()
@@ -303,3 +305,29 @@ def test_unsigned_contracts_need_attention(
     login(w.other_teacher)
     overview = client.get("/api/teacher/overview").json()["attention"]
     assert all(i["reason"] != "unsigned_contract" for i in overview)
+
+
+def test_today_states_and_review_attention(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    rows = {
+        r.date: r
+        for r in db.scalars(
+            select(Attendance).join(Placement).where(Placement.student_id == w.hugo.id)
+        )
+    }
+    rows[date(2026, 10, 20)].review = None  # väntar sedan i går
+    rows[date(2026, 10, 19)].review = AttendanceReview.NOT_PRESENT  # stämmer inte
+    db.flush()
+
+    login(w.teacher)
+    data = client.get("/api/teacher/overview").json()
+    assert (data["confirmed"], data["pending"]) == (0, 1)
+    assert [(t["student"]["name"], t["state"]) for t in data["today_students"]] == [
+        ("Hugo", "pending"),
+        ("Maja", "missing"),
+    ]
+    assert data["today_students"][0]["supervisor"]["id"]
+    reasons = {(i["student"]["name"], i["reason"], i["count"]) for i in data["attention"]}
+    assert ("Hugo", "attendance_conflict", 1) in reasons
+    assert ("Hugo", "unconfirmed_days", 1) in reasons

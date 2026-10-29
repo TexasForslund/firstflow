@@ -7,9 +7,11 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.attendance import Attendance, AttendanceStatus
+from app.models.invitation import Notification
 from app.models.placement import Placement, Workplace
 from app.models.school import School
 from app.models.school_class import SchoolClass
@@ -335,3 +337,137 @@ def test_placement_with_attendance_cannot_be_deleted(
     login(world.teacher)
     response = client.delete(f"/api/placements/{world.placement.id}")
     assert response.status_code == 409
+
+
+# --- Bekräftad närvaro (Texas, 2026-10-29) ---------------------------------------------------
+
+MONDAY = date(2026, 10, 19)
+TUESDAY = date(2026, 10, 20)
+
+
+def _check_in(db: Session, placement: Placement, day: date, review: str | None = None) -> None:
+    db.add(
+        Attendance(
+            placement_id=placement.id,
+            date=day,
+            status=AttendanceStatus.PRESENT,
+            checked_in_at=datetime.combine(day, datetime.min.time(), UTC) + timedelta(hours=7),
+            review=review,
+        )
+    )
+    db.flush()
+
+
+def test_check_in_waits_for_supervisor(
+    client: TestClient, login: Login, world: World, db: Session
+) -> None:
+    login(world.student)
+    day = client.post("/api/attendance/check-in").json()
+    assert day["state"] == "pending"
+
+    login(world.supervisor)
+    listed = client.get("/api/supervisor/attendance/review").json()
+    assert listed["earliest"] == "2026-10-08"
+    today = {i["student"]["id"]: i for i in listed["today_items"]}
+    assert today[str(world.student.id)]["state"] == "pending"
+    assert today[str(world.second.id)]["state"] == "missing"
+    # Måndag och tisdag i veckan saknar incheckning och går att lägga till.
+    assert {(i["student"]["id"], i["date"]) for i in listed["earlier"]} >= {
+        (str(world.student.id), "2026-10-19"),
+        (str(world.second.id), "2026-10-20"),
+    }
+
+    body = {
+        "items": [
+            {"placement_id": str(world.placement.id), "date": "2026-10-21", "verdict": "confirmed"},
+            # Eleven glömde att checka in i måndags.
+            {"placement_id": str(world.placement.id), "date": "2026-10-19", "verdict": "confirmed"},
+        ]
+    }
+    after = client.post("/api/supervisor/attendance/review", json=body).json()
+    today = {i["student"]["id"]: i for i in after["today_items"]}
+    assert today[str(world.student.id)]["state"] == "confirmed"
+    added = db.scalar(
+        select(Attendance).where(
+            Attendance.placement_id == world.placement.id, Attendance.date == MONDAY
+        )
+    )
+    assert added is not None and added.checked_in_at is None
+    assert added.status == AttendanceStatus.PRESENT and added.reviewed_by_id == world.supervisor.id
+
+    login(world.teacher)
+    rows = client.get(f"/api/classes/{world.ee22.id}/attendance").json()["students"]
+    hugo = next(r for r in rows if r["student"]["id"] == str(world.student.id))
+    assert hugo["present"] == 2 and hugo["pending"] == 0 and hugo["today_state"] == "confirmed"
+
+
+def test_not_present_does_not_count(
+    client: TestClient, login: Login, world: World, db: Session
+) -> None:
+    _check_in(db, world.placement, TUESDAY)
+    login(world.supervisor)
+    body = {
+        "items": [
+            {
+                "placement_id": str(world.placement.id),
+                "date": "2026-10-20",
+                "verdict": "not_present",
+            }
+        ]
+    }
+    assert client.post("/api/supervisor/attendance/review", json=body).status_code == 200
+
+    login(world.teacher)
+    rows = client.get(f"/api/classes/{world.ee22.id}/attendance").json()["students"]
+    hugo = next(r for r in rows if r["student"]["id"] == str(world.student.id))
+    assert hugo["present"] == 0 and hugo["not_present"] == 1
+
+    week = client.get(f"/api/classes/{world.ee22.id}/attendance/week").json()
+    assert week["days"][0] == "2026-10-19"
+    row = next(s for s in week["students"] if s["student"]["id"] == str(world.student.id))
+    assert [d["state"] for d in row["days"]][:3] == ["missing", "not_present", "missing"]
+    assert row["days"][1]["checked_in_at"] is not None
+
+
+def test_review_rules(client: TestClient, login: Login, world: World) -> None:
+    login(world.supervisor)
+
+    def send(day: str, placement: Placement | None = None) -> int:
+        item = {"placement_id": str((placement or world.placement).id), "date": day}
+        body = {"items": [{**item, "verdict": "confirmed"}]}
+        return client.post("/api/supervisor/attendance/review", json=body).status_code
+
+    assert send("2026-10-12") == 200  # placeringens första dag, inom två veckor
+    assert send("2026-10-09") == 422  # före placeringen
+    assert send("2026-10-22") == 422  # framtiden
+    assert send("2026-10-18") == 422  # söndag
+
+    # Längre bakåt än två veckor går inte, även inom placeringen.
+    with patch("app.core.time.today", return_value=date(2026, 11, 3)):
+        assert send("2026-10-21") == 200  # 14 dagar bakåt, i dag inräknad
+        assert send("2026-10-20") == 422
+
+    # En annan handledare kan inte bekräfta.
+    login(world.other_supervisor)
+    assert send("2026-10-21") == 404
+
+
+def test_week_and_reminder(client: TestClient, login: Login, world: World, db: Session) -> None:
+    _check_in(db, world.placement, MONDAY)
+    _check_in(db, world.placement, TUESDAY, review="confirmed")
+    login(world.teacher)
+    week = client.get(f"/api/classes/{world.ee22.id}/attendance/week?start=2026-10-23").json()
+    assert week["week_start"] == "2026-10-19"
+    assert week["waiting"] == [
+        {"supervisor": {"id": str(world.supervisor.id), "name": world.supervisor.name}, "count": 1}
+    ]
+    unplaced = next(s for s in week["students"] if s["student"]["id"] == str(world.unplaced.id))
+    assert unplaced["supervisor"] is None and not any(d["on_apl"] for d in unplaced["days"])
+
+    assert client.post(f"/api/classes/{world.ee22.id}/attendance/remind").json() == {"reminded": 1}
+    note = db.scalar(select(Notification).where(Notification.user_id == world.supervisor.id))
+    assert note is not None and note.link == "/attendance-review"
+
+    # Bara läraren påminner.
+    login(world.admin)
+    assert client.post(f"/api/classes/{world.ee22.id}/attendance/remind").status_code == 403

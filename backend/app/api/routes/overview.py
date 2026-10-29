@@ -19,7 +19,13 @@ from sqlalchemy import exists, func, select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles
-from app.api.routes.attendance import DEFAULT_PERIOD_DAYS, class_student_attendance
+from app.api.routes.attendance import (
+    DEFAULT_PERIOD_DAYS,
+    DayState,
+    StudentAttendance,
+    class_student_attendance,
+    day_state,
+)
 from app.api.routes.reports import PersonBrief, due_days, text_answers
 from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
@@ -48,6 +54,20 @@ class AttentionReason(StrEnum):
     NO_PLACEMENT = "no_placement"
     # Ett kontrakt som läraren har skickat och som eleven eller handledaren inte har signerat.
     UNSIGNED_CONTRACT = "unsigned_contract"
+    # Incheckningar före i dag som handledaren inte har bekräftat (Texas, 2026-10-29).
+    UNCONFIRMED_DAYS = "unconfirmed_days"
+    # Eleven checkade in men handledaren säger att eleven inte var på plats.
+    ATTENDANCE_CONFLICT = "attendance_conflict"
+
+
+class TodayStudent(BaseModel):
+    """En elev som har APL i dag, med dagens läge (Texas, 2026-10-29)."""
+
+    student: PersonBrief
+    class_name: str
+    state: DayState
+    checked_in_at: datetime | None
+    supervisor: PersonBrief | None
 
 
 class ClassToday(BaseModel):
@@ -92,6 +112,11 @@ class TeacherOverview(BaseModel):
     today: date
     on_apl: int
     checked_in: int
+    confirmed: int = Field(description="Incheckade i dag och bekräftade av handledaren")
+    pending: int = Field(description="Incheckade i dag som väntar på handledaren")
+    today_students: list[TodayStudent] = Field(
+        description="Elever med APL i dag: väntar och stämmer inte först, sedan ej incheckade"
+    )
     classes: list[ClassToday]
     attention: list[AttentionItem]
     unread_reports: int
@@ -132,17 +157,32 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
         )
     ).scalars()
     on_apl = set(active) if today.weekday() < 5 else set()
-    checked_in = set(
-        db.scalars(
-            select(Placement.student_id)
-            .join(Attendance, Attendance.placement_id == Placement.id)
+    today_placements = {
+        p.student_id: p
+        for p in db.scalars(
+            select(Placement)
             .where(
                 Placement.student_id.in_(on_apl),
-                Attendance.date == today,
-                Attendance.status == AttendanceStatus.PRESENT,
+                Placement.start_date <= today,
+                Placement.end_date >= today,
             )
+            .options(selectinload(Placement.supervisor))
         )
-    )
+    }
+    today_rows = {
+        student_id: row
+        for student_id, row in db.execute(
+            select(Placement.student_id, Attendance)
+            .join(Attendance, Attendance.placement_id == Placement.id)
+            .where(Placement.student_id.in_(on_apl), Attendance.date == today)
+        )
+    }
+    states = {sid: day_state(today_rows.get(sid)) for sid in on_apl}
+    checked_in = {
+        sid
+        for sid, row in today_rows.items()
+        if row.status == AttendanceStatus.PRESENT and states[sid] != DayState.NOT_PRESENT
+    }
     # Elever med en pågående eller kommande placering.
     placed = set(
         db.scalars(
@@ -158,6 +198,7 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
     missing_check_ins: list[AttentionItem] = []
     missing_reports: list[AttentionItem] = []
     no_placement: list[AttentionItem] = []
+    review: list[AttentionItem] = []
     class_rows = []
     from_date = today - timedelta(days=DEFAULT_PERIOD_DAYS - 1)
     for school_class in classes:
@@ -172,6 +213,7 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
         )
 
         for row in class_student_attendance(db, school_class, from_date, today):
+            review += review_items(row, school_class.name)
             if row.missing >= ATTENTION_MISSING_CHECK_INS:
                 missing_check_ins.append(
                     AttentionItem(
@@ -226,6 +268,7 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
     class_of = {s.id: c.name for c in classes for s in c.students if s.is_active}
     attention = (
         most_first(missing_check_ins)
+        + most_first(review)
         + most_first(missing_reports)
         + unsigned_contracts(db, user, list(class_of), class_of, today)
         + sorted(no_placement, key=lambda i: i.student.name)
@@ -260,10 +303,41 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
         .limit(REPORT_LIMIT)
     ).all()
 
+    class_of_student = {s.id: c.name for c in classes for s in c.students if s.is_active}
+    order = {
+        DayState.NOT_PRESENT: 0,
+        DayState.PENDING: 1,
+        DayState.MISSING: 2,
+        DayState.CONFIRMED: 3,
+    }
+    today_students = sorted(
+        (
+            TodayStudent(
+                student=PersonBrief(id=sid, name=students[sid].name),
+                class_name=class_of_student.get(sid, ""),
+                state=states[sid],
+                checked_in_at=today_rows[sid].checked_in_at if sid in today_rows else None,
+                supervisor=(
+                    PersonBrief(
+                        id=today_placements[sid].supervisor.id,
+                        name=today_placements[sid].supervisor.name,
+                    )
+                    if sid in today_placements
+                    else None
+                ),
+            )
+            for sid in on_apl
+        ),
+        key=lambda t: (order[t.state], t.student.name),
+    )
+
     return TeacherOverview(
         today=today,
         on_apl=len(on_apl),
         checked_in=len(checked_in),
+        confirmed=sum(1 for st in states.values() if st == DayState.CONFIRMED),
+        pending=sum(1 for st in states.values() if st == DayState.PENDING),
+        today_students=today_students,
         classes=class_rows,
         attention=attention,
         unread_reports=unread_count,
@@ -287,6 +361,32 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
 
 
 # --- Elevsidan ----------------------------------------------------------------------------
+
+
+def review_items(row: StudentAttendance, class_name: str) -> list[AttentionItem]:
+    """Obekräftade dagar före i dag, och dagar där incheckningen och handledaren inte stämmer."""
+    student = PersonBrief(id=row.student.id, name=row.student.name)
+    items = []
+    if row.not_present:
+        items.append(
+            AttentionItem(
+                student=student,
+                class_name=class_name,
+                reason=AttentionReason.ATTENDANCE_CONFLICT,
+                count=row.not_present,
+            )
+        )
+    earlier = row.pending - (1 if row.today_state == DayState.PENDING else 0)
+    if earlier > 0:
+        items.append(
+            AttentionItem(
+                student=student,
+                class_name=class_name,
+                reason=AttentionReason.UNCONFIRMED_DAYS,
+                count=earlier,
+            )
+        )
+    return items
 
 
 def unsigned_contracts(
@@ -351,6 +451,8 @@ def student_attention(student_id: UUID, db: DbSession, user: CanViewStudent) -> 
 
     from_date = today - timedelta(days=DEFAULT_PERIOD_DAYS - 1)
     for row in class_student_attendance(db, school_class, from_date, today):
+        if row.student.id == student.id:
+            items += review_items(row, school_class.name)
         if row.student.id == student.id and row.missing >= ATTENTION_MISSING_CHECK_INS:
             items.append(
                 AttentionItem(
