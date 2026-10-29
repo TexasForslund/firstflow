@@ -232,6 +232,12 @@
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.project:hover {
+  background: var(--color-surface-hover);
 }
 
 .project svg {
@@ -239,4 +245,10 @@
   width: 1.25rem;
   height: 1.25rem;
   color: var(--color-mint);
+}
+
+.project .projectChevron {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--color-text-faded);
 }

@@ -3896,6 +3896,55 @@
         ]
       }
     },
+    "/api/me/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "My Project",
+        "description": "Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,\n2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.",
+        "operationId": "my_project_api_me_projects__project_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProject"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/contracts": {
       "get": {
         "tags": [
@@ -6239,6 +6288,187 @@
         ],
         "title": "MyPlacement",
         "description": "Elevens egen placering. Handledarens namn räcker för eleven."
+      },
+      "MyProject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "students": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Students"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/Ref",
+            "description": "Läraren som skapade projektet"
+          },
+          "workplace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Ref"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Företaget projektet görs på"
+          },
+          "supervisors": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Supervisors",
+            "description": "Inbjudna handledare"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At",
+            "description": "Satt när projektet är avslutat"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "report_count": {
+            "type": "integer",
+            "title": "Report Count",
+            "description": "Inskickade redovisningar kopplade till projektet"
+          },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count",
+            "description": "Olästa redovisningar för läraren. 0 för handledare"
+          },
+          "is_owner": {
+            "type": "boolean",
+            "title": "Is Owner"
+          },
+          "can_edit_students": {
+            "type": "boolean",
+            "title": "Can Edit Students",
+            "description": "Om du får ändra elever, företag, handledare och avsluta projektet"
+          },
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/MyProjectReport"
+            },
+            "type": "array",
+            "title": "Reports",
+            "description": "Elevens egna inskickade redovisningar i projektet, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "deadline",
+          "tags",
+          "students",
+          "owner",
+          "workplace",
+          "supervisors",
+          "completed_at",
+          "created_at",
+          "report_count",
+          "unread_count",
+          "is_owner",
+          "can_edit_students",
+          "reports"
+        ],
+        "title": "MyProject"
+      },
+      "MyProjectReport": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "comment_count": {
+            "type": "integer",
+            "title": "Comment Count"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextAnswer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Första textsvaret, förkortat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "due_date",
+          "submitted_at",
+          "comment_count",
+          "excerpt"
+        ],
+        "title": "MyProjectReport"
       },
       "NotificationList": {
         "properties": {

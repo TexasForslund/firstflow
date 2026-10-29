@@ -424,3 +424,72 @@ def my_projects(
         .order_by(Project.deadline.nulls_last(), Project.name)
     ).all()
     return _read(db, user, list(projects))
+
+
+class MyProjectReport(BaseModel):
+    id: UUID
+    due_date: date
+    submitted_at: datetime
+    comment_count: int
+    excerpt: TextAnswer | None = Field(description="Första textsvaret, förkortat")
+
+
+class MyProject(ProjectRead):
+    reports: list[MyProjectReport] = Field(
+        description="Elevens egna inskickade redovisningar i projektet, senaste först"
+    )
+
+
+MY_PROJECT_EXCERPT_LENGTH = 200
+
+
+@me_router.get("/{project_id}", response_model=MyProject)
+def my_project(
+    project_id: UUID,
+    db: DbSession,
+    user: Annotated[User, Depends(require_roles(UserRole.STUDENT))],
+) -> MyProject:
+    """Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,
+    2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404."""
+    project = db.scalar(
+        select(Project)
+        .join(project_students, project_students.c.project_id == Project.id)
+        .where(
+            Project.id == project_id,
+            project_students.c.student_id == user.id,
+            Project.school_id == user.school_id,
+        )
+        .options(*_LOAD)
+    )
+    if project is None:
+        raise _not_found()
+    comment_count = (
+        select(func.count())
+        .where(ReportComment.report_id == Report.id)
+        .scalar_subquery()
+        .label("comment_count")
+    )
+    rows = db.execute(
+        select(Report, comment_count)
+        .where(
+            Report.project_id == project.id,
+            Report.student_id == user.id,
+            Report.status == ReportStatus.SUBMITTED,
+        )
+        .options(selectinload(Report.answers), selectinload(Report.form_version))
+        .order_by(Report.submitted_at.desc())
+    ).all()
+    reports = []
+    for report, count in rows:
+        excerpt = text_answers(report, limit=1, length=MY_PROJECT_EXCERPT_LENGTH)
+        reports.append(
+            MyProjectReport(
+                id=report.id,
+                due_date=report.due_date,
+                submitted_at=report.submitted_at,
+                comment_count=count,
+                excerpt=excerpt[0] if excerpt else None,
+            )
+        )
+    (read,) = _read(db, user, [project])
+    return MyProject(**read.model_dump(), reports=reports)

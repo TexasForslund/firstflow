@@ -341,7 +341,7 @@ Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 20
 
 ---
 
-## B16. Handledarens åtkomst till redovisningar 🚧 Granskas ([PR #43](https://github.com/TexasForslund/firstflow/pull/43), Texas + Claude, 2026-10-29)
+## B16. Handledarens åtkomst till redovisningar ✅ Klar ([PR #43](https://github.com/TexasForslund/firstflow/pull/43), Texas + Claude, 2026-10-29)
 
 Beslut (Texas, 2026-10-29):
 - Handledaren ser bara redovisningar för dagar då eleven var placerad hos hen (redovisningens dag inom placeringens period, på en arbetsplats på redovisningens skola). Byter eleven praktikplats ser den nya handledaren inte de gamla redovisningarna.

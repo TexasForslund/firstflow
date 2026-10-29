@@ -381,3 +381,48 @@ def test_student_links_report_to_project(
     login(w.teacher)
     assert client.put(url, json={"project_id": None}).status_code == 403
     assert client.get("/api/me/projects").status_code == 403
+
+
+# --- Eleven öppnar ett projekt från Min APL (Texas, 2026-10-29) -----------------------------
+
+
+def test_student_opens_own_project(client: TestClient, db: Session, login: Login, w: World) -> None:
+    login(w.teacher)
+    project_id = client.post("/api/projects", json=body(w)).json()["id"]
+    form = FormVersion(
+        class_id=w.ee22.id,
+        version=1,
+        questions=[{"id": str(QUESTION), "type": "long_text", "title": "Vad har du gjort?"}],
+    )
+    db.add(form)
+    db.flush()
+    for day, student in [(6, w.hugo), (9, w.hugo), (13, w.maja)]:
+        report = Report(
+            class_id=w.ee22.id,
+            student_id=student.id,
+            form_version_id=form.id,
+            due_date=date(2026, 10, day),
+            project_id=project_id,
+            status=ReportStatus.SUBMITTED,
+            submitted_at=datetime(2026, 10, day, 15, tzinfo=UTC),
+        )
+        db.add(report)
+        db.flush()
+        db.add(ReportAnswer(report_id=report.id, question_id=QUESTION, text=f"Svar {day}"))
+    db.flush()
+
+    login(w.hugo)
+    response = client.get(f"/api/me/projects/{project_id}")
+    assert response.status_code == 200, response.text
+    project = response.json()
+    assert project["name"] == "Elinstallation i villa"
+    assert project["owner"]["name"] == w.teacher.name
+    # Bara Hugos egna redovisningar, senaste först. Majas syns inte.
+    assert [r["excerpt"]["text"] for r in project["reports"]] == ["Svar 9", "Svar 6"]
+    assert "email" not in project["students"][0]
+
+    # En elev som inte är med i projektet får 404, och läraren använder sin egen endpoint.
+    login(w.stranger)
+    assert client.get(f"/api/me/projects/{project_id}").status_code == 404
+    login(w.teacher)
+    assert client.get(f"/api/me/projects/{project_id}").status_code == 403
