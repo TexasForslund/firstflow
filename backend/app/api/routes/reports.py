@@ -12,7 +12,8 @@ Behörighet:
 - Eleven ser bara sina egna redovisningar och bara i klasser hen går i.
 - Läraren ser inskickade redovisningar i klasser hen undervisar i. Utkast är privata.
 - Skoladmin, rektor och superadmin ser inte redovisningarna. De behövs inte i deras arbete.
-- Handledaren får åtkomst när kopplingen elev–handledare finns (B3).
+- Handledaren ser inskickade redovisningar för dagar då eleven var placerad hos hen, och kan
+  kommentera dem (Texas, 2026-10-29). Eleven får en notis när handledaren kommenterar.
 Allt som användaren inte har tillgång till svarar 404.
 """
 
@@ -29,9 +30,11 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import require_roles, require_same_school
 from app.api.routes.classes import get_accessible_class
 from app.api.routes.forms import latest_version
+from app.api.routes.invitations import notify
 from app.api.routes.students import get_student_for
 from app.core import time
 from app.db.session import DbSession
+from app.models.placement import Placement, Workplace
 from app.models.project import Project, project_students
 from app.models.report import (
     FormVersion,
@@ -57,6 +60,7 @@ from app.services.report_forms import (
 router = APIRouter(prefix="/reports", tags=["reports"])
 student_router = APIRouter(prefix="/students/{student_id}/reports", tags=["reports"])
 class_router = APIRouter(prefix="/classes/{class_id}/reports", tags=["reports"])
+supervisor_router = APIRouter(prefix="/supervisor/reports", tags=["reports"])
 
 # Hur långt bakåt eleven kan lämna en redovisning som inte är gjord.
 REPORT_WINDOW_DAYS = 28
@@ -64,7 +68,11 @@ STUDENT_PAGE_ANSWER_LENGTH = 1000
 
 Student = Annotated[User, Depends(require_roles(UserRole.STUDENT))]
 Teacher = Annotated[User, Depends(require_roles(UserRole.TEACHER))]
-StudentOrTeacher = Annotated[User, Depends(require_roles(UserRole.STUDENT, UserRole.TEACHER))]
+Supervisor = Annotated[User, Depends(require_roles(UserRole.SUPERVISOR))]
+TeacherOrSupervisor = Annotated[User, Depends(require_roles(UserRole.TEACHER, UserRole.SUPERVISOR))]
+Reader = Annotated[
+    User, Depends(require_roles(UserRole.STUDENT, UserRole.TEACHER, UserRole.SUPERVISOR))
+]
 
 
 def _not_found() -> HTTPException:
@@ -179,6 +187,33 @@ def _teaches_student_now(db: DbSession, user: User, student_id: UUID) -> bool:
     )
 
 
+def _supervised_placement():
+    """Villkor för att handledaren hade eleven på en arbetsplats på skolan den dagen
+    redovisningen gäller. Kräver att `Report` och `SchoolClass` finns i frågan."""
+    return (
+        exists()
+        .where(
+            Placement.student_id == Report.student_id,
+            Placement.start_date <= Report.due_date,
+            Placement.end_date >= Report.due_date,
+            Workplace.id == Placement.workplace_id,
+            Workplace.school_id == SchoolClass.school_id,
+        )
+        .correlate(Report, SchoolClass)
+    )
+
+
+def _supervises(db: DbSession, user: User, report: Report) -> bool:
+    return bool(
+        db.scalar(
+            select(_supervised_placement().where(Placement.supervisor_id == user.id))
+            .select_from(Report)
+            .join(SchoolClass, SchoolClass.id == Report.class_id)
+            .where(Report.id == report.id)
+        )
+    )
+
+
 def _in_class(db: DbSession, student: User, class_id: UUID) -> bool:
     return bool(
         db.scalar(
@@ -244,6 +279,12 @@ def _get_report(db: DbSession, user: User, report_id: UUID, *, for_update: bool 
     report = db.scalar(query)
     if report is None:
         raise _not_found()
+    # Handledaren hör inte till någon skola. Kopplingen går via placeringen, som måste
+    # vara på en arbetsplats på redovisningens skola.
+    if user.role == UserRole.SUPERVISOR:
+        if report.status == ReportStatus.SUBMITTED and _supervises(db, user, report):
+            return report
+        raise _not_found()
     require_same_school(user, report.school_class.school_id)
     # Eleven måste fortfarande gå i klassen. Tas hen bort ur klassen försvinner åtkomsten.
     if (
@@ -267,7 +308,7 @@ def _detail(db: DbSession, user: User, report: Report) -> ReportDetail:
     questions = parse_questions(report.form_version.questions)
     answers = {a.question_id: AnswerValue.model_validate(a) for a in report.answers}
     is_read = None
-    if user.role == UserRole.TEACHER:
+    if user.role in (UserRole.TEACHER, UserRole.SUPERVISOR):
         is_read = db.get(ReportRead, (report.id, user.id)) is not None
     return ReportDetail(
         id=report.id,
@@ -431,7 +472,7 @@ def start_report(body: ReportStart, db: DbSession, user: Student) -> ReportDetai
 
 
 @router.get("/{report_id}", response_model=ReportDetail)
-def get_report(report_id: UUID, db: DbSession, user: StudentOrTeacher) -> ReportDetail:
+def get_report(report_id: UUID, db: DbSession, user: Reader) -> ReportDetail:
     return _detail(db, user, _get_report(db, user, report_id))
 
 
@@ -537,8 +578,8 @@ def submit_report(report_id: UUID, db: DbSession, user: Student) -> ReportDetail
 
 
 @router.post("/{report_id}/read", status_code=status.HTTP_204_NO_CONTENT)
-def mark_read(report_id: UUID, db: DbSession, user: Teacher) -> Response:
-    """Markerar redovisningen som läst av läraren."""
+def mark_read(report_id: UUID, db: DbSession, user: TeacherOrSupervisor) -> Response:
+    """Markerar redovisningen som läst av läraren eller handledaren."""
     report = _get_report(db, user, report_id)
     db.execute(
         insert(ReportRead).values(report_id=report.id, user_id=user.id).on_conflict_do_nothing()
@@ -550,10 +591,9 @@ def mark_read(report_id: UUID, db: DbSession, user: Teacher) -> Response:
 @router.post(
     "/{report_id}/comments", response_model=CommentRead, status_code=status.HTTP_201_CREATED
 )
-def add_comment(
-    report_id: UUID, body: CommentCreate, db: DbSession, user: StudentOrTeacher
-) -> CommentRead:
-    """Kommentar på en inskickad redovisning, från eleven själv eller en lärare för klassen."""
+def add_comment(report_id: UUID, body: CommentCreate, db: DbSession, user: Reader) -> CommentRead:
+    """Kommentar på en inskickad redovisning, från eleven själv, en lärare för klassen eller
+    elevens handledare. Kommenterar handledaren får eleven en notis."""
     report = _get_report(db, user, report_id)
     if report.status != ReportStatus.SUBMITTED:
         raise HTTPException(
@@ -561,6 +601,13 @@ def add_comment(
         )
     comment = ReportComment(report_id=report.id, author_id=user.id, body=body.body)
     db.add(comment)
+    if user.role == UserRole.SUPERVISOR:
+        notify(
+            db,
+            report.student_id,
+            f"{user.name} kommenterade din redovisning",
+            link=f"/my-reports/{report.id}",
+        )
     db.commit()
     return CommentRead(
         id=comment.id,
@@ -703,3 +750,70 @@ def list_student_reports(
         )
         for report, read, count in db.execute(query).all()
     ]
+
+
+class SupervisorReport(ReportSummary):
+    class_name: str
+    project: PersonBrief | None
+    excerpt: TextAnswer | None = Field(description="Första textsvaret, förkortat")
+
+
+SUPERVISOR_EXCERPT_LENGTH = 280
+
+
+@supervisor_router.get("", response_model=list[SupervisorReport])
+def list_supervisor_reports(
+    db: DbSession,
+    user: Supervisor,
+    limit: Annotated[int, Query(ge=1, le=200)] = 100,
+) -> list[SupervisorReport]:
+    """Inskickade redovisningar för dagar då eleven var placerad hos handledaren, senast
+    inskickade först. Redovisningar från tiden hos en annan handledare syns inte."""
+    is_read = (
+        exists()
+        .where(ReportRead.report_id == Report.id, ReportRead.user_id == user.id)
+        .label("is_read")
+    )
+    comment_count = (
+        select(func.count())
+        .where(ReportComment.report_id == Report.id)
+        .scalar_subquery()
+        .label("comment_count")
+    )
+    query = (
+        select(Report, is_read, comment_count)
+        .join(SchoolClass, SchoolClass.id == Report.class_id)
+        .options(
+            selectinload(Report.student),
+            selectinload(Report.school_class),
+            selectinload(Report.form_version),
+            selectinload(Report.answers),
+            selectinload(Report.project),
+        )
+        .where(
+            Report.status == ReportStatus.SUBMITTED,
+            _supervised_placement().where(Placement.supervisor_id == user.id),
+        )
+        .order_by(Report.submitted_at.desc())
+        .limit(limit)
+    )
+    result = []
+    for report, read, count in db.execute(query).all():
+        excerpt = text_answers(report, limit=1, length=SUPERVISOR_EXCERPT_LENGTH)
+        result.append(
+            SupervisorReport(
+                id=report.id,
+                student=PersonBrief(id=report.student.id, name=report.student.name),
+                due_date=report.due_date,
+                submitted_at=report.submitted_at,
+                is_late=_is_late(report.due_date, report.submitted_at),
+                is_read=read,
+                comment_count=count,
+                class_name=report.school_class.name,
+                project=PersonBrief(id=report.project.id, name=report.project.name)
+                if report.project
+                else None,
+                excerpt=excerpt[0] if excerpt else None,
+            )
+        )
+    return result

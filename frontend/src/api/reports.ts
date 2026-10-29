@@ -118,10 +118,12 @@ export function useAddComment(reportId: string) {
       if (!data) throw new ApiError(error, response.status)
       return data
     },
-    onSuccess: (comment) =>
+    onSuccess: (comment) => {
       queryClient.setQueryData<ReportDetail>(keys.report(reportId), (report) =>
         report ? { ...report, comments: [...report.comments, comment] } : report,
-      ),
+      )
+      queryClient.invalidateQueries({ queryKey: supervisorKey })
+    },
   })
 }
 
@@ -151,7 +153,7 @@ export function useClassReports(
   })
 }
 
-/** Markerar redovisningen som läst av läraren. */
+/** Markerar redovisningen som läst av läraren eller handledaren. */
 export function useMarkRead(reportId: string) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -168,6 +170,26 @@ export function useMarkRead(reportId: string) {
       const report = queryClient.getQueryData<ReportDetail>(keys.report(reportId))
       if (report) queryClient.invalidateQueries({ queryKey: classKey(report.class_id) })
       queryClient.invalidateQueries({ queryKey: overviewKey })
+      queryClient.invalidateQueries({ queryKey: supervisorKey })
+    },
+  })
+}
+
+export type SupervisorReport = components['schemas']['SupervisorReport']
+
+const supervisorKey = ['supervisor', 'reports'] as const
+
+/** Handledarens elevers redovisningar från tiden hos handledaren, senast inskickade först. */
+export function useSupervisorReports(enabled = true) {
+  return useQuery({
+    queryKey: supervisorKey,
+    enabled,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/supervisor/reports', {
+        params: { query: { limit: 200 } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
     },
   })
 }

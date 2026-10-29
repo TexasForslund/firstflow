@@ -150,7 +150,7 @@ Väntar inte på annat. Görs löpande men formellt när F1–F5 är klara.
 
 ---
 
-## F9. Avtalshantering och signeringsflöde 🚧 Granskas (Texas + Claude, 2026-10-29)
+## F9. Avtalshantering och signeringsflöde ✅ Klar ([PR #37](https://github.com/TexasForslund/firstflow/pull/37), [#38](https://github.com/TexasForslund/firstflow/pull/38), [#42](https://github.com/TexasForslund/firstflow/pull/42), Texas + Claude, 2026-10-29)
 
 Enligt skissen "Firstflow – Kontrakt skiss":
 - **Kontraktslistan** (`/contracts`): elev med e-post, företag och handledare, signeringar (E, L, H), status och skickat-datum. Sök, filtret "Skickat från" och Väntar, Klara och Alla.
@@ -231,7 +231,7 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 
 ---
 
-## F19. Projekt 🚧 Granskas (Texas + Claude, 2026-10-26)
+## F19. Projekt ✅ Klar ([PR #36](https://github.com/TexasForslund/firstflow/pull/36), [#41](https://github.com/TexasForslund/firstflow/pull/41), Texas + Claude, 2026-10-29)
 
 - **Projektsidan** (`/projects`), version 2 enligt skissen "Firstflow – Projekt skiss" (Texas, 2026-10-29):
   - En tabell med projekt, elever, företag, tidplan och redovisningar (olästa för läraren). Sök och filtren Pågående, Avslutade och Alla.
@@ -241,6 +241,22 @@ Strukturen är Översikt (flödet) → Elevhistorik (alla elever) → Elevsida (
 - **Elevsidan** har kortet Projekt till höger, projektet på varje redovisning och filtret Projekt.
 - **Elevhistorik** visar "Projekt tilldelade" per elev.
 - **Översikten** visar projektet på redovisningarna.
+- **Projektval i redovisningen** ([PR #41](https://github.com/TexasForslund/firstflow/pull/41)): ett valfritt sista steg med stora projektkort, tre åt gången och "Se fler". Knappen blir "Skicka in till {projekt}".
+
+---
+
+## F20. Handledaren läser och kommenterar redovisningar 🚧 Granskas ([PR #43](https://github.com/TexasForslund/firstflow/pull/43), Texas + Claude, 2026-10-29)
+
+Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
+- **Redovisningar** (`/student-reports`) i handledarens sidomeny, med antal olästa. Ett flöde med elevernas inlägg från tiden hos handledaren: namn, dag, projekt, första textsvaret och antal kommentarer. Nya inlägg har en prick. Knappar för Alla elever och en per elev.
+- **En redovisning** (`/student-reports/:id`): alla svar och kommentarerna. Handledaren skriver en kommentar, och under fältet står att eleven och läraren ser den. Redovisningen markeras som läst när den öppnas.
+- `seed_showcase`: handledaren har läst allt utom den senaste veckan.
+
+---
+
+## F21. Eleven öppnar ett projekt från Min APL ⬜
+
+Texas, 2026-10-29: i Min APL ser eleven sina projekt men kan inte klicka sig in och läsa om projektet (beskrivning, företag, slutdatum och sina redovisningar i projektet). Behöver en elevvy av projektet och åtkomst för eleven i API:t.
 
 ---
 

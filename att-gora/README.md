@@ -11,7 +11,7 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 
 Ordningen följer fas 1 i [roadmapen](../docs/produktvision-och-roadmap.md): inloggning, klasser och elever, praktikperiod och APL-plats, närvaro, frågor och redovisning.
 
-## Läget just nu (2026-10-26)
+## Läget just nu (2026-10-29)
 
 Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
@@ -45,20 +45,24 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **F17 (#32):** elevsidan version 2 enligt Texas skiss.
 - **F18 (#33):** ny sidomeny.
 
+**Klart och mergat (Texas + Claude, 2026-10-29):**
+- **B12 och F19 (#34, #36):** projekt med företag, handledare och visningsdata för klassen EL23.
+- **B8 och F9 (#37):** kontrakt med signering i testläge. Elev, lärare och handledare signerar, läraren när hen skickar.
+- **#38:** "Behöver uppmärksamhet" med en flik per typ (Närvaro, Redovisningar, Kontrakt, Praktikplats).
+- **#39:** etiketten "Sen" på inskickade redovisningar är borttagen.
+- **#40:** bekräftad närvaro. Handledaren bekräftar, säger "inte på plats" eller lägger till dagar, upp till två veckor bakåt. Läraren ser vad som väntar och en diskret varning när incheckningen och handledaren inte stämmer.
+- **#41:** eleven väljer projekt i ett valfritt sista steg i redovisningen.
+- **#42:** eleven har en egen kontraktsvy utan sök och filter.
+
 **Nästa steg:**
 - **Texas + Claude:**
-  - B12 och F19: projekt, och visningsdata med klassen EL23 (granskas i #34).
-  - **Nästa pass:**
-    - Handledaren ser elevens redovisningar.
-    - Besluten står under B12 i backend.md.
-  - B8 och F9: kontrakt med signering i testläge granskas. Elev, handledare och lärare signerar (Texas, 2026-10-29).
+  - B16 och F20: handledaren läser och kommenterar redovisningar (granskas i #43).
+  - F21: eleven öppnar ett projekt från Min APL.
+  - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
+  - Påminnelser om incheckning via e-post eller push.
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
-- **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare, kalender och schema, och kommentarer från handledaren.
-- **Väntar på B12:**
-  - elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt)
-  - projektval i redovisningen
-  - handledarens åtkomst till redovisningar
+- **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare och kalender och schema. Kommentarer från handledaren är byggda (B16).
 - **Öppet att planera:** att radera elevkonton som har redovisningar (gallring och mellanarkiv). Se B5 i backend.md och punkt 9 i ideer.md.
 
 ## Instruktion till Claude

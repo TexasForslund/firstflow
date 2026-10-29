@@ -668,7 +668,7 @@ export interface paths {
         put?: never;
         /**
          * Mark Read
-         * @description Markerar redovisningen som läst av läraren.
+         * @description Markerar redovisningen som läst av läraren eller handledaren.
          */
         post: operations["mark_read_api_reports__report_id__read_post"];
         delete?: never;
@@ -688,7 +688,8 @@ export interface paths {
         put?: never;
         /**
          * Add Comment
-         * @description Kommentar på en inskickad redovisning, från eleven själv eller en lärare för klassen.
+         * @description Kommentar på en inskickad redovisning, från eleven själv, en lärare för klassen eller
+         *     elevens handledare. Kommenterar handledaren får eleven en notis.
          */
         post: operations["add_comment_api_reports__report_id__comments_post"];
         delete?: never;
@@ -1247,6 +1248,27 @@ export interface paths {
          *     undervisar syns alla, även från tidigare klasser. Annars bara från lärarens klasser.
          */
         get: operations["list_student_reports_api_students__student_id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Supervisor Reports
+         * @description Inskickade redovisningar för dagar då eleven var placerad hos handledaren, senast
+         *     inskickade först. Redovisningar från tiden hos en annan handledare syns inte.
+         */
+        get: operations["list_supervisor_reports_api_supervisor_reports_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3231,6 +3253,36 @@ export interface components {
             name: string;
             /** Email */
             email: string;
+        };
+        /** SupervisorReport */
+        SupervisorReport: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["PersonBrief"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /** Is Read */
+            is_read: boolean;
+            /** Comment Count */
+            comment_count: number;
+            /** Class Name */
+            class_name: string;
+            project: components["schemas"]["PersonBrief"] | null;
+            /** @description Första textsvaret, förkortat */
+            excerpt: components["schemas"]["TextAnswer"] | null;
         };
         /** SupervisorWorkplace */
         SupervisorWorkplace: {
@@ -5637,6 +5689,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentReportSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_supervisor_reports_api_supervisor_reports_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorReport"][];
                 };
             };
             /** @description Validation Error */
