@@ -5,6 +5,8 @@
 
 .page {
   display: grid;
+  /* minmax(0, 1fr): raden med redovisningsdagar scrollar i sidled i stället för att göra sidan bredare */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   max-width: 36rem;
 }

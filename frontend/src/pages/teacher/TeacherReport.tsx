@@ -1,4 +1,4 @@
-import { ArrowUpRight, BriefcaseBusiness } from 'lucide-react'
+import { ArrowUpRight, BriefcaseBusiness, Folder } from 'lucide-react'
 import { useEffect } from 'react'
 import { useParams } from 'react-router'
 
@@ -65,6 +65,7 @@ function TeacherReport({ reportId }: { reportId: string }) {
           <div className={styles.projectBar}>
             <span>
               {detail.class_name} · {longDate(detail.due_date)}
+              {detail.project ? ` · ${detail.project.name}` : ''}
             </span>
             {detail.is_late && <span className={styles.lateTag}>Sen</span>}
           </div>
@@ -94,6 +95,15 @@ function TeacherReport({ reportId }: { reportId: string }) {
 
             <h2 className={styles.sideHeading}>Praktikplats kopplad till {firstName}</h2>
             <StudentWorkplace studentId={detail.student.id} />
+
+            {detail.project && (
+              <>
+                <h2 className={styles.sideHeading}>Projekt</h2>
+                <p className={styles.notYet}>
+                  <Folder aria-hidden="true" /> {detail.project.name}
+                </p>
+              </>
+            )}
           </div>
           <CardFooter>
             <ButtonLink to={`/students/${detail.student.id}`} icon={<ArrowUpRight aria-hidden="true" />}>

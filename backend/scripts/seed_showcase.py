@@ -10,6 +10,7 @@ företag, med:
 - veckoredovisningar tisdag och fredag, med svar, några sena och några som saknas
 - kommentarer från läraren och svar från eleverna, och olästa redovisningar från de senaste dagarna
 - fyra projekt som eleverna är med i, och redovisningarna kopplade till projekten
+- Hugo Karlsson har inte checkat in i dag och har sin senaste redovisning kvar, för en levande demo
 
 Skriptet tar bort Kramforsskolans klasser, redovisningar, närvaro, placeringar och projekt innan
 det skapar de nya. Det rör bara demoskolan och körs bara när ENVIRONMENT är development eller
@@ -65,6 +66,10 @@ STUDENTS = [
 ]
 
 # Företag och handledare finns redan i seed_demo. De tre första eleverna på det första.
+# Eleven som används live under demon: hen har inte checkat in i dag och har den senaste
+# redovisningen kvar, så att det går att visa hur det syns hos läraren direkt.
+LIVE_STUDENT = "Hugo Karlsson"
+
 WORKPLACES = [("Kramfors El & Data", "handledare"), ("Höga Kusten Elinstallation", "handledare.hk")]
 
 PROJECTS = [
@@ -333,7 +338,7 @@ def showcase(db: Session) -> dict[str, int]:
             missed = rng.random() > attend
             if stopped and (today - day).days < 5:
                 missed = True
-            if day == today and i in (2, 4):
+            if day == today and (i in (2, 4) or name == LIVE_STUDENT):
                 missed = True
             if missed:
                 continue
@@ -355,6 +360,8 @@ def showcase(db: Session) -> dict[str, int]:
             if rng.random() > deliver or (stopped and recent < 8):
                 counts["saknas"] += 1
                 continue
+            if name == LIVE_STUDENT and day == due[-1]:
+                continue  # lämnas live under demon
             project = mine[(n // 4) % len(mine)]
             is_late = rng.random() < late
             submitted = (
