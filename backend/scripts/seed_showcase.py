@@ -486,6 +486,15 @@ def showcase(db: Session) -> dict[str, int]:
                 db.add(answer)
             counts["redovisningar"] += 1
 
+            # Handledaren har läst allt utom den senaste veckan, så att några nya syns.
+            if recent > 7:
+                db.add(
+                    ReportRead(
+                        report_id=report.id,
+                        user_id=supervisor.id,
+                        read_at=submitted + timedelta(hours=26),
+                    )
+                )
             # Läraren har läst allt utom de senaste dagarnas redovisningar.
             if recent > 4:
                 db.add(

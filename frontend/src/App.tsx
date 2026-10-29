@@ -27,6 +27,8 @@ import { Attendance } from './pages/teacher/Attendance'
 import { Overview } from './pages/teacher/Overview'
 import { ContractPage } from './pages/contracts/ContractPage'
 import { AttendanceReview } from './pages/supervisor/AttendanceReview'
+import { SupervisorReport } from './pages/supervisor/SupervisorReport'
+import { SupervisorReports } from './pages/supervisor/SupervisorReports'
 import { Contracts } from './pages/contracts/Contracts'
 import { ProjectPage } from './pages/projects/ProjectPage'
 import { Projects } from './pages/projects/Projects'
@@ -86,6 +88,8 @@ const routes: RouteObject[] = [
 
       // Handledare (F4)
       { path: 'my-students', element: only(['supervisor'], <MyStudents />) },
+      { path: 'student-reports', element: only(['supervisor'], <SupervisorReports />) },
+      { path: 'student-reports/:reportId', element: only(['supervisor'], <SupervisorReport />) },
       { path: 'company', element: only(['supervisor'], <Company />) },
       { path: 'attendance-review', element: only(['supervisor'], <AttendanceReview />) },
 

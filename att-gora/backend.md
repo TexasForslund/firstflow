@@ -79,7 +79,7 @@ Läraren lägger in arbetsplatser, lägger till handledare på dem och placerar 
 **Inte byggt, att ta senare:**
 - Ändra en placering (`PATCH`), t.ex. förlänga perioden. I dag tas den bort och skapas på nytt.
 - Ta bort en handledare från en arbetsplats, och ändra eller ta bort arbetsplatser.
-- Handledarens åtkomst till redovisningar och kommentarer (B5b, idé 1).
+- ~~Handledarens åtkomst till redovisningar och kommentarer~~: byggd i B16 (Texas + Claude, 2026-10-29).
 - Idéerna i [ideer.md](ideer.md) punkt 4 (platser per lärare och inbjudningslänk) och 7 (schema) är inte inbyggda. Arbetsplatserna hör till skolan, som i specen.
 
 ---
@@ -148,7 +148,7 @@ Viktigast från genomgången:
 - `seed_demo`: skolmallen "Kort veckoredovisning" på varje skola.
 - Frontend i fliken Frågor: **Använd mall** (erbjuder att spara nuvarande frågor som mall först) och **Spara som mall**. Byt namn och ta bort görs i dialogen Använd mall. Skoladmin hanterar skolans mallar där.
 
-**B5b, senare:** förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (väntar på B12), handledarens åtkomst (väntar på B3) och export.
+**B5b, senare:** förslag utifrån läroplanen, extra frågor per elev, bilder och bildval (väntar på D5), projektval (✅ PR #41), handledarens åtkomst (✅ B16) och export.
 
 **Att planera:** redovisningar och kommentarer hindrar att ett elevkonto raderas (`RESTRICT`). Gallring och radering av elevdata planeras tillsammans med mellanarkivet ([mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md)).
 
@@ -273,7 +273,7 @@ Trådar mellan lärare och elev, och mellan lärare och handledare. Antal oläst
 
 ---
 
-## B12. Projekt 🚧 Granskas (Texas + Claude, 2026-10-26)
+## B12. Projekt ✅ Klar ([PR #36](https://github.com/TexasForslund/firstflow/pull/36), [#41](https://github.com/TexasForslund/firstflow/pull/41), Texas + Claude, 2026-10-29)
 
 Enkel första version, beslutad av Texas 2026-10-26:
 - Ett projekt har namn, beskrivning, valfri deadline och taggar i fritext. Det kan ha flera elever.
@@ -339,3 +339,15 @@ Ersätter att läraren själv lägger in arbetsplatser och handledare (Texas, 20
 - Närvaroräkningen och redovisningsdagarna är utbrutna till `class_student_attendance` och `due_days` så att översikten räknar likadant som Närvaro och elevens redovisningar.
 - **Elevsidan, version 2** (Texas + Claude, 2026-10-26): `GET /api/students/{id}/attention` (samma behörighet som elevsidan) ger elevens uppmärksamhetspunkter med översiktens regler och `missing_report_days`. `GET /api/students/{id}/reports` har nu `answers`, alla textsvar förkortade till 1000 tecken, för sök och filter. `text_answers` i `reports.py` används både här och av översikten.
 
+---
+
+## B16. Handledarens åtkomst till redovisningar 🚧 Granskas (Texas + Claude, 2026-10-29)
+
+Beslut (Texas, 2026-10-29):
+- Handledaren ser bara redovisningar för dagar då eleven var placerad hos hen (redovisningens dag inom placeringens period, på en arbetsplats på redovisningens skola). Byter eleven praktikplats ser den nya handledaren inte de gamla redovisningarna.
+- Kommenterar handledaren får eleven en notis. Läraren ser kommentaren men får ingen notis.
+
+Byggt i `app/api/routes/reports.py`:
+- `GET /api/supervisor/reports` (handledare): inskickade redovisningar från tiden hos handledaren, senast inskickade först, med första textsvaret, projekt, läst och antal kommentarer.
+- `GET /api/reports/{id}`, `POST /api/reports/{id}/read` och `POST /api/reports/{id}/comments` släpper in handledaren enligt regeln ovan. Allt annat svarar 404.
+- Tester i `tests/test_supervisor_reports.py`.

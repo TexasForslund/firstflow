@@ -6,6 +6,7 @@ import { api } from '../api/client'
 import { queryClient } from '../api/queryClient'
 import { useClasses } from '../api/classes'
 import { useReviewList } from '../api/attendance'
+import { useSupervisorReports } from '../api/reports'
 import { useContracts } from '../api/contracts'
 import { useTeacherOverview } from '../api/overview'
 import { AppShell } from '../layout/AppShell'
@@ -26,6 +27,7 @@ export function RequireAuth() {
   const role = me.data?.role
   const contracts = useContracts(role === 'teacher' || role === 'supervisor' || role === 'student')
   const review = useReviewList(role === 'supervisor')
+  const supervisorReports = useSupervisorReports(role === 'supervisor')
   const preferences = me.data?.preferences
 
   // Användarens visningsinställningar gäller på alla enheter.
@@ -75,6 +77,11 @@ export function RequireAuth() {
               r.earlier.filter((i) => i.state === 'pending').length
             : 0
           return { ...item, count, countLabel: 'att bekräfta', tone: 'butter' as const }
+        }
+        // Handledaren: redovisningar som hen inte har läst.
+        if (item.to === '/student-reports') {
+          const count = (supervisorReports.data ?? []).filter((r) => !r.is_read).length
+          return { ...item, count, countLabel: 'olästa' }
         }
         // Läraren: kontrakt som väntar på signering. Elev och handledare: kontrakt som väntar på dem.
         if (item.to === '/contracts') {
