@@ -156,3 +156,28 @@
 .card[aria-pressed='true'] .icon[data-tone='primary'] {
   background: var(--color-bg);
 }
+
+.more {
+  display: inline-flex;
+  justify-self: center;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.more:hover {
+  background: var(--color-surface-hover);
+}
+
+.more svg {
+  width: 1rem;
+  height: 1rem;
+}

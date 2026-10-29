@@ -1,9 +1,13 @@
-import { Check, FolderKanban } from 'lucide-react'
+import { Check, ChevronDown, FolderKanban } from 'lucide-react'
+import { useState } from 'react'
 
 import type { Project } from '../../api/projects'
 import { useSetReportProject } from '../../api/reports'
 import { projectTone } from '../projects/projectText'
 import styles from './ProjectStep.module.css'
+
+/** Så många projekt visas innan "Se fler" (Texas, 2026-10-29). */
+const SHOWN = 3
 
 function deadlineText(iso: string) {
   return `klart ${new Date(`${iso}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`
@@ -24,6 +28,10 @@ export function ProjectStep({
 }) {
   const save = useSetReportProject(reportId)
   const chosen = save.isPending ? save.variables : projectId
+  const [showAll, setShowAll] = useState(false)
+  // Ett valt projekt längre ner i listan visas alltid, så att valet syns.
+  const visible = showAll ? projects : projects.filter((p, i) => i < SHOWN || p.id === chosen || p.id === projectId)
+  const hidden = projects.length - visible.length
 
   return (
     <div className={styles.step}>
@@ -34,7 +42,7 @@ export function ProjectStep({
       <p className={styles.intro}>Då hamnar redovisningen i projektet, där din lärare och handledaren följer det.</p>
 
       <div className={styles.cards} role="group" aria-label="Projekt">
-        {projects.map((p) => {
+        {visible.map((p) => {
           const selected = chosen === p.id
           return (
             <button
@@ -62,6 +70,12 @@ export function ProjectStep({
           )
         })}
       </div>
+
+      {hidden > 0 && (
+        <button type="button" className={styles.more} onClick={() => setShowAll(true)}>
+          Se fler ({hidden}) <ChevronDown aria-hidden="true" />
+        </button>
+      )}
 
       <button
         type="button"
