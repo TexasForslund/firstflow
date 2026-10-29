@@ -25,6 +25,7 @@ from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
 from app.models.attendance import Attendance, AttendanceStatus
+from app.models.contract import Contract, SignerRole
 from app.models.placement import Placement
 from app.models.report import FormVersion, Report, ReportComment, ReportRead, ReportStatus
 from app.models.school_class import SchoolClass, class_students, class_teachers
@@ -45,6 +46,8 @@ class AttentionReason(StrEnum):
     MISSING_CHECK_INS = "missing_check_ins"
     MISSING_REPORTS = "missing_reports"
     NO_PLACEMENT = "no_placement"
+    # Ett kontrakt som läraren har skickat och som eleven eller handledaren inte har signerat.
+    UNSIGNED_CONTRACT = "unsigned_contract"
 
 
 class ClassToday(BaseModel):
@@ -58,7 +61,14 @@ class AttentionItem(BaseModel):
     student: PersonBrief
     class_name: str
     reason: AttentionReason
-    count: int = Field(description="Antal missade incheckningar eller redovisningar. 0 annars")
+    count: int = Field(
+        description="Antal missade incheckningar eller redovisningar, eller dagar sedan "
+        "kontraktet skickades. 0 annars"
+    )
+    contract_id: UUID | None = Field(default=None, description="Kontraktet, för unsigned_contract")
+    waiting_for: list[SignerRole] = Field(
+        default_factory=list, description="Parterna som inte har signerat, för unsigned_contract"
+    )
 
 
 class AnswerPreview(BaseModel):
@@ -213,9 +223,11 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
     def most_first(items: list[AttentionItem]) -> list[AttentionItem]:
         return sorted(items, key=lambda i: (-i.count, i.student.name))
 
+    class_of = {s.id: c.name for c in classes for s in c.students if s.is_active}
     attention = (
         most_first(missing_check_ins)
         + most_first(missing_reports)
+        + unsigned_contracts(db, user, list(class_of), class_of, today)
         + sorted(no_placement, key=lambda i: i.student.name)
     )
 
@@ -275,6 +287,41 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
 
 
 # --- Elevsidan ----------------------------------------------------------------------------
+
+
+def unsigned_contracts(
+    db: DbSession, teacher: User, student_ids: list[UUID], class_name: dict[UUID, str], today: date
+) -> list[AttentionItem]:
+    """Lärarens skickade kontrakt som eleven eller handledaren inte har signerat, äldst först."""
+    if teacher.role != UserRole.TEACHER or not student_ids:
+        return []
+    contracts = db.scalars(
+        select(Contract)
+        .where(
+            Contract.created_by_id == teacher.id,
+            Contract.student_id.in_(student_ids),
+            Contract.sent_at.is_not(None),
+        )
+        .options(selectinload(Contract.signatures), selectinload(Contract.student))
+        .order_by(Contract.sent_at)
+    ).all()
+    items = []
+    for contract in contracts:
+        waiting = [s.role for s in contract.signatures if s.signed_at is None]
+        if not waiting or contract.sent_at is None:
+            continue
+        order = [SignerRole.STUDENT, SignerRole.SUPERVISOR, SignerRole.TEACHER]
+        items.append(
+            AttentionItem(
+                student=PersonBrief(id=contract.student.id, name=contract.student.name),
+                class_name=class_name.get(contract.student_id, ""),
+                reason=AttentionReason.UNSIGNED_CONTRACT,
+                count=(today - time.local_date(contract.sent_at)).days,
+                contract_id=contract.id,
+                waiting_for=sorted(waiting, key=order.index),
+            )
+        )
+    return items
 
 
 class StudentAttention(BaseModel):
@@ -361,4 +408,6 @@ def student_attention(student_id: UUID, db: DbSession, user: CanViewStudent) -> 
                 count=0,
             )
         )
+    # Bara läraren som skickade kontraktet ser det, så andra roller får inga kontraktspunkter.
+    items += unsigned_contracts(db, user, [student.id], {student.id: school_class.name}, today)
     return StudentAttention(items=items, missing_report_days=missing_days)

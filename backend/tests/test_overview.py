@@ -8,10 +8,11 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models.attendance import Attendance, AttendanceStatus
+from app.models.contract import Contract, ContractSignature, SignerRole
 from app.models.placement import Placement, Workplace
 from app.models.report import FormVersion, Report, ReportAnswer, ReportRead, ReportStatus
 from app.models.school import School
@@ -242,3 +243,63 @@ def test_student_reports_have_all_text_answers(
     assert body[0]["answers"] == [
         {"question_id": w.question_id, "question": "Vad har du gjort?", "text": "Drog kabel"}
     ]
+
+
+def _contract(db: Session, w: World, student: User, *, sent: bool, signed: set[str]) -> Contract:
+    supervisor = db.scalar(select(User).where(User.email == "gustav@elbolaget.se"))
+    sent_at = datetime(2026, 10, 19, 15, 0, tzinfo=UTC) if sent else None
+    parties = [
+        (SignerRole.STUDENT, student),
+        (SignerRole.SUPERVISOR, supervisor),
+        (SignerRole.TEACHER, w.teacher),
+    ]
+    contract = Contract(
+        school_id=w.ee22.school_id,
+        created_by=w.teacher,
+        student=student,
+        title=f"Kontrakt {student.name}",
+        file_name="kontrakt.pdf",
+        pdf=b"%PDF-1.4",
+        pdf_size=8,
+        sent_at=sent_at,
+        signatures=[
+            ContractSignature(
+                role=role, user=user, signed_at=sent_at if role.value in signed else None
+            )
+            for role, user in parties
+        ],
+    )
+    db.add(contract)
+    db.flush()
+    return contract
+
+
+def test_unsigned_contracts_need_attention(
+    client: TestClient, login: Login, w: World, db: Session
+) -> None:
+    hugo = _contract(db, w, w.hugo, sent=True, signed={"teacher"})
+    _contract(db, w, w.maja, sent=True, signed={"teacher", "student", "supervisor"})
+    _contract(db, w, w.liam, sent=False, signed=set())  # utkast räknas inte
+
+    login(w.teacher)
+    items = [
+        i
+        for i in client.get("/api/teacher/overview").json()["attention"]
+        if i["reason"] == "unsigned_contract"
+    ]
+    assert len(items) == 1
+    assert items[0]["student"]["name"] == "Hugo"
+    assert items[0]["class_name"] == "EE22"
+    assert items[0]["contract_id"] == str(hugo.id)
+    assert items[0]["waiting_for"] == ["student", "supervisor"]
+    assert items[0]["count"] == 2  # skickat i måndags
+
+    page = client.get(f"/api/students/{w.hugo.id}/attention").json()["items"]
+    assert [i["reason"] for i in page if i["reason"] == "unsigned_contract"] == [
+        "unsigned_contract"
+    ]
+
+    # Kontraktet syns bara för läraren som skickade det.
+    login(w.other_teacher)
+    overview = client.get("/api/teacher/overview").json()["attention"]
+    assert all(i["reason"] != "unsigned_contract" for i in overview)
