@@ -22,8 +22,11 @@ interface Props {
   done: { title: string; body: string; actions: ReactNode }
   /** Visas överst, t.ex. "Förhandsgranskning". */
   badge?: string
-  /** Visas på sista steget ovanför Skicka in, t.ex. valet av projekt. */
-  beforeSubmit?: ReactNode
+  /**
+   * Ett extra sista steg efter frågorna, t.ex. valet av projekt (Texas skiss A, 2026-10-29).
+   * Skicka in finns då på det steget, med `submitLabel` som text.
+   */
+  finalStep?: { content: ReactNode; submitLabel?: string }
 }
 
 /**
@@ -41,7 +44,7 @@ export function ReportStepper({
   onClose,
   done,
   badge,
-  beforeSubmit,
+  finalStep,
 }: Props) {
   const [answers, setAnswers] = useState<Answers>(initialAnswers)
   const answersRef = useRef(answers)
@@ -63,15 +66,18 @@ export function ReportStepper({
   const headingRef = useRef<HTMLHeadingElement>(null)
   const advanceTimer = useRef<number | undefined>(undefined)
 
-  const index = Math.min(pos, path.length - 1)
-  const question = questions.find((q) => q.id === path[index])
-  const isLast = index === path.length - 1
+  const hasFinalStep = !!finalStep
+  const total = path.length + (hasFinalStep ? 1 : 0)
+  const onFinalStep = hasFinalStep && pos >= path.length
+  const index = onFinalStep ? path.length : Math.min(pos, path.length - 1)
+  const question = onFinalStep ? undefined : questions.find((q) => q.id === path[index])
+  const isLast = index === total - 1
 
   const stepRef = useRef<HTMLElement>(null)
   // Fokus till svarsfältet om frågan har ett, annars till rubriken så att skärmläsaren läser frågan.
   useEffect(() => {
     const field = stepRef.current?.querySelector<HTMLElement>('input, textarea')
-    ;(field ?? headingRef.current)?.focus()
+    ;(field ?? headingRef.current ?? stepRef.current?.querySelector<HTMLElement>('h2'))?.focus()
   }, [index, finished])
 
   useEffect(() => () => window.clearTimeout(advanceTimer.current), [])
@@ -96,7 +102,10 @@ export function ReportStepper({
     try {
       if (question.type !== 'statement' && onSave) await onSave(question.id, answer ?? {})
       const nextPath = visiblePath(questions, current)
-      if (nextPath.indexOf(question.id) >= nextPath.length - 1) {
+      if (nextPath.indexOf(question.id) >= nextPath.length - 1 && hasFinalStep) {
+        setDirection('forward')
+        setPos(nextPath.length)
+      } else if (nextPath.indexOf(question.id) >= nextPath.length - 1) {
         await onSubmit()
         setFinished(true)
       } else {
@@ -108,15 +117,28 @@ export function ReportStepper({
     } finally {
       setBusy(false)
     }
-  }, [question, busy, onSave, onSubmit, questions])
+  }, [question, busy, onSave, onSubmit, questions, hasFinalStep])
 
-  const goBack = useCallback(() => {
+  const submitFinal = useCallback(async () => {
+    if (busy) return
+    setBusy(true)
+    try {
+      await onSubmit()
+      setFinished(true)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Det gick inte att skicka in. Försök igen.')
+    } finally {
+      setBusy(false)
+    }
+  }, [busy, onSubmit])
+
+  function goBack() {
     window.clearTimeout(advanceTimer.current)
     if (index === 0) return
     setError(null)
     setDirection('back')
     setPos(index - 1)
-  }, [index])
+  }
 
   /** Enkelval, ja/nej och betyg går vidare av sig självt efter en kort bekräftelse. */
   const chooseAndAdvance = useCallback(
@@ -131,6 +153,15 @@ export function ReportStepper({
   // Tangentbordet på dator.
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
+      if (!finished && onFinalStep) {
+        if (event.key === 'Escape') return onClose()
+        const tag = (event.target as HTMLElement).tagName
+        if (event.key === 'Enter' && tag !== 'BUTTON' && tag !== 'A') {
+          event.preventDefault()
+          void submitFinal()
+        }
+        return
+      }
       if (finished || !question) return
       if (event.key === 'Escape') return onClose()
       const target = event.target as HTMLElement
@@ -164,7 +195,7 @@ export function ReportStepper({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [finished, question, goNext, onClose, setAnswer, chooseAndAdvance])
+  }, [finished, question, goNext, onClose, setAnswer, chooseAndAdvance, onFinalStep, submitFinal])
 
   // Svep i mobilen: vänster = nästa, höger = föregående. Inte när eleven skriver.
   const touch = useRef<{ x: number; y: number } | null>(null)
@@ -186,7 +217,7 @@ export function ReportStepper({
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-label={title}>
       <header className={styles.top}>
         <div className={styles.segments} aria-hidden="true">
-          {path.map((id, i) => (
+          {[...path, ...(finalStep ? ['final'] : [])].map((id, i) => (
             <span key={id} className={styles.segment}>
               <span className={styles.segmentFill} style={{ transform: `scaleX(${finished || i <= index ? 1 : 0})` }} />
             </span>
@@ -218,6 +249,30 @@ export function ReportStepper({
           <p className={styles.description}>{done.body}</p>
           <div className={styles.doneActions}>{done.actions}</div>
         </section>
+      ) : onFinalStep && finalStep ? (
+        <>
+          <section
+            key="final"
+            ref={stepRef}
+            className={`${styles.step} ${direction === 'forward' ? styles.fromBelow : styles.fromAbove}`}
+          >
+            {finalStep.content}
+            {error && (
+              <p className={styles.error} role="alert">
+                {error}
+              </p>
+            )}
+          </section>
+          <footer className={styles.bottom}>
+            <button type="button" className={styles.back} onClick={goBack} disabled={busy} aria-label="Föregående fråga">
+              <ChevronLeft aria-hidden="true" />
+              <span>Föregående</span>
+            </button>
+            <button type="button" className={styles.next} onClick={() => void submitFinal()} disabled={busy}>
+              <span className={styles.nextLabel}>{busy ? 'Skickar…' : (finalStep.submitLabel ?? 'Skicka in')}</span>
+            </button>
+          </footer>
+        </>
       ) : question ? (
         <>
           <section
@@ -228,7 +283,7 @@ export function ReportStepper({
             onTouchEnd={onTouchEnd}
           >
             <p className={styles.counter} aria-live="polite">
-              {index + 1} av {path.length}
+              {index + 1} av {total}
               {question.type !== 'statement' && !question.required && ' · Valfri'}
             </p>
             <h2 ref={headingRef} tabIndex={-1} className={styles.question}>
@@ -248,7 +303,6 @@ export function ReportStepper({
                 {error}
               </p>
             )}
-            {isLast && beforeSubmit}
           </section>
 
           <footer className={styles.bottom}>
