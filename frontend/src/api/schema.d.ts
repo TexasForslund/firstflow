@@ -1537,15 +1537,25 @@ export interface components {
             reason: components["schemas"]["AttentionReason"];
             /**
              * Count
-             * @description Antal missade incheckningar eller redovisningar. 0 annars
+             * @description Antal missade incheckningar eller redovisningar, eller dagar sedan kontraktet skickades. 0 annars
              */
             count: number;
+            /**
+             * Contract Id
+             * @description Kontraktet, för unsigned_contract
+             */
+            contract_id?: string | null;
+            /**
+             * Waiting For
+             * @description Parterna som inte har signerat, för unsigned_contract
+             */
+            waiting_for?: components["schemas"]["SignerRole"][];
         };
         /**
          * AttentionReason
          * @enum {string}
          */
-        AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement";
+        AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement" | "unsigned_contract";
         /** Body_create_contract_api_contracts_post */
         Body_create_contract_api_contracts_post: {
             /**

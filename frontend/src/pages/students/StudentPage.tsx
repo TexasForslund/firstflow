@@ -1,8 +1,18 @@
-import { BriefcaseBusiness, CalendarCheck, Download, FileText, Folder, MapPin, MapPinCheck, Users } from 'lucide-react'
+import {
+  BriefcaseBusiness,
+  CalendarCheck,
+  Download,
+  FileSignature,
+  FileText,
+  Folder,
+  MapPin,
+  MapPinCheck,
+  Users,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
-import type { AttentionItem } from '../../api/overview'
+import { waitingText, type AttentionItem } from '../../api/overview'
 import { useStudentProjects } from '../../api/projects'
 import { useSchoolTeachers } from '../../api/classes'
 import {
@@ -363,6 +373,8 @@ function attentionText(item: AttentionItem) {
       }
     case 'no_placement':
       return { title: 'Ingen praktikplats', text: 'Tilldelas i klassvyn' }
+    case 'unsigned_contract':
+      return { title: 'Kontraktet är inte signerat', text: `Väntar på ${waitingText(item)}` }
   }
 }
 
@@ -370,6 +382,7 @@ const attentionIcon = {
   missing_check_ins: { icon: MapPinCheck, tone: 'sky' },
   missing_reports: { icon: FileText, tone: 'butter' },
   no_placement: { icon: BriefcaseBusiness, tone: 'mint' },
+  unsigned_contract: { icon: FileSignature, tone: 'butter' },
 } as const
 
 function AttentionBox({ studentId }: { studentId: string }) {
@@ -386,12 +399,18 @@ function AttentionBox({ studentId }: { studentId: string }) {
           const { icon: Icon, tone } = attentionIcon[item.reason]
           const text = attentionText(item)
           return (
-            <li key={item.reason} className={own.attentionItem}>
+            <li key={item.contract_id ?? item.reason} className={own.attentionItem}>
               <span className={`${own.iconBox} ${own[tone]}`}>
                 <Icon aria-hidden="true" />
               </span>
               <span className={own.attentionText}>
-                <span className={own.attentionName}>{text.title}</span>
+                {item.contract_id ? (
+                  <Link to={`/contracts/${item.contract_id}`} className={own.attentionName}>
+                    {text.title}
+                  </Link>
+                ) : (
+                  <span className={own.attentionName}>{text.title}</span>
+                )}
                 <span className={own.muted}>{text.text}</span>
               </span>
             </li>

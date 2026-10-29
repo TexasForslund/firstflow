@@ -2,7 +2,7 @@ import { ArrowUpRight, CalendarCheck } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
-import { useTeacherOverview, type AttentionItem, type TeacherOverview } from '../../api/overview'
+import { useTeacherOverview, waitingText, type AttentionItem, type TeacherOverview } from '../../api/overview'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Card, CardTitle, SegmentedBar } from '../../components'
 import styles from './Overview.module.css'
@@ -32,8 +32,11 @@ function attentionText(item: AttentionItem) {
       return `Har inte lämnat ${plural(item.count, 'redovisning', 'redovisningar')}`
     case 'no_placement':
       return 'Har ingen praktikplats'
+    case 'unsigned_contract':
+      return `Kontraktet väntar på ${waitingText(item)}`
   }
 }
+
 
 /**
  * Lärarens översikt (F6): det läraren behöver titta på i dag, för klasserna hen undervisar.
@@ -127,7 +130,10 @@ function AttentionCard({ items }: { items: AttentionItem[] }) {
         <ul className={styles.attentionList}>
           {shown.map((item) => (
             <li key={`${item.student.id}-${item.reason}`}>
-              <Link to={`/students/${item.student.id}`} className={styles.attentionItem}>
+              <Link
+                to={item.contract_id ? `/contracts/${item.contract_id}` : `/students/${item.student.id}`}
+                className={styles.attentionItem}
+              >
                 <Avatar name={item.student.name} />
                 <span className={styles.attentionText}>
                   <span className={styles.attentionName}>

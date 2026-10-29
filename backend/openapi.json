@@ -4274,7 +4274,28 @@
           "count": {
             "type": "integer",
             "title": "Count",
-            "description": "Antal missade incheckningar eller redovisningar. 0 annars"
+            "description": "Antal missade incheckningar eller redovisningar, eller dagar sedan kontraktet skickades. 0 annars"
+          },
+          "contract_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Id",
+            "description": "Kontraktet, för unsigned_contract"
+          },
+          "waiting_for": {
+            "items": {
+              "$ref": "#/components/schemas/SignerRole"
+            },
+            "type": "array",
+            "title": "Waiting For",
+            "description": "Parterna som inte har signerat, för unsigned_contract"
           }
         },
         "type": "object",
@@ -4291,7 +4312,8 @@
         "enum": [
           "missing_check_ins",
           "missing_reports",
-          "no_placement"
+          "no_placement",
+          "unsigned_contract"
         ],
         "title": "AttentionReason"
       },

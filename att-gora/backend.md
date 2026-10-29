@@ -214,7 +214,9 @@ Se kraven i [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md
 - Notiser: eleven och handledaren när kontraktet skickas och vid påminnelse, läraren när alla har signerat.
 - Ny dependency: `python-multipart`.
 
-**Inte byggt:** BankID, mallar, PDF/A-arkivering, läsrätt för rektor, skoladmin och SYV, och kontrakt i "Behöver uppmärksamhet" (B13).
+**Behöver uppmärksamhet:** skickade kontrakt som eleven eller handledaren inte har signerat syns på lärarens översikt och elevsidan (`unsigned_contract`, med `contract_id` och `waiting_for`). Bara läraren som skickade kontraktet ser dem.
+
+**Inte byggt:** BankID, mallar, PDF/A-arkivering och läsrätt för rektor, skoladmin och SYV.
 
 ---
 

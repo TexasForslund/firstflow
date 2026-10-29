@@ -23,3 +23,10 @@ export function useTeacherOverview(enabled = true) {
     },
   })
 }
+
+const waitingName = { student: 'eleven', supervisor: 'handledaren', teacher: 'läraren' } as const
+
+/** Vem ett kontrakt väntar på: "eleven", "handledaren" eller "eleven och handledaren". */
+export function waitingText(item: { waiting_for?: ('student' | 'supervisor' | 'teacher')[] }) {
+  return (item.waiting_for ?? []).map((role) => waitingName[role]).join(' och ') || 'signering'
+}
