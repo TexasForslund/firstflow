@@ -11,7 +11,7 @@ Här står vad som är näst på tur i Firstflow, i prioritetsordning. Båda utv
 
 Ordningen följer fas 1 i [roadmapen](../docs/produktvision-och-roadmap.md): inloggning, klasser och elever, praktikperiod och APL-plats, närvaro, frågor och redovisning.
 
-## Läget just nu (2026-10-29)
+## Läget just nu (2026-10-30)
 
 Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
@@ -54,10 +54,17 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **#41:** eleven väljer projekt i ett valfritt sista steg i redovisningen.
 - **#42:** eleven har en egen kontraktsvy utan sök och filter.
 - **B16 och F20 (#43):** handledaren läser och kommenterar redovisningar från tiden hos hen. Eleven får en notis.
+- **F21 (#44):** eleven öppnar ett projekt från Min APL.
+
+**Från mötet med Haldor (2026-10-30):** mötet gick bra. Nya uppgifter, inget är byggt än:
+- **B17 och F22:** handledaren väljer om en kommentar ska synas för alla eller bara läraren.
+- **B18 och F23:** anteckningar om eleven i helhet, från handledare och lärare.
+- **B19 och F24:** redovisnings- och incheckningsdagar per klass, även helger (vuxenutbildning).
+- **B20 och F25:** import av elever och personal enligt SS12000, bara det som rör APL. Rör B6, stäm av mellan Texas och Hannes.
 
 **Nästa steg:**
 - **Texas + Claude:**
-  - F21: eleven öppnar ett projekt från Min APL (granskas).
+  - Besluten och skisserna för B17–B20 (se ovan).
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
   - Påminnelser om incheckning via e-post eller push.
   - B5b: förslag utifrån läroplanen och extra frågor per elev.

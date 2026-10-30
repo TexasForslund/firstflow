@@ -351,3 +351,82 @@ Byggt i `app/api/routes/reports.py`:
 - `GET /api/supervisor/reports` (handledare): inskickade redovisningar från tiden hos handledaren, senast inskickade först, med första textsvaret, projekt, läst och antal kommentarer.
 - `GET /api/reports/{id}`, `POST /api/reports/{id}/read` och `POST /api/reports/{id}/comments` släpper in handledaren enligt regeln ovan. Allt annat svarar 404.
 - Tester i `tests/test_supervisor_reports.py`.
+
+---
+
+## B17. Privata kommentarer från handledaren ⬜ (från mötet med Haldor, 2026-10-30)
+
+Handledaren väljer om en kommentar på en redovisning ska synas för alla (elev och lärare) eller bara för läraren.
+- `ReportComment` får en synlighet, t.ex. `visibility`: `all` eller `staff`. Kräver en migrering.
+- Eleven får aldrig kommentarer med `staff` i `GET /api/reports/{id}` och ingen notis om dem. Läraren och handledaren ser dem.
+- **Att bestämma:** kan läraren också skriva privat, eller bara handledaren?
+- **Att veta:** "privat" betyder att den inte visas i appen. Eleven kan begära ut sina uppgifter enligt GDPR, och på kommunala skolor kan kommentarerna vara allmänna handlingar.
+
+Frontend: F22.
+
+---
+
+## B18. Anteckningar om eleven ⬜ (från mötet med Haldor, 2026-10-30)
+
+Handledaren och läraren skriver anteckningar om eleven i helhet, inte på en redovisning (t.ex. "duktig på kundkontakt" eller oro för beteende).
+- Ny modell, t.ex. `StudentNote` (`student_id`, `author_id`, `body`, `tag`, `created_at`). Kräver en migrering.
+- Läraren som har eleven och handledaren som har eleven i en pågående placering får läsa och skriva. Andra får 404.
+- **Att bestämma:**
+  - Ska eleven se anteckningarna?
+  - Vilka taggar finns?
+  - Får man ändra eller ta bort sina egna?
+  - Hur länge sparas de? Hänger ihop med gallringen under B5.
+- **Att veta:** anteckningar om beteende är integritetskänsliga. Samma GDPR och offentlighetsprincip som i B17 gäller. Logga aldrig innehållet.
+
+Frontend: F23.
+
+---
+
+## B19. Redovisnings- och incheckningsdagar per klass, även helger ⬜ (från mötet med Haldor, 2026-10-30)
+
+Vuxenutbildningar kan ha APL på helger. I dag tillåter `SchoolClass` bara måndag–fredag (`report_due_weekdays` 0–4 och `apl_days_per_week` 1–5, "Inga helger" från 2026-10-20).
+- Redovisningsdagar får vara alla veckodagar 0–6.
+- Nytt fält för incheckningsdagar per klass, t.ex. `check_in_weekdays`. Kräver en migrering.
+- Närvaron, "Behöver uppmärksamhet", handledarens bekräftelse (`REVIEW_DAYS`) och redovisningsdagarna utgår från klassens dagar i stället för vardagar.
+- **Att diskutera med Texas:**
+  - Fasta veckodagar per klass, eller "X dagar per vecka" som i dag?
+  - Måste redovisningsdagarna vara incheckningsdagar?
+  - Vad händer med `apl_days_per_week`?
+
+Frontend: F24.
+
+---
+
+## B20. Import av elever och personal enligt SS12000 ⬜ (från mötet med Haldor, 2026-10-30)
+
+Skolorna ska kunna lägga in elever, lärare, SYV och rektor utan att skapa varje konto för hand. Vi följer [SS 12000](https://www.sis.se/en/produkter/information-technology-office-machines/applications-of-information-technology/it-applications-in-education/ss-120002024/) (senaste versionen SS 12000:2024), så att samma fält fungerar för CSV-import och för en senare synk mot skolans system (t.ex. IST eller Tieto Edu).
+
+**Hur SS12000 motsvarar Firstflow:**
+- **Organisation** (skolenhet) ↔ `School`.
+- **Person** ↔ `User`, med SS12000:s UUID som externt id.
+- **Duty** med `dutyRole` (Lärare, Rektor, SYV) ↔ rollerna.
+- **Group** med `groupType` Klass ↔ `SchoolClass`.
+- **Enrolment** med skolform (GY, VUXGY …): saknas i dag och behövs för att skilja vuxenutbildning från gymnasiet.
+- Det finns inget eget lärar-anrop i API:t. Lärare hämtas som `duties` med `dutyRole=Lärare` och `expand=person`.
+
+**Bara det som rör APL i Firstflow (Texas, 2026-10-30):**
+- **Elever:** bara de som går i en klass eller grupp som skolan har valt ska ha APL i Firstflow. Aldrig alla elever på skolan.
+- **Lärare:** bara de som undervisar i de valda klasserna. **SYV och rektor:** bara på skolenheter som använder Firstflow.
+- **Handledare** finns inte i skolans system och bjuds in som i dag (B14).
+- **Fält som hämtas:** SS12000-id, namn, e-post, roll, klass och skolform.
+- **Fält som inte hämtas:** personnummer (`civicNo`), adress, telefon, vårdnadshavare, betyg, frånvaro från skolans system och övriga kurser och grupper.
+- **Skyddad identitet:** importeras inte automatiskt. Skolan lägger in eleven för hand om hen ska vara med.
+- **En elev som lämnar klassen** i skolans system får kopplingen avslutad. Redovisningar och närvaro sparas enligt gallringen (B5).
+- **Förhandsvisning** innan något sparas. Loggen visar bara antal och id:n, aldrig namn eller elevdata.
+
+**Ordning (förslag):**
+1. Datamodellen följer SS12000: externt id, skolform och roll.
+2. CSV-import med en mall som följer SS12000:s fält. Räcker för en pilot.
+3. SS12000-synk när en pilotskola har ett system att ansluta till. Kräver avtal och inloggning mellan systemen.
+
+**Att diskutera:**
+- Vilket system använder pilotskolan?
+- Hur hänger importen ihop med inbjudningar och lösenord i B6 (Hannes)? Stäm av i Discord innan någon börjar.
+
+Frontend: F25.
+
