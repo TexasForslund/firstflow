@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
 import { useSupervisorReports, type SupervisorReport } from '../../api/reports'
 import { Avatar } from '../../components'
@@ -18,7 +18,8 @@ function commentText(count: number) {
  */
 export function SupervisorReports() {
   const query = useSupervisorReports()
-  const [studentId, setStudentId] = useState<string | null>(null)
+  const [params] = useSearchParams()
+  const [studentId, setStudentId] = useState<string | null>(params.get('student'))
   const reports = query.data ?? []
   const unread = reports.filter((r) => !r.is_read).length
   const students = [...new Map(reports.map((r) => [r.student.id, r.student])).values()].sort((a, b) =>

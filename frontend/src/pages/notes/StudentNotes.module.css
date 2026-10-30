@@ -1,0 +1,256 @@
+/* Anteckningar om eleven (Texas skiss, 2026-10-30). */
+.note {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.muted,
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.body {
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.tag {
+  padding: 0.125rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.tag[data-tag='praise'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.tag[data-tag='concern'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.link,
+.danger {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.danger {
+  color: var(--color-error);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tagOption {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.tagOption[aria-pressed='true'] {
+  border-color: currentcolor;
+  font-weight: 600;
+}
+
+.tagOption[data-tag='praise'][aria-pressed='true'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.tagOption[data-tag='concern'][aria-pressed='true'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.tagOption[data-tag='other'][aria-pressed='true'] {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.formFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hint svg {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.formButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.save {
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.save:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.save:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Långa anteckningar kortas av i lärarens kort och läses i en popup. */
+.clamped {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.readMore {
+  justify-self: start;
+}
+
+.dialog {
+  width: min(100% - 2rem, 40rem);
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.dialog::backdrop {
+  background: rgb(7 4 20 / 0.45);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dialogTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.close {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.close svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.dialogBody {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}

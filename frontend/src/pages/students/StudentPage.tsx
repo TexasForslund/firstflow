@@ -5,8 +5,10 @@ import {
   FileSignature,
   FileText,
   Folder,
+  Lock,
   MapPin,
   MapPinCheck,
+  NotebookPen,
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -39,6 +41,8 @@ import {
   todayIso,
 } from '../placements/period'
 import { CheckList } from './CheckList'
+import { noteTagLabel, useStudentNotes, type NoteTag } from '../../api/notes'
+import { NoteItem } from '../notes/StudentNotes'
 import own from './StudentPage.module.css'
 
 const REPORTS_PER_PAGE = 10
@@ -126,6 +130,7 @@ export function StudentPage() {
           <AttentionBox studentId={student.id} />
           <AttendanceCard studentId={student.id} />
           <PlacementCard studentId={student.id} />
+          {isTeacher && <NotesCard studentId={student.id} />}
           <ProjectsCard studentId={student.id} />
           {isAdmin &&
             (editTeachers ? (
@@ -685,6 +690,49 @@ function TeachersEditor({ student, schoolId }: { student: Student; schoolId?: st
             </span>
           )}
         </div>
+      </div>
+    </Card>
+  )
+}
+
+// --- Anteckningar från handledaren (B18, Texas 2026-10-30) ----------------------------------
+
+const NOTES_SHOWN = 3
+
+/** Handledarens anteckningar om eleven. Läraren läser men skriver inte. Eleven ser dem inte. */
+function NotesCard({ studentId }: { studentId: string }) {
+  const query = useStudentNotes(studentId)
+  const [showAll, setShowAll] = useState(false)
+  const notes = query.data ?? []
+  if (query.isSuccess && notes.length === 0) return null
+  const counts = (['praise', 'concern', 'other'] as NoteTag[])
+    .map((tag) => ({ tag, count: notes.filter((n) => n.tag === tag).length }))
+    .filter((c) => c.count > 0)
+  return (
+    <Card>
+      <div className={own.sideCard}>
+        <div className={own.sideHead}>
+          <span className={`${own.iconBox} ${own.butter}`}>
+            <NotebookPen aria-hidden="true" />
+          </span>
+          <h2 className={own.sideTitle}>Från handledaren</h2>
+          <span className={own.sideMeta}>{plural(notes.length, 'anteckning', 'anteckningar')}</span>
+        </div>
+        {query.isPending && <p className={own.muted}>Laddar…</p>}
+        {counts.length > 0 && (
+          <p className={own.muted}>{counts.map((c) => `${noteTagLabel[c.tag]} ${c.count}`).join(' · ')}</p>
+        )}
+        {(showAll ? notes : notes.slice(0, NOTES_SHOWN)).map((note) => (
+          <NoteItem key={note.id} note={note} studentId={studentId} showRole clamp />
+        ))}
+        {notes.length > NOTES_SHOWN && (
+          <button type="button" className={own.textLink} onClick={() => setShowAll(!showAll)}>
+            {showAll ? 'Visa färre' : `Visa alla ${notes.length}`}
+          </button>
+        )}
+        <p className={own.mutedSmall}>
+          <Lock aria-hidden="true" className={own.inlineIcon} /> Bara du och handledaren ser anteckningarna.
+        </p>
       </div>
     </Card>
   )

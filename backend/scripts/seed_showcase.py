@@ -33,6 +33,7 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.contract import Contract, ContractSignature, SignerRole
+from app.models.note import NoteTag, StudentNote
 from app.models.placement import Placement, Workplace
 from app.models.project import Project
 from app.models.report import (
@@ -240,6 +241,7 @@ def _clear(db: Session, school: School, teacher: User, keep: set[uuid.UUID]) -> 
     classes = list(db.scalars(select(SchoolClass).where(SchoolClass.school_id == school.id)))
     class_ids = [c.id for c in classes]
     report_ids = list(db.scalars(select(Report.id).where(Report.class_id.in_(class_ids))))
+    db.execute(delete(StudentNote).where(StudentNote.student_id.in_(keep)))
     db.execute(delete(ReportComment).where(ReportComment.report_id.in_(report_ids)))
     db.execute(delete(ReportRead).where(ReportRead.report_id.in_(report_ids)))
     db.execute(delete(ReportAnswer).where(ReportAnswer.report_id.in_(report_ids)))
@@ -542,6 +544,31 @@ def showcase(db: Session) -> dict[str, int]:
     ):
         row.review = AttendanceReview.CONFIRMED
         row.reviewed_by_id = db.get(Placement, row.placement_id).supervisor_id
+
+    # Gustavs anteckningar om Hugo (B18), så att läraren ser kortet Från handledaren.
+    hugo = students[LIVE_STUDENT]
+    gustav = workplaces[0][1]
+    assert hugo is not None
+    for days_ago, tag, body in [
+        (2, NoteTag.PRAISE, "Mycket bra på kundkontakt. Förklarade laddboxen lugnt och tydligt."),
+        (9, NoteTag.CONCERN, "Blev irriterad och höjde rösten mot en kollega när han fick ändra en "
+         "dragning. Vi pratade om det efteråt och det kändes bra."),
+        (16, NoteTag.OTHER, "Har börjat ta egna initiativ på morgonen. Första veckorna väntade han "
+         "alltid på att någon skulle säga vad han skulle göra, men nu kollar han själv dagens "
+         "arbetsorder och plockar fram material innan vi åker. I måndags hade han packat bilen "
+         "till ett jobb i Bollstabruk innan jag kom. Han frågar fortfarande när han är osäker, "
+         "vilket är bra. Nästa steg är att han får ta hand om ett mindre jobb själv med mig "
+         "som stöd, t.ex. byte av uttag i ett kök."),
+    ]:  # fmt: skip
+        db.add(
+            StudentNote(
+                student_id=hugo.id,
+                author_id=gustav.id,
+                tag=tag,
+                body=body,
+                created_at=_at(today - timedelta(days=days_ago), 15, 30),
+            )
+        )
     db.flush()
     return counts
 

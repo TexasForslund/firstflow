@@ -29,6 +29,7 @@ import { Overview } from './pages/teacher/Overview'
 import { ContractPage } from './pages/contracts/ContractPage'
 import { AttendanceReview } from './pages/supervisor/AttendanceReview'
 import { SupervisorReport } from './pages/supervisor/SupervisorReport'
+import { SupervisorStudent } from './pages/supervisor/SupervisorStudent'
 import { SupervisorReports } from './pages/supervisor/SupervisorReports'
 import { Contracts } from './pages/contracts/Contracts'
 import { ProjectPage } from './pages/projects/ProjectPage'
@@ -62,19 +63,35 @@ const routes: RouteObject[] = [
       { path: 'reports/:reportId', element: only(staff, <ReportRoute />) },
       { path: 'student-history', element: only(staff, <StudentHistory />) },
       { path: 'attendance', element: only(['teacher', 'school_admin', 'principal'], <Attendance />) },
-      placeholder('reports', staff, 'Veckoredovisningar', 'Alla veckoredovisningar, med filter per klass, elev och vecka.'),
+      placeholder(
+        'reports',
+        staff,
+        'Veckoredovisningar',
+        'Alla veckoredovisningar, med filter per klass, elev och vecka.',
+      ),
       { path: 'projects', element: only(['teacher', 'supervisor'], <Projects />) },
       { path: 'projects/:projectId', element: only(['teacher', 'supervisor'], <ProjectPage />) },
 
       // Klasser och elever (B2/F3)
       { path: 'classes', element: only(['school_admin', 'principal'], <ClassList />) },
       { path: 'classes/new', element: only(['teacher', 'school_admin'], <NewClass />) },
-      { path: 'classes/:classId', element: only(['teacher', 'school_admin', 'principal', 'superadmin'], <ClassPage />) },
+      {
+        path: 'classes/:classId',
+        element: only(['teacher', 'school_admin', 'principal', 'superadmin'], <ClassPage />),
+      },
       { path: 'students', element: only(['school_admin', 'principal', 'syv'], <StudentList />) },
-      { path: 'students/:studentId', element: only(['teacher', 'school_admin', 'principal', 'syv', 'superadmin'], <StudentPage />) },
+      {
+        path: 'students/:studentId',
+        element: only(['teacher', 'school_admin', 'principal', 'syv', 'superadmin'], <StudentPage />),
+      },
 
       // Flera roller
-      placeholder('messages', ['teacher', 'student', 'supervisor', 'syv'], 'Meddelanden', 'Meddelanden mellan lärare, elever och handledare.'),
+      placeholder(
+        'messages',
+        ['teacher', 'student', 'supervisor', 'syv'],
+        'Meddelanden',
+        'Meddelanden mellan lärare, elever och handledare.',
+      ),
       { path: 'placements', element: only(['teacher', 'school_admin', 'principal'], <Placements />) },
       { path: 'contracts', element: only(['teacher', 'supervisor', 'student', 'school_admin'], <Contracts />) },
       { path: 'contracts/:contractId', element: only(['teacher', 'supervisor', 'student'], <ContractPage />) },
@@ -90,6 +107,7 @@ const routes: RouteObject[] = [
 
       // Handledare (F4)
       { path: 'my-students', element: only(['supervisor'], <MyStudents />) },
+      { path: 'my-students/:studentId', element: only(['supervisor'], <SupervisorStudent />) },
       { path: 'student-reports', element: only(['supervisor'], <SupervisorReports />) },
       { path: 'student-reports/:reportId', element: only(['supervisor'], <SupervisorReport />) },
       { path: 'company', element: only(['supervisor'], <Company />) },
@@ -98,13 +116,23 @@ const routes: RouteObject[] = [
       // Skolans ledning och administration
       { path: 'users', element: only(['school_admin', 'principal'], <Users />) },
       placeholder('school', ['principal'], 'Översikt', 'Skolans APL i siffror: elever på APL, närvaro och avtal.'),
-      placeholder('admin-reports', ['school_admin', 'principal'], 'Rapporter', 'Statsbidragsrapport och underlag för materialersättning. Kommer i F7.'),
+      placeholder(
+        'admin-reports',
+        ['school_admin', 'principal'],
+        'Rapporter',
+        'Statsbidragsrapport och underlag för materialersättning. Kommer i F7.',
+      ),
 
       // Superadmin
       { path: 'admin/schools', element: only(['superadmin'], <Schools />) },
       { path: 'admin/schools/:schoolId', element: only(['superadmin'], <SchoolPage />) },
 
-      { path: '*', element: <Placeholder title="Sidan finns inte" description="Kontrollera adressen eller gå tillbaka till startsidan." /> },
+      {
+        path: '*',
+        element: (
+          <Placeholder title="Sidan finns inte" description="Kontrollera adressen eller gå tillbaka till startsidan." />
+        ),
+      },
     ],
   },
 ]

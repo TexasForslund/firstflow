@@ -625,3 +625,9 @@
     width: 100%;
   }
 }
+
+.inlineIcon {
+  width: 0.875rem;
+  height: 0.875rem;
+  vertical-align: -0.125rem;
+}

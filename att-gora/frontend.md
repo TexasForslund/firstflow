@@ -254,7 +254,7 @@ Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
 
 ---
 
-## F22. Privata kommentarer på redovisningar 🚧 Granskas (Texas + Claude, 2026-10-30)
+## F22. Privata kommentarer på redovisningar ✅ Klar ([PR #46](https://github.com/TexasForslund/firstflow/pull/46), Texas + Claude, 2026-10-30)
 
 Enligt "Firstflow – Privata kommentarer skiss" (Texas, 2026-10-30). Backend: B17.
 - Lärare och handledare väljer **Alla ser** (förvalt) eller **Bara lärare och handledare** ovanför kommentarsfältet. Vid privat blir fältet gult och texten under säger att eleven inte ser kommentaren och inte får någon notis.
@@ -263,12 +263,15 @@ Enligt "Firstflow – Privata kommentarer skiss" (Texas, 2026-10-30). Backend: B
 
 ---
 
-## F23. Anteckningar om eleven ⬜ (från mötet med Haldor, 2026-10-30)
+## F23. Anteckningar om eleven 🚧 Granskas (Texas + Claude, 2026-10-30)
 
-Backend: B18. Skiss först.
-- Ett kort **Anteckningar om eleven** på elevsidan, där handledaren och läraren skriver om eleven i helhet (t.ex. beröm, oro, beteende), med datum och namn.
-- Handledaren behöver en enkel elevsida, eftersom elevsidan bara finns för skolans personal i dag.
-- **Förslag från Claude, inte beslutat:** att även läraren kan skriva, att varje anteckning har en tagg (t.ex. Beröm, Oro, Övrigt) och en kort text vid fältet om att skriva sakligt.
+Enligt "Firstflow – Anteckningar om eleven skiss" (Texas, 2026-10-30). Backend: B18.
+- **Handledarens elevsida** (`/my-students/:id`), som nås från Mina elever:
+  - Anteckningar om eleven: välj Beröm, Oro eller Övrigt, skriv och spara. Egna anteckningar har Ändra och Ta bort i 24 timmar.
+  - Elevens tre senaste redovisningar och länken "Se alla", som öppnar Redovisningar filtrerat på eleven.
+- **Lärarens elevsida:** kortet **Från handledaren** med antal per tagg, de tre senaste och "Visa alla". Långa anteckningar kortas av efter fyra rader och läses hela med **Läs hela** i en popup (Texas, 2026-10-30). Läraren skriver inte här.
+- Eleven ser inget av det.
+- **Inte med än:** närvaro och lärare på handledarens elevsida, som i skissen.
 
 ---
 
