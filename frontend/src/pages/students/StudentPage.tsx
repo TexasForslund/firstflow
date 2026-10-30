@@ -723,7 +723,7 @@ function NotesCard({ studentId }: { studentId: string }) {
           <p className={own.muted}>{counts.map((c) => `${noteTagLabel[c.tag]} ${c.count}`).join(' · ')}</p>
         )}
         {(showAll ? notes : notes.slice(0, NOTES_SHOWN)).map((note) => (
-          <NoteItem key={note.id} note={note} studentId={studentId} showRole />
+          <NoteItem key={note.id} note={note} studentId={studentId} showRole clamp />
         ))}
         {notes.length > NOTES_SHOWN && (
           <button type="button" className={own.textLink} onClick={() => setShowAll(!showAll)}>

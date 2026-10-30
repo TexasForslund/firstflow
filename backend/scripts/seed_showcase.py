@@ -553,7 +553,12 @@ def showcase(db: Session) -> dict[str, int]:
         (2, NoteTag.PRAISE, "Mycket bra på kundkontakt. Förklarade laddboxen lugnt och tydligt."),
         (9, NoteTag.CONCERN, "Blev irriterad och höjde rösten mot en kollega när han fick ändra en "
          "dragning. Vi pratade om det efteråt och det kändes bra."),
-        (16, NoteTag.OTHER, "Har börjat ta egna initiativ på morgonen."),
+        (16, NoteTag.OTHER, "Har börjat ta egna initiativ på morgonen. Första veckorna väntade han "
+         "alltid på att någon skulle säga vad han skulle göra, men nu kollar han själv dagens "
+         "arbetsorder och plockar fram material innan vi åker. I måndags hade han packat bilen "
+         "till ett jobb i Bollstabruk innan jag kom. Han frågar fortfarande när han är osäker, "
+         "vilket är bra. Nästa steg är att han får ta hand om ett mindre jobb själv med mig "
+         "som stöd, t.ex. byte av uttag i ett kök."),
     ]:  # fmt: skip
         db.add(
             StudentNote(

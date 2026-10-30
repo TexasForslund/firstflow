@@ -1,5 +1,5 @@
-import { Lock } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Lock, X } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
 import {
   noteTagLabel,
@@ -12,6 +12,13 @@ import {
 import styles from './StudentNotes.module.css'
 
 const TAGS: NoteTag[] = ['praise', 'concern', 'other']
+
+/** Längre anteckningar kortas av i lärarens kort och läses i en popup (Texas, 2026-10-30). */
+const LONG_NOTE = 220
+
+function isLong(body: string) {
+  return body.length > LONG_NOTE || body.split('\n').length > 4
+}
 
 function noteDate(iso: string) {
   return new Date(iso).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
@@ -26,8 +33,21 @@ export function NoteTagBadge({ tag }: { tag: NoteTag }) {
 }
 
 /** En anteckning. Handledaren kan ändra och ta bort sina egna i 24 timmar (Texas, 2026-10-30). */
-export function NoteItem({ note, studentId, showRole }: { note: StudentNote; studentId: string; showRole?: boolean }) {
+export function NoteItem({
+  note,
+  studentId,
+  showRole,
+  clamp,
+}: {
+  note: StudentNote
+  studentId: string
+  showRole?: boolean
+  /** Korta av långa anteckningar och visa hela i en popup. */
+  clamp?: boolean
+}) {
   const [editing, setEditing] = useState(false)
+  const [reading, setReading] = useState(false)
+  const clamped = clamp && isLong(note.body)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const remove = useDeleteNote(studentId, note.id)
 
@@ -45,7 +65,13 @@ export function NoteItem({ note, studentId, showRole }: { note: StudentNote; stu
           {note.updated_at ? ' · ändrad' : ''}
         </span>
       </p>
-      <p className={styles.body}>{note.body}</p>
+      <p className={clamped ? `${styles.body} ${styles.clamped}` : styles.body}>{note.body}</p>
+      {clamped && (
+        <button type="button" className={`${styles.link} ${styles.readMore}`} onClick={() => setReading(true)}>
+          Läs hela
+        </button>
+      )}
+      {reading && <NoteDialog note={note} showRole={showRole} onClose={() => setReading(false)} />}
       {note.can_edit && (
         <p className={styles.actions}>
           <button type="button" className={styles.link} onClick={() => setEditing(true)}>
@@ -169,5 +195,46 @@ export function NoteForm({
         </p>
       )}
     </form>
+  )
+}
+
+/** Hela anteckningen i en popup. */
+function NoteDialog({ note, showRole, onClose }: { note: StudentNote; showRole?: boolean; onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    const dialog = ref.current
+    if (dialog && !dialog.open) dialog.showModal()
+  }, [])
+  const titleId = `note-dialog-${note.id}`
+  return (
+    <dialog
+      ref={ref}
+      className={styles.dialog}
+      aria-labelledby={titleId}
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.target === ref.current) onClose()
+      }}
+    >
+      <div className={styles.dialogHeader}>
+        <h2 id={titleId} className={styles.dialogTitle}>
+          Anteckning från {note.author.name}
+        </h2>
+        <button type="button" className={styles.close} aria-label="Stäng" onClick={onClose}>
+          <X aria-hidden="true" />
+        </button>
+      </div>
+      <div className={styles.dialogBody}>
+        <p className={styles.meta}>
+          <NoteTagBadge tag={note.tag} />
+          <span className={styles.muted}>
+            {showRole ? 'Handledare · ' : ''}
+            {new Date(note.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}
+            {note.updated_at ? ' · ändrad' : ''}
+          </span>
+        </p>
+        <p className={styles.body}>{note.body}</p>
+      </div>
+    </dialog>
   )
 }

@@ -269,7 +269,7 @@ Enligt "Firstflow – Anteckningar om eleven skiss" (Texas, 2026-10-30). Backend
 - **Handledarens elevsida** (`/my-students/:id`), som nås från Mina elever:
   - Anteckningar om eleven: välj Beröm, Oro eller Övrigt, skriv och spara. Egna anteckningar har Ändra och Ta bort i 24 timmar.
   - Elevens tre senaste redovisningar och länken "Se alla", som öppnar Redovisningar filtrerat på eleven.
-- **Lärarens elevsida:** kortet **Från handledaren** med antal per tagg, de tre senaste och "Visa alla". Läraren skriver inte här.
+- **Lärarens elevsida:** kortet **Från handledaren** med antal per tagg, de tre senaste och "Visa alla". Långa anteckningar kortas av efter fyra rader och läses hela med **Läs hela** i en popup (Texas, 2026-10-30). Läraren skriver inte här.
 - Eleven ser inget av det.
 - **Inte med än:** närvaro och lärare på handledarens elevsida, som i skissen.
 
