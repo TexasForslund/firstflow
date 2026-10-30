@@ -137,3 +137,43 @@ Hur hanterar vi elever efter studenten, eller när praktiken är slut?
 - Hänger ihop med att elevkonton med redovisningar inte kan raderas i dag (se B5 i `backend.md`) och med [mellanarkiv-dataexport.md](../docs/mellanarkiv-dataexport.md).
 
 Hänger ihop med: B10, D8.
+
+---
+
+## 10. Taggar som kopplar projekt, redovisning och läroplan
+
+Anteckning från Texas (2026-10-30), skriven till Claude att tänka vidare på. **Här måste vi tänka smart.**
+
+Exempel: läraren har frågan "Har du haft kundkontakt i dag?" i redovisningen. Projektet har taggen **Kundkontakt**, eftersom kundkontakt är en del av läroplanen. Svarar eleven ja ska kopplingen synas hela vägen: läroplanen → projektets tagg → frågan → elevens svar.
+
+Tankar att bolla (Claude, inte beslutat):
+- **Gemensamma taggar i stället för fritext.** Projektens taggar är fritext i dag (B12). Kopplingen kräver att taggen på projektet och på frågan är *samma* sak. Förslag: skolan eller läraren har en lista med taggar, och varje tagg kan pekas mot en del av läroplanen (kursens centrala innehåll eller kunskapskrav, från Skolverkets API).
+- **Frågor och svarsalternativ får taggar.** Ja-svaret på "Har du haft kundkontakt?" eller alternativet "Kundkontakt" i en flervalsfråga bär taggen Kundkontakt. Då vet systemet vilka svar som visar vad, utan att läsa fritext.
+- **Underlag per elev.** Läraren ser för varje elev (och projekt) vilka delar av läroplanen eleven har visat, hur ofta och i vilka redovisningar. Det blir ett underlag vid bedömning. Delar som saknas syns också.
+- **Fritext senare.** Claude kan föreslå taggar utifrån fritextsvar, men läraren bekräftar. Ingen automatisk bedömning.
+
+Frågor:
+- Vilken nivå i läroplanen: kurs, centralt innehåll eller kunskapskrav?
+- Vem äger taggarna: skolan, programmet eller läraren?
+- Hur visas kopplingen för eleven, om alls?
+
+Hänger ihop med: B12 (projekt och taggar), B5b (förslag utifrån läroplanen), idé 2.
+
+---
+
+## 11. Frågor till vissa elever, t.ex. per inriktning
+
+Anteckning från Texas (2026-10-30). Det ska gå att ställa specifika frågor till specifika elever. Exempel: EE-klassen kan ha två inriktningar, en för dator och en för programmering. Då måste frågorna kunna skilja inriktningarna åt.
+
+Tankar att bolla (Claude, inte beslutat):
+- **Grupper i klassen.** Läraren delar in klassen i grupper, t.ex. "Dator" och "Programmering". En fråga visas för hela klassen eller för valda grupper.
+- **Enskilda elever** går att välja också (B5b har redan "extra frågor per elev").
+- **SS12000:** inriktningar kan komma från skolans system som grupper eller programkoder vid import (B20), så att läraren inte behöver lägga in dem själv.
+- Logiken i formuläret (hoppa över frågor) finns redan och kan bygga på samma val.
+
+Frågor:
+- Räcker grupper i klassen, eller behövs frågor per enskild elev från början?
+- Ska grupperna följa med eleverna från importen, eller sätter läraren dem?
+
+Hänger ihop med: B5b (extra frågor per elev), B20 (import), idé 10.
+

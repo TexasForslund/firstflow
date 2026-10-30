@@ -254,7 +254,42 @@ Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
 
 ---
 
-## F21. Eleven öppnar ett projekt från Min APL 🚧 Granskas (Texas + Claude, 2026-10-29)
+## F22. Handledarens kommentarer: alla eller bara läraren ⬜ (från mötet med Haldor, 2026-10-30)
+
+Backend: B17. Skiss först.
+- Under kommentarsfältet väljer handledaren **Alla ser** (elev och lärare) eller **Bara läraren**.
+- En privat kommentar får en tydlig märkning, t.ex. ett hänglås och "Bara du och läraren ser den här".
+- **Att bestämma:** kan läraren svara privat i samma tråd?
+
+---
+
+## F23. Anteckningar om eleven ⬜ (från mötet med Haldor, 2026-10-30)
+
+Backend: B18. Skiss först.
+- Ett kort **Anteckningar om eleven** på elevsidan, där handledaren och läraren skriver om eleven i helhet (t.ex. beröm, oro, beteende), med datum och namn.
+- Handledaren behöver en enkel elevsida, eftersom elevsidan bara finns för skolans personal i dag.
+- **Förslag från Claude, inte beslutat:** att även läraren kan skriva, att varje anteckning har en tagg (t.ex. Beröm, Oro, Övrigt) och en kort text vid fältet om att skriva sakligt.
+
+---
+
+## F24. Redovisnings- och incheckningsdagar per klass, även helger ⬜ (från mötet med Haldor, 2026-10-30)
+
+Backend: B19. Skiss först.
+- I klassens APL-villkor väljer läraren **redovisningsdagar** och **incheckningsdagar** bland alla sju veckodagar. Vuxenutbildning kan ha helger.
+- Eleven ser redovisning och incheckning bara de dagarna, och närvaron räknar bara incheckningsdagar.
+
+---
+
+## F25. Import av elever och personal ⬜ (från mötet med Haldor, 2026-10-30)
+
+Backend: B20. Skiss först.
+- Skoladmin kan fortfarande lägga till en elev eller en ur personalen för hand.
+- Skoladmin väljer vilka klasser som har APL i Firstflow, laddar upp en fil (eller startar en synk) och ser en **förhandsvisning** innan något sparas, t.ex. "32 elever, 4 lärare och 1 SYV i 2 klasser läggs in".
+- Efter importen: vad som lades till, ändrades och avslutades.
+
+---
+
+## F21. Eleven öppnar ett projekt från Min APL ✅ Klar ([PR #44](https://github.com/TexasForslund/firstflow/pull/44), Texas + Claude, 2026-10-29)
 
 Enligt skiss B i "Firstflow – Elevens projekt skiss" (Texas, 2026-10-29):
 - **Min APL:** projekten under Mina projekt är klickbara och öppnar `/my-projects/:id`.
