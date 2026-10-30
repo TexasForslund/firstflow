@@ -1,0 +1,180 @@
+/* Inriktningar i klassen (Texas skiss, 2026-10-30). */
+.lead {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.tracks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.track,
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-weight: 600;
+}
+
+.track {
+  min-height: 2.5rem;
+  padding: 0 var(--space-2) 0 var(--space-4);
+}
+
+.pill {
+  padding: 0.125rem var(--space-3);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+}
+
+.track[data-tone='sky'],
+.pill[data-tone='sky'] {
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.track[data-tone='butter'],
+.pill[data-tone='butter'] {
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+.track[data-tone='mint'],
+.pill[data-tone='mint'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.trackCount {
+  font-weight: 400;
+}
+
+.remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: rgb(255 255 255 / 0.6);
+}
+
+.remove svg,
+.add svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.confirm,
+.cancel {
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.confirm {
+  color: var(--color-error);
+}
+
+.cancel {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 1px dashed var(--color-text-faded);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.add:hover {
+  background: var(--color-surface-hover);
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.input {
+  flex: 1 1 14rem;
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.save {
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.save:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.select {
+  flex-shrink: 0;
+  min-height: 2.5rem;
+  max-width: 12rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}

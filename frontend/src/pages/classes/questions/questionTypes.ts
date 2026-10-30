@@ -14,8 +14,18 @@ interface TypeInfo {
 /** Frågetyperna i menyn "Lägg till fråga", färgkodade per grupp som i Typeform. */
 export const QUESTION_TYPES: Record<QuestionType, TypeInfo> = {
   short_text: { label: 'Kort text', description: 'Ett kort svar på en rad', icon: TextCursorInput, group: 'text' },
-  long_text: { label: 'Fritext', description: 'Ett längre svar, t.ex. vad eleven har gjort', icon: AlignLeft, group: 'text' },
-  choice: { label: 'Flerval', description: 'Ett eller flera alternativ, med eller utan Annat', icon: ListChecks, group: 'choice' },
+  long_text: {
+    label: 'Fritext',
+    description: 'Ett längre svar, t.ex. vad eleven har gjort',
+    icon: AlignLeft,
+    group: 'text',
+  },
+  choice: {
+    label: 'Flerval',
+    description: 'Ett eller flera alternativ, med eller utan Annat',
+    icon: ListChecks,
+    group: 'choice',
+  },
   yes_no: { label: 'Ja/Nej', description: 'Ett enkelt ja eller nej', icon: ToggleLeft, group: 'choice' },
   rating: { label: 'Betyg', description: 'Stjärnor från 1 till 5', icon: Star, group: 'rating' },
   statement: { label: 'Meddelande', description: 'Text utan svar, t.ex. en påminnelse', icon: Quote, group: 'other' },
@@ -44,7 +54,7 @@ export function newId(): string {
 }
 
 export function newQuestion(type: QuestionType): Question {
-  const base = { id: newId(), title: '', description: '' }
+  const base = { id: newId(), title: '', description: '', tracks: [] as string[] }
   switch (type) {
     case 'short_text':
     case 'long_text':

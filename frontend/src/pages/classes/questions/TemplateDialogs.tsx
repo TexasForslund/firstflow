@@ -290,7 +290,13 @@ function TemplateItem({
             rename.mutate({ id: template.id, name: name.trim() }, { onSuccess: () => setMode('view') })
           }}
         >
-          <TextField label="Nytt namn" value={name} onChange={(e) => setName(e.target.value)} maxLength={200} autoFocus />
+          <TextField
+            label="Nytt namn"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={200}
+            autoFocus
+          />
           <div className={own.itemActions}>
             <Button onClick={() => setMode('view')}>Avbryt</Button>
             <Button type="submit" variant="primary" disabled={!name.trim() || rename.isPending}>

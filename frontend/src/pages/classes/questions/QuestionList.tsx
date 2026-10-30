@@ -19,6 +19,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Plus } from 'lucide-react'
 
 import type { Question } from '../../../api/forms'
+import type { Track } from '../../../api/tracks'
+import { TrackPill } from '../TracksCard'
 import styles from './FormBuilder.module.css'
 import { QUESTION_TYPES, questionProblems, questionTitle } from './questionTypes'
 import { TypeBadge } from './TypeBadge'
@@ -29,9 +31,11 @@ interface Props {
   onSelect: (id: string) => void
   onReorder: (questions: Question[]) => void
   onAdd: () => void
+  /** Klassens inriktningar, för etiketten på frågor som bara gäller vissa. */
+  tracks?: Track[]
 }
 
-export function QuestionList({ questions, selectedId, onSelect, onReorder, onAdd }: Props) {
+export function QuestionList({ questions, selectedId, onSelect, onReorder, onAdd, tracks = [] }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -86,6 +90,7 @@ export function QuestionList({ questions, selectedId, onSelect, onReorder, onAdd
                   number={i + 1}
                   selected={question.id === selectedId}
                   onSelect={() => onSelect(question.id)}
+                  tracks={tracks}
                 />
               ))}
             </ol>
@@ -105,11 +110,13 @@ function SortableItem({
   number,
   selected,
   onSelect,
+  tracks,
 }: {
   question: Question
   number: number
   selected: boolean
   onSelect: () => void
+  tracks: Track[]
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: question.id,
@@ -135,6 +142,13 @@ function SortableItem({
           <span className={needsFix ? styles.itemProblem : styles.itemType}>
             {needsFix ? 'Behöver fyllas i' : QUESTION_TYPES[question.type].label}
           </span>
+          {question.tracks.length > 0 && (
+            <span className={styles.itemTracks}>
+              {question.tracks.map((id) => (
+                <TrackPill key={id} tracks={tracks} trackId={id} />
+              ))}
+            </span>
+          )}
         </span>
       </button>
       <button

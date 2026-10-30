@@ -14,12 +14,20 @@ import { Button, Card } from '../../../components'
 import { ReportStepper } from '../../reports/ReportStepper'
 import classStyles from '../Classes.module.css'
 import { AddQuestionDialog } from './AddQuestionDialog'
+import { useClassTracks } from '../../../api/tracks'
 import styles from './FormBuilder.module.css'
 import { QuestionCanvas } from './QuestionCanvas'
 import { QuestionList } from './QuestionList'
 import { QuestionSettings } from './QuestionSettings'
 import { SaveTemplateDialog, UseTemplateDialog } from './TemplateDialogs'
-import { duplicateQuestion, newQuestion, QUESTION_TYPES, questionProblems, questionTitle, sanitizeLogic } from './questionTypes'
+import {
+  duplicateQuestion,
+  newQuestion,
+  QUESTION_TYPES,
+  questionProblems,
+  questionTitle,
+  sanitizeLogic,
+} from './questionTypes'
 import { TypeBadge } from './TypeBadge'
 
 const AUTOSAVE_DELAY_MS = 800
@@ -46,6 +54,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
   const save = useSaveDraft(classId)
   const publish = usePublishForm(classId)
   const discard = useDiscardForm(classId)
+  const tracks = useClassTracks(classId).data ?? []
 
   const [questions, setQuestions] = useState(initial)
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null)
@@ -273,6 +282,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
           }}
           onReorder={update}
           onAdd={() => setAdding(true)}
+          tracks={tracks}
         />
 
         {selected ? (
@@ -292,6 +302,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
               onMove={(direction) => move(index, direction)}
               onDuplicate={() => duplicate(index)}
               onDelete={() => remove(index)}
+              tracks={tracks}
             />
           </>
         ) : (

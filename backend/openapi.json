@@ -4546,6 +4546,244 @@
           }
         }
       }
+    },
+    "/api/classes/{class_id}/tracks": {
+      "get": {
+        "tags": [
+          "tracks"
+        ],
+        "summary": "List Tracks",
+        "operationId": "list_tracks_api_classes__class_id__tracks_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackRead"
+                  },
+                  "title": "Response List Tracks Api Classes  Class Id  Tracks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "tracks"
+        ],
+        "summary": "Create Track",
+        "description": "Skapar en inriktning och svarar med klassens alla inriktningar.",
+        "operationId": "create_track_api_classes__class_id__tracks_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackRead"
+                  },
+                  "title": "Response Create Track Api Classes  Class Id  Tracks Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/tracks/{track_id}": {
+      "delete": {
+        "tags": [
+          "tracks"
+        ],
+        "summary": "Delete Track",
+        "description": "Tar bort inriktningen. Eleverna får ingen inriktning, och utkastets frågor slutar gälla\nden. Publicerade frågor ändras först när läraren publicerar igen.",
+        "operationId": "delete_track_api_classes__class_id__tracks__track_id__delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Track Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/students/{student_id}/track": {
+      "put": {
+        "tags": [
+          "tracks"
+        ],
+        "summary": "Set Student Track",
+        "description": "Sätter elevens inriktning i klassen. Svarar med klassens alla inriktningar.",
+        "operationId": "set_student_track_api_classes__class_id__students__student_id__track_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudentTrack"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrackRead"
+                  },
+                  "title": "Response Set Student Track Api Classes  Class Id  Students  Student Id  Track Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5050,6 +5288,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "choice",
@@ -5119,6 +5367,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "choice",
@@ -5165,6 +5423,7 @@
           "id",
           "title",
           "description",
+          "tracks",
           "type",
           "required",
           "choices",
@@ -6287,6 +6546,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "long_text",
@@ -6326,6 +6595,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "long_text",
@@ -6343,6 +6622,7 @@
           "id",
           "title",
           "description",
+          "tracks",
           "type",
           "required"
         ],
@@ -7410,6 +7690,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "rating",
@@ -7457,6 +7747,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "rating",
@@ -7482,6 +7782,7 @@
           "id",
           "title",
           "description",
+          "tracks",
           "type",
           "required",
           "logic"
@@ -8020,6 +8321,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "short_text",
@@ -8059,6 +8370,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "short_text",
@@ -8076,6 +8397,7 @@
           "id",
           "title",
           "description",
+          "tracks",
           "type",
           "required"
         ],
@@ -8166,6 +8488,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "statement",
@@ -8201,6 +8533,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "statement",
@@ -8213,6 +8555,7 @@
           "id",
           "title",
           "description",
+          "tracks",
           "type"
         ],
         "title": "StatementQuestion",
@@ -8572,6 +8915,28 @@
           "answers"
         ],
         "title": "StudentReportSummary"
+      },
+      "StudentTrack": {
+        "properties": {
+          "track_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Id",
+            "description": "null = ingen inriktning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "track_id"
+        ],
+        "title": "StudentTrack"
       },
       "SupervisedStudent": {
         "properties": {
@@ -9093,6 +9458,50 @@
         "title": "TodayStudent",
         "description": "En elev som har APL i dag, med dagens läge (Texas, 2026-10-29)."
       },
+      "TrackCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "TrackCreate"
+      },
+      "TrackRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "student_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Student Ids",
+            "description": "Elever med inriktningen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "student_ids"
+        ],
+        "title": "TrackRead"
+      },
       "UserRead": {
         "properties": {
           "id": {
@@ -9426,6 +9835,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "yes_no",
@@ -9473,6 +9892,16 @@
             "title": "Description",
             "default": ""
           },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
           "type": {
             "type": "string",
             "const": "yes_no",
@@ -9498,6 +9927,7 @@
           "id",
           "title",
           "description",
+          "tracks",
           "type",
           "required",
           "logic"

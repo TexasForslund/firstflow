@@ -18,6 +18,7 @@ from app.api.routes import (
     students,
     superadmin,
     templates,
+    tracks,
 )
 
 api_router = APIRouter(prefix="/api")
@@ -56,3 +57,4 @@ api_router.include_router(projects.student_router)
 api_router.include_router(projects.me_router)
 api_router.include_router(contracts.router)
 api_router.include_router(notes.router)
+api_router.include_router(tracks.router)

@@ -522,3 +522,59 @@ def test_first_matching_rule_wins_for_multiple_choice(
     assert path == [multi["id"]]  # regeln för B står först
     path = answer(client, report, multi, choice_ids=[first]).json()["path"]
     assert path == [multi["id"], end_question["id"]]
+
+
+# --- Inriktningar (Texas, 2026-10-30) ------------------------------------------------------
+
+
+def test_question_only_for_a_track(client: TestClient, login: Login, w: World) -> None:
+    """En fråga för Programmering visas bara för elever med den inriktningen."""
+    login(w.teacher)
+    base = f"/api/classes/{w.ee22.id}"
+    tracks = client.post(f"{base}/tracks", json={"name": "Programmering"}).json()
+    tracks = client.post(f"{base}/tracks", json={"name": "Dator"}).json()
+    prog = next(t["id"] for t in tracks if t["name"] == "Programmering")
+    assert client.post(f"{base}/tracks", json={"name": "Dator"}).status_code == 409
+
+    language = q("short_text", "Vilket språk programmerade du i?", tracks=[prog])
+    questions = [w.summary, language]
+    assert client.put(f"{base}/form", json={"questions": questions}).status_code == 200
+    assert client.post(f"{base}/form/publish").status_code == 200
+    response = client.put(f"{base}/students/{w.student.id}/track", json={"track_id": prog})
+    assert response.status_code == 200
+    by_name = {t["name"]: t["student_ids"] for t in response.json()}
+    assert by_name == {"Dator": [], "Programmering": [str(w.student.id)]}
+
+    login(w.student)
+    assert start(client, w)["path"] == [w.summary["id"], language["id"]]
+    login(w.other_student)
+    assert start(client, w)["path"] == [w.summary["id"]]
+
+
+def test_track_checks(client: TestClient, login: Login, w: World) -> None:
+    login(w.teacher)
+    base = f"/api/classes/{w.ee22.id}"
+    other = client.post(f"/api/classes/{w.empty.id}/tracks", json={"name": "Dator"}).json()[0]
+    # En inriktning från en annan klass går inte att använda.
+    stray = q("short_text", "Fråga", tracks=[other["id"]])
+    assert client.put(f"{base}/form", json={"questions": [stray]}).status_code == 422
+    response = client.put(f"{base}/students/{w.student.id}/track", json={"track_id": other["id"]})
+    assert response.status_code == 404
+    # En elev som inte går i klassen.
+    mine = client.post(f"{base}/tracks", json={"name": "Dator"}).json()[0]
+    response = client.put(
+        f"{base}/students/{w.te21_student.id}/track", json={"track_id": mine["id"]}
+    )
+    assert response.status_code == 404
+
+    # Tas inriktningen bort slutar utkastets frågor gälla den.
+    tagged = q("short_text", "Fråga", tracks=[mine["id"]])
+    assert client.put(f"{base}/form", json={"questions": [tagged]}).status_code == 200
+    assert client.delete(f"{base}/tracks/{mine['id']}").status_code == 204
+    draft = client.get(f"{base}/form").json()["draft"]["questions"]
+    assert draft[0]["tracks"] == []
+
+    # Rektorn ser inriktningarna men ändrar dem inte.
+    login(w.principal)
+    assert client.get(f"{base}/tracks").status_code == 200
+    assert client.post(f"{base}/tracks", json={"name": "X"}).status_code == 403

@@ -909,3 +909,39 @@
     transition: none !important;
   }
 }
+
+/* Visas för: alla elever eller vissa inriktningar (Texas, 2026-10-30). */
+.audience {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.audienceOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 2.25rem;
+  cursor: pointer;
+}
+
+.audienceOption input {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-primary);
+}
+
+.audienceTracks {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-6);
+}
+
+.itemTracks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
