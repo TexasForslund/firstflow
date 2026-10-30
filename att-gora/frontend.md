@@ -254,12 +254,12 @@ Enligt skissen "Firstflow – Handledaren läser redovisningar skiss":
 
 ---
 
-## F22. Handledarens kommentarer: alla eller bara läraren ⬜ (från mötet med Haldor, 2026-10-30)
+## F22. Privata kommentarer på redovisningar 🚧 Granskas (Texas + Claude, 2026-10-30)
 
-Backend: B17. Skiss först.
-- Under kommentarsfältet väljer handledaren **Alla ser** (elev och lärare) eller **Bara läraren**.
-- En privat kommentar får en tydlig märkning, t.ex. ett hänglås och "Bara du och läraren ser den här".
-- **Att bestämma:** kan läraren svara privat i samma tråd?
+Enligt "Firstflow – Privata kommentarer skiss" (Texas, 2026-10-30). Backend: B17.
+- Lärare och handledare väljer **Alla ser** (förvalt) eller **Bara lärare och handledare** ovanför kommentarsfältet. Vid privat blir fältet gult och texten under säger att eleven inte ser kommentaren och inte får någon notis.
+- Privata kommentarer har gul streckad ram och märkningen "Bara lärare och handledare" med ett hänglås.
+- Eleven ser varken valet eller de privata kommentarerna.
 
 ---
 

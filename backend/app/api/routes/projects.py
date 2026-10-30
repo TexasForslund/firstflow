@@ -32,7 +32,7 @@ from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
 from app.models.project import Project, project_students, project_supervisors
-from app.models.report import Report, ReportComment, ReportRead, ReportStatus
+from app.models.report import CommentVisibility, Report, ReportComment, ReportRead, ReportStatus
 from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -463,9 +463,13 @@ def my_project(
     )
     if project is None:
         raise _not_found()
+    # Eleven räknar bara kommentarer hen ser, inte privata.
     comment_count = (
         select(func.count())
-        .where(ReportComment.report_id == Report.id)
+        .where(
+            ReportComment.report_id == Report.id,
+            ReportComment.visibility == CommentVisibility.ALL,
+        )
         .scalar_subquery()
         .label("comment_count")
     )

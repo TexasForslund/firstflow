@@ -354,12 +354,19 @@ Byggt i `app/api/routes/reports.py`:
 
 ---
 
-## B17. Privata kommentarer från handledaren ⬜ (från mötet med Haldor, 2026-10-30)
+## B17. Privata kommentarer på redovisningar 🚧 Granskas (Texas + Claude, 2026-10-30)
 
-Handledaren väljer om en kommentar på en redovisning ska synas för alla (elev och lärare) eller bara för läraren.
-- `ReportComment` får en synlighet, t.ex. `visibility`: `all` eller `staff`. Kräver en migrering.
-- Eleven får aldrig kommentarer med `staff` i `GET /api/reports/{id}` och ingen notis om dem. Läraren och handledaren ser dem.
-- **Att bestämma:** kan läraren också skriva privat, eller bara handledaren?
+Beslut (Texas, 2026-10-30):
+- Handledaren och läraren kan skriva privat på en redovisning, så att bara lärare och handledare ser kommentaren (t.ex. läraren till handledaren: "Ljuger han?").
+- På elevsidan skriver läraren inga privata anteckningar. Anteckningarna om eleven (B18) är handledarens.
+- "Alla ser" är förvalt varje gång.
+- Notiser: en privat kommentar från handledaren går till lärarna för klassen, en från läraren till handledaren för den dagen. Eleven får ingen notis om privata kommentarer.
+
+Byggt:
+- `ReportComment.visibility`: `all` eller `staff`, migrering `9214b6a47f9d`. Befintliga kommentarer blir `all`.
+- `POST /api/reports/{id}/comments` tar `visibility`. Eleven kan inte skriva privat (422).
+- `GET /api/reports/{id}` ger aldrig eleven privata kommentarer, och elevens antal kommentarer i projektet räknar inte med dem.
+- Tester i `tests/test_supervisor_reports.py`.
 - **Att veta:** "privat" betyder att den inte visas i appen. Eleven kan begära ut sina uppgifter enligt GDPR, och på kommunala skolor kan kommentarerna vara allmänna handlingar.
 
 Frontend: F22.

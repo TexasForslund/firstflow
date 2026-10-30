@@ -57,7 +57,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **F21 (#44):** eleven öppnar ett projekt från Min APL.
 
 **Från mötet med Haldor (2026-10-30):** mötet gick bra. Nya uppgifter, inget är byggt än:
-- **B17 och F22:** handledaren väljer om en kommentar ska synas för alla eller bara läraren.
+- **B17 och F22:** privata kommentarer på redovisningar för lärare och handledare (granskas).
 - **B18 och F23:** anteckningar om eleven i helhet, från handledare och lärare.
 - **B19 och F24:** redovisnings- och incheckningsdagar per klass, även helger (vuxenutbildning).
 - **B20 och F25:** import av elever och personal enligt SS12000, bara det som rör APL. Rör B6, stäm av mellan Texas och Hannes.

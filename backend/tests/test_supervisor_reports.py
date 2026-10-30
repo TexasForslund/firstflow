@@ -182,3 +182,64 @@ def test_only_supervisors_list_supervisor_reports(
     assert client.get("/api/supervisor/reports").status_code == 403
     login(w.hugo)
     assert client.get("/api/supervisor/reports").status_code == 403
+
+
+# --- Privata kommentarer (Texas, 2026-10-30) ------------------------------------------------
+
+
+def test_private_comments_hidden_from_student(
+    client: TestClient, db: Session, login: Login, w: World
+) -> None:
+    report = w.reports["hugo_oct"]
+    login(w.gustav)
+    response = client.post(
+        f"/api/reports/{report.id}/comments",
+        json={"body": "Gick vid lunch i tisdags.", "visibility": "staff"},
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["visibility"] == "staff"
+
+    login(w.teacher)
+    client.post(
+        f"/api/reports/{report.id}/comments",
+        json={"body": "Ljuger han?", "visibility": "staff"},
+    )
+    client.post(f"/api/reports/{report.id}/comments", json={"body": "Bra skrivet!"})
+    comments = client.get(f"/api/reports/{report.id}").json()["comments"]
+    assert [c["visibility"] for c in comments] == ["staff", "staff", "all"]
+
+    # Handledaren ser lärarens privata kommentar.
+    login(w.gustav)
+    assert len(client.get(f"/api/reports/{report.id}").json()["comments"]) == 3
+
+    # Eleven ser bara kommentaren för alla och kan inte skriva privat.
+    login(w.hugo)
+    comments = client.get(f"/api/reports/{report.id}").json()["comments"]
+    assert [c["body"] for c in comments] == ["Bra skrivet!"]
+    response = client.post(
+        f"/api/reports/{report.id}/comments", json={"body": "Hej", "visibility": "staff"}
+    )
+    assert response.status_code == 422
+
+
+def test_private_comment_notifies_the_other_side(
+    client: TestClient, db: Session, login: Login, w: World
+) -> None:
+    report = w.reports["hugo_oct"]
+    login(w.gustav)
+    client.post(
+        f"/api/reports/{report.id}/comments", json={"body": "Privat", "visibility": "staff"}
+    )
+    login(w.teacher)
+    client.post(f"/api/reports/{report.id}/comments", json={"body": "Svar", "visibility": "staff"})
+
+    def links(user: User) -> list[str | None]:
+        rows = db.scalars(select(Notification).where(Notification.user_id == user.id)).all()
+        return [n.link for n in rows]
+
+    # Eleven får ingen notis om privata kommentarer.
+    assert links(w.hugo) == []
+    assert links(w.teacher) == [f"/reports/{report.id}"]
+    assert links(w.gustav) == [f"/student-reports/{report.id}"]
+    # Sofia hade inte Hugo den dagen.
+    assert links(w.sofia) == []

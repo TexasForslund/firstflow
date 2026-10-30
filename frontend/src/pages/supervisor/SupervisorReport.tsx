@@ -62,7 +62,6 @@ export function SupervisorReport() {
       <Card>
         <div className={styles.commentsCard}>
           <Comments report={detail} />
-          <p className={styles.hint}>Eleven och läraren ser din kommentar.</p>
         </div>
       </Card>
     </div>
