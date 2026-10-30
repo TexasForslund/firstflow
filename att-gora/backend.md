@@ -370,7 +370,8 @@ Frontend: F22.
 
 Handledaren och läraren skriver anteckningar om eleven i helhet, inte på en redovisning (t.ex. "duktig på kundkontakt" eller oro för beteende).
 - Ny modell, t.ex. `StudentNote` (`student_id`, `author_id`, `body`, `tag`, `created_at`). Kräver en migrering.
-- Läraren som har eleven och handledaren som har eleven i en pågående placering får läsa och skriva. Andra får 404.
+- Handledaren som har eleven i en pågående placering får läsa och skriva. Andra får 404.
+- **Förslag från Claude, inte beslutat:** att även läraren kan skriva anteckningar, och taggar som Beröm, Oro och Övrigt. På mötet nämndes bara handledaren.
 - **Att bestämma:**
   - Ska eleven se anteckningarna?
   - Vilka taggar finns?
@@ -418,6 +419,11 @@ Skolorna ska kunna lägga in elever, lärare, SYV och rektor utan att skapa varj
 - **Skyddad identitet:** importeras inte automatiskt. Skolan lägger in eleven för hand om hen ska vara med.
 - **En elev som lämnar klassen** i skolans system får kopplingen avslutad. Redovisningar och närvaro sparas enligt gallringen (B5).
 - **Förhandsvisning** innan något sparas. Loggen visar bara antal och id:n, aldrig namn eller elevdata.
+
+**Tre sätt att lägga in personer:**
+- **För hand:** skoladmin lägger till en elev eller en ur personalen (`create_account`, finns i dag). Behövs alltid, t.ex. för elever med skyddad identitet och för skolor utan system att importera från.
+- **CSV-import** med en mall som följer SS12000:s fält.
+- **SS12000-synk** direkt från skolans system.
 
 **Ordning (förslag):**
 1. Datamodellen följer SS12000: externt id, skolform och roll.

@@ -268,7 +268,7 @@ Backend: B17. Skiss först.
 Backend: B18. Skiss först.
 - Ett kort **Anteckningar om eleven** på elevsidan, där handledaren och läraren skriver om eleven i helhet (t.ex. beröm, oro, beteende), med datum och namn.
 - Handledaren behöver en enkel elevsida, eftersom elevsidan bara finns för skolans personal i dag.
-- Förslag: varje anteckning har en tagg (t.ex. Beröm, Oro, Övrigt) och en kort text vid fältet om att skriva sakligt.
+- **Förslag från Claude, inte beslutat:** att även läraren kan skriva, att varje anteckning har en tagg (t.ex. Beröm, Oro, Övrigt) och en kort text vid fältet om att skriva sakligt.
 
 ---
 
@@ -283,6 +283,7 @@ Backend: B19. Skiss först.
 ## F25. Import av elever och personal ⬜ (från mötet med Haldor, 2026-10-30)
 
 Backend: B20. Skiss först.
+- Skoladmin kan fortfarande lägga till en elev eller en ur personalen för hand.
 - Skoladmin väljer vilka klasser som har APL i Firstflow, laddar upp en fil (eller startar en synk) och ser en **förhandsvisning** innan något sparas, t.ex. "32 elever, 4 lärare och 1 SYV i 2 klasser läggs in".
 - Efter importen: vad som lades till, ändrades och avslutades.
 

@@ -61,6 +61,8 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B18 och F23:** anteckningar om eleven i helhet, från handledare och lärare.
 - **B19 och F24:** redovisnings- och incheckningsdagar per klass, även helger (vuxenutbildning).
 - **B20 och F25:** import av elever och personal enligt SS12000, bara det som rör APL. Rör B6, stäm av mellan Texas och Hannes.
+- **Idé 10:** taggar som kopplar läroplanen, projektet, frågorna och elevens svar. Måste tänkas igenom.
+- **Idé 11:** frågor till vissa elever, t.ex. per inriktning i klassen.
 
 **Nästa steg:**
 - **Texas + Claude:**
