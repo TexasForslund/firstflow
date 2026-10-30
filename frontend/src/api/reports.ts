@@ -10,6 +10,7 @@ export type DueReport = components['schemas']['DueReport']
 export type AnswerValue = components['schemas']['AnswerValue']
 export type AnswerRead = components['schemas']['AnswerRead']
 export type Comment = components['schemas']['CommentRead']
+export type CommentVisibility = components['schemas']['CommentVisibility']
 
 const keys = {
   mine: ['reports', 'mine'] as const,
@@ -110,10 +111,10 @@ export function useSubmitReport(reportId: string) {
 export function useAddComment(reportId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (body: string) => {
+    mutationFn: async ({ body, visibility = 'all' }: { body: string; visibility?: CommentVisibility }) => {
       const { data, error, response } = await api.POST('/api/reports/{report_id}/comments', {
         params: { path: { report_id: reportId } },
-        body: { body },
+        body: { body, visibility },
       })
       if (!data) throw new ApiError(error, response.status)
       return data

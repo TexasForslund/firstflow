@@ -82,6 +82,11 @@ class ReportStatus(StrEnum):
     SUBMITTED = "submitted"  # inskickad och låst
 
 
+class CommentVisibility(StrEnum):
+    ALL = "all"  # eleven, lärarna och handledaren
+    STAFF = "staff"  # bara lärarna och handledaren (Texas, 2026-10-30)
+
+
 class Report(Base):
     """En elevs redovisning för en klass och en redovisningsdag."""
 
@@ -174,9 +179,14 @@ class ReportRead(Base):
 
 
 class ReportComment(Base):
-    """En kommentar på en inskickad redovisning, från eleven eller en lärare."""
+    """En kommentar på en inskickad redovisning, från eleven, en lärare eller handledaren.
+
+    Lärare och handledare kan skriva privat (`STAFF`). Eleven ser då inte kommentaren. Eleven
+    kan ändå begära ut den enligt GDPR, och på kommunala skolor kan den vara en allmän handling.
+    """
 
     __tablename__ = "report_comments"
+    __table_args__ = (CheckConstraint("visibility IN ('all', 'staff')", name="visibility_values"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     report_id: Mapped[uuid.UUID] = mapped_column(
@@ -184,6 +194,9 @@ class ReportComment(Base):
     )
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     body: Mapped[str] = mapped_column(Text)
+    visibility: Mapped[CommentVisibility] = mapped_column(
+        String(10), default=CommentVisibility.ALL, server_default=CommentVisibility.ALL.value
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     author: Mapped[User] = relationship()

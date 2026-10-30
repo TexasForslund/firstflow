@@ -689,7 +689,10 @@ export interface paths {
         /**
          * Add Comment
          * @description Kommentar på en inskickad redovisning, från eleven själv, en lärare för klassen eller
-         *     elevens handledare. Kommenterar handledaren får eleven en notis.
+         *     elevens handledare. Lärare och handledare kan skriva privat (`staff`).
+         *
+         *     Notiser: en handledares kommentar för alla går till eleven. En privat kommentar går till
+         *     den andra parten, alltså lärarna för klassen eller handledaren för den dagen.
          */
         post: operations["add_comment_api_reports__report_id__comments_post"];
         delete?: never;
@@ -1952,6 +1955,11 @@ export interface components {
         CommentCreate: {
             /** Body */
             body: string;
+            /**
+             * @description staff: bara lärare och handledare. Eleven kan inte skriva privat
+             * @default all
+             */
+            visibility: components["schemas"]["CommentVisibility"];
         };
         /** CommentRead */
         CommentRead: {
@@ -1964,12 +1972,19 @@ export interface components {
             author_role: components["schemas"]["UserRole"];
             /** Body */
             body: string;
+            /** @description all: alla ser. staff: bara lärare och handledare, eleven ser den inte */
+            visibility: components["schemas"]["CommentVisibility"];
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
         };
+        /**
+         * CommentVisibility
+         * @enum {string}
+         */
+        CommentVisibility: "all" | "staff";
         /** CompanyProfile */
         CompanyProfile: {
             /** Name */

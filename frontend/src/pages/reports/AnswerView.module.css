@@ -192,3 +192,85 @@
   color: var(--color-attention);
   font-size: var(--font-size-sm);
 }
+
+/* Privata kommentarer (Texas, 2026-10-30): gul, streckad och med hänglås. */
+.bubble[data-private] {
+  border: 1px dashed var(--color-butter-border);
+  background: var(--color-butter-bg);
+}
+
+.privateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-butter);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.privateBadge svg,
+.visibilityOption svg,
+.visibilityHint svg {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.visibility {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.visibilityOption {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.visibilityOption:hover {
+  background: var(--color-surface-hover);
+}
+
+.visibilityOption[aria-pressed='true'] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-weight: 500;
+}
+
+.visibilityOption[data-private][aria-pressed='true'] {
+  border-color: var(--color-butter-border);
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+.commentForm[data-private],
+.commentForm[data-private]:focus-within {
+  border-color: var(--color-butter-border);
+  background: var(--color-butter-bg);
+}
+
+.visibilityHint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.visibilityHint[data-private] {
+  color: var(--color-butter);
+}

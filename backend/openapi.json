@@ -1916,7 +1916,7 @@
           "reports"
         ],
         "summary": "Add Comment",
-        "description": "Kommentar på en inskickad redovisning, från eleven själv, en lärare för klassen eller\nelevens handledare. Kommenterar handledaren får eleven en notis.",
+        "description": "Kommentar på en inskickad redovisning, från eleven själv, en lärare för klassen eller\nelevens handledare. Lärare och handledare kan skriva privat (`staff`).\n\nNotiser: en handledares kommentar för alla går till eleven. En privat kommentar går till\nden andra parten, alltså lärarna för klassen eller handledaren för den dagen.",
         "operationId": "add_comment_api_reports__report_id__comments_post",
         "security": [
           {
@@ -5197,6 +5197,11 @@
             "maxLength": 2000,
             "minLength": 1,
             "title": "Body"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/CommentVisibility",
+            "description": "staff: bara lärare och handledare. Eleven kan inte skriva privat",
+            "default": "all"
           }
         },
         "type": "object",
@@ -5222,6 +5227,10 @@
             "type": "string",
             "title": "Body"
           },
+          "visibility": {
+            "$ref": "#/components/schemas/CommentVisibility",
+            "description": "all: alla ser. staff: bara lärare och handledare, eleven ser den inte"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -5234,9 +5243,18 @@
           "author",
           "author_role",
           "body",
+          "visibility",
           "created_at"
         ],
         "title": "CommentRead"
+      },
+      "CommentVisibility": {
+        "type": "string",
+        "enum": [
+          "all",
+          "staff"
+        ],
+        "title": "CommentVisibility"
       },
       "CompanyProfile": {
         "properties": {

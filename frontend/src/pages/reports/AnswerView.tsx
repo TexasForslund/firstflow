@@ -1,8 +1,9 @@
-import { Send, Star } from 'lucide-react'
+import { Eye, Lock, Send, Star } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import type { Question } from '../../api/forms'
-import { useAddComment, type AnswerRead, type ReportDetail } from '../../api/reports'
+import { useAddComment, type AnswerRead, type CommentVisibility, type ReportDetail } from '../../api/reports'
+import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar } from '../../components'
 import { answerText } from './answers'
 import styles from './AnswerView.module.css'
@@ -66,15 +67,34 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
-/** Kommentarstråden under ett inlägg, som i sociala medier. */
+/**
+ * Kommentarstråden under ett inlägg, som i sociala medier. Lärare och handledare kan skriva
+ * privat, så att bara lärare och handledare ser kommentaren (Texas, 2026-10-30). "Alla ser" är
+ * förvalt varje gång, så att ingen skriver privat av misstag. Eleven får aldrig privata kommentarer.
+ */
 export function Comments({ report }: { report: ReportDetail }) {
   const [body, setBody] = useState('')
+  const [visibility, setVisibility] = useState<CommentVisibility>('all')
   const add = useAddComment(report.id)
+  const { data: me } = useCurrentUser()
+  const isStaff = me?.role === 'teacher' || me?.role === 'supervisor'
+  const isPrivate = isStaff && visibility === 'staff'
+  // Vem som ser en kommentar för alla, sett från den som skriver.
+  const audience =
+    me?.role === 'teacher' ? 'Eleven och handledaren' : me?.role === 'supervisor' ? 'Eleven och läraren' : ''
 
   function submit(event: FormEvent) {
     event.preventDefault()
     if (!body.trim()) return
-    add.mutate(body, { onSuccess: () => setBody('') })
+    add.mutate(
+      { body, visibility: isPrivate ? 'staff' : 'all' },
+      {
+        onSuccess: () => {
+          setBody('')
+          setVisibility('all')
+        },
+      },
+    )
   }
 
   return (
@@ -89,11 +109,18 @@ export function Comments({ report }: { report: ReportDetail }) {
           {report.comments.map((comment) => (
             <li key={comment.id} className={styles.comment}>
               <Avatar name={comment.author.name} size="sm" />
-              <div className={styles.bubble}>
+              <div className={styles.bubble} data-private={comment.visibility === 'staff' ? '' : undefined}>
                 <p className={styles.commentMeta}>
                   <strong>{comment.author.name}</strong>
-                  {comment.author_role !== 'student' && <span className={styles.role}>{ROLE[comment.author_role]}</span>}
+                  {comment.author_role !== 'student' && (
+                    <span className={styles.role}>{ROLE[comment.author_role]}</span>
+                  )}
                   <span className={styles.time}>{timeAgo(comment.created_at)}</span>
+                  {comment.visibility === 'staff' && (
+                    <span className={styles.privateBadge}>
+                      <Lock aria-hidden="true" /> Bara lärare och handledare
+                    </span>
+                  )}
                 </p>
                 <p className={styles.commentBody}>{comment.body}</p>
               </div>
@@ -101,7 +128,28 @@ export function Comments({ report }: { report: ReportDetail }) {
           ))}
         </ul>
       )}
-      <form className={styles.commentForm} onSubmit={submit}>
+      {isStaff && (
+        <div className={styles.visibility} role="group" aria-label="Vem ser kommentaren">
+          <button
+            type="button"
+            className={styles.visibilityOption}
+            aria-pressed={!isPrivate}
+            onClick={() => setVisibility('all')}
+          >
+            <Eye aria-hidden="true" /> Alla ser
+          </button>
+          <button
+            type="button"
+            className={styles.visibilityOption}
+            data-private=""
+            aria-pressed={isPrivate}
+            onClick={() => setVisibility('staff')}
+          >
+            <Lock aria-hidden="true" /> Bara lärare och handledare
+          </button>
+        </div>
+      )}
+      <form className={styles.commentForm} data-private={isPrivate ? '' : undefined} onSubmit={submit}>
         <label htmlFor={`comment-${report.id}`} className="sr-only">
           Skriv en kommentar
         </label>
@@ -109,7 +157,7 @@ export function Comments({ report }: { report: ReportDetail }) {
           id={`comment-${report.id}`}
           className={styles.commentInput}
           value={body}
-          placeholder="Skriv en kommentar…"
+          placeholder={isPrivate ? 'Skriv en privat kommentar…' : 'Skriv en kommentar…'}
           maxLength={2000}
           onChange={(e) => setBody(e.target.value)}
         />
@@ -122,6 +170,20 @@ export function Comments({ report }: { report: ReportDetail }) {
           <Send aria-hidden="true" />
         </button>
       </form>
+      {isStaff && (
+        <p className={styles.visibilityHint} data-private={isPrivate ? '' : undefined}>
+          {isPrivate ? (
+            <>
+              <Lock aria-hidden="true" /> Bara lärare och handledare ser kommentaren. Eleven ser den inte och får ingen
+              notis.
+            </>
+          ) : (
+            <>
+              <Eye aria-hidden="true" /> {audience} ser kommentaren.
+            </>
+          )}
+        </p>
+      )}
       {add.isError && (
         <p className={styles.error} role="alert">
           {add.error.message}

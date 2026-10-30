@@ -14,6 +14,9 @@ Behörighet:
 - Skoladmin, rektor och superadmin ser inte redovisningarna. De behövs inte i deras arbete.
 - Handledaren ser inskickade redovisningar för dagar då eleven var placerad hos hen, och kan
   kommentera dem (Texas, 2026-10-29). Eleven får en notis när handledaren kommenterar.
+- Lärare och handledare kan skriva privata kommentarer (`staff`) som eleven inte ser (Texas,
+  2026-10-30). Den andra parten får en notis: lärarna när handledaren skriver, handledaren
+  när en lärare skriver.
 Allt som användaren inte har tillgång till svarar 404.
 """
 
@@ -37,6 +40,7 @@ from app.db.session import DbSession
 from app.models.placement import Placement, Workplace
 from app.models.project import Project, project_students
 from app.models.report import (
+    CommentVisibility,
     FormVersion,
     Report,
     ReportAnswer,
@@ -96,6 +100,9 @@ class CommentRead(BaseModel):
     author: PersonBrief
     author_role: UserRole
     body: str
+    visibility: CommentVisibility = Field(
+        description="all: alla ser. staff: bara lärare och handledare, eleven ser den inte"
+    )
     created_at: datetime
 
 
@@ -146,6 +153,10 @@ class ReportStart(BaseModel):
 
 class CommentCreate(BaseModel):
     body: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    visibility: CommentVisibility = Field(
+        default=CommentVisibility.ALL,
+        description="staff: bara lärare och handledare. Eleven kan inte skriva privat",
+    )
 
 
 # --- Hjälpfunktioner ----------------------------------------------------------------------
@@ -210,6 +221,23 @@ def _supervises(db: DbSession, user: User, report: Report) -> bool:
             .select_from(Report)
             .join(SchoolClass, SchoolClass.id == Report.class_id)
             .where(Report.id == report.id)
+        )
+    )
+
+
+def _report_supervisors(db: DbSession, report: Report) -> list[UUID]:
+    """Handledarna som hade eleven den dag redovisningen gäller."""
+    return list(
+        db.scalars(
+            select(Placement.supervisor_id)
+            .join(Workplace, Workplace.id == Placement.workplace_id)
+            .where(
+                Placement.student_id == report.student_id,
+                Placement.start_date <= report.due_date,
+                Placement.end_date >= report.due_date,
+                Workplace.school_id == report.school_class.school_id,
+            )
+            .distinct()
         )
     )
 
@@ -335,9 +363,12 @@ def _detail(db: DbSession, user: User, report: Report) -> ReportDetail:
                 author=PersonBrief(id=c.author.id, name=c.author.name),
                 author_role=c.author.role,
                 body=c.body,
+                visibility=c.visibility,
                 created_at=c.created_at,
             )
             for c in report.comments
+            # Eleven får aldrig privata kommentarer.
+            if user.role != UserRole.STUDENT or c.visibility == CommentVisibility.ALL
         ],
         is_read=is_read,
     )
@@ -593,15 +624,44 @@ def mark_read(report_id: UUID, db: DbSession, user: TeacherOrSupervisor) -> Resp
 )
 def add_comment(report_id: UUID, body: CommentCreate, db: DbSession, user: Reader) -> CommentRead:
     """Kommentar på en inskickad redovisning, från eleven själv, en lärare för klassen eller
-    elevens handledare. Kommenterar handledaren får eleven en notis."""
+    elevens handledare. Lärare och handledare kan skriva privat (`staff`).
+
+    Notiser: en handledares kommentar för alla går till eleven. En privat kommentar går till
+    den andra parten, alltså lärarna för klassen eller handledaren för den dagen."""
     report = _get_report(db, user, report_id)
     if report.status != ReportStatus.SUBMITTED:
         raise HTTPException(
             status.HTTP_409_CONFLICT, detail="Det går att kommentera när redovisningen är inskickad"
         )
-    comment = ReportComment(report_id=report.id, author_id=user.id, body=body.body)
+    private = body.visibility == CommentVisibility.STAFF
+    if private and user.role == UserRole.STUDENT:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Eleven kan inte skriva privat"
+        )
+    comment = ReportComment(
+        report_id=report.id, author_id=user.id, body=body.body, visibility=body.visibility
+    )
     db.add(comment)
-    if user.role == UserRole.SUPERVISOR:
+    student_name = report.student.name
+    if private and user.role == UserRole.SUPERVISOR:
+        for teacher_id in db.scalars(
+            select(class_teachers.c.teacher_id).where(class_teachers.c.class_id == report.class_id)
+        ):
+            notify(
+                db,
+                teacher_id,
+                f"{user.name} skrev en privat kommentar om {student_name}s redovisning",
+                link=f"/reports/{report.id}",
+            )
+    elif private and user.role == UserRole.TEACHER:
+        for supervisor_id in _report_supervisors(db, report):
+            notify(
+                db,
+                supervisor_id,
+                f"{user.name} skrev en privat kommentar om {student_name}s redovisning",
+                link=f"/student-reports/{report.id}",
+            )
+    elif user.role == UserRole.SUPERVISOR:
         notify(
             db,
             report.student_id,
@@ -614,6 +674,7 @@ def add_comment(report_id: UUID, body: CommentCreate, db: DbSession, user: Reade
         author=PersonBrief(id=user.id, name=user.name),
         author_role=user.role,
         body=comment.body,
+        visibility=comment.visibility,
         created_at=comment.created_at,
     )
 
