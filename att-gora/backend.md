@@ -354,7 +354,7 @@ Byggt i `app/api/routes/reports.py`:
 
 ---
 
-## B17. Privata kommentarer på redovisningar 🚧 Granskas (Texas + Claude, 2026-10-30)
+## B17. Privata kommentarer på redovisningar ✅ Klar ([PR #46](https://github.com/TexasForslund/firstflow/pull/46), Texas + Claude, 2026-10-30)
 
 Beslut (Texas, 2026-10-30):
 - Handledaren och läraren kan skriva privat på en redovisning, så att bara lärare och handledare ser kommentaren (t.ex. läraren till handledaren: "Ljuger han?").
@@ -373,18 +373,24 @@ Frontend: F22.
 
 ---
 
-## B18. Anteckningar om eleven ⬜ (från mötet med Haldor, 2026-10-30)
+## B18. Anteckningar om eleven 🚧 Granskas (Texas + Claude, 2026-10-30)
 
-Handledaren och läraren skriver anteckningar om eleven i helhet, inte på en redovisning (t.ex. "duktig på kundkontakt" eller oro för beteende).
-- Ny modell, t.ex. `StudentNote` (`student_id`, `author_id`, `body`, `tag`, `created_at`). Kräver en migrering.
-- Handledaren som har eleven i en pågående placering får läsa och skriva. Andra får 404.
-- **Förslag från Claude, inte beslutat:** att även läraren kan skriva anteckningar, och taggar som Beröm, Oro och Övrigt. På mötet nämndes bara handledaren.
-- **Att bestämma:**
-  - Ska eleven se anteckningarna?
-  - Vilka taggar finns?
-  - Får man ändra eller ta bort sina egna?
-  - Hur länge sparas de? Hänger ihop med gallringen under B5.
-- **Att veta:** anteckningar om beteende är integritetskänsliga. Samma GDPR och offentlighetsprincip som i B17 gäller. Logga aldrig innehållet.
+Beslut (Texas, 2026-10-30):
+- Handledaren skriver anteckningar om eleven i helhet, inte om en enskild redovisning.
+- Läraren läser men skriver inte. Eleven ser dem inte.
+- Taggarna är Beröm, Oro och Övrigt.
+- Handledaren kan ändra och ta bort sina egna anteckningar i 24 timmar.
+
+Byggt:
+- `StudentNote` i `app/models/note.py` (`student_id`, `author_id`, `tag`, `body`, `created_at`, `updated_at`), migrering `4acdced5779d`. Anteckningarna tas bort med elevens konto.
+- `app/api/routes/notes.py`:
+  - `GET /api/students/{id}/notes`: läraren som får se eleven ser alla, handledaren med en pågående placering ser bara sina egna. En tidigare handledare får 404.
+  - `POST` (handledare med pågående placering).
+  - `PUT` och `DELETE /api/students/{id}/notes/{note_id}`: bara egna, 409 efter 24 timmar.
+- `seed_showcase`: tre anteckningar från Gustav om Hugo.
+- Tester i `tests/test_notes.py`.
+- **Att bestämma senare:** hur länge anteckningarna sparas (gallring, B5), och om läraren ska få en notis när handledaren skriver, t.ex. vid Oro.
+- **Att veta:** anteckningarna är integritetskänsliga. Eleven kan begära ut dem enligt GDPR, och på kommunala skolor kan de vara allmänna handlingar. Logga aldrig innehållet.
 
 Frontend: F23.
 

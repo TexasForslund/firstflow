@@ -1,4 +1,5 @@
 import { MapPin } from 'lucide-react'
+import { Link } from 'react-router'
 
 import { useSupervisorAttendance, type SupervisorAttendance } from '../../api/attendance'
 import { useSupervisedStudents, type SupervisedStudent } from '../../api/placements'
@@ -70,13 +71,13 @@ export function MyStudents() {
               const { week, weeks } = periodWeek(s.start_date, s.end_date)
               return (
                 <li key={s.placement_id} className={styles.row}>
-                  <span className={styles.rowLink}>
+                  <Link to={`/my-students/${s.student.id}`} className={styles.rowLink}>
                     <Avatar name={s.student.name} />
                     <span className={styles.rowText}>
                       <span className={styles.name}>{s.student.name}</span>
                       <span className={styles.meta}>{periodText(s.start_date, s.end_date)}</span>
                     </span>
-                  </span>
+                  </Link>
                   <span className={own.progress}>
                     <TodayStatus row={todayByPlacement.get(s.placement_id)} loading={attendance.isPending} />
                     <span className={own.countdown}>
