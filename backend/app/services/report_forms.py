@@ -24,6 +24,7 @@ OTHER_TEXT_MAX = 500
 MAX_QUESTIONS = 50
 MAX_CHOICES = 20
 MAX_RULES = 20
+MAX_TRACKS = 20
 
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 Description = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)]
@@ -72,6 +73,12 @@ class _Question(BaseModel):
     id: UUID
     title: Title
     description: Description = ""
+    # Inriktningar som får frågan. Tom lista = alla elever (Texas, 2026-10-30).
+    tracks: list[UUID] = Field(
+        default_factory=list,
+        max_length=MAX_TRACKS,
+        description="Inriktningar som får frågan. Tom = alla elever",
+    )
 
 
 class ShortTextQuestion(_Question):
@@ -207,6 +214,8 @@ def copy_with_new_ids(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 )
                 for rule in question.logic
             ]
+        # Inriktningarna hör till en klass och följer inte med till en annan.
+        update["tracks"] = []
         copies.append(question.model_copy(update=update))
     return dump_questions(copies)
 
@@ -301,16 +310,29 @@ def _answer_keys(question: Any, answer: AnswerValue) -> set[str]:
     return set()
 
 
-def visible_path(questions: list[Any], answers: dict[UUID, AnswerValue]) -> list[UUID]:
-    """Frågorna eleven får, i ordning, med hänsyn till logiken och svaren hittills.
+def for_track(question: Any, track_id: UUID | None) -> bool:
+    """Om frågan visas för en elev med inriktningen. Frågor utan inriktning visas för alla."""
+    return not question.tracks or track_id in question.tracks
 
-    En fråga utan svar följer ordningen. Första regeln som matchar gäller.
+
+def visible_path(
+    questions: list[Any], answers: dict[UUID, AnswerValue], track_id: UUID | None = None
+) -> list[UUID]:
+    """Frågorna eleven får, i ordning, med hänsyn till logiken, svaren hittills och elevens
+    inriktning.
+
+    En fråga utan svar följer ordningen. Första regeln som matchar gäller. En fråga för en
+    annan inriktning hoppas över, utom om eleven redan har svarat på den (t.ex. innan hen
+    bytte inriktning).
     """
     position = {q.id: i for i, q in enumerate(questions)}
     path: list[UUID] = []
     i = 0
     while i < len(questions):
         question = questions[i]
+        if not for_track(question, track_id) and question.id not in answers:
+            i += 1
+            continue
         path.append(question.id)
         following = i + 1
         answer = answers.get(question.id)

@@ -20,6 +20,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app.api.routes.classes import CanEditClasses, CanViewClasses, get_accessible_class
 from app.db.session import DbSession
 from app.models.report import ClassForm, FormVersion
+from app.models.school_class import ClassTrack
 from app.models.user import User
 from app.services.report_forms import FormContent, dump_questions, parse_questions
 
@@ -90,9 +91,23 @@ def save_draft(class_id: UUID, body: FormContent, db: DbSession, user: CanEditCl
     """Sparar hela utkastet: frågorna i ordning. Eleverna ser inget förrän det publiceras."""
     get_accessible_class(db, user, class_id)
     _check_types_unchanged(db, class_id, body)
+    _check_tracks(db, class_id, body)
     _save(db, class_id, dump_questions(body.questions), user)
     db.commit()
     return _read(db, class_id)
+
+
+def _check_tracks(db: DbSession, class_id: UUID, body: FormContent) -> None:
+    """Frågornas inriktningar måste finnas i klassen."""
+    used = {t for q in body.questions for t in q.tracks}
+    if not used:
+        return
+    existing = set(db.scalars(select(ClassTrack.id).where(ClassTrack.class_id == class_id)))
+    if not used <= existing:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="En fråga gäller en inriktning som inte finns i klassen",
+        )
 
 
 def _check_types_unchanged(db: DbSession, class_id: UUID, body: FormContent) -> None:

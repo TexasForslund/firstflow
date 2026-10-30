@@ -161,7 +161,7 @@ Hänger ihop med: B12 (projekt och taggar), B5b (förslag utifrån läroplanen),
 
 ---
 
-## 11. Frågor till vissa elever, t.ex. per inriktning
+## 11. Frågor till vissa elever, t.ex. per inriktning (inriktningar byggda i B21 och F26)
 
 Anteckning från Texas (2026-10-30). Det ska gå att ställa specifika frågor till specifika elever. Exempel: EE-klassen kan ha två inriktningar, en för dator och en för programmering. Då måste frågorna kunna skilja inriktningarna åt.
 

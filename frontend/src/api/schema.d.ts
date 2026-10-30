@@ -1617,6 +1617,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes/{class_id}/tracks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tracks */
+        get: operations["list_tracks_api_classes__class_id__tracks_get"];
+        put?: never;
+        /**
+         * Create Track
+         * @description Skapar en inriktning och svarar med klassens alla inriktningar.
+         */
+        post: operations["create_track_api_classes__class_id__tracks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/tracks/{track_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Track
+         * @description Tar bort inriktningen. Eleverna får ingen inriktning, och utkastets frågor slutar gälla
+         *     den. Publicerade frågor ändras först när läraren publicerar igen.
+         */
+        delete: operations["delete_track_api_classes__class_id__tracks__track_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/students/{student_id}/track": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Student Track
+         * @description Sätter elevens inriktning i klassen. Svarar med klassens alla inriktningar.
+         */
+        put: operations["set_student_track_api_classes__class_id__students__student_id__track_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1825,6 +1887,11 @@ export interface components {
              */
             description: string;
             /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
@@ -1865,6 +1932,11 @@ export interface components {
              * @default
              */
             description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -2370,6 +2442,11 @@ export interface components {
              */
             description: string;
             /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
@@ -2394,6 +2471,11 @@ export interface components {
              * @default
              */
             description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -2886,6 +2968,11 @@ export interface components {
              */
             description: string;
             /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
@@ -2912,6 +2999,11 @@ export interface components {
              * @default
              */
             description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -3157,6 +3249,11 @@ export interface components {
              */
             description: string;
             /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
@@ -3181,6 +3278,11 @@ export interface components {
              * @default
              */
             description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -3233,6 +3335,11 @@ export interface components {
              */
             description: string;
             /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
@@ -3255,6 +3362,11 @@ export interface components {
              * @default
              */
             description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -3426,6 +3538,14 @@ export interface components {
              * @description Alla textsvar, för sök och filter på elevsidan
              */
             answers: components["schemas"]["TextAnswer"][];
+        };
+        /** StudentTrack */
+        StudentTrack: {
+            /**
+             * Track Id
+             * @description null = ingen inriktning
+             */
+            track_id: string | null;
         };
         /**
          * SupervisedStudent
@@ -3649,6 +3769,26 @@ export interface components {
             checked_in_at: string | null;
             supervisor: components["schemas"]["PersonBrief"] | null;
         };
+        /** TrackCreate */
+        TrackCreate: {
+            /** Name */
+            name: string;
+        };
+        /** TrackRead */
+        TrackRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Student Ids
+             * @description Elever med inriktningen
+             */
+            student_ids: string[];
+        };
         /** UserRead */
         UserRead: {
             /**
@@ -3769,6 +3909,11 @@ export interface components {
              */
             description: string;
             /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
@@ -3795,6 +3940,11 @@ export interface components {
              * @default
              */
             description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -6635,6 +6785,138 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tracks_api_classes__class_id__tracks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_track_api_classes__class_id__tracks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrackCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_track_api_classes__class_id__tracks__track_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                track_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_student_track_api_classes__class_id__students__student_id__track_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudentTrack"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackRead"][];
+                };
             };
             /** @description Validation Error */
             422: {

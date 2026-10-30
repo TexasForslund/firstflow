@@ -275,7 +275,7 @@ Enligt "Firstflow – Anteckningar om eleven skiss" (Texas, 2026-10-30). Backend
 
 ---
 
-## F24. APL-dagar och redovisningsdagar per klass 🚧 Granskas (Texas + Claude, 2026-10-30)
+## F24. APL-dagar och redovisningsdagar per klass ✅ Klar ([PR #48](https://github.com/TexasForslund/firstflow/pull/48), Texas + Claude, 2026-10-30)
 
 Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30). Backend: B19.
 - **APL-villkor i klassvyn:** två rader med måndag–söndag, APL-dagar och redovisningsdagar.
@@ -294,6 +294,15 @@ Backend: B20. Skiss först.
 - Skoladmin kan fortfarande lägga till en elev eller en ur personalen för hand.
 - Skoladmin väljer vilka klasser som har APL i Firstflow, laddar upp en fil (eller startar en synk) och ser en **förhandsvisning** innan något sparas, t.ex. "32 elever, 4 lärare och 1 SYV i 2 klasser läggs in".
 - Efter importen: vad som lades till, ändrades och avslutades.
+
+---
+
+## F26. Inriktningar och frågor per inriktning 🚧 Granskas (Texas + Claude, 2026-10-30)
+
+Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend: B21.
+- **Fliken Elever i klassvyn:** kortet **Inriktningar** med antal elever per inriktning, Ny inriktning och Ta bort. I elevlistan väljer läraren inriktning per elev.
+- **Fliken Frågor:** avsnittet **Visas för** (Alla elever eller Vissa inriktningar) i frågans inställningar, med hur många elever som får frågan. Frågor för vissa inriktningar har en etikett i frågelistan.
+- Eleven märker inget särskilt. Frågor för andra inriktningar hoppas över.
 
 ---
 

@@ -24,6 +24,7 @@ from app.models.report import (  # noqa: F401
 )
 from app.models.school import School  # noqa: F401
 from app.models.school_class import (  # noqa: F401
+    ClassTrack,
     SchoolClass,
     class_students,
     class_teachers,

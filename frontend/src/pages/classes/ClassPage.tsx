@@ -16,13 +16,23 @@ import { useClassPlacements, type Placement } from '../../api/placements'
 import { useClassReports } from '../../api/reports'
 import { useStudents } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, matches, SearchInput, SearchSelect, SelectField, type SearchSelectOption } from '../../components'
+import {
+  Avatar,
+  Button,
+  Card,
+  matches,
+  SearchInput,
+  SearchSelect,
+  SelectField,
+  type SearchSelectOption,
+} from '../../components'
 import { NotFound } from '../NotFound'
 import { currentPlacement } from '../placements/period'
 import { AplTermsForm } from './AplTermsForm'
 import { ClassReports } from './ClassReports'
 import { FormBuilder } from './questions/FormBuilder'
 import { aplSummary } from './aplTerms'
+import { StudentTrackSelect, TracksCard } from './TracksCard'
 import styles from './Classes.module.css'
 import { PlacementPanel } from './PlacementPanel'
 
@@ -89,6 +99,7 @@ export function ClassPage() {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className={styles.panel}>
         {tab === 'students' && (
           <>
+            <TracksCard classId={cls.id} canEdit={canEdit} />
             <Card className={styles.overflowVisible}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>Elever</h2>
@@ -103,22 +114,22 @@ export function ClassPage() {
                 <p className={styles.empty}>Inga elever i klassen än.{canEdit && ' Lägg till den första nedan.'}</p>
               ) : (
                 <ul className={styles.list}>
-                  {cls.students.filter((student) => matches(`${student.name} ${student.email}`, search)).map((student) => (
-                    <StudentRow
-                      key={student.id}
-                      classId={cls.id}
-                      student={student}
-                      canEdit={canEdit}
-                      placements={(placements.data ?? []).filter((p) => p.student.id === student.id)}
-                      placementsLoading={placements.isPending}
-                    />
-                  ))}
+                  {cls.students
+                    .filter((student) => matches(`${student.name} ${student.email}`, search))
+                    .map((student) => (
+                      <StudentRow
+                        key={student.id}
+                        classId={cls.id}
+                        student={student}
+                        canEdit={canEdit}
+                        placements={(placements.data ?? []).filter((p) => p.student.id === student.id)}
+                        placementsLoading={placements.isPending}
+                      />
+                    ))}
                 </ul>
               )}
             </Card>
-            {canEdit && (
-              <AddStudentForm classId={cls.id} inClass={cls.students} isTeacher={user?.role === 'teacher'} />
-            )}
+            {canEdit && <AddStudentForm classId={cls.id} inClass={cls.students} isTeacher={user?.role === 'teacher'} />}
           </>
         )}
         {tab === 'reports' && <ClassReports classId={cls.id} students={cls.students} />}
@@ -165,6 +176,7 @@ function StudentRow({ classId, student, canEdit, placements, placementsLoading }
             <span className={styles.meta}>{student.email}</span>
           </span>
         </Link>
+        <StudentTrackSelect classId={classId} studentId={student.id} studentName={student.name} canEdit={canEdit} />
         {/* Projekt kopplas in med B12. */}
         {canEdit ? (
           <button
@@ -237,7 +249,8 @@ function AddStudentForm({ classId, inClass, isTeacher }: { classId: string; inCl
     add.mutate(
       { studentId: option.id, move },
       {
-        onSuccess: () => setAdded(move ? `${option.label} är flyttad till klassen.` : `${option.label} är tillagd i klassen.`),
+        onSuccess: () =>
+          setAdded(move ? `${option.label} är flyttad till klassen.` : `${option.label} är tillagd i klassen.`),
         onError: (error) => {
           if (error instanceof ApiError && error.status === 409) {
             setMoving({ id: option.id, label: option.label, message: error.message })

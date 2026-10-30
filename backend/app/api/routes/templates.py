@@ -133,7 +133,8 @@ def create_template(body: TemplateCreate, db: DbSession, user: CanUseTemplates) 
         school_id=school_class.school_id,
         owner_id=None if user.role == UserRole.SCHOOL_ADMIN else user.id,
         name=body.name,
-        questions=questions,
+        # Inriktningarna hör till klassen och följer inte med i mallen.
+        questions=[{**q, "tracks": []} for q in questions],
         created_by_id=user.id,
     )
     db.add(template)

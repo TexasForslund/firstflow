@@ -332,6 +332,16 @@ def _get_report(db: DbSession, user: User, report_id: UUID, *, for_update: bool 
     raise _not_found()
 
 
+def _student_track(db: DbSession, report: Report) -> UUID | None:
+    """Elevens inriktning i redovisningens klass, om hen har någon."""
+    return db.scalar(
+        select(class_students.c.track_id).where(
+            class_students.c.class_id == report.class_id,
+            class_students.c.student_id == report.student_id,
+        )
+    )
+
+
 def _detail(db: DbSession, user: User, report: Report) -> ReportDetail:
     questions = parse_questions(report.form_version.questions)
     answers = {a.question_id: AnswerValue.model_validate(a) for a in report.answers}
@@ -356,7 +366,7 @@ def _detail(db: DbSession, user: User, report: Report) -> ReportDetail:
         answers=[
             AnswerRead(question_id=qid, **answer.model_dump()) for qid, answer in answers.items()
         ],
-        path=visible_path(questions, answers),
+        path=visible_path(questions, answers, _student_track(db, report)),
         comments=[
             CommentRead(
                 id=c.id,
@@ -584,7 +594,9 @@ def submit_report(report_id: UUID, db: DbSession, user: Student) -> ReportDetail
     questions = parse_questions(report.form_version.questions)
     answers = {a.question_id: a for a in report.answers}
     path = visible_path(
-        questions, {qid: AnswerValue.model_validate(a) for qid, a in answers.items()}
+        questions,
+        {qid: AnswerValue.model_validate(a) for qid, a in answers.items()},
+        _student_track(db, report),
     )
     by_id = {q.id: q for q in questions}
     for question_id in path:

@@ -1,7 +1,8 @@
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2, X } from 'lucide-react'
-import { useId } from 'react'
+import { useId, useState } from 'react'
 
 import type { LogicRule, Question } from '../../../api/forms'
+import type { Track } from '../../../api/tracks'
 import { Switch } from '../../../components'
 import styles from './FormBuilder.module.css'
 import { answerOptions, hasLogic, QUESTION_TYPES, questionTitle } from './questionTypes'
@@ -15,9 +16,20 @@ interface Props {
   onMove: (direction: -1 | 1) => void
   onDuplicate: () => void
   onDelete: () => void
+  /** Klassens inriktningar. Utan inriktningar visas inte valet Visas för. */
+  tracks?: Track[]
 }
 
-export function QuestionSettings({ question, questions, index, onChange, onMove, onDuplicate, onDelete }: Props) {
+export function QuestionSettings({
+  question,
+  questions,
+  index,
+  onChange,
+  onMove,
+  onDuplicate,
+  onDelete,
+  tracks = [],
+}: Props) {
   const info = QUESTION_TYPES[question.type]
   return (
     <aside className={styles.settings} aria-label="Inställningar för frågan">
@@ -55,10 +67,14 @@ export function QuestionSettings({ question, questions, index, onChange, onMove,
         </section>
       )}
 
+      {tracks.length > 0 && <AudienceEditor question={question} tracks={tracks} onChange={onChange} />}
+
       {hasLogic(question) && (
         <LogicEditor
           question={question}
-          later={questions.slice(index + 1).map((q, i) => ({ id: q.id, label: `${index + i + 2}. ${questionTitle(q)}` }))}
+          later={questions
+            .slice(index + 1)
+            .map((q, i) => ({ id: q.id, label: `${index + i + 2}. ${questionTitle(q)}` }))}
           onChange={(logic) => onChange({ ...question, logic })}
         />
       )}
@@ -116,7 +132,9 @@ function LogicEditor({
     <section className={styles.settingsSection}>
       <h2 className={styles.settingsTitle}>Logik</h2>
       {question.logic.length === 0 ? (
-        <p className={styles.settingsHint}>Alla elever får nästa fråga. Lägg till en regel för att hoppa över frågor.</p>
+        <p className={styles.settingsHint}>
+          Alla elever får nästa fråga. Lägg till en regel för att hoppa över frågor.
+        </p>
       ) : (
         <ol className={styles.rules}>
           {question.logic.map((rule, i) => (
@@ -170,7 +188,9 @@ function LogicEditor({
       {question.logic.length > 0 && (
         <p className={styles.settingsHint}>
           Annars går eleven till nästa fråga.
-          {question.type === 'choice' && question.multiple && ' Väljer eleven flera alternativ gäller den första regeln som stämmer.'}
+          {question.type === 'choice' &&
+            question.multiple &&
+            ' Väljer eleven flera alternativ gäller den första regeln som stämmer.'}
         </p>
       )}
       {question.logic.length < 20 && (
@@ -178,6 +198,69 @@ function LogicEditor({
           <Plus aria-hidden="true" /> Lägg till regel
         </button>
       )}
+    </section>
+  )
+}
+
+/** Visas för: alla elever eller vissa inriktningar (Texas, 2026-10-30). */
+function AudienceEditor({
+  question,
+  tracks,
+  onChange,
+}: {
+  question: Question
+  tracks: Track[]
+  onChange: (question: Question) => void
+}) {
+  const name = useId()
+  // Vissa inriktningar är valt även innan läraren har kryssat i någon.
+  const [some, setSome] = useState(question.tracks.length > 0)
+  const selected = question.tracks
+  const isSome = some || selected.length > 0
+  const reached = tracks.filter((t) => selected.includes(t.id)).reduce((n, t) => n + t.student_ids.length, 0)
+
+  function toggle(id: string) {
+    onChange({ ...question, tracks: selected.includes(id) ? selected.filter((t) => t !== id) : [...selected, id] })
+  }
+
+  return (
+    <section className={styles.settingsSection}>
+      <fieldset className={styles.audience}>
+        <legend className={styles.settingsTitle}>Visas för</legend>
+        <label className={styles.audienceOption}>
+          <input
+            type="radio"
+            name={name}
+            checked={!isSome}
+            onChange={() => {
+              setSome(false)
+              onChange({ ...question, tracks: [] })
+            }}
+          />
+          Alla elever
+        </label>
+        <label className={styles.audienceOption}>
+          <input type="radio" name={name} checked={isSome} onChange={() => setSome(true)} />
+          Vissa inriktningar
+        </label>
+        {isSome && (
+          <div className={styles.audienceTracks}>
+            {tracks.map((t) => (
+              <label key={t.id} className={styles.audienceOption}>
+                <input type="checkbox" checked={selected.includes(t.id)} onChange={() => toggle(t.id)} />
+                {t.name}
+              </label>
+            ))}
+          </div>
+        )}
+        <p className={styles.settingsHint}>
+          {!isSome
+            ? 'Alla elever i klassen får frågan.'
+            : selected.length === 0
+              ? 'Välj en eller flera inriktningar. Utan val får alla elever frågan.'
+              : `Andra elever hoppar över frågan. ${reached} ${reached === 1 ? 'elev' : 'elever'} får den.`}
+        </p>
+      </fieldset>
     </section>
   )
 }

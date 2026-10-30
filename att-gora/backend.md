@@ -396,7 +396,7 @@ Frontend: F23.
 
 ---
 
-## B19. APL-dagar och redovisningsdagar per klass, även helger 🚧 Granskas (Texas + Claude, 2026-10-30)
+## B19. APL-dagar och redovisningsdagar per klass, även helger ✅ Klar ([PR #48](https://github.com/TexasForslund/firstflow/pull/48), Texas + Claude, 2026-10-30)
 
 Beslut (Texas, 2026-10-30):
 - Klassen har **APL-dagar** (fasta veckodagar, t.ex. måndag–torsdag) då eleverna är på APL och checkar in, och **redovisningsdagar** (t.ex. onsdag och torsdag) som väljs bland APL-dagarna.
@@ -451,4 +451,19 @@ Skolorna ska kunna lägga in elever, lärare, SYV och rektor utan att skapa varj
 - Hur hänger importen ihop med inbjudningar och lösenord i B6 (Hannes)? Stäm av i Discord innan någon börjar.
 
 Frontend: F25.
+
+---
+
+## B21. Inriktningar och frågor per inriktning 🚧 Granskas (Texas + Claude, 2026-10-30)
+
+Från idé 11. Beslut (Texas, 2026-10-30): en inriktning per elev, som läraren sätter i klassen. Kan byggas ut senare, t.ex. med enskilda elever eller inriktningar från importen (B20).
+
+Byggt:
+- `ClassTrack` (`class_id`, `name`, unikt namn i klassen) och `class_students.track_id`. Migrering `1fb063b0006e`.
+- `app/api/routes/tracks.py`:
+  - `GET /api/classes/{id}/tracks`: inriktningarna med elevernas id:n.
+  - `POST` och `DELETE /api/classes/{id}/tracks/{track_id}`. Tas en inriktning bort tappar eleverna den och utkastets frågor slutar gälla den.
+  - `PUT /api/classes/{id}/students/{student_id}/track`.
+- Frågor har `tracks` (tom = alla elever). Inriktningarna måste finnas i klassen (422). De följer inte med i mallar.
+- `visible_path` hoppar över frågor för andra inriktningar, utom frågor eleven redan har svarat på.
 
