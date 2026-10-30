@@ -19,8 +19,9 @@ from sqlalchemy.dialects.postgresql import insert
 
 from app.api.routes.classes import CanEditClasses, CanViewClasses, get_accessible_class
 from app.db.session import DbSession
+from app.models.goal import Goal
 from app.models.report import ClassForm, FormVersion
-from app.models.school_class import ClassTrack
+from app.models.school_class import ClassTrack, SchoolClass
 from app.models.user import User
 from app.services.report_forms import FormContent, dump_questions, parse_questions
 
@@ -92,6 +93,7 @@ def save_draft(class_id: UUID, body: FormContent, db: DbSession, user: CanEditCl
     get_accessible_class(db, user, class_id)
     _check_types_unchanged(db, class_id, body)
     _check_tracks(db, class_id, body)
+    _check_goals(db, class_id, body)
     _save(db, class_id, dump_questions(body.questions), user)
     db.commit()
     return _read(db, class_id)
@@ -107,6 +109,21 @@ def _check_tracks(db: DbSession, class_id: UUID, body: FormContent) -> None:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="En fråga gäller en inriktning som inte finns i klassen",
+        )
+
+
+def _check_goals(db: DbSession, class_id: UUID, body: FormContent) -> None:
+    """Målen som frågornas svar visar måste finnas på klassens skola."""
+    used = {g.goal_id for q in body.questions for g in getattr(q, "goals", [])}
+    if not used:
+        return
+    school_class = db.get(SchoolClass, class_id)
+    assert school_class is not None
+    existing = set(db.scalars(select(Goal.id).where(Goal.school_id == school_class.school_id)))
+    if not used <= existing:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="En fråga gäller ett mål som inte finns på skolan",
         )
 
 

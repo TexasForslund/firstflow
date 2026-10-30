@@ -140,7 +140,7 @@ Hänger ihop med: B10, D8.
 
 ---
 
-## 10. Taggar som kopplar projekt, redovisning och läroplan
+## 10. Taggar som kopplar projekt, redovisning och läroplan (steg ett byggt i B22 och F27)
 
 Anteckning från Texas (2026-10-30), skriven till Claude att tänka vidare på. **Här måste vi tänka smart.**
 

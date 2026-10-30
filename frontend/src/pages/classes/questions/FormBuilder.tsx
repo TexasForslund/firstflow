@@ -14,6 +14,7 @@ import { Button, Card } from '../../../components'
 import { ReportStepper } from '../../reports/ReportStepper'
 import classStyles from '../Classes.module.css'
 import { AddQuestionDialog } from './AddQuestionDialog'
+import { useGoals } from '../../../api/goals'
 import { useClassTracks } from '../../../api/tracks'
 import styles from './FormBuilder.module.css'
 import { QuestionCanvas } from './QuestionCanvas'
@@ -55,6 +56,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
   const publish = usePublishForm(classId)
   const discard = useDiscardForm(classId)
   const tracks = useClassTracks(classId).data ?? []
+  const goals = useGoals().data ?? []
 
   const [questions, setQuestions] = useState(initial)
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null)
@@ -303,6 +305,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
               onDuplicate={() => duplicate(index)}
               onDelete={() => remove(index)}
               tracks={tracks}
+              goals={goals}
             />
           </>
         ) : (

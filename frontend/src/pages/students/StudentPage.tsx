@@ -43,6 +43,7 @@ import {
 import { CheckList } from './CheckList'
 import { noteTagLabel, useStudentNotes, type NoteTag } from '../../api/notes'
 import { NoteItem } from '../notes/StudentNotes'
+import { StudentGoalsCard } from '../goals/GoalViews'
 import own from './StudentPage.module.css'
 
 const REPORTS_PER_PAGE = 10
@@ -130,6 +131,7 @@ export function StudentPage() {
           <AttentionBox studentId={student.id} />
           <AttendanceCard studentId={student.id} />
           <PlacementCard studentId={student.id} />
+          {isTeacher && <StudentGoalsCard studentId={student.id} />}
           {isTeacher && <NotesCard studentId={student.id} />}
           <ProjectsCard studentId={student.id} />
           {isAdmin &&

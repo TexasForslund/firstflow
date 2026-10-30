@@ -454,7 +454,7 @@ Frontend: F25.
 
 ---
 
-## B21. Inriktningar och frågor per inriktning 🚧 Granskas (Texas + Claude, 2026-10-30)
+## B21. Inriktningar och frågor per inriktning ✅ Klar ([PR #49](https://github.com/TexasForslund/firstflow/pull/49), Texas + Claude, 2026-10-30)
 
 Från idé 11. Beslut (Texas, 2026-10-30): en inriktning per elev, som läraren sätter i klassen. Kan byggas ut senare, t.ex. med enskilda elever eller inriktningar från importen (B20).
 
@@ -466,4 +466,21 @@ Byggt:
   - `PUT /api/classes/{id}/students/{student_id}/track`.
 - Frågor har `tracks` (tom = alla elever). Inriktningarna måste finnas i klassen (422). De följer inte med i mallar.
 - `visible_path` hoppar över frågor för andra inriktningar, utom frågor eleven redan har svarat på.
+
+---
+
+## B22. Mål från läroplanen, steg ett 🚧 Granskas (Texas + Claude, 2026-10-30)
+
+Från idé 10. Beslut (Texas, 2026-10-30): skissen "Firstflow – Mål från läroplanen skiss". Ordet är "Mål". Steg ett utan Skolverkets API.
+
+- **Mål på skolan:** `Goal` (`school_id`, `name`, `curriculum`) i `app/models/goal.py`. Samma namn oavsett stora och små bokstäver är ett mål. `curriculum` är vilken del av läroplanen målet gäller, som text.
+- **Projektens taggar är mål:** `project_goals` ersätter `projects.tags`. Migrering `a6f1cf4f833a` gör om befintliga taggar till mål. API:t har kvar `tags` som namn, och en ny tagg blir ett nytt mål på skolan.
+- **Svar som visar mål:** ja/nej- och flervalsfrågor har `goals` (`when`, `goal_id`), t.ex. Ja → Kundkontakt. Målen måste finnas på skolan (422). De följer med i mallar på samma skola.
+- **Följdfrågan (Texas, 2026-10-30):** underlaget visar frågan och svaret som gav målet, t.ex. "Har du haft kundkontakt? Ja". Är nästa fråga på elevens väg en textfråga, t.ex. "Vad gjorde du?", följer också den och elevens svar med.
+- **Underlag:** räknas fram ur svaren i `app/services/goal_evidence.py`, aldrig sparat.
+- `app/api/routes/goals.py`: `GET` och `POST /api/goals`, `PATCH /api/goals/{id}` (läroplanstexten), `GET /api/students/{id}/goals` (läraren, samma redovisningar som elevsidan).
+- `GET /api/projects/{id}/goals`: projektets mål × elever med antal och underlag, för läraren och inbjudna handledare.
+- `seed_showcase`: målen från projekten, läroplanstext på Elinstallation och Kundkontakt, och arbetsuppgifterna i frågan kopplade till mål med "Vad har du gjort den här veckan?" som följdfråga.
+
+**Steg två (inte byggt):** välj mål från Skolverkets Syllabus-API (Gy25: ämne, nivå och centralt innehåll). Eleven ser sitt underlag. En sida där skolan ser och ändrar alla mål.
 

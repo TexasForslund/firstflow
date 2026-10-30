@@ -2,6 +2,7 @@
 from app.db.base import Base  # noqa: F401
 from app.models.attendance import Attendance  # noqa: F401
 from app.models.contract import Contract, ContractSignature  # noqa: F401
+from app.models.goal import Goal, project_goals  # noqa: F401
 from app.models.invitation import Invitation, Notification  # noqa: F401
 from app.models.note import StudentNote  # noqa: F401
 from app.models.placement import (  # noqa: F401

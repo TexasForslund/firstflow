@@ -61,8 +61,8 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B18 och F23 (#47):** handledarens anteckningar om eleven (Beröm, Oro, Övrigt). Läraren läser.
 - **B19 och F24 (#48):** APL-dagar och redovisningsdagar per klass, även helger.
 - **B20 och F25:** import av elever och personal enligt SS12000, bara det som rör APL. Rör B6, stäm av mellan Texas och Hannes.
-- **Idé 10:** taggar som kopplar läroplanen, projektet, frågorna och elevens svar. Måste tänkas igenom.
-- **Idé 11, B21 och F26:** inriktningar i klassen och frågor per inriktning (granskas).
+- **Idé 10, B22 och F27:** mål från läroplanen, steg ett: projektens taggar är mål, svar visar mål och underlaget syns med följdfrågans svar (granskas).
+- **Idé 11, B21 och F26 (#49):** inriktningar i klassen och frågor per inriktning.
 
 **Nästa steg:**
 - **Texas + Claude:**

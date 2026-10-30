@@ -6,6 +6,7 @@ from app.api.routes import (
     classes,
     contracts,
     forms,
+    goals,
     health,
     invitations,
     me,
@@ -58,3 +59,5 @@ api_router.include_router(projects.me_router)
 api_router.include_router(contracts.router)
 api_router.include_router(notes.router)
 api_router.include_router(tracks.router)
+api_router.include_router(goals.router)
+api_router.include_router(goals.student_router)

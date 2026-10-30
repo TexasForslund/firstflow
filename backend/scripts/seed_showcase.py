@@ -28,6 +28,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.api.routes.goals import goals_named
 from app.core import time
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -208,7 +209,19 @@ STUDENT_REPLIES = [
 ]
 
 
-def _questions(rng: random.Random) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+# Arbetsuppgifterna i frågan visar skolans mål (idé 10): alternativet Installation visar målet
+# Elinstallation, och så vidare.
+TASK_GOALS = {
+    "Installation": "Elinstallation",
+    "Felsökning": "Felsökning",
+    "Kundkontakt": "Kundkontakt",
+    "Dokumentation": "Dokumentation",
+}
+
+
+def _questions(
+    rng: random.Random, goal_ids: dict[str, uuid.UUID]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Klassens frågor. Returnerar frågorna och id:n för de som svaren fylls i på."""
     ids = {
         k: str(uuid.UUID(int=rng.getrandbits(128)))
@@ -219,10 +232,13 @@ def _questions(rng: random.Random) -> tuple[list[dict[str, Any]], dict[str, Any]
         for label in ("Installation", "Felsökning", "Kundkontakt", "Dokumentation")
     ]
     questions = [
+        # Arbetsuppgifterna först, så att "Vad har du gjort" blir följdfrågan till målen.
+        {"id": ids["tasks"], "type": "choice", "title": "Vilka arbetsuppgifter har du haft?",
+         "multiple": True, "allow_other": False, "choices": choices,
+         "goals": [{"when": c["id"], "goal_id": str(goal_ids[TASK_GOALS[c["label"]]])}
+                   for c in choices]},
         {"id": ids["did"], "type": "long_text", "title": "Vad har du gjort den här veckan?",
          "description": "Beskriv arbetsuppgifterna med egna ord."},
-        {"id": ids["tasks"], "type": "choice", "title": "Vilka arbetsuppgifter har du haft?",
-         "multiple": True, "allow_other": False, "choices": choices},
         {"id": ids["new"], "type": "yes_no", "title": "Har du lärt dig något nytt?",
          "logic": [{"when": "no", "goto": ids["hard"]}]},
         {"id": ids["learned"], "type": "long_text", "title": "Vad lärde du dig?"},
@@ -331,7 +347,20 @@ def showcase(db: Session) -> dict[str, int]:
         .values(created_at=_at(start - timedelta(days=14), 8, 0))
     )
 
-    questions, q = _questions(rng)
+    # Skolans mål: projektens taggar och målen som arbetsuppgifterna visar.
+    goal_names = [t for _, _, tags, _, _ in PROJECTS for t in tags] + DONE_PROJECT[2]
+    goals = {g.name: g for g in goals_named(db, school.id, goal_names)}
+    goals[
+        "Elinstallation"
+    ].curriculum = (
+        "Elteknik, nivå 1: Installation av elanläggningar i bostäder enligt gällande regler."
+    )
+    goals[
+        "Kundkontakt"
+    ].curriculum = (
+        "Elteknik, nivå 1: Kommunikation med kund och kollegor i samband med installationsarbete."
+    )
+    questions, q = _questions(rng, {name: g.id for name, g in goals.items()})
     version = FormVersion(
         class_id=school_class.id,
         version=1,
@@ -357,7 +386,7 @@ def showcase(db: Session) -> dict[str, int]:
             name=name,
             description=description,
             deadline=end,
-            tags=tags,
+            goals=[goals[t] for t in tags],
             created_at=_at(start, 8, 0),
         )
         project.students = [s for m in members if (s := students[m])]
@@ -375,7 +404,7 @@ def showcase(db: Session) -> dict[str, int]:
             name=name,
             description=description,
             deadline=start + timedelta(days=18),
-            tags=tags,
+            goals=[goals[t] for t in tags],
             created_at=_at(start, 8, 0),
             completed_at=_at(start + timedelta(days=18), 15, 0),
             students=[s for s in students.values() if s is not None],

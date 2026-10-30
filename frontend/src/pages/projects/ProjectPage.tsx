@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from 'react-router'
 
 import { useProject, useProjectReports, type Project, type ProjectReport } from '../../api/projects'
 import { Avatar, Button, ButtonLink } from '../../components'
+import { useCurrentUser } from '../../auth/useCurrentUser'
+import { ProjectGoalsTable } from '../goals/GoalViews'
 import { ProjectDialog } from './ProjectDialog'
 import styles from './ProjectPage.module.css'
 import { daysLeftText, longDate, projectTone, reportsWord } from './projectText'
@@ -19,6 +21,7 @@ export function ProjectPage() {
   const { projectId = '' } = useParams()
   const query = useProject(projectId)
   const navigate = useNavigate()
+  const { data: user } = useCurrentUser()
   const [editing, setEditing] = useState(false)
 
   if (query.isPending) return <p className={styles.state}>Laddar projektet…</p>
@@ -65,6 +68,11 @@ export function ProjectPage() {
       </header>
 
       <Facts project={project} />
+
+      <ProjectGoalsTable
+        projectId={project.id}
+        reportPath={(id) => (user?.role === 'supervisor' ? `/student-reports/${id}` : `/reports/${id}`)}
+      />
 
       <div className={styles.columns}>
         <ReportsSection project={project} />

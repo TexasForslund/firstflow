@@ -58,6 +58,15 @@ class LogicRule(BaseModel):
     goto: UUID | None = Field(description="Frågan att gå till. null = gå till slutet")
 
 
+class GoalRule(BaseModel):
+    """Ett svar som visar ett mål, t.ex. Ja → Kundkontakt (idé 10, Texas 2026-10-30)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    when: str = Field(description="Svaret: ett alternativs id, eller 'yes'/'no' för ja/nej")
+    goal_id: UUID
+
+
 class Choice(BaseModel):
     # I API-svaren är alla fält med standardvärde obligatoriska, så att frontend slipper gissa.
     model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
@@ -98,12 +107,14 @@ class ChoiceQuestion(_Question):
     multiple: bool = Field(default=False, description="Eleven får välja flera alternativ")
     allow_other: bool = Field(default=False, description="Alternativet 'Annat' med fritext")
     logic: list[LogicRule] = Field(default_factory=list, max_length=MAX_RULES)
+    goals: list[GoalRule] = Field(default_factory=list, max_length=MAX_CHOICES)
 
 
 class YesNoQuestion(_Question):
     type: Literal[QuestionType.YES_NO]
     required: bool = True
     logic: list[LogicRule] = Field(default_factory=list, max_length=MAX_RULES)
+    goals: list[GoalRule] = Field(default_factory=list, max_length=2)
 
 
 class RatingQuestion(_Question):
@@ -163,6 +174,11 @@ class FormContent(BaseModel):
                 if len(set(ids)) != len(ids):
                     raise ValueError(f'Två alternativ i frågan "{question.title}" har samma id')
             allowed = _allowed_when(question)
+            for goal in getattr(question, "goals", []):
+                if goal.when not in allowed:
+                    raise ValueError(
+                        f'Ett mål i frågan "{question.title}" gäller ett svar som inte finns'
+                    )
             for rule in getattr(question, "logic", []):
                 if rule.when not in allowed:
                     raise ValueError(
@@ -213,6 +229,11 @@ def copy_with_new_ids(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     }
                 )
                 for rule in question.logic
+            ]
+        if hasattr(question, "goals"):
+            update["goals"] = [
+                goal.model_copy(update={"when": choice_ids.get(goal.when, goal.when)})
+                for goal in question.goals
             ]
         # Inriktningarna hör till en klass och följer inte med till en annan.
         update["tracks"] = []
@@ -298,7 +319,7 @@ def normalize_answer(question: Any, answer: AnswerValue) -> AnswerValue | None:
     raise AnswerError("Okänd frågetyp")  # pragma: no cover
 
 
-def _answer_keys(question: Any, answer: AnswerValue) -> set[str]:
+def answer_keys(question: Any, answer: AnswerValue) -> set[str]:
     """Värdena som logikens `when` jämförs med."""
     match question.type:
         case QuestionType.CHOICE:
@@ -337,7 +358,7 @@ def visible_path(
         following = i + 1
         answer = answers.get(question.id)
         if answer is not None:
-            keys = _answer_keys(question, answer)
+            keys = answer_keys(question, answer)
             for rule in getattr(question, "logic", []):
                 if rule.when in keys:
                     following = len(questions) if rule.goto is None else position[rule.goto]

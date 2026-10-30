@@ -67,12 +67,14 @@ export function newQuestion(type: QuestionType): Question {
         multiple: false,
         allow_other: false,
         logic: [],
+        goals: [],
         choices: [
           { id: newId(), label: '' },
           { id: newId(), label: '' },
         ],
       }
     case 'yes_no':
+      return { ...base, type, required: true, logic: [], goals: [] }
     case 'rating':
       return { ...base, type, required: true, logic: [] }
     case 'statement':
@@ -85,6 +87,8 @@ export function duplicateQuestion(question: Question): Question {
   const copy = { ...structuredClone(question), id: newId() }
   if (copy.type === 'choice') copy.choices = copy.choices.map((c) => ({ ...c, id: newId() }))
   if ('logic' in copy) copy.logic = []
+  // Alternativen får nya id:n, så målen kopplas om av läraren.
+  if (copy.type === 'choice') copy.goals = []
   return copy
 }
 
@@ -123,7 +127,12 @@ export function sanitizeLogic(questions: Question[]): { questions: Question[]; r
       (rule) => allowed.has(rule.when) && (rule.goto === null || (position.get(rule.goto) ?? -1) > i),
     )
     removed += question.logic.length - logic.length
-    return logic.length === question.logic.length ? question : { ...question, logic }
+    // Mål på ett alternativ som har tagits bort försvinner också (idé 10).
+    const oldGoals = 'goals' in question ? question.goals : undefined
+    const goals = oldGoals?.filter((g) => allowed.has(g.when))
+    const changed = logic.length !== question.logic.length || (oldGoals && goals!.length !== oldGoals.length)
+    if (!changed) return question
+    return goals ? { ...question, logic, goals } : { ...question, logic }
   })
   return { questions: result, removed }
 }

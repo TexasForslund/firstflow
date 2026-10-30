@@ -25,6 +25,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles, require_same_school
+from app.api.routes.goals import EvidenceRead, GoalRead, goal_counts, goals_named
 from app.api.routes.invitations import notify
 from app.api.routes.placements import _get_workplace
 from app.api.routes.reports import TextAnswer, _is_late, text_answers
@@ -137,7 +138,7 @@ def _read(db: DbSession, user: User, projects: list[Project]) -> list[ProjectRea
             name=p.name,
             description=p.description,
             deadline=p.deadline,
-            tags=list(p.tags),
+            tags=[g.name for g in p.goals],
             students=[_ref(s) for s in p.students if s.is_active],
             owner=_ref(p.owner),
             workplace=Ref(id=p.workplace.id, name=p.workplace.name) if p.workplace else None,
@@ -158,6 +159,7 @@ _LOAD = (
     selectinload(Project.supervisors),
     selectinload(Project.owner),
     selectinload(Project.workplace),
+    selectinload(Project.goals),
 )
 
 
@@ -256,7 +258,7 @@ def create_project(body: ProjectWrite, db: DbSession, user: Teacher) -> ProjectR
         name=body.name,
         description=body.description,
         deadline=body.deadline,
-        tags=body.tags,
+        goals=goals_named(db, user.school_id, body.tags),
         students=_students(db, user, body.student_ids or []),
         supervisors=[],
         completed_at=time.now() if body.completed else None,
@@ -297,7 +299,7 @@ def update_project(
     project.name = body.name
     project.description = body.description
     project.deadline = body.deadline
-    project.tags = body.tags
+    project.goals = goals_named(db, project.school_id, body.tags)
     if is_owner:
         if body.student_ids is not None:
             project.students = _students(db, user, body.student_ids)
@@ -497,3 +499,51 @@ def my_project(
         )
     (read,) = _read(db, user, [project])
     return MyProject(**read.model_dump(), reports=reports)
+
+
+# --- Underlag för projektets mål (idé 10, Texas 2026-10-30) --------------------------------
+
+
+class GoalCell(BaseModel):
+    goal_id: UUID
+    student_id: UUID
+    count: int
+    evidence: list[EvidenceRead] = Field(description="Redovisningarna, senaste först")
+
+
+class ProjectGoals(BaseModel):
+    goals: list[GoalRead]
+    students: list[Ref]
+    cells: list[GoalCell] = Field(description="En cell per mål och elev, även utan underlag")
+
+
+@router.get("/{project_id}/goals", response_model=ProjectGoals)
+def project_goals_evidence(project_id: UUID, db: DbSession, user: Member) -> ProjectGoals:
+    """Projektets mål och hur många gånger varje elev har visat dem i redovisningar i
+    projektet."""
+    project = _project_for(db, user, project_id)
+    students = [s for s in project.students if s.is_active]
+    reports = list(
+        db.scalars(
+            select(Report)
+            .where(
+                Report.project_id == project.id,
+                Report.status == ReportStatus.SUBMITTED,
+                Report.student_id.in_([s.id for s in students]),
+            )
+            .options(selectinload(Report.form_version), selectinload(Report.answers))
+        )
+    )
+    found = goal_counts(db, reports, {g.id for g in project.goals})
+    cells = []
+    for goal in project.goals:
+        for student in students:
+            items = found.get((goal.id, student.id), [])
+            cells.append(
+                GoalCell(goal_id=goal.id, student_id=student.id, count=len(items), evidence=items)
+            )
+    return ProjectGoals(
+        goals=[GoalRead(id=g.id, name=g.name, curriculum=g.curriculum) for g in project.goals],
+        students=[_ref(s) for s in students],
+        cells=cells,
+    )
