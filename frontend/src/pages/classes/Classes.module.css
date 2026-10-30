@@ -737,3 +737,21 @@
   background: var(--color-primary-light);
   color: var(--color-primary-on-light);
 }
+
+/* Dagar som inte är APL-dagar går inte att välja som redovisningsdag (Texas, 2026-10-30). */
+.weekdayOff {
+  border-style: dashed;
+  background: var(--color-sidebar);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.weekdayOff:hover {
+  background: var(--color-sidebar);
+}
+
+.legendHint {
+  margin-left: var(--space-2);
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}

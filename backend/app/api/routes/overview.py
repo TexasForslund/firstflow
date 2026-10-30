@@ -36,6 +36,7 @@ from app.models.placement import Placement
 from app.models.report import FormVersion, Report, ReportComment, ReportRead, ReportStatus
 from app.models.school_class import SchoolClass, class_students, class_teachers
 from app.models.user import User, UserRole
+from app.services.apl_days import student_apl_weekdays
 
 router = APIRouter(prefix="/teacher/overview", tags=["overview"])
 student_router = APIRouter(prefix="/students/{student_id}/attention", tags=["overview"])
@@ -156,7 +157,10 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
             Placement.end_date >= today,
         )
     ).scalars()
-    on_apl = set(active) if today.weekday() < 5 else set()
+    # På APL i dag: en pågående placering och i dag är en APL-dag för elevens klass.
+    active = list(active)
+    apl_days = student_apl_weekdays(db, active)
+    on_apl = {i for i in active if today.weekday() in apl_days[i]}
     today_placements = {
         p.student_id: p
         for p in db.scalars(

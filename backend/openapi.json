@@ -2542,7 +2542,7 @@
           "attendance"
         ],
         "summary": "Class Week",
-        "description": "Klassens närvaro måndag till fredag, med läget för varje dag.",
+        "description": "Klassens närvaro veckans APL-dagar, med läget för varje dag. Har klassen inga APL-dagar\nvisas måndag till fredag.",
         "operationId": "class_week_api_classes__class_id__attendance_week_get",
         "security": [
           {
@@ -2744,7 +2744,7 @@
           "attendance"
         ],
         "summary": "Review",
-        "description": "Bekräftar dagar, lägger till dagar eleven glömde eller säger att eleven inte var på\nplats. Bara för elever handledaren har, vardagar och upp till två veckor bakåt.",
+        "description": "Bekräftar dagar, lägger till dagar eleven glömde eller säger att eleven inte var på\nplats. Bara för elever handledaren har, klassens APL-dagar och upp till två veckor bakåt.",
         "operationId": "review_api_supervisor_attendance_review_post",
         "requestBody": {
           "content": {
@@ -4781,18 +4781,16 @@
       },
       "AplTerms": {
         "properties": {
-          "apl_days_per_week": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 5.0,
-                "minimum": 1.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Apl Days Per Week"
+          "apl_weekdays": {
+            "items": {
+              "type": "integer",
+              "maximum": 6.0,
+              "minimum": 0.0
+            },
+            "type": "array",
+            "maxItems": 7,
+            "title": "Apl Weekdays",
+            "description": "APL-dagar: dagarna eleverna är på APL och checkar in"
           },
           "check_in_required": {
             "type": "boolean",
@@ -4802,18 +4800,18 @@
           "report_due_weekdays": {
             "items": {
               "type": "integer",
-              "maximum": 4.0,
+              "maximum": 6.0,
               "minimum": 0.0
             },
             "type": "array",
-            "maxItems": 5,
+            "maxItems": 7,
             "title": "Report Due Weekdays",
-            "description": "Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag"
+            "description": "Redovisningsdagar, bland APL-dagarna"
           }
         },
         "type": "object",
         "title": "AplTerms",
-        "description": "APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än."
+        "description": "APL-villkor för hela klassen (Texas, 2026-10-30). Veckodagar: 0 = måndag … 6 = söndag.\n\nAPL-dagar är dagarna eleverna är på APL och checkar in. Redovisningsdagarna väljs bland\nAPL-dagarna. Tom lista betyder att det inte är bestämt än."
       },
       "ApplyTemplate": {
         "properties": {
@@ -5192,16 +5190,13 @@
             "type": "boolean",
             "title": "Check In Required"
           },
-          "apl_days_per_week": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Apl Days Per Week"
+          "apl_weekdays": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Apl Weekdays",
+            "description": "Klassens APL-dagar, 0 = måndag … 6 = söndag"
           },
           "students": {
             "items": {
@@ -5216,7 +5211,7 @@
           "from_date",
           "to_date",
           "check_in_required",
-          "apl_days_per_week",
+          "apl_weekdays",
           "students"
         ],
         "title": "ClassAttendance"
@@ -6473,7 +6468,15 @@
           "can_check_in_today": {
             "type": "boolean",
             "title": "Can Check In Today",
-            "description": "Vardag med pågående placering"
+            "description": "APL-dag med pågående placering"
+          },
+          "apl_weekdays": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Apl Weekdays",
+            "description": "Elevens APL-dagar, 0 = måndag … 6 = söndag"
           },
           "days": {
             "items": {
@@ -6493,6 +6496,7 @@
           "check_in_required",
           "today",
           "can_check_in_today",
+          "apl_weekdays",
           "days"
         ],
         "title": "MyAttendance",
@@ -8304,6 +8308,14 @@
             "type": "boolean",
             "title": "Check In Required"
           },
+          "apl_weekdays": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Apl Weekdays",
+            "description": "Elevens APL-dagar, 0 = måndag … 6 = söndag"
+          },
           "summary": {
             "$ref": "#/components/schemas/StudentAttendance"
           },
@@ -8321,6 +8333,7 @@
           "from_date",
           "to_date",
           "check_in_required",
+          "apl_weekdays",
           "summary",
           "days"
         ],

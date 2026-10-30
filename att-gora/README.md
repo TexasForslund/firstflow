@@ -58,8 +58,8 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
 **Från mötet med Haldor (2026-10-30):** mötet gick bra. Nya uppgifter, inget är byggt än:
 - **B17 och F22 (#46):** privata kommentarer på redovisningar för lärare och handledare.
-- **B18 och F23:** handledarens anteckningar om eleven (Beröm, Oro, Övrigt). Läraren läser (granskas).
-- **B19 och F24:** redovisnings- och incheckningsdagar per klass, även helger (vuxenutbildning).
+- **B18 och F23 (#47):** handledarens anteckningar om eleven (Beröm, Oro, Övrigt). Läraren läser.
+- **B19 och F24:** APL-dagar och redovisningsdagar per klass, även helger (granskas).
 - **B20 och F25:** import av elever och personal enligt SS12000, bara det som rör APL. Rör B6, stäm av mellan Texas och Hannes.
 - **Idé 10:** taggar som kopplar läroplanen, projektet, frågorna och elevens svar. Måste tänkas igenom.
 - **Idé 11:** frågor till vissa elever, t.ex. per inriktning i klassen.

@@ -430,19 +430,27 @@ def test_unknown_student_is_not_found(client: TestClient, login: Login, world: W
 # ─── APL-villkor ───────────────────────────────────────────────
 
 TERMS = {
-    "apl_days_per_week": 2,
+    "apl_weekdays": [0, 1, 2, 3],
     "check_in_required": True,
-    "report_due_weekdays": [1, 2, 4],
+    "report_due_weekdays": [2, 3],
 }
 
 
-def test_new_class_has_empty_terms(client: TestClient, login: Login, world: World) -> None:
+def test_new_class_has_default_terms(client: TestClient, login: Login, world: World) -> None:
     login(world.teacher)
     assert client.get(f"/api/classes/{world.ee22.id}").json()["apl_terms"] == {
-        "apl_days_per_week": None,
+        "apl_weekdays": [0, 1, 2, 3, 4],
         "check_in_required": True,
         "report_due_weekdays": [],
     }
+
+
+def test_weekend_apl_and_report_days(client: TestClient, login: Login, world: World) -> None:
+    login(world.teacher)
+    body = {"apl_weekdays": [6, 4, 5], "check_in_required": True, "report_due_weekdays": [6]}
+    response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=body)
+    assert response.status_code == 200
+    assert response.json()["apl_terms"]["apl_weekdays"] == [4, 5, 6]
 
 
 @pytest.mark.parametrize("who", ["teacher", "admin"])
@@ -458,18 +466,18 @@ def test_weekdays_are_deduplicated_and_sorted(
     client: TestClient, login: Login, world: World
 ) -> None:
     login(world.teacher)
-    body = {**TERMS, "report_due_weekdays": [4, 0, 4]}
+    body = {**TERMS, "report_due_weekdays": [3, 0, 3]}
     response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=body)
-    assert response.json()["apl_terms"]["report_due_weekdays"] == [0, 4]
+    assert response.json()["apl_terms"]["report_due_weekdays"] == [0, 3]
 
 
 @pytest.mark.parametrize(
     "change",
     [
-        {"apl_days_per_week": 0},
-        {"apl_days_per_week": 6},
-        {"report_due_weekdays": [5]},  # lördag
-        {"report_due_weekdays": [6]},  # söndag
+        {"apl_weekdays": [7]},
+        {"apl_weekdays": [-1]},
+        {"report_due_weekdays": [4]},  # fredag är ingen APL-dag
+        {"report_due_weekdays": [6]},  # söndag är ingen APL-dag
         {"report_due_weekdays": [7]},
         {"report_due_weekdays": [-1]},
     ],

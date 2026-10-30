@@ -56,7 +56,6 @@ def w(db: Session, make_school: Callable[..., School], make_user: MakeUser) -> W
     supervisor = make_user(email="gustav@elbolaget.se", role=UserRole.SUPERVISOR)
     ee22 = SchoolClass(
         school_id=kramfors.id, name="EE22", teachers=[teacher], students=[student],
-        apl_days_per_week=5,
     )  # fmt: skip
     ee21 = SchoolClass(school_id=kramfors.id, name="EE21", teachers=[teacher])
     other_class = SchoolClass(school_id=kramfors.id, name="BA23", teachers=[other])

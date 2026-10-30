@@ -8,9 +8,8 @@ import { Avatar, Button } from '../../components'
 import { todayIso } from '../placements/period'
 import { parseDay } from '../reports/answers'
 import { DayMark } from './DayMark'
+import { shortWeekday, weekdayOf } from '../classes/aplTerms'
 import styles from './WeekAttendance.module.css'
-
-const WEEKDAYS = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre']
 
 function waitingText(count: number) {
   return count === 1 ? '1 incheckning väntar på bekräftelse.' : `${count} incheckningar väntar på bekräftelse.`
@@ -34,7 +33,7 @@ function weekNumber(iso: string) {
 function range(week: ClassWeek) {
   const fmt = (iso: string, month: boolean) =>
     parseDay(iso).toLocaleDateString('sv-SE', month ? { day: 'numeric', month: 'long' } : { day: 'numeric' })
-  return `vecka ${weekNumber(week.week_start)}, ${fmt(week.days[0], false)}–${fmt(week.days[4], true)}`
+  return `vecka ${weekNumber(week.week_start)}, ${fmt(week.days[0], false)}–${fmt(week.days[week.days.length - 1], true)}`
 }
 
 /**
@@ -102,9 +101,9 @@ export function WeekAttendance({ classId }: { classId: string }) {
                 <th scope="col" className={styles.studentCol}>
                   Elev
                 </th>
-                {week.days.map((day, i) => (
+                {week.days.map((day) => (
                   <th key={day} scope="col" data-today={day === week.today ? '' : undefined}>
-                    {WEEKDAYS[i]}
+                    {shortWeekday(weekdayOf(day))}
                   </th>
                 ))}
                 <th scope="col" className={styles.supervisorCol}>

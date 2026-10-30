@@ -1,12 +1,8 @@
 import { CalendarOff, Check, MapPinCheck } from 'lucide-react'
 
-import {
-  useCheckIn,
-  useMyAttendance,
-  type AttendanceDay,
-  type MyAttendance,
-} from '../../api/attendance'
+import { useCheckIn, useMyAttendance, type AttendanceDay, type MyAttendance } from '../../api/attendance'
 import { parseDay } from '../reports/answers'
+import { WEEKDAYS } from '../classes/aplTerms'
 import styles from './CheckIn.module.css'
 import { CheckInSuccess } from './CheckInSuccess'
 
@@ -47,7 +43,9 @@ export function CheckIn() {
         <div className={styles.empty}>
           <CalendarOff aria-hidden="true" />
           <p className={styles.emptyTitle}>Ingen APL i dag</p>
-          <p className={styles.emptyText}>Du har ingen pågående praktikplats. Incheckningen öppnar när din APL börjar.</p>
+          <p className={styles.emptyText}>
+            Du har ingen pågående praktikplats. Incheckningen öppnar när din APL börjar.
+          </p>
         </div>
       )}
 
@@ -66,10 +64,15 @@ function Today({ data }: { data: MyAttendance }) {
   const today = data.days.find((d) => d.date === data.today)
 
   if (!data.can_check_in_today) {
+    // Nästa APL-dag för elevens klass, t.ex. måndag eller fredag för vuxenutbildning.
+    const todayIndex = (parseDay(data.today).getDay() + 6) % 7
+    const next = [1, 2, 3, 4, 5, 6, 7].map((n) => (todayIndex + n) % 7).find((d) => data.apl_weekdays.includes(d))
     return (
       <section className={styles.card}>
-        <p className={styles.cardTitle}>Det är helg</p>
-        <p className={styles.muted}>Ingen incheckning i dag. Vi ses på måndag!</p>
+        <p className={styles.cardTitle}>Ingen APL i dag</p>
+        <p className={styles.muted}>
+          Ingen incheckning i dag.{next !== undefined ? ` Vi ses på ${WEEKDAYS[next]}!` : ''}
+        </p>
       </section>
     )
   }
@@ -118,11 +121,12 @@ function Today({ data }: { data: MyAttendance }) {
   )
 }
 
-/** Måndag–fredag den här veckan, med dagens status som en prick. */
+/** Veckans APL-dagar för elevens klass, med dagens status som en prick (Texas, 2026-10-30). */
 function Week({ data }: { data: MyAttendance }) {
   const todayDate = parseDay(data.today)
   const monday = addDays(data.today, -((todayDate.getDay() + 6) % 7))
-  const days = Array.from({ length: 5 }, (_, i) => addDays(monday, i))
+  const aplDays = data.apl_weekdays.length > 0 ? data.apl_weekdays : [0, 1, 2, 3, 4]
+  const days = aplDays.map((offset) => addDays(monday, offset))
   const byDate = new Map<string, AttendanceDay>(data.days.map((d) => [d.date, d]))
   const inPlacement = (day: string) => day >= data.start_date! && day <= data.end_date!
 
@@ -131,7 +135,7 @@ function Week({ data }: { data: MyAttendance }) {
       <h2 id="week-title" className={styles.cardTitle}>
         Den här veckan
       </h2>
-      <ol className={styles.week}>
+      <ol className={styles.week} style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}>
         {days.map((day) => {
           const row = byDate.get(day)
           const past = day < data.today

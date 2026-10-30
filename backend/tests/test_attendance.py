@@ -69,7 +69,6 @@ def world(db: Session, make_school: Callable[..., School], make_user: MakeUser) 
         name="EE22",
         teachers=[teacher],
         students=[student, second, unplaced],
-        apl_days_per_week=5,
     )
     workplace = Workplace(
         school_id=kramfors.id, name="Elbolaget", supervisors=[supervisor, other_supervisor]
@@ -132,7 +131,19 @@ def test_no_check_in_on_weekend(client: TestClient, login: Login, world: World) 
     with patch("app.core.time.today", return_value=date(2026, 10, 24)):
         response = client.post("/api/attendance/check-in")
     assert response.status_code == 422
-    assert response.json()["detail"] == "Det finns ingen APL på helger"
+    assert response.json()["detail"] == "I dag är ingen APL-dag för din klass"
+
+
+def test_weekend_apl_days(client: TestClient, login: Login, world: World, db: Session) -> None:
+    """Vuxenutbildning kan ha APL på helger (Texas, 2026-10-30)."""
+    world.ee22.apl_weekdays = [4, 5, 6]
+    db.flush()
+    login(world.student)
+    with patch("app.core.time.today", return_value=date(2026, 10, 24)):  # lördag
+        assert client.post("/api/attendance/check-in").status_code == 200
+    with patch("app.core.time.today", return_value=date(2026, 10, 21)):  # onsdag
+        response = client.post("/api/attendance/check-in")
+    assert response.status_code == 422
 
 
 def test_no_check_in_without_placement(client: TestClient, login: Login, world: World) -> None:
@@ -232,10 +243,10 @@ def test_class_attendance_counts(
     assert (liam["has_placement"], liam["expected_days"], liam["missing"]) == (False, 0, 0)
 
 
-def test_class_attendance_uses_days_per_week(
+def test_class_attendance_uses_apl_weekdays(
     client: TestClient, login: Login, world: World, db: Session
 ) -> None:
-    world.ee22.apl_days_per_week = 3
+    world.ee22.apl_weekdays = [0, 1, 2]
     db.flush()
     login(world.teacher)
     body = client.get(

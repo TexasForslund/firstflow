@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 
 import { useSetAplTerms, type AplTerms } from '../../api/classes'
-import { Button, Card, SelectField } from '../../components'
+import { Button, Card } from '../../components'
 import { WEEKDAYS, weekdayList } from './aplTerms'
 import styles from './Classes.module.css'
 
@@ -16,14 +16,24 @@ function capitalize(text: string) {
 }
 
 function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }) {
-  const [days, setDays] = useState(terms.apl_days_per_week?.toString() ?? '')
+  const [aplDays, setAplDays] = useState<number[]>(terms.apl_weekdays ?? [])
   const [checkIn, setCheckIn] = useState(terms.check_in_required)
-  const [weekdays, setWeekdays] = useState<number[]>(terms.report_due_weekdays ?? [])
+  const [reportDays, setReportDays] = useState<number[]>(terms.report_due_weekdays ?? [])
   const [saved, setSaved] = useState(false)
   const save = useSetAplTerms(classId)
 
-  function toggleWeekday(day: number) {
-    setWeekdays((current) => (current.includes(day) ? current.filter((d) => d !== day) : [...current, day]))
+  function toggleAplDay(day: number) {
+    if (aplDays.includes(day)) {
+      // En redovisningsdag måste vara en APL-dag, så den försvinner också.
+      setAplDays(aplDays.filter((d) => d !== day))
+      setReportDays(reportDays.filter((d) => d !== day))
+    } else {
+      setAplDays([...aplDays, day])
+    }
+  }
+
+  function toggleReportDay(day: number) {
+    setReportDays(reportDays.includes(day) ? reportDays.filter((d) => d !== day) : [...reportDays, day])
   }
 
   function submit(event: FormEvent) {
@@ -31,22 +41,22 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
     setSaved(false)
     save.mutate(
       {
-        apl_days_per_week: days ? Number(days) : null,
+        apl_weekdays: [...aplDays].sort((a, b) => a - b),
         check_in_required: checkIn,
-        report_due_weekdays: [...weekdays].sort((a, b) => a - b),
+        report_due_weekdays: [...reportDays].sort((a, b) => a - b),
       },
       { onSuccess: () => setSaved(true) },
     )
   }
+
+  const offDays = WEEKDAYS.map((_, i) => i).filter((i) => !aplDays.includes(i))
 
   return (
     <Card>
       <div className={styles.cardHeader}>
         <h2 className={styles.cardTitle}>APL-villkor</h2>
       </div>
-      <p className={styles.cardIntro}>
-        Inställningarna gäller hela klassen och styr incheckningen, närvaron och veckoredovisningarna.
-      </p>
+      <p className={styles.cardIntro}>Gäller hela klassen och styr incheckningen, närvaron och redovisningarna.</p>
       <div className={styles.cardBody}>
         <form
           className={styles.formSingle}
@@ -54,47 +64,60 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
           onSubmit={submit}
           onChange={() => setSaved(false)}
         >
-          <div className={styles.formGrid}>
-            <div className={styles.termField}>
-              <SelectField label="APL-dagar per vecka" value={days} onChange={setDays}>
-                <option value="">Inte bestämt</option>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>
-                    {n} {n === 1 ? 'dag' : 'dagar'}
-                  </option>
-                ))}
-              </SelectField>
-              <p className={styles.hint}>
-                Hur många dagar i veckan eleverna är ute på APL. Används för att räkna ut missade incheckningar
-                på sidan Närvaro.
-              </p>
-            </div>
-            <div className={styles.termField}>
-              <label className={styles.check} style={{ minHeight: '3rem', marginTop: '1.75rem' }}>
-                <input type="checkbox" checked={checkIn} onChange={(e) => setCheckIn(e.target.checked)} />
-                Eleven checkar in varje APL-dag
-              </label>
-              <p className={styles.hint}>
-                Eleven får en påminnelse om att checka in. Är rutan avbockad räknas dagar utan incheckning inte
-                som avvikelse.
-              </p>
-            </div>
-          </div>
-
           <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Veckoredovisning ska lämnas</legend>
+            <legend className={styles.legend}>
+              APL-dagar <span className={styles.legendHint}>dagarna eleverna är på APL och checkar in</span>
+            </legend>
             <div className={styles.weekdays}>
               {WEEKDAYS.map((day, i) => (
-                <label key={day} className={`${styles.weekday} ${weekdays.includes(i) ? styles.weekdayOn : ''}`}>
-                  <input type="checkbox" checked={weekdays.includes(i)} onChange={() => toggleWeekday(i)} />
+                <label key={day} className={`${styles.weekday} ${aplDays.includes(i) ? styles.weekdayOn : ''}`}>
+                  <input type="checkbox" checked={aplDays.includes(i)} onChange={() => toggleAplDay(i)} />
                   {capitalize(day)}
                 </label>
               ))}
             </div>
             <p className={styles.hint}>
-              {weekdays.length === 0
-                ? 'Välj en eller flera dagar.'
-                : `Eleverna lämnar veckoredovisning ${weekdayList(weekdays)}. De dagarna får eleven en redovisning att svara på i appen.`}
+              {aplDays.length === 0
+                ? 'Välj de dagar eleverna är på APL.'
+                : `${aplDays.length} ${aplDays.length === 1 ? 'dag' : 'dagar'} i veckan: ${weekdayList(aplDays)}.${
+                    offDays.length > 0 ? ` ${capitalize(weekdayList(offDays))} räknas inte som frånvaro.` : ''
+                  }`}
+            </p>
+            <label className={styles.check}>
+              <input type="checkbox" checked={checkIn} onChange={(e) => setCheckIn(e.target.checked)} />
+              Eleven checkar in varje APL-dag
+            </label>
+          </fieldset>
+
+          <fieldset className={styles.fieldset}>
+            <legend className={styles.legend}>
+              Redovisningsdagar <span className={styles.legendHint}>väljs bland APL-dagarna</span>
+            </legend>
+            <div className={styles.weekdays}>
+              {WEEKDAYS.map((day, i) => {
+                const disabled = !aplDays.includes(i)
+                return (
+                  <label
+                    key={day}
+                    className={`${styles.weekday} ${reportDays.includes(i) ? styles.weekdayOn : ''} ${
+                      disabled ? styles.weekdayOff : ''
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={reportDays.includes(i)}
+                      disabled={disabled}
+                      onChange={() => toggleReportDay(i)}
+                    />
+                    {capitalize(day)}
+                  </label>
+                )
+              })}
+            </div>
+            <p className={styles.hint}>
+              {reportDays.length === 0
+                ? 'Välj en eller flera dagar. Dagar utan APL går inte att välja.'
+                : `Eleverna redovisar ${weekdayList(reportDays)}. De dagarna får eleven en redovisning att svara på i appen.`}
             </p>
           </fieldset>
 
@@ -120,11 +143,12 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
 }
 
 function AplTermsSummary({ terms }: { terms: AplTerms }) {
-  const weekdays = terms.report_due_weekdays ?? []
+  const aplDays = terms.apl_weekdays ?? []
+  const reportDays = terms.report_due_weekdays ?? []
   const rows: [string, string][] = [
-    ['APL-dagar per vecka', terms.apl_days_per_week?.toString() ?? 'Inte bestämt'],
+    ['APL-dagar', aplDays.length ? capitalize(weekdayList(aplDays)) : 'Inte bestämt'],
     ['Incheckning', terms.check_in_required ? 'Varje APL-dag' : 'Krävs inte'],
-    ['Veckoredovisning', weekdays.length ? capitalize(weekdayList(weekdays)) : 'Inte bestämt'],
+    ['Redovisningsdagar', reportDays.length ? capitalize(weekdayList(reportDays)) : 'Inte bestämt'],
   ]
   return (
     <Card>

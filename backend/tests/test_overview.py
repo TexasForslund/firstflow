@@ -181,7 +181,7 @@ def test_overview_unread_reports_with_preview(
     assert body["reports"][0]["is_late"] is False
 
 
-def test_no_apl_on_weekends(client: TestClient, login: Login, w: World) -> None:
+def test_no_apl_on_days_without_apl(client: TestClient, login: Login, w: World) -> None:
     login(w.teacher)
     with patch("app.core.time.today", return_value=date(2026, 10, 24)):
         body = client.get("/api/teacher/overview").json()
