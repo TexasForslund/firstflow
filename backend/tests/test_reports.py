@@ -9,11 +9,12 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import update
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.models.report import FormVersion
+from app.models.report import FormVersion, Report
 from app.models.school import School
-from app.models.school_class import SchoolClass, class_students
+from app.models.school_class import SchoolClass, class_students, teacher_students
 from app.models.user import User, UserRole
 
 MakeUser = Callable[..., User]
@@ -578,3 +579,96 @@ def test_track_checks(client: TestClient, login: Login, w: World) -> None:
     login(w.principal)
     assert client.get(f"{base}/tracks").status_code == 200
     assert client.post(f"{base}/tracks", json={"name": "X"}).status_code == 403
+
+
+# --- Mål från läroplanen (idé 10, Texas 2026-10-30) ---------------------------------------
+
+
+def test_answers_become_evidence_for_goals(
+    client: TestClient, db: Session, login: Login, w: World
+) -> None:
+    """Ja på "Har du jobbat med HTML?" och alternativet Layout visar varsitt mål."""
+    login(w.teacher)
+    html_goal = client.post("/api/goals", json={"name": "HTML"}).json()
+    layout_goal = client.post(
+        "/api/goals", json={"name": "Layout", "curriculum": "Webbutveckling, nivå 1"}
+    ).json()
+    assert client.post("/api/goals", json={"name": "html"}).json()["id"] == html_goal["id"]
+    names = [g["name"] for g in client.get("/api/goals").json()]
+    assert names == ["HTML", "Layout"]
+
+    layout = w.what["choices"][0]["id"]
+    w.html["goals"] = [{"when": "yes", "goal_id": html_goal["id"]}]
+    w.what["goals"] = [{"when": layout, "goal_id": layout_goal["id"]}]
+    url = f"/api/classes/{w.ee22.id}/form"
+    response = client.put(url, json={"questions": w.questions})
+    assert response.status_code == 200, response.text
+    assert client.post(f"{url}/publish").status_code == 200
+    client.post("/api/auth/logout")
+
+    report = submitted(client, login, w)
+
+    login(w.teacher)
+    db.execute(insert(teacher_students).values(teacher_id=w.teacher.id, student_id=w.student.id))
+    counts = client.get(f"/api/students/{w.student.id}/goals").json()
+    assert {c["goal"]["name"]: c["count"] for c in counts} == {"HTML": 1, "Layout": 1}
+    assert counts[0]["evidence"][0]["report_id"] == report["id"]
+
+    # Projektet med målet HTML visar underlaget för redovisningar i projektet.
+    project = client.post(
+        "/api/projects",
+        json={"name": "Hemsida", "tags": ["html"], "student_ids": [str(w.student.id)]},
+    ).json()
+    assert project["tags"] == ["HTML"]
+    matrix = client.get(f"/api/projects/{project['id']}/goals").json()
+    assert matrix["cells"][0]["count"] == 0  # redovisningen hör inte till projektet än
+    db.execute(update(Report).where(Report.id == report["id"]).values(project_id=project["id"]))
+    matrix = client.get(f"/api/projects/{project['id']}/goals").json()
+    assert [(c["goal_id"], c["count"]) for c in matrix["cells"]] == [(html_goal["id"], 1)]
+
+
+def test_goal_must_exist_at_school(client: TestClient, login: Login, w: World) -> None:
+    login(w.teacher)
+    w.html["goals"] = [{"when": "yes", "goal_id": str(uuid4())}]
+    response = client.put(f"/api/classes/{w.ee22.id}/form", json={"questions": w.questions})
+    assert response.status_code == 422
+    w.html["goals"] = [{"when": "maybe", "goal_id": str(uuid4())}]
+    response = client.put(f"/api/classes/{w.ee22.id}/form", json={"questions": w.questions})
+    assert response.status_code == 422
+    login(w.student)
+    assert client.get("/api/goals").status_code == 403
+
+
+def test_follow_up_answer_comes_with_the_evidence(
+    client: TestClient, db: Session, login: Login, w: World
+) -> None:
+    """Ja på "Har du haft kundkontakt?" och svaret på följdfrågan "Vad gjorde du?" (Texas,
+    2026-10-30)."""
+    login(w.teacher)
+    goal = client.post("/api/goals", json={"name": "Kundkontakt"}).json()
+    what = q("long_text", "Vad gjorde du?")
+    contact = q(
+        "yes_no",
+        "Har du haft kundkontakt i dag?",
+        logic=[{"when": "no", "goto": w.summary["id"]}],
+        goals=[{"when": "yes", "goal_id": goal["id"]}],
+    )
+    url = f"/api/classes/{w.ee22.id}/form"
+    response = client.put(url, json={"questions": [contact, what, w.summary]})
+    assert response.status_code == 200, response.text
+    assert client.post(f"{url}/publish").status_code == 200
+    db.execute(insert(teacher_students).values(teacher_id=w.teacher.id, student_id=w.student.id))
+
+    login(w.student)
+    report = start(client, w)
+    answer(client, report, contact, boolean=True)
+    answer(client, report, what, text="Visade kunden hur laddboxen fungerar.")
+    answer(client, report, w.summary, text="Bra dag")
+    assert client.post(f"/api/reports/{report['id']}/submit").status_code == 200
+
+    login(w.teacher)
+    (count,) = client.get(f"/api/students/{w.student.id}/goals").json()
+    assert count["evidence"][0]["follow_up"] == {
+        "question": "Vad gjorde du?",
+        "text": "Visade kunden hur laddboxen fungerar.",
+    }

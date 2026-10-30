@@ -1390,6 +1390,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{project_id}/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Goals Evidence
+         * @description Projektets mål och hur många gånger varje elev har visat dem i redovisningar i
+         *     projektet.
+         */
+        get: operations["project_goals_evidence_api_projects__project_id__goals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/students/{student_id}/projects": {
         parameters: {
             query?: never;
@@ -1679,6 +1700,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Goals
+         * @description Skolans mål i bokstavsordning.
+         */
+        get: operations["list_goals_api_goals_get"];
+        put?: never;
+        /**
+         * Create Goal
+         * @description Lägger till ett mål på skolan. Finns det redan ett med samma namn svarar det med det.
+         */
+        post: operations["create_goal_api_goals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/goals/{goal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Goal
+         * @description Ändrar vilken del av läroplanen målet gäller.
+         */
+        patch: operations["update_goal_api_goals__goal_id__patch"];
+        trace?: never;
+    };
+    "/api/students/{student_id}/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Goals
+         * @description Elevens underlag per mål, flest först. Samma redovisningar som elevsidan visar.
+         */
+        get: operations["student_goals_api_students__student_id__goals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1917,6 +2002,8 @@ export interface components {
             allow_other: boolean;
             /** Logic */
             logic?: components["schemas"]["LogicRule"][];
+            /** Goals */
+            goals?: components["schemas"]["GoalRule"][];
         };
         /** ChoiceQuestion */
         "ChoiceQuestion-Output": {
@@ -1963,6 +2050,8 @@ export interface components {
             allow_other: boolean;
             /** Logic */
             logic: components["schemas"]["LogicRule"][];
+            /** Goals */
+            goals: components["schemas"]["GoalRule"][];
         };
         /** ClassAttendance */
         ClassAttendance: {
@@ -2308,6 +2397,30 @@ export interface components {
             email: string;
         };
         /**
+         * EvidenceRead
+         * @description En redovisning som visar målet, med följdfrågans svar om det finns.
+         */
+        EvidenceRead: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            follow_up: components["schemas"]["FollowUpRead"] | null;
+        };
+        /** FollowUpRead */
+        FollowUpRead: {
+            /** Question */
+            question: string;
+            /** Text */
+            text: string;
+        };
+        /**
          * FormContent
          * @description Formulärets frågor i ordning.
          */
@@ -2332,6 +2445,83 @@ export interface components {
             published_at: string | null;
             /** Has Unpublished Changes */
             has_unpublished_changes: boolean;
+        };
+        /** GoalCell */
+        GoalCell: {
+            /**
+             * Goal Id
+             * Format: uuid
+             */
+            goal_id: string;
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+            /** Count */
+            count: number;
+            /**
+             * Evidence
+             * @description Redovisningarna, senaste först
+             */
+            evidence: components["schemas"]["EvidenceRead"][];
+        };
+        /** GoalCount */
+        GoalCount: {
+            goal: components["schemas"]["GoalRead"];
+            /**
+             * Count
+             * @description Antal redovisningar som visar målet
+             */
+            count: number;
+            /**
+             * Evidence
+             * @description Redovisningarna, senaste först
+             */
+            evidence: components["schemas"]["EvidenceRead"][];
+        };
+        /** GoalCreate */
+        GoalCreate: {
+            /** Name */
+            name: string;
+            /** Curriculum */
+            curriculum?: string | null;
+        };
+        /** GoalRead */
+        GoalRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Curriculum
+             * @description Vilken del av läroplanen målet gäller
+             */
+            curriculum: string | null;
+        };
+        /**
+         * GoalRule
+         * @description Ett svar som visar ett mål, t.ex. Ja → Kundkontakt (idé 10, Texas 2026-10-30).
+         */
+        GoalRule: {
+            /**
+             * When
+             * @description Svaret: ett alternativs id, eller 'yes'/'no' för ja/nej
+             */
+            when: string;
+            /**
+             * Goal Id
+             * Format: uuid
+             */
+            goal_id: string;
+        };
+        /** GoalUpdate */
+        GoalUpdate: {
+            /** Curriculum */
+            curriculum?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2839,6 +3029,18 @@ export interface components {
              * Format: date
              */
             end_date: string;
+        };
+        /** ProjectGoals */
+        ProjectGoals: {
+            /** Goals */
+            goals: components["schemas"]["GoalRead"][];
+            /** Students */
+            students: components["schemas"]["Ref"][];
+            /**
+             * Cells
+             * @description En cell per mål och elev, även utan underlag
+             */
+            cells: components["schemas"]["GoalCell"][];
         };
         /** ProjectRead */
         ProjectRead: {
@@ -3925,6 +4127,8 @@ export interface components {
             required: boolean;
             /** Logic */
             logic?: components["schemas"]["LogicRule"][];
+            /** Goals */
+            goals?: components["schemas"]["GoalRule"][];
         };
         /** YesNoQuestion */
         "YesNoQuestion-Output": {
@@ -3957,6 +4161,8 @@ export interface components {
             required: boolean;
             /** Logic */
             logic: components["schemas"]["LogicRule"][];
+            /** Goals */
+            goals: components["schemas"]["GoalRule"][];
         };
         /** Reminded */
         app__api__routes__attendance__Reminded: {
@@ -6340,6 +6546,37 @@ export interface operations {
             };
         };
     };
+    project_goals_evidence_api_projects__project_id__goals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectGoals"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     student_projects_api_students__student_id__projects_get: {
         parameters: {
             query?: never;
@@ -6916,6 +7153,125 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TrackRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_goals_api_goals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalRead"][];
+                };
+            };
+        };
+    };
+    create_goal_api_goals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoalCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_goal_api_goals__goal_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                goal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoalUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    student_goals_api_students__student_id__goals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalCount"][];
                 };
             };
             /** @description Validation Error */

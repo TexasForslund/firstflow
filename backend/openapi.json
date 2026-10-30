@@ -3812,6 +3812,55 @@
         }
       }
     },
+    "/api/projects/{project_id}/goals": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Project Goals Evidence",
+        "description": "Projektets mål och hur många gånger varje elev har visat dem i redovisningar i\nprojektet.",
+        "operationId": "project_goals_evidence_api_projects__project_id__goals_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectGoals"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/students/{student_id}/projects": {
       "get": {
         "tags": [
@@ -4784,6 +4833,194 @@
           }
         }
       }
+    },
+    "/api/goals": {
+      "get": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "List Goals",
+        "description": "Skolans mål i bokstavsordning.",
+        "operationId": "list_goals_api_goals_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GoalRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Goals Api Goals Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Create Goal",
+        "description": "Lägger till ett mål på skolan. Finns det redan ett med samma namn svarar det med det.",
+        "operationId": "create_goal_api_goals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/goals/{goal_id}": {
+      "patch": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Update Goal",
+        "description": "Ändrar vilken del av läroplanen målet gäller.",
+        "operationId": "update_goal_api_goals__goal_id__patch",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "goal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Goal Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/students/{student_id}/goals": {
+      "get": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Student Goals",
+        "description": "Elevens underlag per mål, flest först. Samma redovisningar som elevsidan visar.",
+        "operationId": "student_goals_api_students__student_id__goals_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GoalCount"
+                  },
+                  "title": "Response Student Goals Api Students  Student Id  Goals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5336,6 +5573,14 @@
             "type": "array",
             "maxItems": 20,
             "title": "Logic"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Goals"
           }
         },
         "additionalProperties": false,
@@ -5415,6 +5660,14 @@
             "type": "array",
             "maxItems": 20,
             "title": "Logic"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRule"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Goals"
           }
         },
         "additionalProperties": false,
@@ -5429,7 +5682,8 @@
           "choices",
           "multiple",
           "allow_other",
-          "logic"
+          "logic",
+          "goals"
         ],
         "title": "ChoiceQuestion"
       },
@@ -6183,6 +6437,56 @@
         ],
         "title": "Email"
       },
+      "EvidenceRead": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "follow_up": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FollowUpRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "date",
+          "follow_up"
+        ],
+        "title": "EvidenceRead",
+        "description": "En redovisning som visar målet, med följdfrågans svar om det finns."
+      },
+      "FollowUpRead": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "text"
+        ],
+        "title": "FollowUpRead"
+      },
       "FormContent-Input": {
         "properties": {
           "questions": {
@@ -6319,6 +6623,166 @@
           "has_unpublished_changes"
         ],
         "title": "FormRead"
+      },
+      "GoalCell": {
+        "properties": {
+          "goal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Goal Id"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Student Id"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRead"
+            },
+            "type": "array",
+            "title": "Evidence",
+            "description": "Redovisningarna, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goal_id",
+          "student_id",
+          "count",
+          "evidence"
+        ],
+        "title": "GoalCell"
+      },
+      "GoalCount": {
+        "properties": {
+          "goal": {
+            "$ref": "#/components/schemas/GoalRead"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Antal redovisningar som visar målet"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRead"
+            },
+            "type": "array",
+            "title": "Evidence",
+            "description": "Redovisningarna, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goal",
+          "count",
+          "evidence"
+        ],
+        "title": "GoalCount"
+      },
+      "GoalCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "curriculum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curriculum"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "GoalCreate"
+      },
+      "GoalRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "curriculum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curriculum",
+            "description": "Vilken del av läroplanen målet gäller"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "curriculum"
+        ],
+        "title": "GoalRead"
+      },
+      "GoalRule": {
+        "properties": {
+          "when": {
+            "type": "string",
+            "title": "When",
+            "description": "Svaret: ett alternativs id, eller 'yes'/'no' för ja/nej"
+          },
+          "goal_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Goal Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "when",
+          "goal_id"
+        ],
+        "title": "GoalRule",
+        "description": "Ett svar som visar ett mål, t.ex. Ja → Kundkontakt (idé 10, Texas 2026-10-30)."
+      },
+      "GoalUpdate": {
+        "properties": {
+          "curriculum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curriculum"
+          }
+        },
+        "type": "object",
+        "title": "GoalUpdate"
       },
       "HTTPValidationError": {
         "properties": {
@@ -7369,6 +7833,39 @@
         ],
         "title": "PlacementRead",
         "description": "En placering som läraren ser, t.ex. i klassvyns elevlista."
+      },
+      "ProjectGoals": {
+        "properties": {
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRead"
+            },
+            "type": "array",
+            "title": "Goals"
+          },
+          "students": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Students"
+          },
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/GoalCell"
+            },
+            "type": "array",
+            "title": "Cells",
+            "description": "En cell per mål och elev, även utan underlag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goals",
+          "students",
+          "cells"
+        ],
+        "title": "ProjectGoals"
       },
       "ProjectRead": {
         "properties": {
@@ -9862,6 +10359,14 @@
             "type": "array",
             "maxItems": 20,
             "title": "Logic"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRule"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Goals"
           }
         },
         "additionalProperties": false,
@@ -9919,6 +10424,14 @@
             "type": "array",
             "maxItems": 20,
             "title": "Logic"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRule"
+            },
+            "type": "array",
+            "maxItems": 2,
+            "title": "Goals"
           }
         },
         "additionalProperties": false,
@@ -9930,7 +10443,8 @@
           "tracks",
           "type",
           "required",
-          "logic"
+          "logic",
+          "goals"
         ],
         "title": "YesNoQuestion"
       },

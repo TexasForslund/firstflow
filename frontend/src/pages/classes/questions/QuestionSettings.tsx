@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2, X } from 'lucide-react'
 import { useId, useState } from 'react'
 
 import type { LogicRule, Question } from '../../../api/forms'
+import { useCreateGoal, type Goal } from '../../../api/goals'
 import type { Track } from '../../../api/tracks'
 import { Switch } from '../../../components'
 import styles from './FormBuilder.module.css'
@@ -18,6 +19,8 @@ interface Props {
   onDelete: () => void
   /** Klassens inriktningar. Utan inriktningar visas inte valet Visas för. */
   tracks?: Track[]
+  /** Skolans mål. Svar på ja/nej- och flervalsfrågor kan visa ett mål (idé 10). */
+  goals?: Goal[]
 }
 
 export function QuestionSettings({
@@ -29,6 +32,7 @@ export function QuestionSettings({
   onDuplicate,
   onDelete,
   tracks = [],
+  goals = [],
 }: Props) {
   const info = QUESTION_TYPES[question.type]
   return (
@@ -68,6 +72,8 @@ export function QuestionSettings({
       )}
 
       {tracks.length > 0 && <AudienceEditor question={question} tracks={tracks} onChange={onChange} />}
+
+      {'goals' in question && <GoalEditor question={question} goals={goals} onChange={onChange} />}
 
       {hasLogic(question) && (
         <LogicEditor
@@ -261,6 +267,78 @@ function AudienceEditor({
               : `Andra elever hoppar över frågan. ${reached} ${reached === 1 ? 'elev' : 'elever'} får den.`}
         </p>
       </fieldset>
+    </section>
+  )
+}
+
+type WithGoals = Extract<Question, { goals: unknown }>
+
+/** Mål: vilket mål ett svar visar, t.ex. Ja → Kundkontakt (idé 10, Texas 2026-10-30). */
+function GoalEditor({
+  question,
+  goals,
+  onChange,
+}: {
+  question: WithGoals
+  goals: Goal[]
+  onChange: (question: Question) => void
+}) {
+  const create = useCreateGoal()
+  const [name, setName] = useState('')
+  const options = answerOptions(question)
+  const goalFor = (when: string) => question.goals.find((g) => g.when === when)?.goal_id ?? ''
+
+  function setGoal(when: string, goalId: string) {
+    const rest = question.goals.filter((g) => g.when !== when)
+    onChange({ ...question, goals: goalId ? [...rest, { when, goal_id: goalId }] : rest })
+  }
+
+  return (
+    <section className={styles.settingsSection}>
+      <h2 className={styles.settingsTitle}>Mål</h2>
+      <p className={styles.settingsHint}>
+        Välj vilket mål ett svar visar. Svaret blir underlag för eleven, och nästa textfråga följer med som beskrivning.
+      </p>
+      {options.map((o) => (
+        <label key={o.value} className={styles.goalField}>
+          <span className={styles.goalLabel}>När eleven svarar {o.label}</span>
+          <select
+            className={styles.goalSelect}
+            value={goalFor(o.value)}
+            onChange={(e) => setGoal(o.value, e.target.value)}
+          >
+            <option value="">Inget mål</option>
+            {goals.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ))}
+      <form
+        className={styles.goalNew}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (name.trim()) create.mutate(name.trim(), { onSuccess: () => setName('') })
+        }}
+      >
+        <label className="sr-only" htmlFor={`new-goal-${question.id}`}>
+          Nytt mål
+        </label>
+        <input
+          id={`new-goal-${question.id}`}
+          className={styles.goalInput}
+          value={name}
+          maxLength={40}
+          placeholder="Nytt mål, t.ex. Kundkontakt"
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button type="submit" className={styles.actionButton} disabled={!name.trim() || create.isPending}>
+          <Plus aria-hidden="true" /> Lägg till
+        </button>
+      </form>
+      {create.isError && <p className={styles.error}>{create.error.message}</p>}
     </section>
   )
 }

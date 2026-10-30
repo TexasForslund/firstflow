@@ -1,0 +1,198 @@
+/* Mål från läroplanen (idé 10, Texas skiss 2026-10-30). */
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.iconBox {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.iconBox svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2);
+  text-align: center;
+}
+
+.table thead th {
+  color: var(--color-mint);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-top: 1px solid var(--color-border);
+}
+
+.studentCol {
+  text-align: left !important;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.table thead .studentCol {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.zero,
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.zero {
+  border: 1.5px dashed var(--color-text-faded);
+  color: var(--color-text-muted);
+}
+
+.count {
+  border: 0;
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.count[data-strong] {
+  background: color-mix(in srgb, var(--color-mint) 22%, var(--color-bg));
+}
+
+.count[aria-pressed='true'] {
+  outline: 2px solid var(--color-mint);
+  outline-offset: 1px;
+}
+
+.detail {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-sidebar);
+}
+
+.detailTitle {
+  font-weight: 600;
+}
+
+.evidence {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidenceRow {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.evidenceRow:hover .evidenceDay {
+  text-decoration: underline;
+}
+
+.evidenceDay {
+  font-weight: 500;
+}
+
+.followUp {
+  display: grid;
+  gap: 0.125rem;
+}
+
+@media (max-width: 40rem) {
+  .evidenceRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+}
+
+.goalList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goalList li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.goalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.goalName {
+  font-weight: 500;
+}
+
+.goalDetail {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+}
