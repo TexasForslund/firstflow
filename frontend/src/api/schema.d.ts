@@ -940,7 +940,8 @@ export interface paths {
         };
         /**
          * Class Week
-         * @description Klassens närvaro måndag till fredag, med läget för varje dag.
+         * @description Klassens närvaro veckans APL-dagar, med läget för varje dag. Har klassen inga APL-dagar
+         *     visas måndag till fredag.
          */
         get: operations["class_week_api_classes__class_id__attendance_week_get"];
         put?: never;
@@ -1008,7 +1009,7 @@ export interface paths {
         /**
          * Review
          * @description Bekräftar dagar, lägger till dagar eleven glömde eller säger att eleven inte var på
-         *     plats. Bara för elever handledaren har, vardagar och upp till två veckor bakåt.
+         *     plats. Bara för elever handledaren har, klassens APL-dagar och upp till två veckor bakåt.
          */
         post: operations["review_api_supervisor_attendance_review_post"];
         delete?: never;
@@ -1685,11 +1686,17 @@ export interface components {
         };
         /**
          * AplTerms
-         * @description APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än.
+         * @description APL-villkor för hela klassen (Texas, 2026-10-30). Veckodagar: 0 = måndag … 6 = söndag.
+         *
+         *     APL-dagar är dagarna eleverna är på APL och checkar in. Redovisningsdagarna väljs bland
+         *     APL-dagarna. Tom lista betyder att det inte är bestämt än.
          */
         AplTerms: {
-            /** Apl Days Per Week */
-            apl_days_per_week?: number | null;
+            /**
+             * Apl Weekdays
+             * @description APL-dagar: dagarna eleverna är på APL och checkar in
+             */
+            apl_weekdays?: number[];
             /**
              * Check In Required
              * @default true
@@ -1697,7 +1704,7 @@ export interface components {
             check_in_required: boolean;
             /**
              * Report Due Weekdays
-             * @description Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag
+             * @description Redovisningsdagar, bland APL-dagarna
              */
             report_due_weekdays?: number[];
         };
@@ -1899,8 +1906,11 @@ export interface components {
             to_date: string;
             /** Check In Required */
             check_in_required: boolean;
-            /** Apl Days Per Week */
-            apl_days_per_week: number | null;
+            /**
+             * Apl Weekdays
+             * @description Klassens APL-dagar, 0 = måndag … 6 = söndag
+             */
+            apl_weekdays: number[];
             /** Students */
             students: components["schemas"]["StudentAttendance"][];
         };
@@ -2441,9 +2451,14 @@ export interface components {
             today: string;
             /**
              * Can Check In Today
-             * @description Vardag med pågående placering
+             * @description APL-dag med pågående placering
              */
             can_check_in_today: boolean;
+            /**
+             * Apl Weekdays
+             * @description Elevens APL-dagar, 0 = måndag … 6 = söndag
+             */
+            apl_weekdays: number[];
             /**
              * Days
              * @description Registrerade dagar i placeringen, i datumordning
@@ -3299,6 +3314,11 @@ export interface components {
             to_date: string;
             /** Check In Required */
             check_in_required: boolean;
+            /**
+             * Apl Weekdays
+             * @description Elevens APL-dagar, 0 = måndag … 6 = söndag
+             */
+            apl_weekdays: number[];
             summary: components["schemas"]["StudentAttendance"];
             /**
              * Days

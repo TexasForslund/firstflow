@@ -45,6 +45,12 @@ from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.placement import Placement
 from app.models.school_class import SchoolClass, class_students
 from app.models.user import User, UserRole
+from app.services.apl_days import (
+    DEFAULT_APL_WEEKDAYS,
+    class_apl_weekdays,
+    count_apl_days,
+    student_apl_weekdays,
+)
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 me_router = APIRouter(prefix="/me/attendance", tags=["attendance"])
@@ -107,7 +113,8 @@ class MyAttendance(BaseModel):
     end_date: date | None
     check_in_required: bool
     today: date
-    can_check_in_today: bool = Field(description="Vardag med pågående placering")
+    can_check_in_today: bool = Field(description="APL-dag med pågående placering")
+    apl_weekdays: list[int] = Field(description="Elevens APL-dagar, 0 = måndag … 6 = söndag")
     days: list[AttendanceDay] = Field(
         description="Registrerade dagar i placeringen, i datumordning"
     )
@@ -132,7 +139,7 @@ class ClassAttendance(BaseModel):
     from_date: date
     to_date: date
     check_in_required: bool
-    apl_days_per_week: int | None
+    apl_weekdays: list[int] = Field(description="Klassens APL-dagar, 0 = måndag … 6 = söndag")
     students: list[StudentAttendance]
 
 
@@ -151,21 +158,8 @@ def _day(row: Attendance) -> AttendanceDay:
     )
 
 
-def _is_weekday(day: date) -> bool:
-    return day.weekday() < 5
-
-
-def _weekdays(start: date, end: date) -> int:
-    """Antal vardagar från och med start till och med end."""
-    if end < start:
-        return 0
-    days = (end - start).days + 1
-    full_weeks, rest = divmod(days, 7)
-    count = full_weeks * 5
-    for i in range(rest):
-        if (start + timedelta(days=full_weeks * 7 + i)).weekday() < 5:
-            count += 1
-    return count
+def _is_apl_day(db: DbSession, student_id: UUID, day: date) -> bool:
+    return day.weekday() in student_apl_weekdays(db, [student_id])[student_id]
 
 
 def _placement_on(db: DbSession, student_id: UUID, day: date) -> Placement | None:
@@ -205,9 +199,9 @@ def check_in(db: DbSession, user: Student) -> AttendanceDay:
     """Checkar in i dag på elevens pågående placering. Ett andra anrop samma dag svarar med
     den befintliga incheckningen."""
     today = time.today()
-    if not _is_weekday(today):
+    if not _is_apl_day(db, user.id, today):
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Det finns ingen APL på helger"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="I dag är ingen APL-dag för din klass"
         )
     placement = _placement_on(db, user.id, today)
     if placement is None:
@@ -241,8 +235,10 @@ def my_attendance(db: DbSession, user: Student) -> MyAttendance:
         .options(selectinload(Placement.workplace))
     )
     required = _check_in_required(db, user.id)
+    apl_weekdays = sorted(student_apl_weekdays(db, [user.id])[user.id])
     if placement is None:
         return MyAttendance(
+            apl_weekdays=apl_weekdays,
             placement_id=None,
             workplace_name=None,
             start_date=None,
@@ -256,13 +252,14 @@ def my_attendance(db: DbSession, user: Student) -> MyAttendance:
         select(Attendance).where(Attendance.placement_id == placement.id).order_by(Attendance.date)
     )
     return MyAttendance(
+        apl_weekdays=apl_weekdays,
         placement_id=placement.id,
         workplace_name=placement.workplace.name,
         start_date=placement.start_date,
         end_date=placement.end_date,
         check_in_required=required,
         today=today,
-        can_check_in_today=_is_weekday(today),
+        can_check_in_today=_is_apl_day(db, user.id, today),
         days=[_day(r) for r in rows],
     )
 
@@ -271,15 +268,12 @@ def my_attendance(db: DbSession, user: Student) -> MyAttendance:
 
 
 def _expected_days(
-    placements: list[Placement], start: date, end: date, per_week: int | None
+    placements: list[Placement], start: date, end: date, weekdays: frozenset[int]
 ) -> int:
     """Förväntade APL-dagar för placeringarna inom perioden, fram till och med i dag."""
-    weekdays = 0
-    for p in placements:
-        weekdays += _weekdays(max(p.start_date, start), min(p.end_date, end))
-    if per_week is None or per_week >= 5:
-        return weekdays
-    return round(weekdays * per_week / 5)
+    return sum(
+        count_apl_days(max(p.start_date, start), min(p.end_date, end), weekdays) for p in placements
+    )
 
 
 @class_router.get("", response_model=ClassAttendance)
@@ -307,7 +301,7 @@ def class_attendance(
         from_date=from_date,
         to_date=to_date,
         check_in_required=school_class.check_in_required,
-        apl_days_per_week=school_class.apl_days_per_week,
+        apl_weekdays=sorted(school_class.apl_weekdays),
         students=class_student_attendance(db, school_class, from_date, to_date),
     )
 
@@ -348,7 +342,7 @@ def class_student_attendance(
             for student_id, r in rows
             if student_id == student.id and from_date <= r.date <= counted_to
         ]
-        expected = _expected_days(own, from_date, counted_to, school_class.apl_days_per_week)
+        expected = _expected_days(own, from_date, counted_to, class_apl_weekdays(school_class))
         present = sum(1 for r in mine if counts_as_present(r.status, r.review))
         missing = max(0, expected - present) if school_class.check_in_required else 0
         today_row = today_rows.get(student.id)
@@ -473,11 +467,12 @@ def _review_list(db: DbSession, user: User) -> ReviewList:
     }
     today_items: list[ReviewItem] = []
     earlier: list[ReviewItem] = []
+    apl_days = student_apl_weekdays(db, {p.student_id for p in placements})
     for p in placements:
         first = max(p.start_date, earliest)
         for offset in range((min(p.end_date, today) - first).days + 1):
             day = first + timedelta(days=offset)
-            if not _is_weekday(day):
+            if day.weekday() not in apl_days[p.student_id]:
                 continue
             row = rows.get((p.id, day))
             state = day_state(row)
@@ -506,7 +501,7 @@ def review_list(db: DbSession, user: Supervisor) -> ReviewList:
 @supervisor_router.post("/review", response_model=ReviewList)
 def review(body: ReviewBody, db: DbSession, user: Supervisor) -> ReviewList:
     """Bekräftar dagar, lägger till dagar eleven glömde eller säger att eleven inte var på
-    plats. Bara för elever handledaren har, vardagar och upp till två veckor bakåt."""
+    plats. Bara för elever handledaren har, klassens APL-dagar och upp till två veckor bakåt."""
     today = time.today()
     earliest = today - timedelta(days=REVIEW_DAYS - 1)
     now = time.now()
@@ -516,13 +511,13 @@ def review(body: ReviewBody, db: DbSession, user: Supervisor) -> ReviewList:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
         day = verdict.date
         if (
-            not _is_weekday(day)
+            not _is_apl_day(db, placement.student_id, day)
             or not earliest <= day <= today
             or not placement.start_date <= day <= placement.end_date
         ):
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail="Dagen går inte att bekräfta. Det går två veckor bakåt, vardagar.",
+                detail="Dagen går inte att bekräfta. Det går två veckor bakåt, på APL-dagar.",
             )
         row = _existing(db, placement.id, day)
         if row is None:
@@ -582,12 +577,14 @@ def class_week(
     user: CanViewClasses,
     start: Annotated[date | None, Query(description="En dag i veckan. Standard är i dag")] = None,
 ) -> ClassWeek:
-    """Klassens närvaro måndag till fredag, med läget för varje dag."""
+    """Klassens närvaro veckans APL-dagar, med läget för varje dag. Har klassen inga APL-dagar
+    visas måndag till fredag."""
     school_class = get_accessible_class(db, user, class_id)
     today = time.today()
     anchor = start or today
     monday = anchor - timedelta(days=anchor.weekday())
-    days = [monday + timedelta(days=i) for i in range(5)]
+    weekdays = sorted(school_class.apl_weekdays) or sorted(DEFAULT_APL_WEEKDAYS)
+    days = [monday + timedelta(days=i) for i in weekdays]
     students = sorted((s for s in school_class.students if s.is_active), key=lambda s: s.name)
     placements = db.scalars(
         select(Placement)
@@ -697,6 +694,7 @@ class StudentAttendanceDetail(BaseModel):
     from_date: date
     to_date: date
     check_in_required: bool
+    apl_weekdays: list[int] = Field(description="Elevens APL-dagar, 0 = måndag … 6 = söndag")
     summary: StudentAttendance
     days: list[AttendanceDay] = Field(description="Registrerade dagar i perioden, senaste först")
 
@@ -734,7 +732,7 @@ def student_attendance(
         .where(class_students.c.student_id == student.id)
     )
     required = school_class.check_in_required if school_class else True
-    per_week = school_class.apl_days_per_week if school_class else None
+    weekdays = class_apl_weekdays(school_class)
     counted_to = min(to_date, today)
     in_period = [p for p in placements if p.start_date <= to_date and p.end_date >= from_date]
     rows = db.scalars(
@@ -748,12 +746,13 @@ def student_attendance(
     ).all()
     counted = [r for r in rows if r.date <= counted_to]
     present = sum(1 for r in counted if counts_as_present(r.status, r.review))
-    expected = _expected_days(in_period, from_date, counted_to, per_week)
+    expected = _expected_days(in_period, from_date, counted_to, weekdays)
     today_row = next((r for r in rows if r.date == today), None)
     return StudentAttendanceDetail(
         from_date=from_date,
         to_date=to_date,
         check_in_required=required,
+        apl_weekdays=sorted(weekdays),
         summary=StudentAttendance(
             student=Ref(id=student.id, name=student.name),
             has_placement=bool(in_period),

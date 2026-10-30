@@ -309,7 +309,7 @@ def showcase(db: Session) -> dict[str, int]:
     school_class = SchoolClass(
         school_id=school.id,
         name=CLASS_NAME,
-        apl_days_per_week=5,
+        apl_weekdays=[0, 1, 2, 3, 4],
         check_in_required=True,
         report_due_weekdays=[1, 4],  # tisdag och fredag
     )

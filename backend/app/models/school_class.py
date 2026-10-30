@@ -57,11 +57,11 @@ class SchoolClass(Base):
     __tablename__ = "school_classes"
     __table_args__ = (
         UniqueConstraint("school_id", "name"),
-        CheckConstraint("apl_days_per_week BETWEEN 1 AND 5", name="apl_days_per_week_range"),
         CheckConstraint(
-            "report_due_weekdays <@ ARRAY[0, 1, 2, 3, 4]::smallint[]",
-            name="report_due_weekdays_range",
+            "apl_weekdays <@ ARRAY[0, 1, 2, 3, 4, 5, 6]::smallint[]", name="apl_weekdays_range"
         ),
+        # Redovisningsdagarna väljs bland APL-dagarna (Texas, 2026-10-30).
+        CheckConstraint("report_due_weekdays <@ apl_weekdays", name="report_due_on_apl_days"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -71,11 +71,14 @@ class SchoolClass(Base):
     name: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    # APL-villkor för hela klassen. Tomt betyder att det inte är bestämt än.
-    apl_days_per_week: Mapped[int | None] = mapped_column(SmallInteger)
+    # APL-villkor för hela klassen. Veckodagar: 0 = måndag … 6 = söndag.
+    # APL-dagar: dagarna eleverna är på APL och checkar in, även helger för t.ex.
+    # vuxenutbildning (Texas, 2026-10-30). Närvaron räknar bara de dagarna.
+    apl_weekdays: Mapped[list[int]] = mapped_column(
+        ARRAY(SmallInteger), default=lambda: [0, 1, 2, 3, 4], server_default=text("'{0,1,2,3,4}'")
+    )
     check_in_required: Mapped[bool] = mapped_column(default=True, server_default=true())
-    # Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag. Tom lista = inte bestämt.
-    # Ingen APL på helger (Texas, 2026-10-20).
+    # Dagar då redovisning ska lämnas, bland APL-dagarna. Tom lista = inte bestämt.
     report_due_weekdays: Mapped[list[int]] = mapped_column(
         ARRAY(SmallInteger), default=list, server_default=text("'{}'")
     )

@@ -443,12 +443,13 @@ function AttendanceCard({ studentId }: { studentId: string }) {
   const percent = summary && total > 0 ? Math.round((summary.present / total) * 100) : null
   const present = new Set(data?.days.filter((d) => d.status === 'present').map((d) => d.date))
 
-  // Den här veckans vardagar.
+  // Den här veckans APL-dagar för elevens klass.
   const today = todayIso()
   const monday = parseDay(weekStart(today))
-  const week = Array.from({ length: 5 }, (_, i) => {
+  const aplDays = data?.apl_weekdays?.length ? data.apl_weekdays : [0, 1, 2, 3, 4]
+  const week = aplDays.map((offset) => {
     const d = new Date(monday)
-    d.setDate(monday.getDate() + i)
+    d.setDate(monday.getDate() + offset)
     const iso = d.toISOString().slice(0, 10)
     const label = d.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.', '')
     const state = present.has(iso) ? 'present' : iso <= today ? 'missing' : 'future'
@@ -483,7 +484,7 @@ function AttendanceCard({ studentId }: { studentId: string }) {
             />
             <div className={own.week}>
               <span className={own.weekTitle}>Den här veckan</span>
-              <ul className={own.weekDays}>
+              <ul className={own.weekDays} style={{ gridTemplateColumns: `repeat(${week.length}, minmax(0, 1fr))` }}>
                 {week.map((day) => (
                   <li key={day.iso} className={own.weekDay}>
                     {day.label}

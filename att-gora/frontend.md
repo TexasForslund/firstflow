@@ -263,7 +263,7 @@ Enligt "Firstflow – Privata kommentarer skiss" (Texas, 2026-10-30). Backend: B
 
 ---
 
-## F23. Anteckningar om eleven 🚧 Granskas (Texas + Claude, 2026-10-30)
+## F23. Anteckningar om eleven ✅ Klar ([PR #47](https://github.com/TexasForslund/firstflow/pull/47), Texas + Claude, 2026-10-30)
 
 Enligt "Firstflow – Anteckningar om eleven skiss" (Texas, 2026-10-30). Backend: B18.
 - **Handledarens elevsida** (`/my-students/:id`), som nås från Mina elever:
@@ -275,11 +275,16 @@ Enligt "Firstflow – Anteckningar om eleven skiss" (Texas, 2026-10-30). Backend
 
 ---
 
-## F24. Redovisnings- och incheckningsdagar per klass, även helger ⬜ (från mötet med Haldor, 2026-10-30)
+## F24. APL-dagar och redovisningsdagar per klass 🚧 Granskas (Texas + Claude, 2026-10-30)
 
-Backend: B19. Skiss först.
-- I klassens APL-villkor väljer läraren **redovisningsdagar** och **incheckningsdagar** bland alla sju veckodagar. Vuxenutbildning kan ha helger.
-- Eleven ser redovisning och incheckning bara de dagarna, och närvaron räknar bara incheckningsdagar.
+Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30). Backend: B19.
+- **APL-villkor i klassvyn:** två rader med måndag–söndag, APL-dagar och redovisningsdagar.
+  - Dagar som inte är APL-dagar är gråa och streckade bland redovisningsdagarna och går inte att välja.
+  - Tas en APL-dag bort försvinner den också som redovisningsdag.
+  - Under varje rad står vad valet betyder, t.ex. "Fre, lör och sön räknas inte som frånvaro".
+- **Klassens rubrik** visar t.ex. "4 APL-dagar/vecka".
+- **Veckovyerna** (Närvaro, elevsidan och elevens incheckning) visar klassens APL-dagar i stället för måndag–fredag.
+- **Eleven** ser "Ingen APL i dag" och nästa APL-dag de dagar klassen inte har APL.
 
 ---
 

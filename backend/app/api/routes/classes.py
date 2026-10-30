@@ -13,7 +13,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import Table, delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
@@ -66,22 +66,35 @@ class ClassSummary(BaseModel):
 
 
 class AplTerms(BaseModel):
-    """APL-villkor för hela klassen. null eller tom lista betyder att det inte är bestämt än."""
+    """APL-villkor för hela klassen (Texas, 2026-10-30). Veckodagar: 0 = måndag … 6 = söndag.
+
+    APL-dagar är dagarna eleverna är på APL och checkar in. Redovisningsdagarna väljs bland
+    APL-dagarna. Tom lista betyder att det inte är bestämt än."""
 
     model_config = ConfigDict(from_attributes=True)
 
-    apl_days_per_week: int | None = Field(default=None, ge=1, le=5)
+    apl_weekdays: list[Annotated[int, Field(ge=0, le=6)]] = Field(
+        default_factory=lambda: [0, 1, 2, 3, 4],
+        max_length=7,
+        description="APL-dagar: dagarna eleverna är på APL och checkar in",
+    )
     check_in_required: bool = True
-    report_due_weekdays: list[Annotated[int, Field(ge=0, le=4)]] = Field(
+    report_due_weekdays: list[Annotated[int, Field(ge=0, le=6)]] = Field(
         default_factory=list,
-        max_length=5,
-        description="Vardagar då veckoredovisning ska lämnas: 0 = måndag … 4 = fredag",
+        max_length=7,
+        description="Redovisningsdagar, bland APL-dagarna",
     )
 
-    @field_validator("report_due_weekdays")
+    @field_validator("apl_weekdays", "report_due_weekdays")
     @classmethod
     def unique_sorted(cls, days: list[int]) -> list[int]:
         return sorted(set(days))
+
+    @model_validator(mode="after")
+    def report_on_apl_days(self) -> "AplTerms":
+        if not set(self.report_due_weekdays) <= set(self.apl_weekdays):
+            raise ValueError("Redovisningsdagarna måste vara APL-dagar")
+        return self
 
 
 class ClassDetail(BaseModel):

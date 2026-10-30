@@ -373,7 +373,7 @@ Frontend: F22.
 
 ---
 
-## B18. Anteckningar om eleven 🚧 Granskas (Texas + Claude, 2026-10-30)
+## B18. Anteckningar om eleven ✅ Klar ([PR #47](https://github.com/TexasForslund/firstflow/pull/47), Texas + Claude, 2026-10-30)
 
 Beslut (Texas, 2026-10-30):
 - Handledaren skriver anteckningar om eleven i helhet, inte om en enskild redovisning.
@@ -396,16 +396,19 @@ Frontend: F23.
 
 ---
 
-## B19. Redovisnings- och incheckningsdagar per klass, även helger ⬜ (från mötet med Haldor, 2026-10-30)
+## B19. APL-dagar och redovisningsdagar per klass, även helger 🚧 Granskas (Texas + Claude, 2026-10-30)
 
-Vuxenutbildningar kan ha APL på helger. I dag tillåter `SchoolClass` bara måndag–fredag (`report_due_weekdays` 0–4 och `apl_days_per_week` 1–5, "Inga helger" från 2026-10-20).
-- Redovisningsdagar får vara alla veckodagar 0–6.
-- Nytt fält för incheckningsdagar per klass, t.ex. `check_in_weekdays`. Kräver en migrering.
-- Närvaron, "Behöver uppmärksamhet", handledarens bekräftelse (`REVIEW_DAYS`) och redovisningsdagarna utgår från klassens dagar i stället för vardagar.
-- **Att diskutera med Texas:**
-  - Fasta veckodagar per klass, eller "X dagar per vecka" som i dag?
-  - Måste redovisningsdagarna vara incheckningsdagar?
-  - Vad händer med `apl_days_per_week`?
+Beslut (Texas, 2026-10-30):
+- Klassen har **APL-dagar** (fasta veckodagar, t.ex. måndag–torsdag) då eleverna är på APL och checkar in, och **redovisningsdagar** (t.ex. onsdag och torsdag) som väljs bland APL-dagarna.
+- Alla sju veckodagar går att välja, så att t.ex. vuxenutbildning kan ha APL fredag–söndag.
+- "APL-dagar per vecka" försvinner. Befintliga och nya klasser får måndag–fredag.
+
+Byggt:
+- `SchoolClass.apl_weekdays` (0 = måndag … 6 = söndag). `apl_days_per_week` är borttagen. Migrering `0ea35db52ad0`, testad upp och ned. Vid nedgradering tas helgdagar bort.
+- Databasen kräver att redovisningsdagarna är APL-dagar, och `PUT /api/classes/{id}/apl-terms` svarar 422 annars.
+- `app/services/apl_days.py`: elevens APL-dagar från klassen. En elev utan klass har måndag–fredag.
+- Incheckning, förväntade dagar i närvaron, handledarens bekräftelse, klassens vecka och lärarens översikt utgår från klassens APL-dagar i stället för vardagar.
+- `GET /api/me/attendance` och elevsidans närvaro har `apl_weekdays`.
 
 Frontend: F24.
 
