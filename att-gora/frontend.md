@@ -301,7 +301,7 @@ Backend: B20. Skiss först.
 
 Enligt "Firstflow – Mål från läroplanen skiss" (Texas, 2026-10-30). Backend: B22.
 - **Frågebyggaren:** avsnittet **Mål** i ja/nej- och flervalsfrågor: välj mål per svar ("När eleven svarar Ja") och lägg till nya mål.
-- **Projektets sida:** tabellen **Mål i projektet** med elever × mål. Antalet går att klicka på och visar läroplanstexten och redovisningarna med följdfrågans svar. Streckad ruta = inget underlag än.
+- **Projektets sida:** tabellen **Mål i projektet** med elever × mål. Antalet går att klicka på och visar läroplanstexten och redovisningarna: frågan och svaret som gav målet (t.ex. "Har du haft kundkontakt? **Ja**"), och följdfrågan med elevens svar. Streckad ruta = inget underlag än.
 - **Elevsidan:** kortet **Mål** med antal per mål. Ett klick visar underlaget.
 - Projektens taggar ser ut som förut men är nu mål.
 

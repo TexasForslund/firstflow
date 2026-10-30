@@ -6449,6 +6449,16 @@
             "format": "date",
             "title": "Date"
           },
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "Frågan som visar målet"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "description": "Svaret som visar målet, t.ex. Ja"
+          },
           "follow_up": {
             "anyOf": [
               {
@@ -6464,6 +6474,8 @@
         "required": [
           "report_id",
           "date",
+          "question",
+          "answer",
           "follow_up"
         ],
         "title": "EvidenceRead",

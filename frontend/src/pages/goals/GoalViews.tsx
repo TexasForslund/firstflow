@@ -15,7 +15,8 @@ function day(iso: string) {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-/** Redovisningarna som visar ett mål, med svaret på följdfrågan (Texas, 2026-10-30). */
+/** Redovisningarna som visar ett mål: frågan och svaret, och följdfrågan om det finns (Texas,
+ * 2026-10-30). */
 export function EvidenceList({ items, reportPath }: { items: GoalEvidence[]; reportPath: (id: string) => string }) {
   return (
     <ul className={styles.evidence}>
@@ -23,14 +24,17 @@ export function EvidenceList({ items, reportPath }: { items: GoalEvidence[]; rep
         <li key={item.report_id}>
           <Link to={reportPath(item.report_id)} className={styles.evidenceRow}>
             <span className={styles.evidenceDay}>{day(item.date)}</span>
-            {item.follow_up ? (
-              <span className={styles.followUp}>
-                <span className={styles.muted}>{item.follow_up.question}</span>
-                <span>”{item.follow_up.text}”</span>
+            <span className={styles.followUp}>
+              <span>
+                <span className={styles.muted}>{item.question}</span> <strong>{item.answer}</strong>
               </span>
-            ) : (
-              <span className={styles.muted}>Ingen följdfråga</span>
-            )}
+              {item.follow_up && (
+                <>
+                  <span className={styles.muted}>{item.follow_up.question}</span>
+                  <span>”{item.follow_up.text}”</span>
+                </>
+              )}
+            </span>
           </Link>
         </li>
       ))}

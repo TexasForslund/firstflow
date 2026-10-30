@@ -2411,6 +2411,16 @@ export interface components {
              * Format: date
              */
             date: string;
+            /**
+             * Question
+             * @description Frågan som visar målet
+             */
+            question: string;
+            /**
+             * Answer
+             * @description Svaret som visar målet, t.ex. Ja
+             */
+            answer: string;
             follow_up: components["schemas"]["FollowUpRead"] | null;
         };
         /** FollowUpRead */

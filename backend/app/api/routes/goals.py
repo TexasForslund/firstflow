@@ -59,6 +59,8 @@ class EvidenceRead(BaseModel):
 
     report_id: UUID
     date: date
+    question: str = Field(description="Frågan som visar målet")
+    answer: str = Field(description="Svaret som visar målet, t.ex. Ja")
     follow_up: FollowUpRead | None
 
 
@@ -102,6 +104,8 @@ def goal_counts(
             read = EvidenceRead(
                 report_id=item.report.id,
                 date=item.report.due_date,
+                question=item.question,
+                answer=item.answer,
                 follow_up=FollowUpRead(question=item.follow_up.question, text=item.follow_up.text)
                 if item.follow_up
                 else None,

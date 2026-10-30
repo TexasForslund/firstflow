@@ -12,6 +12,8 @@ from uuid import UUID
 
 from app.models.report import Report
 from app.services.report_forms import (
+    NO,
+    YES,
     AnswerValue,
     QuestionType,
     answer_keys,
@@ -32,7 +34,18 @@ class FollowUp:
 class Evidence:
     report: Report
     goal_id: UUID
+    question: str
+    answer: str
     follow_up: FollowUp | None
+
+
+def _answer_label(question, when: str) -> str:
+    """Svaret som visar målet i ord, t.ex. Ja eller alternativets namn."""
+    if question.type == QuestionType.YES_NO:
+        return {YES: "Ja", NO: "Nej"}.get(when, when)
+    if question.type == QuestionType.CHOICE:
+        return next((c.label for c in question.choices if str(c.id) == when), "")
+    return when
 
 
 def evidence(reports: Iterable[Report]) -> Iterator[Evidence]:
@@ -54,7 +67,13 @@ def evidence(reports: Iterable[Report]) -> Iterator[Evidence]:
             for rule in rules:
                 if rule.when in keys and rule.goal_id not in shown:
                     shown.add(rule.goal_id)
-                    yield Evidence(report, rule.goal_id, _follow_up(path, i, by_id, values))
+                    yield Evidence(
+                        report=report,
+                        goal_id=rule.goal_id,
+                        question=question.title,
+                        answer=_answer_label(question, rule.when),
+                        follow_up=_follow_up(path, i, by_id, values),
+                    )
 
 
 def _follow_up(path, i, by_id, values) -> FollowUp | None:

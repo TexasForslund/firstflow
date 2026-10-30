@@ -476,7 +476,7 @@ Från idé 10. Beslut (Texas, 2026-10-30): skissen "Firstflow – Mål från lä
 - **Mål på skolan:** `Goal` (`school_id`, `name`, `curriculum`) i `app/models/goal.py`. Samma namn oavsett stora och små bokstäver är ett mål. `curriculum` är vilken del av läroplanen målet gäller, som text.
 - **Projektens taggar är mål:** `project_goals` ersätter `projects.tags`. Migrering `a6f1cf4f833a` gör om befintliga taggar till mål. API:t har kvar `tags` som namn, och en ny tagg blir ett nytt mål på skolan.
 - **Svar som visar mål:** ja/nej- och flervalsfrågor har `goals` (`when`, `goal_id`), t.ex. Ja → Kundkontakt. Målen måste finnas på skolan (422). De följer med i mallar på samma skola.
-- **Följdfrågan (Texas, 2026-10-30):** är nästa fråga på elevens väg en textfråga, t.ex. "Vad gjorde du?" efter "Har du haft kundkontakt? Ja", följer svaret med i underlaget.
+- **Följdfrågan (Texas, 2026-10-30):** underlaget visar frågan och svaret som gav målet, t.ex. "Har du haft kundkontakt? Ja". Är nästa fråga på elevens väg en textfråga, t.ex. "Vad gjorde du?", följer också den och elevens svar med.
 - **Underlag:** räknas fram ur svaren i `app/services/goal_evidence.py`, aldrig sparat.
 - `app/api/routes/goals.py`: `GET` och `POST /api/goals`, `PATCH /api/goals/{id}` (läroplanstexten), `GET /api/students/{id}/goals` (läraren, samma redovisningar som elevsidan).
 - `GET /api/projects/{id}/goals`: projektets mål × elever med antal och underlag, för läraren och inbjudna handledare.

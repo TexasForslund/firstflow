@@ -668,7 +668,9 @@ def test_follow_up_answer_comes_with_the_evidence(
 
     login(w.teacher)
     (count,) = client.get(f"/api/students/{w.student.id}/goals").json()
-    assert count["evidence"][0]["follow_up"] == {
+    item = count["evidence"][0]
+    assert (item["question"], item["answer"]) == ("Har du haft kundkontakt i dag?", "Ja")
+    assert item["follow_up"] == {
         "question": "Vad gjorde du?",
         "text": "Visade kunden hur laddboxen fungerar.",
     }
