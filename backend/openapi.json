@@ -3434,6 +3434,254 @@
         }
       }
     },
+    "/api/teacher/reports": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "List Teacher Reports",
+        "description": "Inskickade redovisningar i lärarens klasser, senast inskickade först.",
+        "operationId": "list_teacher_reports_api_teacher_reports_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Student Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "show",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Show",
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherReports"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teacher/reports/missing": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "List Missing Reports",
+        "description": "Redovisningar som saknas de senaste fyra veckorna, senaste dagen först.",
+        "operationId": "list_missing_reports_api_teacher_reports_missing_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MissingReport"
+                  },
+                  "title": "Response List Missing Reports Api Teacher Reports Missing Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teacher/reports/students": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "List Student Report Stats",
+        "description": "Per elev i lärarens klasser: senaste redovisning, olästa och saknade.",
+        "operationId": "list_student_report_stats_api_teacher_reports_students_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StudentReportStats"
+                  },
+                  "title": "Response List Student Report Stats Api Teacher Reports Students Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/teacher/overview": {
       "get": {
         "tags": [
@@ -7162,6 +7410,28 @@
         "title": "MeRead",
         "description": "Den inloggade användaren med egna inställningar. Visas bara för användaren själv."
       },
+      "MissingReport": {
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "school_class": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student",
+          "school_class",
+          "due_date"
+        ],
+        "title": "MissingReport"
+      },
       "MyAttendance": {
         "properties": {
           "placement_id": {
@@ -8317,6 +8587,46 @@
         ],
         "title": "Ref"
       },
+      "ReportCounts": {
+        "properties": {
+          "all": {
+            "type": "integer",
+            "title": "All"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          },
+          "late": {
+            "type": "integer",
+            "title": "Late"
+          },
+          "comments": {
+            "type": "integer",
+            "title": "Comments"
+          },
+          "private": {
+            "type": "integer",
+            "title": "Private"
+          },
+          "missing": {
+            "type": "integer",
+            "title": "Missing",
+            "description": "Saknade redovisningar. 0 när projekt är valt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "all",
+          "unread",
+          "late",
+          "comments",
+          "private",
+          "missing"
+        ],
+        "title": "ReportCounts",
+        "description": "Antal per snabbval, med samma filter för klass, elev och projekt."
+      },
       "ReportDetail": {
         "properties": {
           "id": {
@@ -8912,6 +9222,17 @@
         ],
         "title": "ShortTextQuestion"
       },
+      "Show": {
+        "type": "string",
+        "enum": [
+          "all",
+          "unread",
+          "late",
+          "comments",
+          "private"
+        ],
+        "title": "Show"
+      },
       "SignBody": {
         "properties": {
           "confirm": {
@@ -9354,6 +9675,45 @@
           "project_count"
         ],
         "title": "StudentRead"
+      },
+      "StudentReportStats": {
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "school_class": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "last_submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Submitted At"
+          },
+          "unread": {
+            "type": "integer",
+            "title": "Unread"
+          },
+          "missing": {
+            "type": "integer",
+            "title": "Missing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student",
+          "school_class",
+          "last_submitted_at",
+          "unread",
+          "missing"
+        ],
+        "title": "StudentReportStats"
       },
       "StudentReportSummary": {
         "properties": {
@@ -9800,6 +10160,109 @@
           "reports"
         ],
         "title": "TeacherOverview"
+      },
+      "TeacherReport": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "school_class": {
+            "$ref": "#/components/schemas/PersonBrief"
+          },
+          "project": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "is_late": {
+            "type": "boolean",
+            "title": "Is Late"
+          },
+          "is_read": {
+            "type": "boolean",
+            "title": "Is Read"
+          },
+          "comment_count": {
+            "type": "integer",
+            "title": "Comment Count"
+          },
+          "has_private_comment": {
+            "type": "boolean",
+            "title": "Has Private Comment",
+            "description": "Minst en kommentar som bara personal ser"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextAnswer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Första textsvaret, förkortat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "school_class",
+          "project",
+          "due_date",
+          "submitted_at",
+          "is_late",
+          "is_read",
+          "comment_count",
+          "has_private_comment",
+          "excerpt"
+        ],
+        "title": "TeacherReport"
+      },
+      "TeacherReports": {
+        "properties": {
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/TeacherReport"
+            },
+            "type": "array",
+            "title": "Reports"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/ReportCounts"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reports",
+          "counts",
+          "has_more"
+        ],
+        "title": "TeacherReports"
       },
       "TeachersSet": {
         "properties": {

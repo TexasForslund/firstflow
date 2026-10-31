@@ -92,7 +92,7 @@ export function StudentPage() {
   return (
     <div className={own.page}>
       <p className={own.breadcrumb}>
-        <Link to={isTeacher ? '/student-history' : '/students'}>{isTeacher ? 'Elevhistorik' : 'Elever'}</Link> /{' '}
+        <Link to={isTeacher ? '/reports?view=students' : '/students'}>{isTeacher ? 'Redovisningar' : 'Elever'}</Link> /{' '}
         {student.name}
       </p>
 

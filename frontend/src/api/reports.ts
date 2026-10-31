@@ -4,6 +4,7 @@ import { api } from './client'
 import { ApiError } from './errors'
 import { overviewKey } from './overview'
 import type { components } from './schema'
+import { teacherReportsKey } from './teacherReports'
 
 export type ReportDetail = components['schemas']['ReportDetail']
 export type DueReport = components['schemas']['DueReport']
@@ -172,6 +173,7 @@ export function useMarkRead(reportId: string) {
       if (report) queryClient.invalidateQueries({ queryKey: classKey(report.class_id) })
       queryClient.invalidateQueries({ queryKey: overviewKey })
       queryClient.invalidateQueries({ queryKey: supervisorKey })
+      queryClient.invalidateQueries({ queryKey: teacherReportsKey })
     },
   })
 }

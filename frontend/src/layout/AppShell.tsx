@@ -102,11 +102,11 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
           <button
             type="button"
             className={styles.menuButton}
-          aria-label={menuOpen ? 'Stäng menyn' : 'Öppna menyn'}
-          aria-expanded={menuOpen}
-          aria-controls="sidebar"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
+            aria-label={menuOpen ? 'Stäng menyn' : 'Öppna menyn'}
+            aria-expanded={menuOpen}
+            aria-controls="sidebar"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
             {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </span>
@@ -189,7 +189,7 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
 
 const CLASSES_OPEN_KEY = 'firstflow-sidebar-classes-open'
 
-/** Lärarens klasser under Elevhistorik. Går att fälla ihop, valet sparas i webbläsaren. */
+/** Lärarens klasser under Redovisningar. Går att fälla ihop, valet sparas i webbläsaren. */
 function ClassList({ classes }: { classes: SidebarClass[] }) {
   const [open, setOpen] = useState(() => {
     try {
@@ -331,4 +331,3 @@ function AccountMenu({
     </div>
   )
 }
-
