@@ -40,7 +40,7 @@ Står ett ord under **Inte** ska det bytas mot ordet till vänster.
 
 | Säg | Inte | Betyder |
 | --- | --- | --- |
-| Redovisning | veckoredovisning, rapport, logg | Elevens svar på klassens frågor en redovisningsdag. Läraren och handledaren säger alltid redovisning. |
+| Redovisning | veckoredovisning, rapport, logg, inlägg | Elevens svar på klassens frågor en redovisningsdag. Alla säger redovisning, även eleven (Texas, 2026-10-31). |
 | Fråga, följdfråga | | En följdfråga kommer direkt efter en fråga, t.ex. "Vad gjorde du?" efter "Ja". |
 | Frågor | formulär, enkät | Klassens frågor i fliken Frågor. |
 | Mall | frågemall | Sparade frågor att börja från. |
@@ -48,7 +48,6 @@ Står ett ord under **Inte** ska det bytas mot ordet till vänster.
 | Privat kommentar | intern kommentar | En kommentar som bara lärare och handledare ser ("Bara lärare och handledare"). |
 | Anteckning | omdöme, bedömning | Handledarens anteckning om eleven i helhet: Beröm, Oro eller Övrigt. |
 
-**Att bestämma:** eleven ser i dag "Dina inlägg" och "Se ditt inlägg" i sitt flöde, som i sociala medier. Ska eleven också se "redovisning"?
 
 ## Projekt och mål
 

@@ -57,7 +57,7 @@ export function AnswerReport() {
         actions: (
           <>
             <Button variant="primary" onClick={() => navigate(`/my-reports/${reportId}`, { replace: true })}>
-              Se ditt inlägg
+              Se din redovisning
             </Button>
             <Button onClick={() => navigate('/my-reports', { replace: true })}>Till startsidan</Button>
           </>
