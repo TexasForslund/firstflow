@@ -297,7 +297,7 @@ Backend: B20. Skiss först.
 
 ---
 
-## F27. Mål från läroplanen, steg ett 🚧 Granskas (Texas + Claude, 2026-10-30)
+## F27. Mål från läroplanen, steg ett ✅ Klar ([PR #50](https://github.com/TexasForslund/firstflow/pull/50), Texas + Claude, 2026-10-30)
 
 Enligt "Firstflow – Mål från läroplanen skiss" (Texas, 2026-10-30). Backend: B22.
 - **Frågebyggaren:** avsnittet **Mål** i ja/nej- och flervalsfrågor: välj mål per svar ("När eleven svarar Ja") och lägg till nya mål.
@@ -305,6 +305,7 @@ Enligt "Firstflow – Mål från läroplanen skiss" (Texas, 2026-10-30). Backend
 - **Elevsidan:** kortet **Mål** med antal per mål. Ett klick visar underlaget.
 - Projektens taggar ser ut som förut men är nu mål.
 
+- **Projektets popup** (Texas, 2026-10-31): fältet heter **Mål** i stället för Taggar, har en förklaring och föreslår skolans mål. Förslagen har större text.
 ---
 
 ## F26. Inriktningar och frågor per inriktning ✅ Klar ([PR #49](https://github.com/TexasForslund/firstflow/pull/49), Texas + Claude, 2026-10-30)
