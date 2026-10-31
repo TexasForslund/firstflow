@@ -4,7 +4,7 @@ import { useId, useState } from 'react'
 import type { LogicRule, Question } from '../../../api/forms'
 import { useCreateGoal, type Goal } from '../../../api/goals'
 import type { Track } from '../../../api/tracks'
-import { Switch } from '../../../components'
+import { HelpPopover, Switch } from '../../../components'
 import styles from './FormBuilder.module.css'
 import { answerOptions, hasLogic, QUESTION_TYPES, questionTitle } from './questionTypes'
 import { TypeBadge } from './TypeBadge'
@@ -232,7 +232,9 @@ function AudienceEditor({
   return (
     <section className={styles.settingsSection}>
       <fieldset className={styles.audience}>
-        <legend className={styles.settingsTitle}>Visas för</legend>
+        <legend className={styles.settingsTitle}>
+          Visas för <HelpPopover topic="tracks" />
+        </legend>
         <label className={styles.audienceOption}>
           <input
             type="radio"
@@ -295,7 +297,9 @@ function GoalEditor({
 
   return (
     <section className={styles.settingsSection}>
-      <h2 className={styles.settingsTitle}>Mål</h2>
+      <h2 className={styles.settingsTitle}>
+        Mål <HelpPopover topic="goals" />
+      </h2>
       <p className={styles.settingsHint}>
         Välj vilket mål ett svar visar. Svaret blir underlag för eleven, och nästa textfråga följer med som beskrivning.
       </p>

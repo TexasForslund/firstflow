@@ -5,7 +5,7 @@ import { useGoals } from '../../api/goals'
 import { useWorkplaces } from '../../api/placements'
 import { useDeleteProject, useProjects, useSaveProject, type Project, type ProjectWrite } from '../../api/projects'
 import { useStudents } from '../../api/students'
-import { Avatar, Button, matches, SelectField, Switch, TextField } from '../../components'
+import { Avatar, Button, HelpPopover, matches, SelectField, Switch, TextField } from '../../components'
 import styles from './ProjectDialog.module.css'
 
 const DEFAULT_TAGS = ['Elinstallation', 'Mätning', 'Dokumentation', 'Felsökning', 'Kundkontakt']
@@ -185,8 +185,11 @@ export function ProjectDialog({
             </div>
 
             <div className={styles.field}>
-              <span className={styles.label} id="tags-label">
-                Mål
+              <span className={styles.labelRow}>
+                <span className={styles.label} id="tags-label">
+                  Mål
+                </span>
+                <HelpPopover topic="goals" />
               </span>
               <div className={styles.tagBox}>
                 {tags.map((tag) => (

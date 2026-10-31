@@ -2,6 +2,7 @@ import { Target } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { HelpPopover } from '../../components'
 import { useProjectGoals, useStudentGoals, type GoalEvidence } from '../../api/goals'
 import { longDate } from '../reports/answers'
 import styles from './GoalViews.module.css'
@@ -68,7 +69,7 @@ export function ProjectGoalsTable({
         </span>
         <div>
           <h2 id="project-goals-title" className={styles.title}>
-            Mål i projektet
+            Mål i projektet <HelpPopover topic="goals" />
           </h2>
           <p className={styles.muted}>
             Hur många gånger varje elev har visat målet i redovisningar i projektet. Streckad ruta = inget underlag än.
