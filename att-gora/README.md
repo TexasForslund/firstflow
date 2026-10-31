@@ -66,6 +66,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 
 **Nästa steg:**
 - **Texas + Claude:**
+  - **Påminnelse (Texas, 2026-10-31): handledarens vy ska få mer fokus framöver.** Börja med F31, Bekräfta närvaro, som är för svår att förstå i dag.
   - Besluten och skisserna för B17–B20 (se ovan).
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
   - Påminnelser om incheckning via e-post eller push.
