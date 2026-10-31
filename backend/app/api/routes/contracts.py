@@ -93,7 +93,7 @@ class ContractDetail(ContractSummary):
 
 
 class SignBody(BaseModel):
-    confirm: Literal[True] = Field(description="Parten har läst avtalet och godkänner det")
+    confirm: Literal[True] = Field(description="Parten har läst kontraktet och godkänner det")
 
 
 class Reminded(BaseModel):
@@ -225,7 +225,7 @@ def list_contracts(db: DbSession, user: Party) -> list[ContractSummary]:
 def create_contract(
     db: DbSession,
     user: Teacher,
-    file: Annotated[UploadFile, File(description="Avtalet som PDF, högst 10 MB")],
+    file: Annotated[UploadFile, File(description="Kontraktet som PDF, högst 10 MB")],
     title: Annotated[
         str, Form(), StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
     ],

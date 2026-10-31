@@ -68,7 +68,7 @@ function StaffContracts({ role }: { role: string | undefined }) {
           <p className={styles.subtitle}>
             {isTeacher
               ? 'Utbildningskontrakt för APL. Skicka ut, följ signeringen och ladda ner.'
-              : 'Kontrakt som du är part i. Läs avtalet och signera.'}
+              : 'Kontrakt som du är part i. Läs kontraktet och signera.'}
           </p>
         </div>
         {isTeacher && (
@@ -118,7 +118,7 @@ function StaffContracts({ role }: { role: string | undefined }) {
       {query.isSuccess && contracts.length === 0 && (
         <p className={styles.emptyBox}>
           {isTeacher
-            ? 'Inga kontrakt än. Ladda upp ett avtal som PDF och skicka det för signering.'
+            ? 'Inga kontrakt än. Ladda upp ett kontrakt som PDF och skicka det för signering.'
             : 'Du har inga kontrakt att signera.'}
         </p>
       )}

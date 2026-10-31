@@ -58,7 +58,7 @@ export function ReportPreview({ report }: { report: OverviewReport }) {
             to={`/reports/${report.id}`}
             variant="soft"
             icon={<ArrowUpRight aria-hidden="true" />}
-            aria-label={`Öppna veckoredovisningen från ${student.name}`}
+            aria-label={`Öppna redovisningen från ${student.name}`}
           >
             Öppna
           </ButtonLink>

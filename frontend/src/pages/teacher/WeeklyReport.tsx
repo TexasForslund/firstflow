@@ -23,7 +23,7 @@ export function WeeklyReport() {
   if (!report || !student) {
     return (
       <div>
-        <h1 className={styles.title}>Veckoredovisningen finns inte</h1>
+        <h1 className={styles.title}>Redovisningen finns inte</h1>
         <p className={styles.missing}>Den kan ha tagits bort, eller så har du inte behörighet att se den.</p>
       </div>
     )
@@ -39,7 +39,7 @@ export function WeeklyReport() {
       <div className={styles.main}>
         <div className={styles.titleRow}>
           <h1 className={styles.title}>
-            Veckoredovisning <span className={styles.week}>V{report.week}</span>
+            Redovisning <span className={styles.week}>V{report.week}</span>
           </h1>
           <ButtonLink to="/reports" icon={<ArrowUpRight aria-hidden="true" />}>
             Se alla

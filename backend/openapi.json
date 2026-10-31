@@ -5420,7 +5420,7 @@
             "type": "string",
             "contentMediaType": "application/octet-stream",
             "title": "File",
-            "description": "Avtalet som PDF, högst 10 MB"
+            "description": "Kontraktet som PDF, högst 10 MB"
           },
           "title": {
             "type": "string",
@@ -8918,7 +8918,7 @@
             "type": "boolean",
             "const": true,
             "title": "Confirm",
-            "description": "Parten har läst avtalet och godkänner det"
+            "description": "Parten har läst kontraktet och godkänner det"
           }
         },
         "type": "object",
@@ -9333,7 +9333,7 @@
           "report_count": {
             "type": "integer",
             "title": "Report Count",
-            "description": "Inskickade veckoredovisningar"
+            "description": "Inskickade redovisningar"
           },
           "project_count": {
             "type": "integer",

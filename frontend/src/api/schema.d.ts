@@ -1916,7 +1916,7 @@ export interface components {
         Body_create_contract_api_contracts_post: {
             /**
              * File
-             * @description Avtalet som PDF, högst 10 MB
+             * @description Kontraktet som PDF, högst 10 MB
              */
             file: string;
             /** Title */
@@ -3510,7 +3510,7 @@ export interface components {
         SignBody: {
             /**
              * Confirm
-             * @description Parten har läst avtalet och godkänner det
+             * @description Parten har läst kontraktet och godkänner det
              * @constant
              */
             confirm: true;
@@ -3709,7 +3709,7 @@ export interface components {
             workplace: components["schemas"]["Ref"] | null;
             /**
              * Report Count
-             * @description Inskickade veckoredovisningar
+             * @description Inskickade redovisningar
              */
             report_count: number;
             /**

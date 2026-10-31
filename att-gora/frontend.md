@@ -317,6 +317,19 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 
 ---
 
+## F28. Kom igång för läraren ⬜ (Texas, 2026-10-31: när resten är byggt)
+
+En checklista på lärarens översikt tills allt är klart, så att en ny lärare har en väg att följa i stället för att leta i menyn:
+- Skapa klass
+- APL-dagar och redovisningsdagar
+- Frågor
+- Praktikplatser
+- Projekt och mål
+
+Varje steg leder till rätt sida och bockas av när det är gjort. Listan försvinner när allt är klart. Skiss först.
+
+---
+
 ## F21. Eleven öppnar ett projekt från Min APL ✅ Klar ([PR #44](https://github.com/TexasForslund/firstflow/pull/44), Texas + Claude, 2026-10-29)
 
 Enligt skiss B i "Firstflow – Elevens projekt skiss" (Texas, 2026-10-29):

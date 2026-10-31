@@ -47,7 +47,7 @@ export function MyStudents() {
       {query.isSuccess && students.length === 0 && (
         <Card>
           <p className={styles.empty}>
-            När en lärare placerar en elev hos dig visas eleven här, med arbetsplats och period.
+            När en lärare placerar en elev hos dig visas eleven här, med företag och period.
           </p>
         </Card>
       )}

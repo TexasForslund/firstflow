@@ -69,7 +69,7 @@ class StudentRead(BaseModel):
     classes: list[Ref]
     teachers: list[Ref]
     workplace: Ref | None = Field(description="Pågående eller nästa praktikplats")
-    report_count: int = Field(description="Inskickade veckoredovisningar")
+    report_count: int = Field(description="Inskickade redovisningar")
     project_count: int = Field(description="Projekt som eleven är med i")
 
 

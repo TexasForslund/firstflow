@@ -63,12 +63,7 @@ const routes: RouteObject[] = [
       { path: 'reports/:reportId', element: only(staff, <ReportRoute />) },
       { path: 'student-history', element: only(staff, <StudentHistory />) },
       { path: 'attendance', element: only(['teacher', 'school_admin', 'principal'], <Attendance />) },
-      placeholder(
-        'reports',
-        staff,
-        'Veckoredovisningar',
-        'Alla veckoredovisningar, med filter per klass, elev och vecka.',
-      ),
+      placeholder('reports', staff, 'Redovisningar', 'Alla redovisningar, med filter per klass, elev och vecka.'),
       { path: 'projects', element: only(['teacher', 'supervisor'], <Projects />) },
       { path: 'projects/:projectId', element: only(['teacher', 'supervisor'], <ProjectPage />) },
 
@@ -115,7 +110,7 @@ const routes: RouteObject[] = [
 
       // Skolans ledning och administration
       { path: 'users', element: only(['school_admin', 'principal'], <Users />) },
-      placeholder('school', ['principal'], 'Översikt', 'Skolans APL i siffror: elever på APL, närvaro och avtal.'),
+      placeholder('school', ['principal'], 'Översikt', 'Skolans APL i siffror: elever på APL, närvaro och kontrakt.'),
       placeholder(
         'admin-reports',
         ['school_admin', 'principal'],
