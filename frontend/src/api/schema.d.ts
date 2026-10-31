@@ -3479,6 +3479,11 @@ export interface components {
              * @description Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar i veckan utan incheckning. Senaste först
              */
             earlier: components["schemas"]["ReviewItem"][];
+            /**
+             * This Week
+             * @description Veckans dagar före i dag, i alla lägen. Senaste först (Texas, 2026-10-31)
+             */
+            this_week: components["schemas"]["ReviewItem"][];
         };
         /** ReviewVerdict */
         ReviewVerdict: {

@@ -8971,6 +8971,14 @@
             "type": "array",
             "title": "Earlier",
             "description": "Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar i veckan utan incheckning. Senaste först"
+          },
+          "this_week": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewItem"
+            },
+            "type": "array",
+            "title": "This Week",
+            "description": "Veckans dagar före i dag, i alla lägen. Senaste först (Texas, 2026-10-31)"
           }
         },
         "type": "object",
@@ -8978,7 +8986,8 @@
           "today",
           "earliest",
           "today_items",
-          "earlier"
+          "earlier",
+          "this_week"
         ],
         "title": "ReviewList"
       },

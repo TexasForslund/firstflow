@@ -440,6 +440,27 @@ def test_not_present_does_not_count(
     assert row["days"][1]["checked_in_at"] is not None
 
 
+def test_review_list_this_week(client: TestClient, login: Login, world: World, db: Session) -> None:
+    """Veckans dagar före i dag i alla lägen, för listorna Ingen incheckning och Klart."""
+    _check_in(db, world.placement, MONDAY, review="confirmed")
+    _check_in(db, world.placement, TUESDAY)
+    login(world.supervisor)
+    listed = client.get("/api/supervisor/attendance/review").json()
+    week = {(i["student"]["id"], i["date"]): i["state"] for i in listed["this_week"]}
+    assert week[(str(world.student.id), "2026-10-19")] == "confirmed"
+    assert week[(str(world.student.id), "2026-10-20")] == "pending"
+    assert week[(str(world.second.id), "2026-10-20")] == "missing"
+    # I dag och förra veckan är inte med.
+    assert all("2026-10-19" <= d < "2026-10-21" for _, d in week)
+    assert [i["date"] for i in listed["this_week"]] == sorted(
+        (i["date"] for i in listed["this_week"]), reverse=True
+    )
+    # Bekräftade dagar väntar inte.
+    assert (str(world.student.id), "2026-10-19") not in {
+        (i["student"]["id"], i["date"]) for i in listed["earlier"]
+    }
+
+
 def test_review_rules(client: TestClient, login: Login, world: World) -> None:
     login(world.supervisor)
 
