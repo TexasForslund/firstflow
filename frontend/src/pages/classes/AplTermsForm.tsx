@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 
 import { useSetAplTerms, type AplTerms } from '../../api/classes'
-import { Button, Card } from '../../components'
+import { Button, Card, HelpPopover } from '../../components'
 import { WEEKDAYS, weekdayList } from './aplTerms'
 import styles from './Classes.module.css'
 
@@ -66,7 +66,8 @@ function AplTermsEditor({ classId, terms }: { classId: string; terms: AplTerms }
         >
           <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>
-              APL-dagar <span className={styles.legendHint}>dagarna eleverna är på APL och checkar in</span>
+              APL-dagar <span className={styles.legendHint}>dagarna eleverna är på APL och checkar in</span>{' '}
+              <HelpPopover topic="aplDays" />
             </legend>
             <div className={styles.weekdays}>
               {WEEKDAYS.map((day, i) => (

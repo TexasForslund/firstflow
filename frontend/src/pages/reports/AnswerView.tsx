@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react'
 import type { Question } from '../../api/forms'
 import { useAddComment, type AnswerRead, type CommentVisibility, type ReportDetail } from '../../api/reports'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar } from '../../components'
+import { Avatar, HelpPopover } from '../../components'
 import { answerText } from './answers'
 import styles from './AnswerView.module.css'
 
@@ -147,6 +147,7 @@ export function Comments({ report }: { report: ReportDetail }) {
           >
             <Lock aria-hidden="true" /> Bara lärare och handledare
           </button>
+          <HelpPopover topic="privateComment" />
         </div>
       )}
       <form className={styles.commentForm} data-private={isPrivate ? '' : undefined} onSubmit={submit}>

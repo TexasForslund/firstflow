@@ -317,6 +317,18 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 
 ---
 
+## F29. "Vad är det här?" vid svåra begrepp ✅ Klar ([PR #53](https://github.com/TexasForslund/firstflow/pull/53), Texas + Claude, 2026-10-31)
+
+Enligt "Firstflow – Vad är det här? skiss" (Texas, 2026-10-31). En liten knapp bredvid begreppet öppnar en ruta med två–tre meningar och ett exempel. Stängs med krysset, Esc eller ett klick utanför. På mobilen är rutan lika bred som skärmen.
+- **Mål:** projektets popup, frågebyggarens avsnitt Mål och tabellen Mål i projektet.
+- **Inriktningar:** kortet Inriktningar och Visas för i frågebyggaren.
+- **APL-dagar:** APL-villkor i klassvyn.
+- **Privat kommentar:** valet Alla ser / Bara lärare och handledare vid kommentarer.
+- Texterna står i `frontend/src/components/helpTexts.ts` och komponenten är `HelpPopover`.
+- Inget om GDPR i texten om privata kommentarer än. Det beslutas tillsammans med Haldor senare.
+
+---
+
 ## F28. Kom igång för läraren ⬜ (Texas, 2026-10-31: när resten är byggt)
 
 En checklista på lärarens översikt tills allt är klart, så att en ny lärare har en väg att följa i stället för att leta i menyn:

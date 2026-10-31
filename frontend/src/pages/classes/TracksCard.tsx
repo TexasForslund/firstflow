@@ -10,7 +10,7 @@ import {
   trackTone,
   type Track,
 } from '../../api/tracks'
-import { Card } from '../../components'
+import { Card, HelpPopover } from '../../components'
 import styles from './Classes.module.css'
 import own from './TracksCard.module.css'
 
@@ -53,7 +53,9 @@ export function TracksCard({ classId, canEdit }: { classId: string; canEdit: boo
   return (
     <Card>
       <div className={styles.cardHeader}>
-        <h2 className={styles.cardTitle}>Inriktningar</h2>
+        <h2 className={styles.cardTitle}>
+          Inriktningar <HelpPopover topic="tracks" />
+        </h2>
         <span className={own.lead}>Används för att ställa vissa frågor till bara en del av klassen</span>
       </div>
       <div className={own.body}>
