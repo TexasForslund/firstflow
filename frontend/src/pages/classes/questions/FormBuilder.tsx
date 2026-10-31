@@ -312,7 +312,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
           <section className={`${styles.canvas} ${styles.emptyCanvas}`}>
             <h2 className={styles.emptyTitle}>Inga frågor än</h2>
             <p className={styles.settingsHint}>
-              Eleverna svarar på frågorna en i taget vid varje veckoredovisning. Börja med en fritextfråga, till exempel
+              Eleverna svarar på frågorna en i taget vid varje redovisning. Börja med en fritextfråga, till exempel
               "Vad har du gjort i dag?".
             </p>
             <Button variant="primary" icon={<Plus aria-hidden="true" />} onClick={() => setAdding(true)}>

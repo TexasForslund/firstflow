@@ -113,12 +113,12 @@ function AssignForm({ student }: { student: Person }) {
     )
   }
 
-  if (workplaces.isPending) return <p className={styles.hint}>Hämtar arbetsplatser…</p>
-  if (workplaces.isError) return <p className={styles.hint}>Arbetsplatserna gick inte att hämta.</p>
+  if (workplaces.isPending) return <p className={styles.hint}>Hämtar företag…</p>
+  if (workplaces.isError) return <p className={styles.hint}>Företagen gick inte att hämta.</p>
   if (usable.length === 0) {
     return (
       <p className={styles.hint}>
-        Skolan har ingen arbetsplats med handledare än. Lägg till en under{' '}
+        Skolan har inget företag med handledare än. Lägg till en under{' '}
         <Link to="/placements" className={styles.inlineLink}>
           Praktikplatser
         </Link>
@@ -141,17 +141,17 @@ function AssignForm({ student }: { student: Person }) {
       <p className={styles.assignTitle}>Ny placering</p>
       <div className={styles.formGrid}>
         <Combobox
-          label="Arbetsplats"
+          label="Företag"
           value={workplaceId}
           onChange={chooseWorkplace}
-          placeholder="Sök arbetsplats"
+          placeholder="Sök företag"
           options={usable.map((w) => ({ id: w.id, label: w.name, description: w.address ?? undefined }))}
         />
         <Combobox
           label="Handledare"
           value={supervisorId}
           onChange={setSupervisorId}
-          placeholder={workplace ? 'Sök handledare' : 'Välj arbetsplats först'}
+          placeholder={workplace ? 'Sök handledare' : 'Välj företag först'}
           disabled={!workplace}
           options={supervisors.map((s) => ({ id: s.id, label: s.name, description: s.email }))}
         />

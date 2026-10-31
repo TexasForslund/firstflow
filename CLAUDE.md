@@ -5,6 +5,7 @@ Firstflow är en plattform för APL (arbetsplatsförlagt lärande) för skolor, 
 ## Språk
 
 - Skriv på **svenska**: commit-meddelanden, PR-beskrivningar, dokumentation, kodkommentarer och all text som användaren ser.
+- Använd orden i [docs/ordlista.md](docs/ordlista.md) i all text som användaren ser, t.ex. "redovisning" (inte veckoredovisning), "mål" (inte tagg), "företag" (inte arbetsplats) och "kontrakt" (inte avtal).
 - Kod (variabler, funktioner, filnamn, API-sökvägar) skrivs på **engelska**. Exempel: `Student`, `/api/attendance`, men texten "Närvaro" i gränssnittet.
 
 ## Teamet

@@ -143,7 +143,7 @@ export function attendanceToday(list: DemoStudent[] = students) {
 
 export const attention: DemoAttention[] = [
   { studentId: 'hugo-karlsson', text: 'Upprepad frånvaro: 3 frånvarodagar denna period, ej anmäld i dag' },
-  { studentId: 'elsa-lindqvist', text: 'Har inte lämnat veckoredovisning två veckor i rad' },
+  { studentId: 'elsa-lindqvist', text: 'Har inte lämnat redovisning två veckor i rad' },
   { studentId: 'oscar-hakansson', text: 'Handledaren har inte bekräftat närvaron för förra veckan' },
   { studentId: 'albin-holmgren', text: 'Utbildningskontraktet saknar handledarens underskrift' },
 ]

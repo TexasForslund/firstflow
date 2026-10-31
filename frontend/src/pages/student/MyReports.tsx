@@ -132,7 +132,7 @@ export function MyReports() {
       {posts.length > 0 && (
         <section aria-labelledby="feed-title" className={styles.feed}>
           <h2 id="feed-title" className={styles.feedTitle}>
-            Dina inlägg
+            Dina redovisningar
           </h2>
           <ul className={styles.posts}>
             {posts.map((item) => (

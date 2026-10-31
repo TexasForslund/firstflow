@@ -101,7 +101,7 @@ export function SaveTemplateDialog({
           label="Mallens namn"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Till exempel Veckoredovisning El och energi"
+          placeholder="Till exempel Redovisning El och energi"
           required
           autoFocus
           maxLength={200}

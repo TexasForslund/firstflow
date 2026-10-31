@@ -77,14 +77,14 @@ function Contract({ contract }: { contract: ContractDetail }) {
       </header>
 
       <div className={styles.columns}>
-        <section className={styles.document} aria-label="Avtalet">
+        <section className={styles.document} aria-label="Kontraktet">
           <div className={styles.documentBar}>
             <span className={styles.fileName}>{contract.file_name}</span>
             <a href={pdfUrl(contract.id)} target="_blank" rel="noreferrer" className={styles.openLink}>
               Öppna i ny flik <ExternalLink aria-hidden="true" />
             </a>
           </div>
-          <iframe title={`Avtalet: ${contract.title}`} src={pdfUrl(contract.id)} className={styles.pdf} />
+          <iframe title={`Kontraktet: ${contract.title}`} src={pdfUrl(contract.id)} className={styles.pdf} />
         </section>
 
         <div className={styles.side}>
@@ -169,10 +169,10 @@ function SignBox({ contract }: { contract: ContractDetail }) {
       <h2 id="sign-title" className={styles.boxTitle}>
         Väntar på din signatur
       </h2>
-      <p className={styles.muted}>Läs avtalet först. Du kan öppna det i en ny flik.</p>
+      <p className={styles.muted}>Läs kontraktet först. Du kan öppna det i en ny flik.</p>
       <label className={styles.accept}>
         <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
-        Jag har läst avtalet och godkänner det.
+        Jag har läst kontraktet och godkänner det.
       </label>
       <Button variant="primary" disabled={!accepted || sign.isPending} onClick={() => sign.mutate()}>
         {sign.isPending ? 'Signerar…' : 'Signera (testläge)'}
@@ -248,14 +248,14 @@ function Events({ contract }: { contract: ContractDetail }) {
   const events: { at: string; text: string }[] = []
   const teacher = contract.signers.find((s) => s.role === 'teacher')
   if (contract.sent_at) {
-    events.push({ at: contract.sent_at, text: `${contract.created_by.name} signerade och skickade avtalet` })
+    events.push({ at: contract.sent_at, text: `${contract.created_by.name} signerade och skickade kontraktet` })
   } else {
     events.push({ at: contract.created_at, text: `${contract.created_by.name} skapade ett utkast` })
   }
   for (const s of contract.signers) {
     if (s === teacher) continue
     if (s.signed_at) events.push({ at: s.signed_at, text: `${s.person.name} signerade` })
-    else if (s.opened_at) events.push({ at: s.opened_at, text: `${s.person.name} öppnade avtalet` })
+    else if (s.opened_at) events.push({ at: s.opened_at, text: `${s.person.name} öppnade kontraktet` })
   }
   events.sort((a, b) => b.at.localeCompare(a.at))
 

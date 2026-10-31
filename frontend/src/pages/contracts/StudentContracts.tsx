@@ -29,7 +29,7 @@ export function StudentContracts() {
     <div className={styles.page}>
       <header className={styles.heading}>
         <h1 className={styles.title}>Mina kontrakt</h1>
-        <p className={styles.subtitle}>Läs avtalet och signera.</p>
+        <p className={styles.subtitle}>Läs kontraktet och signera.</p>
       </header>
 
       {query.isPending && <p className={styles.state}>Laddar kontrakt…</p>}

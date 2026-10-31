@@ -63,7 +63,7 @@ export function Overview() {
           <section aria-labelledby="reports-heading" className={styles.orderLast}>
             <div className={styles.sectionHeader}>
               <h2 id="reports-heading" className={styles.sectionTitle}>
-                Veckoredovisningar att läsa
+                Redovisningar att läsa
               </h2>
             </div>
             {data.reports.length === 0 ? (

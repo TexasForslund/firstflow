@@ -77,7 +77,7 @@ class WorkplaceCreate(BaseModel):
     def strip_name(cls, value: str) -> str:
         name = value.strip()
         if not name:
-            raise ValueError("Arbetsplatsen måste ha ett namn")
+            raise ValueError("Företaget måste ha ett namn")
         return name
 
     @field_validator("address")
@@ -291,7 +291,7 @@ def create_placement(
     if supervisor is None or not supervisor.is_active:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="Handledaren finns inte på arbetsplatsen",
+            detail="Handledaren finns inte på företaget",
         )
     # Lås eleven så att två samtidiga anrop inte kan skapa överlappande placeringar.
     db.execute(select(User.id).where(User.id == student.id).with_for_update())

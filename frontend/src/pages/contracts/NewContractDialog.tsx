@@ -94,7 +94,7 @@ export function NewContractDialog({ onClose }: { onClose: () => void }) {
   }
 
   const missing = !file
-    ? 'Ladda upp avtalet som PDF.'
+    ? 'Ladda upp kontraktet som PDF.'
     : !studentId
       ? 'Välj elev.'
       : !workplaceId || !supervisorId
@@ -139,7 +139,7 @@ export function NewContractDialog({ onClose }: { onClose: () => void }) {
         <div className={dialog.body} data-owner="">
           <div className={dialog.left}>
             <div className={dialog.field}>
-              <span className={dialog.label}>Avtalet som PDF</span>
+              <span className={dialog.label}>Kontraktet som PDF</span>
               {file ? (
                 <div className={styles.fileBox}>
                   <span className={styles.pdfIcon} aria-hidden="true">
@@ -186,7 +186,9 @@ export function NewContractDialog({ onClose }: { onClose: () => void }) {
                   {fileError}
                 </span>
               )}
-              <span className={dialog.hint}>Ladda upp skolans avtal. Senare kan Firstflow fylla i en mall åt dig.</span>
+              <span className={dialog.hint}>
+                Ladda upp skolans kontrakt. Senare kan Firstflow fylla i en mall åt dig.
+              </span>
             </div>
 
             <TextField
@@ -212,7 +214,7 @@ export function NewContractDialog({ onClose }: { onClose: () => void }) {
 
             <div className={styles.previewBox}>
               {preview ? (
-                <iframe title="Förhandsvisning av avtalet" src={preview} className={styles.previewFrame} />
+                <iframe title="Förhandsvisning av kontraktet" src={preview} className={styles.previewFrame} />
               ) : (
                 <span className={styles.muted}>Förhandsvisningen visas här när du har valt en PDF.</span>
               )}
