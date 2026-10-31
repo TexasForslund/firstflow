@@ -34,7 +34,7 @@ import { SupervisorReports } from './pages/supervisor/SupervisorReports'
 import { Contracts } from './pages/contracts/Contracts'
 import { ProjectPage } from './pages/projects/ProjectPage'
 import { Projects } from './pages/projects/Projects'
-import { StudentHistory } from './pages/teacher/StudentHistory'
+import { OldStudentHistory, Reports } from './pages/teacher/Reports'
 import { ReportRoute } from './pages/teacher/TeacherReport'
 
 const staff: Role[] = ['teacher']
@@ -61,9 +61,10 @@ const routes: RouteObject[] = [
       // Lärare (demodata tills F3 och F11)
       { path: 'overview', element: only(staff, <Overview />) },
       { path: 'reports/:reportId', element: only(staff, <ReportRoute />) },
-      { path: 'student-history', element: only(staff, <StudentHistory />) },
+      // Elevhistorik heter Redovisningar sedan 2026-10-31. Gamla länkar fungerar.
+      { path: 'student-history', element: <OldStudentHistory /> },
       { path: 'attendance', element: only(['teacher', 'school_admin', 'principal'], <Attendance />) },
-      placeholder('reports', staff, 'Redovisningar', 'Alla redovisningar, med filter per klass, elev och vecka.'),
+      { path: 'reports', element: only(staff, <Reports />) },
       { path: 'projects', element: only(['teacher', 'supervisor'], <Projects />) },
       { path: 'projects/:projectId', element: only(['teacher', 'supervisor'], <ProjectPage />) },
 

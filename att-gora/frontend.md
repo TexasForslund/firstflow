@@ -317,6 +317,15 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 
 ---
 
+## F30. Redovisningar i stället för Elevhistorik ✅ Klar ([PR #54](https://github.com/TexasForslund/firstflow/pull/54), Texas + Claude, 2026-10-31)
+
+Enligt "Firstflow – Redovisningar skiss" (Texas, 2026-10-31). Backend: B23. Menyvalet Elevhistorik heter **Redovisningar** och ligger på `/reports`. `/student-history` leder till Per elev, så gamla länkar fungerar.
+- **Alla redovisningar** (visas först): lärarens alla redovisningar, nyaste först och grupperade per dag. Varje rad visar elev, vilken redovisning, klass, början av första svaret, projekt, och om den är oläst, sen, har kommentarer eller en privat kommentar.
+- **Filter:** klass, elev och projekt, och snabbval med antal: Olästa, Sena, Med kommentarer, Har privat kommentar och **Saknas**. Saknas visar redovisningsdagar de senaste fyra veckorna där eleven inte har redovisat, samma regler som Översikten. Visa fler hämtar 100 till.
+- **Per elev:** en tabell per klass med senaste redovisning, olästa, saknas och projekt. Raden leder till elevsidan.
+
+---
+
 ## F29. "Vad är det här?" vid svåra begrepp ✅ Klar ([PR #53](https://github.com/TexasForslund/firstflow/pull/53), Texas + Claude, 2026-10-31)
 
 Enligt "Firstflow – Vad är det här? skiss" (Texas, 2026-10-31). En liten knapp bredvid begreppet öppnar en ruta med två–tre meningar och ett exempel. Stängs med krysset, Esc eller ett klick utanför. På mobilen är rutan lika bred som skärmen.

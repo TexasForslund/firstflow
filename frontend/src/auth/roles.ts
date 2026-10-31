@@ -29,7 +29,6 @@ export const startPath: Record<Role, string> = {
 const {
   overview,
   messages,
-  history,
   projects,
   placements,
   contracts,
@@ -64,7 +63,7 @@ export const navByRole: Record<Role, NavItem[]> = {
       count: unreadMessages,
       countLabel: 'olästa',
     },
-    { group: 'Elever', to: '/student-history', label: 'Elevhistorik', icon: history, classesAfter: true },
+    { group: 'Elever', to: '/reports', label: 'Redovisningar', icon: reports, classesAfter: true },
     { group: 'APL', to: '/placements', label: 'Praktikplatser', icon: placements },
     { group: 'APL', to: '/projects', label: 'Projekt', icon: projects },
     {

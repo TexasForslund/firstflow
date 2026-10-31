@@ -18,6 +18,7 @@ from app.api.routes import (
     schools,
     students,
     superadmin,
+    teacher_reports,
     templates,
     tracks,
 )
@@ -51,6 +52,7 @@ api_router.include_router(invitations.notification_router)
 api_router.include_router(attendance.student_router)
 api_router.include_router(reports.student_router)
 api_router.include_router(reports.supervisor_router)
+api_router.include_router(teacher_reports.router)
 api_router.include_router(overview.router)
 api_router.include_router(overview.student_router)
 api_router.include_router(projects.router)

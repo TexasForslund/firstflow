@@ -111,7 +111,7 @@ export function WeeklyReport() {
             </div>
           </div>
           <CardFooter>
-            <ButtonLink to={`/student-history?student=${student.id}`} icon={<ArrowUpRight aria-hidden="true" />}>
+            <ButtonLink to={`/reports?view=students&student=${student.id}`} icon={<ArrowUpRight aria-hidden="true" />}>
               Se historik
             </ButtonLink>
           </CardFooter>

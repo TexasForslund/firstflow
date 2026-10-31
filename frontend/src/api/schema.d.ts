@@ -1281,6 +1281,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/teacher/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Teacher Reports
+         * @description Inskickade redovisningar i lärarens klasser, senast inskickade först.
+         */
+        get: operations["list_teacher_reports_api_teacher_reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teacher/reports/missing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Missing Reports
+         * @description Redovisningar som saknas de senaste fyra veckorna, senaste dagen först.
+         */
+        get: operations["list_missing_reports_api_teacher_reports_missing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teacher/reports/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Student Report Stats
+         * @description Per elev i lärarens klasser: senaste redovisning, olästa och saknade.
+         */
+        get: operations["list_student_report_stats_api_teacher_reports_students_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/teacher/overview": {
         parameters: {
             query?: never;
@@ -2708,6 +2768,16 @@ export interface components {
             school_name: string | null;
             preferences: components["schemas"]["DisplayPreferences-Output"];
         };
+        /** MissingReport */
+        MissingReport: {
+            student: components["schemas"]["PersonBrief"];
+            school_class: components["schemas"]["PersonBrief"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+        };
         /**
          * MyAttendance
          * @description Elevens närvaro under den pågående placeringen.
@@ -3239,6 +3309,27 @@ export interface components {
             /** Name */
             name: string;
         };
+        /**
+         * ReportCounts
+         * @description Antal per snabbval, med samma filter för klass, elev och projekt.
+         */
+        ReportCounts: {
+            /** All */
+            all: number;
+            /** Unread */
+            unread: number;
+            /** Late */
+            late: number;
+            /** Comments */
+            comments: number;
+            /** Private */
+            private: number;
+            /**
+             * Missing
+             * @description Saknade redovisningar. 0 när projekt är valt
+             */
+            missing: number;
+        };
         /** ReportDetail */
         ReportDetail: {
             /**
@@ -3506,6 +3597,11 @@ export interface components {
              */
             required: boolean;
         };
+        /**
+         * Show
+         * @enum {string}
+         */
+        Show: "all" | "unread" | "late" | "comments" | "private";
         /** SignBody */
         SignBody: {
             /**
@@ -3718,6 +3814,17 @@ export interface components {
              */
             project_count: number;
         };
+        /** StudentReportStats */
+        StudentReportStats: {
+            student: components["schemas"]["PersonBrief"];
+            school_class: components["schemas"]["PersonBrief"];
+            /** Last Submitted At */
+            last_submitted_at: string | null;
+            /** Unread */
+            unread: number;
+            /** Missing */
+            missing: number;
+        };
         /** StudentReportSummary */
         StudentReportSummary: {
             /**
@@ -3912,6 +4019,48 @@ export interface components {
              * @description Olästa redovisningar, senaste först
              */
             reports: components["schemas"]["OverviewReport"][];
+        };
+        /** TeacherReport */
+        TeacherReport: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["PersonBrief"];
+            school_class: components["schemas"]["PersonBrief"];
+            project: components["schemas"]["PersonBrief"] | null;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /** Is Late */
+            is_late: boolean;
+            /** Is Read */
+            is_read: boolean;
+            /** Comment Count */
+            comment_count: number;
+            /**
+             * Has Private Comment
+             * @description Minst en kommentar som bara personal ser
+             */
+            has_private_comment: boolean;
+            /** @description Första textsvaret, förkortat */
+            excerpt: components["schemas"]["TextAnswer"] | null;
+        };
+        /** TeacherReports */
+        TeacherReports: {
+            /** Reports */
+            reports: components["schemas"]["TeacherReport"][];
+            counts: components["schemas"]["ReportCounts"];
+            /** Has More */
+            has_more: boolean;
         };
         /** TeachersSet */
         TeachersSet: {
@@ -6310,6 +6459,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupervisorReport"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_teacher_reports_api_teacher_reports_get: {
+        parameters: {
+            query?: {
+                class_id?: string | null;
+                student_id?: string | null;
+                project_id?: string | null;
+                show?: components["schemas"]["Show"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeacherReports"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_missing_reports_api_teacher_reports_missing_get: {
+        parameters: {
+            query?: {
+                class_id?: string | null;
+                student_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MissingReport"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_student_report_stats_api_teacher_reports_students_get: {
+        parameters: {
+            query?: {
+                class_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentReportStats"][];
                 };
             };
             /** @description Validation Error */

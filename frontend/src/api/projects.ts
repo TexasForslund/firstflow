@@ -101,7 +101,7 @@ function useInvalidateProjects() {
   const queryClient = useQueryClient()
   return () => {
     queryClient.invalidateQueries({ queryKey: keys.mine })
-    // Elevsidan och Elevhistorik visar elevens projekt.
+    // Elevsidan visar elevens projekt.
     queryClient.invalidateQueries({ queryKey: ['students'] })
   }
 }

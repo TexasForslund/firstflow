@@ -484,3 +484,11 @@ Från idé 10. Beslut (Texas, 2026-10-30): skissen "Firstflow – Mål från lä
 
 **Steg två (inte byggt):** välj mål från Skolverkets Syllabus-API (Gy25: ämne, nivå och centralt innehåll). Eleven ser sitt underlag. En sida där skolan ser och ändrar alla mål.
 
+---
+
+## B23. Lärarens redovisningar ✅ Klar ([PR #54](https://github.com/TexasForslund/firstflow/pull/54), Texas + Claude, 2026-10-31)
+
+För sidan Redovisningar (F30). Bara lärare, bara klasser läraren undervisar på sin skola. En vald klass som läraren inte undervisar ger 404.
+- `GET /api/teacher/reports`: inskickade redovisningar, senast inskickade först. Filter `class_id`, `student_id`, `project_id` och `show` (`all`, `unread`, `late`, `comments`, `private`), `limit` upp till 500 och `has_more`. Svaret har antal per snabbval, även saknade (0 när projekt är valt).
+- `GET /api/teacher/reports/missing`: redovisningsdagar de senaste fyra veckorna utan inskickad redovisning, senaste först. Samma regler som Översikten (`due_days`).
+- `GET /api/teacher/reports/students`: per elev senaste redovisning, olästa och saknade.

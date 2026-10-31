@@ -40,7 +40,7 @@ Står ett ord under **Inte** ska det bytas mot ordet till vänster.
 
 | Säg | Inte | Betyder |
 | --- | --- | --- |
-| Redovisning | veckoredovisning, rapport, logg, inlägg | Elevens svar på klassens frågor en redovisningsdag. Alla säger redovisning, även eleven (Texas, 2026-10-31). |
+| Redovisning | veckoredovisning, rapport, logg, inlägg, elevhistorik | Elevens svar på klassens frågor en redovisningsdag. Alla säger redovisning, även eleven (Texas, 2026-10-31). |
 | Fråga, följdfråga | | En följdfråga kommer direkt efter en fråga, t.ex. "Vad gjorde du?" efter "Ja". |
 | Frågor | formulär, enkät | Klassens frågor i fliken Frågor. |
 | Mall | frågemall | Sparade frågor att börja från. |

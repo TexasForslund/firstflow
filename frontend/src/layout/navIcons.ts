@@ -4,7 +4,6 @@ import {
   FileText,
   GraduationCap,
   Folder,
-  History,
   LayoutDashboard,
   MapPinCheck,
   MessageCircle,
@@ -17,7 +16,6 @@ import {
 export const navIcons = {
   overview: LayoutDashboard,
   messages: MessageCircle,
-  history: History,
   projects: Folder,
   placements: BriefcaseBusiness,
   contracts: FileText,
