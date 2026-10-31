@@ -317,6 +317,19 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 
 ---
 
+## F31. Handledarens Bekräfta närvaro: enklare att förstå och jobba med ⬜ (Texas, 2026-10-31: super viktig)
+
+Handledarens vy ska få mer fokus framöver, och Bekräfta närvaro är den viktigaste delen. Sidan är i dag svår att förstå. Saker att titta på, inget är beslutat:
+- Vad betyder bocken? Elever som checkat in är redan förbockade, men det syns inte om dagen är bekräftad eller bara väntar.
+- "Inte på plats" står på varje rad och konkurrerar med bocken.
+- Långa listor per dag med "Ingen incheckning" för samma elever dag efter dag.
+- Det finns ingen tydlig knapp för att bekräfta allt, och man ser inte om det är sparat.
+- Två företag blandas i samma lista.
+
+Prata igenom med Texas och gör en skiss först.
+
+---
+
 ## F30. Redovisningar i stället för Elevhistorik ✅ Klar ([PR #54](https://github.com/TexasForslund/firstflow/pull/54), Texas + Claude, 2026-10-31)
 
 Enligt "Firstflow – Redovisningar skiss" (Texas, 2026-10-31). Backend: B23. Menyvalet Elevhistorik heter **Redovisningar** och ligger på `/reports`. `/student-history` leder till Per elev, så gamla länkar fungerar.
