@@ -317,16 +317,15 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 
 ---
 
-## F31. Handledarens Bekräfta närvaro: enklare att förstå och jobba med ⬜ (Texas, 2026-10-31: super viktig)
+## F31. Handledarens närvaro: enklare att förstå och jobba med ✅ Klar ([PR #56](https://github.com/TexasForslund/firstflow/pull/56), Texas + Claude, 2026-10-31)
 
-Handledarens vy ska få mer fokus framöver, och Bekräfta närvaro är den viktigaste delen. Sidan är i dag svår att förstå. Saker att titta på, inget är beslutat:
-- Vad betyder bocken? Elever som checkat in är redan förbockade, men det syns inte om dagen är bekräftad eller bara väntar.
-- "Inte på plats" står på varje rad och konkurrerar med bocken.
-- Långa listor per dag med "Ingen incheckning" för samma elever dag efter dag.
-- Det finns ingen tydlig knapp för att bekräfta allt, och man ser inte om det är sparat.
-- Två företag blandas i samma lista.
-
-Prata igenom med Texas och gör en skiss först.
+Enligt skiss A i "Firstflow – Handledarens närvaro skiss" (Texas, 2026-10-31). Handledaren gör bara något när något avviker. Sidan heter **Närvaro**.
+- **I dag** visas bara när någon har APL i dag: Inte på plats och Bekräfta, eller Var här ändå.
+- **Att bekräfta:** incheckningar som väntar, två veckor bakåt. Varje rad har knapparna **✕ Inte på plats** och **✓ Bekräfta** (Texas: knappar med ikon och text). **Bekräfta alla** överst. Raderna grupperas per företag när handledaren har flera.
+- **Ingen incheckning den här veckan:** en rad per elev med dagarna. Räknas som frånvaro utan att handledaren gör något (Texas, 2026-10-31). **Var här en dag** fäller ut dagarna att lägga till.
+- **Klart den här veckan:** bekräftade dagar och dagar inte på plats per elev. **Ändra** fäller ut dagarna med Var här och Inte här.
+- Siffran i menyn räknar bara incheckningar som väntar, som förut.
+- Backend: `this_week` i `GET /api/supervisor/attendance/review`, veckans dagar före i dag i alla lägen.
 
 ---
 

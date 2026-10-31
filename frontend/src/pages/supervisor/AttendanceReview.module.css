@@ -1,9 +1,9 @@
-/* Handledaren bekräftar närvaron (Texas skiss, 2026-10-29). */
+/* Handledaren bekräftar närvaron (Texas, skiss A 2026-10-31). */
 .page {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
   width: 100%;
-  max-width: 40rem;
+  max-width: 50rem;
 }
 
 .header {
@@ -14,14 +14,17 @@
 .title {
   font-size: var(--font-size-2xl);
   font-weight: 700;
-  letter-spacing: var(--tracking-title);
+  letter-spacing: var(--tracking-heading);
 }
 
 .subtitle,
 .state,
-.muted,
-.empty {
+.muted {
   color: var(--color-text-secondary);
+}
+
+.subtitle {
+  font-size: var(--font-size-md);
 }
 
 .muted {
@@ -39,7 +42,8 @@
 
 .sectionHead {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
 }
@@ -47,8 +51,129 @@
 .sectionTitle {
   font-size: var(--font-size-lg);
   font-weight: 600;
+  letter-spacing: var(--tracking-title);
 }
 
+.doneTitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.count {
+  margin-left: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+}
+
+/* Knappar */
+.confirm,
+.notPresent,
+.add,
+.confirmAll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.confirm svg,
+.notPresent svg,
+.add svg,
+.confirmAll svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+.confirm {
+  border: 1px solid #b9a8ff;
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.confirm:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.notPresent,
+.add {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.notPresent:hover:not(:disabled),
+.add:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+
+.confirmAll {
+  min-height: 3rem;
+  padding: 0 var(--space-6);
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: var(--font-size-base);
+}
+
+.confirmAll:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.confirm:disabled,
+.notPresent:disabled,
+.add:disabled,
+.confirmAll:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* Valt läge när handledaren ändrar en dag. */
+.confirm[aria-pressed='true'],
+.notPresent[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.notPresent[aria-pressed='true'] {
+  border-color: var(--color-attention);
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.confirm[aria-pressed='true'] {
+  border-color: var(--color-mint);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.link {
+  min-height: 2.75rem;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+/* I dag */
 .card {
   display: grid;
   gap: var(--space-4);
@@ -66,6 +191,7 @@
 .personText {
   display: grid;
   flex: 1;
+  gap: var(--space-1);
   min-width: 0;
 }
 
@@ -78,10 +204,6 @@
   font-size: var(--font-size-sm);
 }
 
-.status[data-state='pending'] {
-  color: var(--color-sky);
-}
-
 .status[data-state='confirmed'] {
   color: var(--color-mint);
 }
@@ -92,77 +214,133 @@
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: var(--space-2);
 }
 
-.actions > * {
-  justify-content: center;
-}
-
-.change {
-  justify-self: start;
-  min-height: 2.75rem;
-  padding: 0 var(--space-2);
-  border: 0;
-  background: transparent;
-  color: var(--color-primary);
-  font: inherit;
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-}
-
-.change:hover:not(:disabled) {
-  text-decoration: underline;
-}
-
-.day {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.dayTitle {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-}
-
+/* Listor */
 .list {
-  display: grid;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 
-.row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
-}
-
-.row + .row {
+.list > li + li {
   border-top: 1px solid var(--color-border);
 }
 
-.check {
+.company {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-sidebar);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.row {
   display: flex;
-  flex: 1;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
-  min-width: 0;
-  min-height: 3rem;
-  cursor: pointer;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
-.check input {
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  accent-color: var(--color-primary);
+.list > li:first-child > ul > .row:first-child {
+  border-top: 0;
 }
 
-.confirmAll {
-  justify-content: center;
-  width: 100%;
+.company + ul > .row:first-child {
+  border-top: 1px solid var(--color-border);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.studentRow {
+  padding: var(--space-3) var(--space-4);
+}
+
+.studentHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.dayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.dayChip svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.dayChip[data-state='missing'] {
+  border: 1px dashed var(--color-text-faded);
+  color: var(--color-text-secondary);
+}
+
+.dayChip[data-state='confirmed'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.dayChip[data-state='not_present'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.dayList {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--color-border);
+}
+
+.dayRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: var(--font-size-xl);
+  }
+
+  .confirmAll {
+    width: 100%;
+  }
+
+  /* "Var här en dag" på egen rad, så att namnet får plats. */
+  .studentHead > .add {
+    width: 100%;
+  }
+
+  /* Knapparna på egen rad under namnet, lika breda. */
+  .row .rowActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
 }
