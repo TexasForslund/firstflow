@@ -1,6 +1,7 @@
 import { Search, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 
+import { useGoals } from '../../api/goals'
 import { useWorkplaces } from '../../api/placements'
 import { useDeleteProject, useProjects, useSaveProject, type Project, type ProjectWrite } from '../../api/projects'
 import { useStudents } from '../../api/students'
@@ -13,7 +14,7 @@ const DEFAULT_TAGS = ['Elinstallation', 'Mätning', 'Dokumentation', 'Felsöknin
  * Popupen för nytt projekt och för att ändra ett projekt. Täcker nästan hela skärmen.
  *
  * Läraren som äger projektet ändrar allt: text, företag, handledare och elever. En inbjuden
- * handledare ändrar namn, beskrivning, slutdatum och taggar, men inte vilka elever som är med
+ * handledare ändrar namn, beskrivning, slutdatum och mål, men inte vilka elever som är med
  * (Texas, 2026-10-29).
  */
 export function ProjectDialog({
@@ -38,6 +39,8 @@ export function ProjectDialog({
   const students = useStudents(isOwner)
   const workplaces = useWorkplaces(isOwner)
   const allProjects = useProjects()
+  // Skolans mål (idé 10). Handledaren ser inte skolans lista och får förslag från projekten.
+  const goals = useGoals(isOwner)
 
   const [name, setName] = useState(project?.name ?? '')
   const [description, setDescription] = useState(project?.description ?? '')
@@ -61,10 +64,14 @@ export function ProjectDialog({
 
   const suggestions = useMemo(() => {
     const used = new Set(tags.map((t) => t.toLowerCase()))
-    const all = [...(allProjects.data ?? []).flatMap((p) => p.tags), ...DEFAULT_TAGS]
+    const all = [
+      ...(goals.data ?? []).map((g) => g.name),
+      ...(allProjects.data ?? []).flatMap((p) => p.tags),
+      ...DEFAULT_TAGS,
+    ]
     const unique = [...new Map(all.map((t) => [t.toLowerCase(), t])).values()]
     return unique.filter((t) => !used.has(t.toLowerCase())).slice(0, 5)
-  }, [allProjects.data, tags])
+  }, [goals.data, allProjects.data, tags])
 
   function addTag(raw: string) {
     const tag = raw.trim().slice(0, 40)
@@ -179,7 +186,7 @@ export function ProjectDialog({
 
             <div className={styles.field}>
               <span className={styles.label} id="tags-label">
-                Taggar
+                Mål
               </span>
               <div className={styles.tagBox}>
                 {tags.map((tag) => (
@@ -197,7 +204,7 @@ export function ProjectDialog({
                 <input
                   className={styles.tagInput}
                   aria-labelledby="tags-label"
-                  placeholder={tags.length ? '' : 'Skriv och tryck Enter'}
+                  placeholder={tags.length ? '' : 'Skriv ett mål och tryck Enter'}
                   maxLength={40}
                   value={tagDraft}
                   onChange={(e) => setTagDraft(e.target.value)}
@@ -205,6 +212,10 @@ export function ProjectDialog({
                   onBlur={() => tagDraft && addTag(tagDraft)}
                 />
               </div>
+              <span className={styles.hint}>
+                Vad eleverna ska visa i projektet, t.ex. Kundkontakt. Målen är gemensamma för skolan och syns i tabellen
+                Mål i projektet.
+              </span>
               {suggestions.length > 0 && (
                 <span className={styles.suggestions}>
                   Förslag:
@@ -221,7 +232,7 @@ export function ProjectDialog({
               <fieldset className={styles.supervisors}>
                 <legend className={styles.label}>Handledare som kan ändra projektet</legend>
                 <p className={styles.hint}>
-                  De ändrar text, slutdatum och taggar och ser redovisningarna. De ändrar inte vilka elever som är med.
+                  De ändrar text, slutdatum och mål och ser redovisningarna. De ändrar inte vilka elever som är med.
                 </p>
                 {(workplace?.supervisors ?? []).length === 0 && (
                   <p className={styles.hint}>Företaget har inga handledare än. Bjud in dem under Praktikplatser.</p>

@@ -469,7 +469,7 @@ Byggt:
 
 ---
 
-## B22. Mål från läroplanen, steg ett 🚧 Granskas (Texas + Claude, 2026-10-30)
+## B22. Mål från läroplanen, steg ett ✅ Klar ([PR #50](https://github.com/TexasForslund/firstflow/pull/50), Texas + Claude, 2026-10-30)
 
 Från idé 10. Beslut (Texas, 2026-10-30): skissen "Firstflow – Mål från läroplanen skiss". Ordet är "Mål". Steg ett utan Skolverkets API.
 

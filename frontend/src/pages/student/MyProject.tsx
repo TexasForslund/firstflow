@@ -129,7 +129,7 @@ function About({ project }: { project: Project }) {
         </h2>
         <p className={styles.description}>{project.description || 'Läraren har inte skrivit någon beskrivning än.'}</p>
         {project.tags.length > 0 && (
-          <ul className={styles.tags} aria-label="Taggar">
+          <ul className={styles.tags} aria-label="Mål">
             {project.tags.map((tag) => (
               <li key={tag} className={styles.tag}>
                 {tag}
