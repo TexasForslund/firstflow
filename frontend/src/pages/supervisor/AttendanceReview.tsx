@@ -58,7 +58,7 @@ export function AttendanceReview() {
   if (query.isPending) return <p className={styles.state}>Laddar närvaron…</p>
   if (query.isError) return <p className={styles.state}>Närvaron gick inte att hämta. Ladda om sidan.</p>
 
-  const { today, today_items: todayItems, earlier, this_week: week } = query.data
+  const { today, today_items: todayItems, earlier, recent_days: week } = query.data
   const waiting = earlier.filter((i) => i.state === 'pending')
   const missing = week.filter((i) => i.state === 'missing')
   const done = week.filter((i) => i.state === 'confirmed' || i.state === 'not_present')
@@ -98,7 +98,7 @@ export function AttendanceReview() {
         <section className={styles.section} aria-labelledby="missing-title">
           <div>
             <h2 id="missing-title" className={styles.sectionTitle}>
-              Ingen incheckning den här veckan <HelpPopover topic="missingCheckIn" />
+              Ingen incheckning senaste veckan <HelpPopover topic="missingCheckIn" />
             </h2>
             <p className={styles.muted}>
               Räknas som frånvaro. Du behöver bara göra något om eleven var här men glömde checka in.
@@ -115,7 +115,7 @@ export function AttendanceReview() {
       {done.length > 0 && (
         <section className={styles.section} aria-labelledby="done-title">
           <h2 id="done-title" className={styles.doneTitle}>
-            Klart den här veckan
+            Klart senaste veckan
           </h2>
           <ul className={styles.list}>
             {groupBy(done, (i) => i.placement_id).map(([id, days]) => (

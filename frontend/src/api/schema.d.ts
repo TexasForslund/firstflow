@@ -3476,14 +3476,14 @@ export interface components {
             today_items: components["schemas"]["ReviewItem"][];
             /**
              * Earlier
-             * @description Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar i veckan utan incheckning. Senaste först
+             * @description Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar de senaste sju dagarna utan incheckning. Senaste först
              */
             earlier: components["schemas"]["ReviewItem"][];
             /**
-             * This Week
-             * @description Veckans dagar före i dag, i alla lägen. Senaste först (Texas, 2026-10-31)
+             * Recent Days
+             * @description De senaste sju dagarna före i dag, i alla lägen. Senaste först. Sju dagar så att förra fredagen syns på måndagen (Texas, 2026-11-02)
              */
-            this_week: components["schemas"]["ReviewItem"][];
+            recent_days: components["schemas"]["ReviewItem"][];
         };
         /** ReviewVerdict */
         ReviewVerdict: {

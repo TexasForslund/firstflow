@@ -8970,15 +8970,15 @@
             },
             "type": "array",
             "title": "Earlier",
-            "description": "Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar i veckan utan incheckning. Senaste först"
+            "description": "Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar de senaste sju dagarna utan incheckning. Senaste först"
           },
-          "this_week": {
+          "recent_days": {
             "items": {
               "$ref": "#/components/schemas/ReviewItem"
             },
             "type": "array",
-            "title": "This Week",
-            "description": "Veckans dagar före i dag, i alla lägen. Senaste först (Texas, 2026-10-31)"
+            "title": "Recent Days",
+            "description": "De senaste sju dagarna före i dag, i alla lägen. Senaste först. Sju dagar så att förra fredagen syns på måndagen (Texas, 2026-11-02)"
           }
         },
         "type": "object",
@@ -8987,7 +8987,7 @@
           "earliest",
           "today_items",
           "earlier",
-          "this_week"
+          "recent_days"
         ],
         "title": "ReviewList"
       },
