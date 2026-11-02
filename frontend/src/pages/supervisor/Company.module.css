@@ -64,3 +64,32 @@
     padding: var(--space-4);
   }
 }
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* Skolorna som har elever på företaget (Texas, 2026-11-02). */
+.details dd.schools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.school {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.school svg {
+  width: 1rem;
+  height: 1rem;
+}

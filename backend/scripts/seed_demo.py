@@ -30,7 +30,7 @@ from app.core.config import settings
 from app.core.security import hash_password
 from app.db.session import SessionLocal
 from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
-from app.models.placement import Placement, Workplace
+from app.models.placement import Placement, Workplace, WorkplaceSchool, workplace_supervisors
 from app.models.report import FormVersion
 from app.models.school import School
 from app.models.school_class import SchoolClass, teacher_students
@@ -78,7 +78,8 @@ STUDENTS = {
 CLASSES = ["EE22", "EE21"]
 
 # Arbetsplatser per skola: (namn, adress, handledarens e-postprefix, handledarens namn).
-# Gustav Lindahl (handledare@) har elever från båda skolorna.
+# Gustav Lindahl (handledare@) har elever från båda skolorna på samma företag, Kramfors El & Data.
+# Företagsprofilen delas mellan skolorna (Texas, 2026-11-02).
 WORKPLACES = {
     "kramfors": [
         ("Kramfors El & Data", "Storgatan 12, Kramfors", "handledare", "Gustav Lindahl"),
@@ -86,7 +87,7 @@ WORKPLACES = {
     ],
     "umea": [
         ("Umeå Energi Service", "Kungsgatan 40, Umeå", "handledare.ues", "Mikael Rask"),
-        ("Norrlands Elteknik", None, "handledare", "Gustav Lindahl"),
+        ("Kramfors El & Data", "Storgatan 12, Kramfors", "handledare", "Gustav Lindahl"),
     ],
 }  # fmt: skip
 
@@ -228,12 +229,22 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
     workplaces: list[tuple[Workplace, User]] = []
     for name, address, prefix, _ in WORKPLACES[key]:
         supervisor = db.scalar(select(User).where(User.email == f"{prefix}@{DOMAIN}"))
-        workplace = db.scalar(
-            select(Workplace).where(Workplace.school_id == school.id, Workplace.name == name)
+        # En handledare har ett enda företag, som kan delas med andra skolor.
+        workplace = (
+            db.scalar(
+                select(Workplace)
+                .join(workplace_supervisors, workplace_supervisors.c.workplace_id == Workplace.id)
+                .where(workplace_supervisors.c.supervisor_id == supervisor.id)
+            )
+            if supervisor
+            else None
+        ) or db.scalar(
+            select(Workplace)
+            .join(WorkplaceSchool, WorkplaceSchool.workplace_id == Workplace.id)
+            .where(WorkplaceSchool.school_id == school.id, Workplace.name == name)
         )
         if workplace is None:
             workplace = Workplace(
-                school_id=school.id,
                 name=name,
                 address=address,
                 industry="El och energi",
@@ -243,9 +254,13 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
             db.add(workplace)
             created.append(name)
         # Företagen syns bara för läraren som bjöd in handledaren (Texas, 2026-10-26).
-        if workplace.owner_teacher_id is None:
+        if workplace.link(school.id) is None:
             teacher = db.scalar(select(User).where(User.email == f"larare.{key}@{DOMAIN}"))
-            workplace.owner_teacher_id = teacher.id if teacher else None
+            workplace.school_links.append(
+                WorkplaceSchool(
+                    school_id=school.id, owner_teacher_id=teacher.id if teacher else None
+                )
+            )
         if supervisor:
             workplaces.append((workplace, supervisor))
     db.flush()

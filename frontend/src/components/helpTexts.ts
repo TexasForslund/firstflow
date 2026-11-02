@@ -78,6 +78,12 @@ export const HELP = {
     example:
       'Liam checkade in 07:40 på torsdagen, men Gustav svarade Inte på plats. Ringen får en röd prick, så att du ser att något behöver redas ut.',
   },
+  sharedCompany: {
+    title: 'En profil för alla skolor',
+    body: 'Företaget har en profil som alla skolor med elever här ser: namn, adress och handledare. Varje skola ser bara sina egna elever. Bjuder en ny skola in er, läggs den till här.',
+    example:
+      'Umeåskolan bjuder in Gustav. Han tackar ja, och Umeåskolan ser samma profil som Kramforsskolan, men inte Kramforsskolans elever.',
+  },
 } as const
 
 export type HelpTopic = keyof typeof HELP

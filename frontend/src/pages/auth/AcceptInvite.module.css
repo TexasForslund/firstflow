@@ -61,3 +61,17 @@
 .textareaField textarea:focus-visible {
   border-color: var(--color-primary);
 }
+
+/* Handledaren har redan ett företag (Texas, 2026-11-02). */
+.existing {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.existingName {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}

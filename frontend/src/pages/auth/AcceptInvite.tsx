@@ -11,6 +11,9 @@ const PASSWORD_MIN = 10
 /**
  * Sidan som handledaren kommer till via länken i mejlet. Hen skapar sitt konto och, om läraren
  * bjöd in, sin företagsprofil. Därefter är hen inloggad.
+ *
+ * Har handledaren redan ett företag behöver hen inte fylla i det igen: skolan läggs till på
+ * företagsprofilen. Har hen redan ett lösenord tackar hen bara ja (Texas, 2026-11-02).
  */
 export function AcceptInvite() {
   const { token = '' } = useParams()
@@ -52,9 +55,11 @@ export function AcceptInvite() {
   }
 
   const invite = preview.data
-  const needsCompany = invite.kind === 'supervisor'
+  const existingCompany = invite.existing_workplace_name ?? null
+  const needsAccount = !invite.has_account
+  const needsCompany = invite.kind === 'supervisor' && !existingCompany
   const passwordError =
-    touched && password.length < PASSWORD_MIN
+    needsAccount && touched && password.length < PASSWORD_MIN
       ? `Lösenordet måste ha minst ${PASSWORD_MIN} tecken.`
       : touched && password !== repeat
         ? 'Lösenorden är inte lika.'
@@ -63,11 +68,11 @@ export function AcceptInvite() {
   function submit(event: FormEvent) {
     event.preventDefault()
     setTouched(true)
-    if (password.length < PASSWORD_MIN || password !== repeat) return
+    if (needsAccount && (password.length < PASSWORD_MIN || password !== repeat)) return
     accept.mutate(
       {
-        name: name.trim(),
-        password,
+        name: needsAccount ? name.trim() : null,
+        password: needsAccount ? password : null,
         company: needsCompany
           ? {
               name: company.name.trim(),
@@ -86,15 +91,27 @@ export function AcceptInvite() {
       <div className={`${styles.panel} ${own.panel}`}>
         <Logo height={36} />
         <div className={styles.intro}>
-          <h1 className={styles.title}>Välkommen till Firstflow</h1>
+          <h1 className={styles.title}>
+            {existingCompany ? `${invite.school_name} vill ha APL hos er` : 'Välkommen till Firstflow'}
+          </h1>
           <p className={styles.subtitle}>
             {invite.invited_by_name}
             {invite.workplace_name
               ? ` har bjudit in dig som handledare på ${invite.workplace_name}.`
               : ` på ${invite.school_name} har bjudit in dig att handleda elever på APL.`}{' '}
-            Skapa ditt konto så kommer du igång.
+            {needsAccount && 'Skapa ditt konto så kommer du igång.'}
           </p>
         </div>
+
+        {existingCompany && (
+          <div className={own.existing}>
+            <span className={own.existingName}>{existingCompany}</span>
+            <span className={own.hint}>
+              Du behöver inte fylla i något nytt. {invite.school_name} läggs till på din företagsprofil och ser samma
+              uppgifter.
+            </span>
+          </div>
+        )}
 
         <form className={styles.form} onSubmit={submit} noValidate>
           {accept.isError && (
@@ -103,35 +120,37 @@ export function AcceptInvite() {
             </p>
           )}
 
-          <fieldset className={own.fieldset}>
-            <legend className={own.legend}>Ditt konto</legend>
-            <TextField label="E-post" type="email" value={invite.email} readOnly autoComplete="username" />
-            <TextField
-              label="Ditt namn"
-              autoComplete="name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              label="Välj lösenord"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <TextField
-              label="Upprepa lösenordet"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={repeat}
-              error={passwordError}
-              onChange={(e) => setRepeat(e.target.value)}
-            />
-            <p className={own.hint}>Minst {PASSWORD_MIN} tecken. En mening fungerar bra.</p>
-          </fieldset>
+          {needsAccount && (
+            <fieldset className={own.fieldset}>
+              <legend className={own.legend}>Ditt konto</legend>
+              <TextField label="E-post" type="email" value={invite.email} readOnly autoComplete="username" />
+              <TextField
+                label="Ditt namn"
+                autoComplete="name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <TextField
+                label="Välj lösenord"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <TextField
+                label="Upprepa lösenordet"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={repeat}
+                error={passwordError}
+                onChange={(e) => setRepeat(e.target.value)}
+              />
+              <p className={own.hint}>Minst {PASSWORD_MIN} tecken. En mening fungerar bra.</p>
+            </fieldset>
+          )}
 
           {needsCompany && (
             <fieldset className={`${own.fieldset} ${own.divided}`}>
@@ -173,9 +192,9 @@ export function AcceptInvite() {
             type="submit"
             variant="primary"
             className={styles.submit}
-            disabled={accept.isPending || !name.trim() || (needsCompany && !company.name.trim())}
+            disabled={accept.isPending || (needsAccount && !name.trim()) || (needsCompany && !company.name.trim())}
           >
-            {accept.isPending ? 'Skapar kontot…' : 'Skapa konto'}
+            {accept.isPending ? 'Sparar…' : needsAccount ? 'Skapa konto' : 'Tacka ja'}
           </Button>
         </form>
       </div>

@@ -8,6 +8,10 @@ Flödet:
    som bjöd in och för skolans ledning.
 4. Handledaren kan bjuda in upp till tre kollegor till sin arbetsplats.
 
+En handledare har ett enda företag (Texas, 2026-11-02). Bjuder en ny skola in en handledare som
+redan har ett företag, tackar hen bara ja: skolan läggs till på företaget och hen behöver inte
+fylla i något nytt. Har hen redan ett lösenord behåller hen det.
+
 Länken går ut efter `INVITATION_LIFETIME_DAYS`. En ny inbjudan till samma e-post från samma
 person ersätter den gamla. En ogiltig, använd, återkallad eller utgången länk svarar 404, så
 att det inte går att se skillnad på dem.
@@ -32,7 +36,7 @@ from app.core.config import settings
 from app.core.security import hash_password, hash_session_token, new_session_token
 from app.db.session import DbSession
 from app.models.invitation import Invitation, InvitationKind, Notification
-from app.models.placement import Workplace, workplace_supervisors
+from app.models.placement import Workplace, WorkplaceSchool, workplace_supervisors
 from app.models.school import School
 from app.models.user import User, UserRole
 from app.services.accounts import NO_PASSWORD, AccountCreate, create_account
@@ -85,6 +89,12 @@ class InvitePreview(BaseModel):
     invited_by_name: str
     school_name: str
     workplace_name: str | None = Field(description="Arbetsplatsen när en kollega bjuds in")
+    existing_workplace_name: str | None = Field(
+        default=None, description="Företaget handledaren redan har. Skolan läggs till där"
+    )
+    has_account: bool = Field(
+        default=False, description="Handledaren har redan ett lösenord och behöver inget nytt"
+    )
 
 
 def _clean(value: str | None) -> str | None:
@@ -114,15 +124,25 @@ class CompanyProfile(BaseModel):
 
 
 class AcceptInvite(BaseModel):
-    name: str = Field(min_length=1, max_length=200)
-    password: str = Field(min_length=PASSWORD_MIN, max_length=200)
+    name: str | None = Field(
+        default=None, min_length=1, max_length=200, description="Krävs för ett nytt konto"
+    )
+    password: str | None = Field(
+        default=None,
+        min_length=PASSWORD_MIN,
+        max_length=200,
+        description="Krävs för ett nytt konto",
+    )
     company: CompanyProfile | None = Field(
-        default=None, description="Krävs när en ny handledare bjuds in av en lärare"
+        default=None,
+        description="Krävs när en ny handledare utan företag bjuds in av en lärare",
     )
 
     @field_validator("name")
     @classmethod
-    def strip_name(cls, value: str) -> str:
+    def strip_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
         name = value.strip()
         if not name:
             raise ValueError("Namnet får inte vara tomt")
@@ -141,7 +161,7 @@ class SupervisorWorkplace(BaseModel):
     address: str | None
     industry: str | None
     description: str | None
-    school_name: str
+    school_names: list[str] = Field(description="Skolorna som har elever på företaget")
     supervisors: list[Colleague]
     pending_invitations: list[InvitationRead]
     can_invite: bool = Field(description="Färre än tre kollegor, inklusive väntande inbjudningar")
@@ -183,12 +203,7 @@ def _read(db: DbSession, invitation: Invitation) -> InvitationRead:
         workplace_name = db.scalar(
             select(Workplace.name)
             .join(workplace_supervisors, workplace_supervisors.c.workplace_id == Workplace.id)
-            .where(
-                workplace_supervisors.c.supervisor_id == invitation.accepted_user_id,
-                Workplace.school_id == invitation.school_id,
-            )
-            .order_by(Workplace.created_at.desc())
-            .limit(1)
+            .where(workplace_supervisors.c.supervisor_id == invitation.accepted_user_id)
         )
     return InvitationRead(
         id=invitation.id,
@@ -201,9 +216,15 @@ def _read(db: DbSession, invitation: Invitation) -> InvitationRead:
     )
 
 
-def _check_email_free_for_supervisor(db: DbSession, email: str) -> None:
-    """E-posten får inte tillhöra någon annan roll eller en handledare som redan har ett
-    aktivt konto. Den senare kopplas till fler arbetsplatser senare (inte byggt än)."""
+def _check_email_free_for_supervisor(
+    db: DbSession, email: str, *, school_id: UUID | None = None
+) -> None:
+    """E-posten får inte tillhöra någon annan roll.
+
+    En kollega (utan `school_id`) får inte redan ha ett konto, eftersom en handledare hör till
+    ett enda företag. En handledare som bjuds in av en skola (`school_id`) får ha ett konto och
+    ett företag, så länge företaget inte redan har elever från skolan.
+    """
     existing = db.scalar(select(User).where(User.email == email))
     if existing is None:
         return
@@ -212,11 +233,27 @@ def _check_email_free_for_supervisor(db: DbSession, email: str) -> None:
             status.HTTP_409_CONFLICT,
             detail="E-postadressen används redan av någon som inte är handledare",
         )
-    if existing.password_hash != NO_PASSWORD:
+    if school_id is None:
+        if existing.password_hash != NO_PASSWORD:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT, detail="Handledaren har redan ett konto i Firstflow"
+            )
+        return
+    workplace = _workplace_of(db, existing.id)
+    if workplace is not None and workplace.link(school_id) is not None:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail="Handledaren har redan ett konto i Firstflow",
+            detail=f"Handledaren tar redan emot elever från er skola på {workplace.name}",
         )
+
+
+def _workplace_of(db: DbSession, supervisor_id: UUID) -> Workplace | None:
+    """Företaget handledaren finns på. En handledare hör till ett enda företag."""
+    return db.scalar(
+        select(Workplace)
+        .join(workplace_supervisors, workplace_supervisors.c.workplace_id == Workplace.id)
+        .where(workplace_supervisors.c.supervisor_id == supervisor_id)
+    )
 
 
 def _send(db: DbSession, invitation: Invitation, inviter: User) -> None:
@@ -315,7 +352,7 @@ def notify(db: DbSession, user_id: UUID, text: str, link: str | None = None) -> 
 @router.post("", response_model=InvitationRead, status_code=status.HTTP_201_CREATED)
 def invite_supervisor(body: Email, db: DbSession, user: CanInvite) -> InvitationRead:
     """Bjuder in en handledare. Hen skapar konto och företagsprofil via länken i mejlet."""
-    _check_email_free_for_supervisor(db, body.email)
+    _check_email_free_for_supervisor(db, body.email, school_id=user.school_id)
     invitation = _create(db, user, body.email, InvitationKind.SUPERVISOR, user.school_id)
     return _read(db, invitation)
 
@@ -383,29 +420,53 @@ def revoke_invitation(invitation_id: UUID, db: DbSession, user: CanInvite) -> Re
 def preview_invite(token: str, db: DbSession) -> InvitePreview:
     """Vem som bjöd in och till vad, så att sidan kan visa rätt formulär."""
     invitation = _by_token(db, token)
+    existing = db.scalar(select(User).where(User.email == invitation.email))
+    workplace = (
+        _workplace_of(db, existing.id)
+        if existing and invitation.kind == InvitationKind.SUPERVISOR
+        else None
+    )
     return InvitePreview(
         kind=invitation.kind,
         email=invitation.email,
         invited_by_name=invitation.invited_by.name,
         school_name=invitation.school.name,
         workplace_name=invitation.workplace.name if invitation.workplace else None,
+        existing_workplace_name=workplace.name if workplace else None,
+        has_account=bool(existing and existing.password_hash != NO_PASSWORD),
     )
 
 
 @public_router.post("/{token}/accept", response_model=MeRead)
 def accept_invite(token: str, body: AcceptInvite, db: DbSession, response: Response) -> MeRead:
-    """Skapar handledarens konto (och företagsprofil) och loggar in hen."""
+    """Skapar handledarens konto och företagsprofil, eller lägger till skolan på företaget
+    handledaren redan har, och loggar in hen."""
     invitation = _by_token(db, token)
     # Lås inbjudan så att två samtidiga anrop inte skapar två konton.
     db.execute(select(Invitation.id).where(Invitation.id == invitation.id).with_for_update())
-    if invitation.kind == InvitationKind.SUPERVISOR and body.company is None:
+    is_supervisor_invite = invitation.kind == InvitationKind.SUPERVISOR
+    _check_email_free_for_supervisor(
+        db, invitation.email, school_id=invitation.school_id if is_supervisor_invite else None
+    )
+
+    supervisor = db.scalar(select(User).where(User.email == invitation.email))
+    has_account = supervisor is not None and supervisor.password_hash != NO_PASSWORD
+    existing = _workplace_of(db, supervisor.id) if supervisor else None
+    if not has_account and (body.name is None or body.password is None):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Fyll i namn och lösenord"
+        )
+    if is_supervisor_invite and existing is None and body.company is None:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Fyll i uppgifterna om företaget"
         )
-    _check_email_free_for_supervisor(db, invitation.email)
+    if not is_supervisor_invite and existing is not None and existing != invitation.workplace:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="Du är redan handledare på ett annat företag"
+        )
 
-    supervisor = db.scalar(select(User).where(User.email == invitation.email))
     if supervisor is None:
+        assert body.name is not None and body.password is not None
         supervisor = create_account(
             db,
             email=invitation.email,
@@ -414,46 +475,64 @@ def accept_invite(token: str, body: AcceptInvite, db: DbSession, response: Respo
             school_id=None,
             password_hash=hash_password(body.password),
         )
-    else:
+    elif not has_account:
         # Ett konto utan lösenord, t.ex. skapat av skoladmin innan inbjudningar fanns.
+        assert body.name is not None and body.password is not None
         supervisor.name = body.name
         supervisor.password_hash = hash_password(body.password)
         supervisor.is_active = True
 
     inviter = invitation.invited_by
-    if invitation.kind == InvitationKind.COLLEAGUE:
+    if not is_supervisor_invite:
         workplace = invitation.workplace
         assert workplace is not None
-        if workplace.owner_teacher_id:
+        for owner_id in {link.owner_teacher_id for link in workplace.school_links} - {None}:
+            assert owner_id is not None
             notify(
                 db,
-                workplace.owner_teacher_id,
-                f"{body.name} är nu handledare på {workplace.name}.",
+                owner_id,
+                f"{supervisor.name} är nu handledare på {workplace.name}.",
                 "/placements",
             )
         notify(
             db,
             inviter.id,
-            f"{body.name} har tackat ja och är nu handledare på {workplace.name}.",
+            f"{supervisor.name} har tackat ja och är nu handledare på {workplace.name}.",
             "/company",
+        )
+    elif existing is not None:
+        # Handledaren har redan ett företag. Skolan läggs till, profilen delas.
+        workplace = existing
+        workplace.school_links.append(
+            WorkplaceSchool(
+                school_id=invitation.school_id,
+                owner_teacher_id=inviter.id if inviter.role == UserRole.TEACHER else None,
+            )
+        )
+        notify(
+            db,
+            inviter.id,
+            f"{supervisor.name} har tackat ja. {workplace.name} finns nu bland era "
+            "praktikplatser, och du kan placera elever där.",
+            "/placements",
         )
     else:
         company = body.company
         assert company is not None
         workplace = Workplace(
             school_id=invitation.school_id,
+            owner_teacher_id=inviter.id if inviter.role == UserRole.TEACHER else None,
             name=company.name,
             address=company.address,
             industry=company.industry,
             description=company.description,
-            owner_teacher_id=inviter.id if inviter.role == UserRole.TEACHER else None,
         )
         db.add(workplace)
         db.flush()
         notify(
             db,
             inviter.id,
-            f"{body.name} har skapat företagsprofilen {company.name}. "
+            f"{supervisor.name} har skapat företagsprofilen {company.name}. "
             "Nu kan du placera elever där.",
             "/placements",
         )
@@ -498,15 +577,19 @@ def _pending_colleague_invitations(db: DbSession, workplace_id: UUID) -> list[In
 def _supervisor_workplace_read(db: DbSession, workplace: Workplace) -> SupervisorWorkplace:
     colleagues = [s for s in workplace.supervisors if s.is_active]
     pending = _pending_colleague_invitations(db, workplace.id)
-    school = db.get(School, workplace.school_id)
-    school_name = school.name if school else ""
+    schools = db.scalars(
+        select(School.name)
+        .join(WorkplaceSchool, WorkplaceSchool.school_id == School.id)
+        .where(WorkplaceSchool.workplace_id == workplace.id)
+        .order_by(WorkplaceSchool.created_at)
+    ).all()
     return SupervisorWorkplace(
         id=workplace.id,
         name=workplace.name,
         address=workplace.address,
         industry=workplace.industry,
         description=workplace.description,
-        school_name=school_name,
+        school_names=list(schools),
         supervisors=[Colleague(id=s.id, name=s.name, email=s.email) for s in colleagues],
         pending_invitations=[_read(db, i) for i in pending],
         can_invite=len(colleagues) - 1 + len(pending) < MAX_COLLEAGUES,
@@ -563,7 +646,9 @@ def invite_colleague(
             detail=f"Du kan bjuda in högst {MAX_COLLEAGUES} kollegor",
         )
     _check_email_free_for_supervisor(db, body.email)
-    _create(db, user, body.email, InvitationKind.COLLEAGUE, workplace.school_id, workplace)
+    # Inbjudan hör till en skola. En kollega på ett företag med flera skolor får den första.
+    school_id = workplace.school_links[0].school_id
+    _create(db, user, body.email, InvitationKind.COLLEAGUE, school_id, workplace)
     db.refresh(workplace)
     return _supervisor_workplace_read(db, workplace)
 

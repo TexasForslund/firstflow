@@ -8,6 +8,7 @@ from app.models.note import StudentNote  # noqa: F401
 from app.models.placement import (  # noqa: F401
     Placement,
     Workplace,
+    WorkplaceSchool,
     workplace_supervisors,
 )
 from app.models.project import (  # noqa: F401

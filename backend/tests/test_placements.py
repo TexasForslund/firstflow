@@ -178,7 +178,7 @@ def test_only_admin_creates_workplace(
 def test_teacher_sees_only_own_and_shared_workplaces(
     client: TestClient, login: Login, world: World, db: Session
 ) -> None:
-    world.workplace.owner_teacher_id = world.other_teacher.id
+    world.workplace.school_links[0].owner_teacher_id = world.other_teacher.id
     db.flush()
     login(world.teacher)
     assert client.get("/api/workplaces").json() == []
@@ -205,18 +205,31 @@ def test_admin_adds_new_supervisor(client: TestClient, login: Login, world: Worl
 
 
 def test_existing_supervisor_is_linked(
-    client: TestClient, db: Session, login: Login, world: World
+    client: TestClient, db: Session, login: Login, world: World, make_user: Callable[..., User]
 ) -> None:
-    """Samma handledare kan ta emot elever från flera skolor."""
+    """En handledare utan företag kopplas till arbetsplatsen. Namnet ändras inte."""
+    free = make_user(email="free@x.se", role=UserRole.SUPERVISOR)
     login(world.admin)
     response = client.post(
         f"/api/workplaces/{world.workplace.id}/supervisors",
-        json={"name": "Annat namn", "email": "lisa@umeabygg.se"},
+        json={"name": "Annat namn", "email": "free@x.se"},
     )
     assert response.status_code == 201
-    ids = [s["id"] for s in response.json()["supervisors"]]
-    assert str(world.other_supervisor.id) in ids
-    assert db.get(User, world.other_supervisor.id).name == "Testperson"
+    assert str(free.id) in [s["id"] for s in response.json()["supervisors"]]
+    assert db.get(User, free.id).name == "Testperson"
+
+
+def test_supervisor_on_other_company_conflicts(
+    client: TestClient, login: Login, world: World
+) -> None:
+    """En handledare hör till ett enda företag (Texas, 2026-11-02)."""
+    login(world.admin)
+    response = client.post(
+        f"/api/workplaces/{world.workplace.id}/supervisors",
+        json={"name": "Lisa", "email": "lisa@umeabygg.se"},
+    )
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Handledaren finns redan på ett annat företag"
 
 
 def test_supervisor_email_of_other_role_conflicts(

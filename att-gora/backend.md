@@ -494,3 +494,16 @@ För sidan Redovisningar (F30). Bara lärare, bara klasser läraren undervisar p
 - `GET /api/teacher/reports`: inskickade redovisningar, senast inskickade först. Filter `class_id`, `student_id`, `project_id` och `show` (`all`, `unread`, `late`, `comments`, `private`), `limit` upp till 500 och `has_more`. Svaret har antal per snabbval, även saknade (0 när projekt är valt).
 - `GET /api/teacher/reports/missing`: redovisningsdagar de senaste fyra veckorna utan inskickad redovisning, senaste först. Samma regler som Översikten (`due_days`).
 - `GET /api/teacher/reports/students`: per elev senaste redovisning, olästa och saknade.
+
+---
+
+## B24. Delad företagsprofil ✅ Klar ([PR #61](https://github.com/TexasForslund/firstflow/pull/61), Texas + Claude, 2026-11-02)
+
+Texas, 2026-11-02: en handledare har en enda företagsprofil, och samma företag kan ta emot elever från flera skolor. Rör B3 (Hannes): stäm av i Discord.
+- `workplace_schools` (företag, skola, ägande lärare) ersätter `workplaces.school_id` och `workplaces.owner_teacher_id`. En handledare finns på ett företag (unik `supervisor_id`).
+- Migreringen slår ihop företag som delar handledare. Placeringar, projekt, kontrakt, inbjudningar, handledare och skolor flyttas till det äldsta.
+- Varje skola ser bara sina egna elever. Det som delas är företagsprofilen och handledarna. Se `docs/multi-tenant-och-roller.md`.
+- **Inbjudan:** en skola kan bjuda in en handledare som redan har ett konto och ett företag. Hen tackar ja utan att fylla i något, och skolan läggs till på företaget. En kollega med ett eget företag kan inte bjudas in (409). Skolan kan inte bjuda in en handledare vars företag redan har elever därifrån (409).
+- `GET /api/invite/{token}` har `existing_workplace_name` och `has_account`. `SupervisorWorkplace.school_name` heter `school_names` (lista).
+- Skoladmin kan inte lägga till en handledare som finns på ett annat företag (409).
+

@@ -318,6 +318,15 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 
 ---
 
+## F32. Delad företagsprofil ✅ Klar ([PR #61](https://github.com/TexasForslund/firstflow/pull/61), Texas + Claude, 2026-11-02)
+
+Enligt "Firstflow – Delad företagsprofil och logga skiss". Backend: B24.
+- **Företaget (handledaren):** raden **Skolor ni tar emot elever från** med en "Vad är det här?". I Redigera står att ändringarna syns för alla skolor när det finns fler än en.
+- **Inbjudan:** har handledaren redan ett företag visas det, med "Du behöver inte fylla i något nytt". Har hen redan ett konto heter knappen **Tacka ja** och inget lösenord behövs.
+- Loggan kommer i nästa PR.
+
+---
+
 ## F31. Handledarens närvaro: enklare att förstå och jobba med ✅ Klar ([PR #56](https://github.com/TexasForslund/firstflow/pull/56), Texas + Claude, 2026-10-31)
 
 Enligt skiss A i "Firstflow – Handledarens närvaro skiss" (Texas, 2026-10-31). Handledaren gör bara något när något avviker. Sidan heter **Närvaro**.

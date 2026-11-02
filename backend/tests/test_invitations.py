@@ -182,6 +182,8 @@ def test_preview(client: TestClient, login: Login, world: World, mail: MagicMock
         "invited_by_name": "Testperson",
         "school_name": "Kramforsskolan",
         "workplace_name": None,
+        "existing_workplace_name": None,
+        "has_account": False,
     }
 
 
@@ -202,8 +204,8 @@ def test_accept_creates_account_company_and_notifies(
     # Handledaren är inloggad.
     assert client.get("/api/auth/me").json()["email"] == "gustav@elbolaget.se"
     company = client.get("/api/supervisor/workplaces").json()
-    assert [(w["name"], w["industry"], w["school_name"]) for w in company] == [
-        ("Elbolaget AB", "El", "Kramforsskolan")
+    assert [(w["name"], w["industry"], w["school_names"]) for w in company] == [
+        ("Elbolaget AB", "El", ["Kramforsskolan"])
     ]
     assert [s["name"] for s in company[0]["supervisors"]] == ["Gustav Lindahl"]
 
@@ -291,6 +293,76 @@ def test_admin_invited_company_is_shared(
         assert [w["name"] for w in client.get("/api/workplaces").json()] == ["Elbolaget AB"]
     login(world.umea_teacher)
     assert client.get("/api/workplaces").json() == []
+
+
+# --- Delad företagsprofil (Texas, 2026-11-02) ----------------------------------------------
+
+
+def test_second_school_joins_existing_company(
+    client: TestClient, login: Login, world: World, mail: MagicMock, db: Session
+) -> None:
+    """En handledare har ett företag. En ny skola läggs till utan att något fylls i igen."""
+    workplace_id = setup_supervisor(client, login, world, mail)
+
+    login(world.umea_teacher)
+    token = invite(client, mail)
+    client.post("/api/auth/logout")
+    preview = client.get(f"/api/invite/{token}").json()
+    assert preview["existing_workplace_name"] == "Elbolaget AB"
+    assert preview["has_account"] is True
+
+    # Inget namn, lösenord eller företag behövs. Sidan skickar null.
+    body = {"name": None, "password": None, "company": None}
+    response = client.post(f"/api/invite/{token}/accept", json=body)
+    assert response.status_code == 200, response.text
+    company = client.get("/api/supervisor/workplaces").json()
+    assert [(w["id"], w["school_names"]) for w in company] == [
+        (workplace_id, ["Kramforsskolan", "Umeåskolan"])
+    ]
+    # Lösenordet är kvar.
+    client.post("/api/auth/logout")
+    login_body = {"email": "gustav@elbolaget.se", "password": "ett-langt-losenord"}
+    assert client.post("/api/auth/login", json=login_body).status_code == 200
+
+    # Båda skolornas lärare ser företaget, och läraren på Umeåskolan får en notis.
+    login(world.umea_teacher)
+    assert [w["id"] for w in client.get("/api/workplaces").json()] == [workplace_id]
+    notes = client.get("/api/notifications").json()["items"]
+    assert "Elbolaget AB finns nu bland era praktikplatser" in notes[0]["text"]
+    login(world.teacher)
+    assert [w["id"] for w in client.get("/api/workplaces").json()] == [workplace_id]
+    assert db.scalar(select(Workplace.id).where(Workplace.name == "Elbolaget AB")) is not None
+
+
+def test_same_school_cannot_invite_twice(
+    client: TestClient, login: Login, world: World, mail: MagicMock
+) -> None:
+    setup_supervisor(client, login, world, mail)
+    login(world.other_teacher)
+    response = client.post("/api/invitations", json={"email": "gustav@elbolaget.se"})
+    assert response.status_code == 409
+    assert "tar redan emot elever från er skola" in response.json()["detail"]
+
+
+def test_colleague_with_other_company_cannot_join(
+    client: TestClient, login: Login, world: World, mail: MagicMock
+) -> None:
+    """En handledare med ett eget företag kan inte bjudas in som kollega på ett annat."""
+    setup_supervisor(client, login, world, mail)
+    login(world.umea_teacher)
+    token = invite(client, mail, "lisa@bygg.se")
+    client.post("/api/auth/logout")
+    assert accept(client, token, name="Lisa Berg").status_code == 200
+    # Lisa har nu ett eget företag och ett konto. Gustav kan inte bjuda in henne.
+    login(world.teacher)
+    client.post("/api/auth/logout")
+    gustav = {"email": "gustav@elbolaget.se", "password": "ett-langt-losenord"}
+    client.post("/api/auth/login", json=gustav)
+    workplace_id = client.get("/api/supervisor/workplaces").json()[0]["id"]
+    response = client.post(
+        f"/api/supervisor/workplaces/{workplace_id}/invitations", json={"email": "lisa@bygg.se"}
+    )
+    assert response.status_code == 409
 
 
 # --- Kollegor ------------------------------------------------------------------------------
