@@ -295,6 +295,7 @@ Backend: B20. Skiss först.
 - Skoladmin väljer vilka klasser som har APL i Firstflow, laddar upp en fil (eller startar en synk) och ser en **förhandsvisning** innan något sparas, t.ex. "32 elever, 4 lärare och 1 SYV i 2 klasser läggs in".
 - Efter importen: vad som lades till, ändrades och avslutades.
 - **Beslut (Texas, 2026-11-02):** Excel och CSV, importen skapar klasser och kopplar lärare, och de importerade får ett mejl där de väljer eget lösenord. Pilotskolan använder Haldor.
+- **Var (Texas, 2026-11-02):** ett eget menyval, **Importera**, hos skoladmin, eftersom importen skapar både personal, elever och klasser. Skissen: "Firstflow – Import av elever och personal".
 
 ---
 
