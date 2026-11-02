@@ -64,6 +64,7 @@ class ProjectRead(BaseModel):
     students: list[Ref]
     owner: Ref = Field(description="Läraren som skapade projektet")
     workplace: Ref | None = Field(description="Företaget projektet görs på")
+    workplace_logo_url: str | None = Field(default=None, description="Företagets logga")
     supervisors: list[Ref] = Field(description="Inbjudna handledare")
     completed_at: datetime | None = Field(description="Satt när projektet är avslutat")
     created_at: datetime
@@ -142,6 +143,7 @@ def _read(db: DbSession, user: User, projects: list[Project]) -> list[ProjectRea
             students=[_ref(s) for s in p.students if s.is_active],
             owner=_ref(p.owner),
             workplace=Ref(id=p.workplace.id, name=p.workplace.name) if p.workplace else None,
+            workplace_logo_url=p.workplace.logo_url if p.workplace else None,
             supervisors=[_ref(s) for s in p.supervisors if s.is_active],
             completed_at=p.completed_at,
             created_at=p.created_at,

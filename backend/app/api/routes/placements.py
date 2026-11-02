@@ -22,7 +22,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.deps import require_roles, require_same_school
+from app.api.deps import CurrentUser, require_roles, require_same_school
 from app.api.routes.classes import CanViewClasses, get_accessible_class
 from app.core import time
 from app.core.security import normalize_email
@@ -65,6 +65,7 @@ class WorkplaceRead(BaseModel):
     address: str | None
     industry: str | None
     description: str | None
+    logo_url: str | None = Field(description="Företagets logga, om det finns en")
     supervisors: list[SupervisorRead]
 
 
@@ -97,6 +98,7 @@ class WorkplaceRef(BaseModel):
     id: UUID
     name: str
     address: str | None
+    logo_url: str | None = Field(description="Företagets logga, om det finns en")
 
 
 class PlacementCreate(BaseModel):
@@ -155,12 +157,15 @@ def _workplace_read(workplace: Workplace) -> WorkplaceRead:
         address=workplace.address,
         industry=workplace.industry,
         description=workplace.description,
+        logo_url=workplace.logo_url,
         supervisors=_active(workplace.supervisors),
     )
 
 
 def _workplace_ref(workplace: Workplace) -> WorkplaceRef:
-    return WorkplaceRef(id=workplace.id, name=workplace.name, address=workplace.address)
+    return WorkplaceRef(
+        id=workplace.id, name=workplace.name, address=workplace.address, logo_url=workplace.logo_url
+    )
 
 
 def placement_read(placement: Placement) -> PlacementRead:
@@ -245,6 +250,31 @@ def list_workplaces(db: DbSession, user: CanViewWorkplaces) -> list[WorkplaceRea
         query.options(selectinload(Workplace.supervisors)).order_by(Workplace.name)
     )
     return [_workplace_read(w) for w in workplaces]
+
+
+@workplace_router.get(
+    "/{workplace_id}/logo",
+    response_class=Response,
+    responses={200: {"content": {"image/png": {}, "image/jpeg": {}, "image/webp": {}}}},
+)
+def get_logo(workplace_id: UUID, db: DbSession, user: CurrentUser) -> Response:
+    """Företagets logga. Handledarna på företaget och alla på en skola med elever där får se
+    den: loggan är företagets, inte elevdata."""
+    workplace = db.get(Workplace, workplace_id)
+    if workplace is None or workplace.logo_type is None:
+        raise _not_found()
+    on_workplace = user.role == UserRole.SUPERVISOR and supervisor_workplace_id(db, user.id) == (
+        workplace.id
+    )
+    at_school = user.school_id is not None and workplace.link(user.school_id) is not None
+    if not (on_workplace or at_school):
+        raise _not_found()
+    return Response(
+        content=workplace.logo,
+        media_type=workplace.logo_type,
+        # Adressen innehåller en version (`?v=`), så loggan kan cachas länge.
+        headers={"Cache-Control": "private, max-age=31536000, immutable"},
+    )
 
 
 @workplace_router.post("", response_model=WorkplaceRead, status_code=status.HTTP_201_CREATED)

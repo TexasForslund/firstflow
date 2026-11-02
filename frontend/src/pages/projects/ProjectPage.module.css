@@ -344,3 +344,10 @@ a.person:hover .personName {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Företagets logga bredvid namnet (Texas, 2026-11-02). */
+.companyValue {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

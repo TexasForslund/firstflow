@@ -2136,6 +2136,53 @@
         ]
       }
     },
+    "/api/workplaces/{workplace_id}/logo": {
+      "get": {
+        "tags": [
+          "placements"
+        ],
+        "summary": "Get Logo",
+        "description": "Företagets logga. Handledarna på företaget och alla på en skola med elever där får se\nden: loggan är företagets, inte elevdata.",
+        "operationId": "get_logo_api_workplaces__workplace_id__logo_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workplace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workplace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/png": {},
+              "image/jpeg": {},
+              "image/webp": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/workplaces/{workplace_id}/supervisors": {
       "post": {
         "tags": [
@@ -3114,6 +3161,112 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupervisorWorkplace"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/supervisor/workplaces/{workplace_id}/logo": {
+      "put": {
+        "tags": [
+          "invitations"
+        ],
+        "summary": "Upload Logo",
+        "description": "Handledaren laddar upp företagets logga. Den syns för alla skolor med elever där.",
+        "operationId": "upload_logo_api_supervisor_workplaces__workplace_id__logo_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workplace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workplace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupervisorWorkplace"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "invitations"
+        ],
+        "summary": "Delete Logo",
+        "description": "Tar bort företagets logga. Då visas första bokstaven i namnet.",
+        "operationId": "delete_logo_api_supervisor_workplaces__workplace_id__logo_delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workplace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workplace Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -5744,6 +5897,21 @@
         ],
         "title": "Body_create_contract_api_contracts_post"
       },
+      "Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "PNG, JPEG eller WebP, högst 1 MB"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put"
+      },
       "Choice": {
         "properties": {
           "id": {
@@ -7657,6 +7825,18 @@
             ],
             "description": "Företaget projektet görs på"
           },
+          "workplace_logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workplace Logo Url",
+            "description": "Företagets logga"
+          },
           "supervisors": {
             "items": {
               "$ref": "#/components/schemas/Ref"
@@ -8241,6 +8421,18 @@
               }
             ],
             "description": "Företaget projektet görs på"
+          },
+          "workplace_logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workplace Logo Url",
+            "description": "Företagets logga"
           },
           "supervisors": {
             "items": {
@@ -10081,6 +10273,18 @@
             "title": "School Names",
             "description": "Skolorna som har elever på företaget"
           },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url",
+            "description": "Företagets logga, om det finns en"
+          },
           "supervisors": {
             "items": {
               "$ref": "#/components/schemas/Colleague"
@@ -10109,6 +10313,7 @@
           "industry",
           "description",
           "school_names",
+          "logo_url",
           "supervisors",
           "pending_invitations",
           "can_invite"
@@ -10781,6 +10986,18 @@
             ],
             "title": "Description"
           },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url",
+            "description": "Företagets logga, om det finns en"
+          },
           "supervisors": {
             "items": {
               "$ref": "#/components/schemas/SupervisorRead"
@@ -10796,6 +11013,7 @@
           "address",
           "industry",
           "description",
+          "logo_url",
           "supervisors"
         ],
         "title": "WorkplaceRead"
@@ -10821,13 +11039,26 @@
               }
             ],
             "title": "Address"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url",
+            "description": "Företagets logga, om det finns en"
           }
         },
         "type": "object",
         "required": [
           "id",
           "name",
-          "address"
+          "address",
+          "logo_url"
         ],
         "title": "WorkplaceRef"
       },

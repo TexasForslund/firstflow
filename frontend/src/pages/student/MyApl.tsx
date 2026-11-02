@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 import { statusText, useContracts } from '../../api/contracts'
 import { useMyProjects } from '../../api/projects'
 import { useMyPlacements, type MyPlacement } from '../../api/placements'
-import { Avatar } from '../../components'
+import { Avatar, CompanyLogo } from '../../components'
 import { periodCountdown, periodProgress, periodStatus, periodText, periodWeek, todayIso } from '../placements/period'
 import styles from './MyApl.module.css'
 
@@ -126,9 +126,12 @@ function CurrentPlacement({ placement, today }: { placement: MyPlacement; today:
     <>
       <section className={styles.current} aria-labelledby="current-workplace">
         <p className={styles.eyebrow}>{status === 'active' ? 'Din APL just nu' : 'Din nästa APL'}</p>
-        <h2 id="current-workplace" className={styles.workplace}>
-          {placement.workplace.name}
-        </h2>
+        <div className={styles.workplaceRow}>
+          <CompanyLogo name={placement.workplace.name} logoUrl={placement.workplace.logo_url} />
+          <h2 id="current-workplace" className={styles.workplace}>
+            {placement.workplace.name}
+          </h2>
+        </div>
         {placement.workplace.address && (
           <p className={styles.line}>
             <MapPin aria-hidden="true" />

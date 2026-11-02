@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import { useProject, useProjectReports, type Project, type ProjectReport } from '../../api/projects'
-import { Avatar, Button, ButtonLink } from '../../components'
+import { Avatar, Button, ButtonLink, CompanyLogo } from '../../components'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { ProjectGoalsTable } from '../goals/GoalViews'
 import { ProjectDialog } from './ProjectDialog'
@@ -141,7 +141,12 @@ function Facts({ project }: { project: Project }) {
     <dl className={styles.facts}>
       <div className={styles.fact}>
         <dt>Företag</dt>
-        <dd className={styles.factValue}>{project.workplace?.name ?? 'Inget företag'}</dd>
+        <dd className={`${styles.factValue} ${styles.companyValue}`}>
+          {project.workplace && (
+            <CompanyLogo name={project.workplace.name} logoUrl={project.workplace_logo_url} size="sm" />
+          )}
+          {project.workplace?.name ?? 'Inget företag'}
+        </dd>
       </div>
       <div className={styles.fact}>
         <dt>Klart senast</dt>

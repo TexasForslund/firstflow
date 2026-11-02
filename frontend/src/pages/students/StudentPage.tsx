@@ -28,7 +28,17 @@ import {
   type StudentReportSummary,
 } from '../../api/students'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, matches, SearchInput, SegmentedBar, SelectField, Tag } from '../../components'
+import {
+  Avatar,
+  Button,
+  Card,
+  CompanyLogo,
+  matches,
+  SearchInput,
+  SegmentedBar,
+  SelectField,
+  Tag,
+} from '../../components'
 import styles from '../classes/Classes.module.css'
 import { NotFound } from '../NotFound'
 import {
@@ -553,14 +563,17 @@ function PlacementCard({ studentId }: { studentId: string }) {
         )}
         {current && (
           <>
-            <div>
-              <p className={own.company}>{current.workplace.name}</p>
-              {current.workplace.address && (
-                <p className={own.address}>
-                  <MapPin aria-hidden="true" />
-                  {current.workplace.address}
-                </p>
-              )}
+            <div className={own.companyRow}>
+              <CompanyLogo name={current.workplace.name} logoUrl={current.workplace.logo_url} size="sm" />
+              <div>
+                <p className={own.company}>{current.workplace.name}</p>
+                {current.workplace.address && (
+                  <p className={own.address}>
+                    <MapPin aria-hidden="true" />
+                    {current.workplace.address}
+                  </p>
+                )}
+              </div>
             </div>
             <div className={own.progress}>
               <div className={own.progressTop}>

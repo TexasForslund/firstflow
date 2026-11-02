@@ -507,3 +507,13 @@ Texas, 2026-11-02: en handledare har en enda företagsprofil, och samma företag
 - `GET /api/invite/{token}` har `existing_workplace_name` och `has_account`. `SupervisorWorkplace.school_name` heter `school_names` (lista).
 - Skoladmin kan inte lägga till en handledare som finns på ett annat företag (409).
 
+---
+
+## B25. Företagets logga ✅ Klar ([PR #62](https://github.com/TexasForslund/firstflow/pull/62), Texas + Claude, 2026-11-02)
+
+Handledaren laddar upp företagets logga. Den syns för alla skolor med elever på företaget.
+- `workplaces.logo` (laddas bara när den hämtas), `logo_type` och `logo_updated_at`. Sparas i databasen, som kontraktens PDF:er.
+- `PUT` och `DELETE /api/supervisor/workplaces/{id}/logo`: bara företagets handledare. PNG, JPEG eller WebP, kontrollerat på innehållet, högst 1 MB. Inte SVG, som kan innehålla kod.
+- `GET /api/workplaces/{id}/logo`: företagets handledare och alla på en skola med elever där. Adressen har en version (`?v=`) och cachas.
+- `logo_url` i `WorkplaceRead`, `WorkplaceRef` och handledarens profil, och `workplace_logo_url` i projekt.
+

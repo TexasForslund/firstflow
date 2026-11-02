@@ -94,3 +94,12 @@
     padding-right: var(--space-4);
   }
 }
+
+/* Logga i kortets rubrik (Texas, 2026-11-02). */
+.logoHeader {
+  align-items: center;
+}
+
+.headingGrow {
+  flex: 1;
+}

@@ -126,6 +126,7 @@ def test_school_staff_list_own_schools_workplaces(
             "address": None,
             "industry": None,
             "description": None,
+            "logo_url": None,
             "supervisors": [
                 {
                     "id": str(world.supervisor.id),
@@ -445,7 +446,12 @@ def test_supervisor_sees_current_students(
         {
             "placement_id": str(current.id),
             "student": {"id": str(world.student.id), "name": "Testperson"},
-            "workplace": {"id": str(world.workplace.id), "name": "Elbolaget", "address": None},
+            "workplace": {
+                "id": str(world.workplace.id),
+                "name": "Elbolaget",
+                "address": None,
+                "logo_url": None,
+            },
             "start_date": str(current.start_date),
             "end_date": str(current.end_date),
         }

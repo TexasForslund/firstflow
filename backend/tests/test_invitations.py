@@ -456,3 +456,73 @@ def test_teacher_cannot_use_supervisor_workplaces(
 
 def test_notifications_require_login(client: TestClient) -> None:
     assert client.get("/api/notifications").status_code == 401
+
+
+# --- Logga (Texas, 2026-11-02) ---------------------------------------------------------------
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+
+
+def upload(client: TestClient, workplace_id: str, data: bytes, name: str = "logga.png"):  # noqa: ANN201
+    files = {"file": (name, data, "application/octet-stream")}
+    return client.put(f"/api/supervisor/workplaces/{workplace_id}/logo", files=files)
+
+
+def test_supervisor_uploads_logo(
+    client: TestClient, login: Login, world: World, mail: MagicMock
+) -> None:
+    workplace_id = setup_supervisor(client, login, world, mail)
+    response = upload(client, workplace_id, PNG)
+    assert response.status_code == 200, response.text
+    url = response.json()["logo_url"]
+    assert url.startswith(f"/api/workplaces/{workplace_id}/logo?v=")
+
+    logo = client.get(url)
+    assert logo.status_code == 200
+    assert logo.content == PNG
+    assert logo.headers["content-type"] == "image/png"
+
+    # Lärare och elever på skolan ser loggan, och den finns i listan över praktikplatser.
+    login(world.teacher)
+    assert client.get(url).status_code == 200
+    assert client.get("/api/workplaces").json()[0]["logo_url"] == url
+    login(world.student)
+    assert client.get(url).status_code == 200
+    # En annan skola utan elever där ser den inte.
+    login(world.umea_teacher)
+    assert client.get(url).status_code == 404
+
+
+def test_logo_must_be_small_image(
+    client: TestClient, login: Login, world: World, mail: MagicMock
+) -> None:
+    workplace_id = setup_supervisor(client, login, world, mail)
+    svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+    assert upload(client, workplace_id, svg, "logga.svg").status_code == 422
+    assert upload(client, workplace_id, b"%PDF-1.7").status_code == 422
+    big = PNG + b"\x00" * (1024 * 1024)
+    assert upload(client, workplace_id, big).status_code == 413
+    jpeg = b"\xff\xd8\xff\xe0" + b"\x00" * 16
+    assert upload(client, workplace_id, jpeg, "logga.jpg").json()["logo_url"] is not None
+    webp = b"RIFF\x10\x00\x00\x00WEBPVP8 " + b"\x00" * 16
+    response = upload(client, workplace_id, webp, "logga.webp")
+    assert client.get(response.json()["logo_url"]).headers["content-type"] == "image/webp"
+
+
+def test_supervisor_removes_logo(
+    client: TestClient, login: Login, world: World, mail: MagicMock
+) -> None:
+    workplace_id = setup_supervisor(client, login, world, mail)
+    url = upload(client, workplace_id, PNG).json()["logo_url"]
+    response = client.delete(f"/api/supervisor/workplaces/{workplace_id}/logo")
+    assert response.status_code == 200
+    assert response.json()["logo_url"] is None
+    assert client.get(url).status_code == 404
+
+
+def test_only_own_supervisor_uploads_logo(
+    client: TestClient, login: Login, world: World, mail: MagicMock
+) -> None:
+    workplace_id = setup_supervisor(client, login, world, mail)
+    login(world.teacher)
+    assert upload(client, workplace_id, PNG).status_code == 403

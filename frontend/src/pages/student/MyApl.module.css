@@ -252,3 +252,10 @@
   height: 1.125rem;
   color: var(--color-text-faded);
 }
+
+/* Företagets logga bredvid namnet (Texas, 2026-11-02). */
+.workplaceRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
