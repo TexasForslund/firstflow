@@ -1,5 +1,4 @@
 import type { components } from '../api/schema'
-import { unreadMessages } from '../demo/data'
 import type { NavItem } from '../layout/AppShell'
 import { navIcons } from '../layout/navIcons'
 
@@ -56,14 +55,7 @@ export const navByRole: Record<Role, NavItem[]> = {
       tone: 'attention',
     },
     { group: 'I dag', to: '/attendance', label: 'Närvaro', icon: checkIn },
-    {
-      group: 'I dag',
-      to: '/messages',
-      label: 'Meddelanden',
-      icon: messages,
-      count: unreadMessages,
-      countLabel: 'olästa',
-    },
+    { group: 'I dag', to: '/messages', label: 'Meddelanden', icon: messages },
     { group: 'Elever', to: '/reports', label: 'Redovisningar', icon: reports, classesAfter: true },
     { group: 'APL', to: '/placements', label: 'Praktikplatser', icon: placements },
     { group: 'APL', to: '/projects', label: 'Projekt', icon: projects },

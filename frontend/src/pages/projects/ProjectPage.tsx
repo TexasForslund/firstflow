@@ -36,6 +36,10 @@ export function ProjectPage() {
     )
   }
   const project = query.data
+  // Alla i projektet utom du: eleverna, handledarna och läraren.
+  const others = [...project.students, ...project.supervisors, project.owner]
+    .map((p) => p.id)
+    .filter((id, i, all) => id !== user?.id && all.indexOf(id) === i)
 
   return (
     <div className={styles.page}>
@@ -62,6 +66,14 @@ export function ProjectPage() {
             </div>
           )}
         </div>
+        {others.length > 0 && (
+          <ButtonLink
+            to={`/messages?to=${others.join(',')}&project=${project.id}`}
+            icon={<MessageSquare aria-hidden="true" />}
+          >
+            Skicka meddelande
+          </ButtonLink>
+        )}
         <Button icon={<Pencil aria-hidden="true" />} onClick={() => setEditing(true)}>
           Ändra projekt
         </Button>

@@ -11,6 +11,7 @@ from app.api.routes import (
     imports,
     invitations,
     me,
+    messages,
     notes,
     overview,
     placements,
@@ -65,3 +66,4 @@ api_router.include_router(tracks.router)
 api_router.include_router(goals.router)
 api_router.include_router(goals.student_router)
 api_router.include_router(imports.router)
+api_router.include_router(messages.router)

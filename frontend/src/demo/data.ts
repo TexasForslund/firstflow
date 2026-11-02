@@ -43,13 +43,6 @@ export interface DemoReport {
   answers: DemoAnswer[]
 }
 
-export interface DemoThread {
-  id: string
-  studentId: string
-  preview: string
-  unread: number
-}
-
 export interface DemoAttention {
   studentId: string
   text: string
@@ -195,13 +188,5 @@ export function reportById(id: string) {
   return reports.find((r) => r.id === id)
 }
 
-export const threads: DemoThread[] = [
-  { id: 't1', studentId: 'hugo-karlsson', preview: 'Hej igen, är det okej om jag går tidigare på fredag? Handledaren har sagt ja.', unread: 1 },
-  { id: 't2', studentId: 'maja-nordstrom', preview: 'Jag har laddat upp bilderna från elcentralen nu.', unread: 2 },
-  { id: 't3', studentId: 'adam-johansson', preview: 'Tack! Då ses vi på trepartssamtalet på torsdag.', unread: 0 },
-  { id: 't4', studentId: 'nora-isaksson', preview: 'Var hittar jag mitt utbildningskontrakt?', unread: 3 },
-]
-
-export const unreadMessages = threads.reduce((sum, t) => sum + t.unread, 0)
 export const unreadReports = reports.filter((r) => !r.read).length
 export const contractsToSign = 2

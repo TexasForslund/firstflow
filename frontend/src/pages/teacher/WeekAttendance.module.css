@@ -193,3 +193,29 @@
 .swatch[data-state='missing'] {
   border: 1.5px dashed var(--color-text-faded);
 }
+
+/* Skriv i gruppen för praktikplatsen (B11). */
+.supervisorCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.messageLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  color: var(--color-primary-on-light);
+}
+
+.messageLink:hover {
+  background: var(--color-primary-light);
+}
+
+.messageLink svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}

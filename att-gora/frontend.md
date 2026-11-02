@@ -288,6 +288,18 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
+## F32. Meddelanden ✅ Klar ([PR #65](https://github.com/TexasForslund/firstflow/pull/65), Texas + Claude, 2026-11-02)
+
+Enligt skissen "Firstflow – Meddelanden". Backend: B11.
+- **Sidan Meddelanden** (`/messages` och `/messages/:id`): samtalen till vänster och det öppna samtalet till höger. I mobilen visas ett i taget, och ett öppet samtal fyller skärmen som i en chattapp.
+- **Nytt:** välj en person, eller flera för en grupp, med filter för Elever, Handledare och Lärare. Gruppens namn är valfritt.
+- **Plusknappen** i samtalet: Bild, Fil eller Projekt. Projekt visas som ett kort med länk.
+- **Realtid:** `useMessageEvents` i `RequireAuth` lyssnar på strömmen. Siffran i menyn och samtalen uppdateras direkt.
+- **Skicka meddelande** på elevsidan (läraren), på handledarens sida om eleven och på projektet. I lärarens Närvaro finns en knapp vid handledaren, och i handledarens Närvaro finns "Skriv till … och läraren" vid en elev som inte är på plats. Länkarna `?to=`, `?group=` och `&project=` står i `pages/messages/Messages.tsx`.
+- Demodatan för meddelanden är borttagen.
+
+---
+
 ## F25. Import av elever och personal ✅ Klar ([PR #64](https://github.com/TexasForslund/firstflow/pull/64), Texas + Claude, 2026-11-02)
 
 Backend: B20. Skiss först.

@@ -8,6 +8,7 @@ import { useClasses } from '../api/classes'
 import { useReviewList } from '../api/attendance'
 import { useSupervisorReports } from '../api/reports'
 import { useContracts } from '../api/contracts'
+import { useMessageEvents, useUnreadMessages } from '../api/messages'
 import { useTeacherOverview } from '../api/overview'
 import { AppShell } from '../layout/AppShell'
 import { CheckInPrompt } from '../pages/student/CheckInPrompt'
@@ -29,6 +30,10 @@ export function RequireAuth() {
   const review = useReviewList(role === 'supervisor')
   const supervisorReports = useSupervisorReports(role === 'supervisor')
   const preferences = me.data?.preferences
+  // Meddelanden i realtid: siffran i menyn och nya meddelanden (B11).
+  const canMessage = role === 'teacher' || role === 'supervisor' || role === 'student' || role === 'syv'
+  const unread = useUnreadMessages(canMessage)
+  useMessageEvents(canMessage)
 
   // Användarens visningsinställningar gäller på alla enheter.
   useEffect(() => {
@@ -69,6 +74,7 @@ export function RequireAuth() {
       nav={navByRole[user.role].map((item) => {
         const data = overview.data
         if (item.to === '/overview') return { ...item, count: data?.attention.length }
+        if (item.to === '/messages') return { ...item, count: unread.data, countLabel: 'olästa' }
         // Handledaren: dagar att bekräfta, i dag och tidigare.
         if (item.to === '/attendance-review') {
           const r = review.data

@@ -8,6 +8,7 @@ import {
   Lock,
   MapPin,
   MapPinCheck,
+  MessageSquare,
   NotebookPen,
   Users,
 } from 'lucide-react'
@@ -31,6 +32,7 @@ import { useCurrentUser } from '../../auth/useCurrentUser'
 import {
   Avatar,
   Button,
+  ButtonLink,
   Card,
   CompanyLogo,
   matches,
@@ -120,6 +122,11 @@ export function StudentPage() {
             <Link to={`/classes/${schoolClass.id}`} className={styles.tagLink}>
               <Tag icon={<Users aria-hidden="true" />}>{schoolClass.name}</Tag>
             </Link>
+          )}
+          {isTeacher && (
+            <ButtonLink to={`/messages?to=${student.id}`} icon={<MessageSquare aria-hidden="true" />}>
+              Skicka meddelande
+            </ButtonLink>
           )}
           <Button icon={<Download aria-hidden="true" />} disabled title="Kommer snart">
             Exportera
