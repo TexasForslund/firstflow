@@ -14,7 +14,7 @@ import {
   useSignContract,
   type ContractDetail,
 } from '../../api/contracts'
-import { Button } from '../../components'
+import { Button, HelpPopover } from '../../components'
 import styles from './ContractPage.module.css'
 
 function dateTime(iso: string) {
@@ -92,7 +92,7 @@ function Contract({ contract }: { contract: ContractDetail }) {
 
           <section className={styles.box} aria-labelledby="signing-title">
             <h2 id="signing-title" className={styles.boxTitle}>
-              Signering
+              Signering <HelpPopover topic="contractSigning" align="end" />
             </h2>
             <ul className={styles.signers}>
               {displayOrder(contract.signers).map((s) => (

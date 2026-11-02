@@ -25,6 +25,41 @@ export const HELP = {
     body: 'En privat kommentar ser bara lärare och handledare. Eleven ser den inte och får ingen notis.',
     example: 'Handledaren skriver till läraren: ”Hugo gick vid lunch i tisdags, så hela dagen stämmer inte.”',
   },
+  missingCheckIn: {
+    title: 'Ingen incheckning',
+    body: 'En APL-dag utan incheckning räknas som frånvaro. Du behöver inte göra något. Glömde eleven checka in fast hen var här, lägg till dagen med Var här en dag.',
+    example:
+      'Oscar var på plats i onsdags men glömde checka in. Du trycker Var här en dag och väljer onsdag, så räknas dagen som närvaro.',
+  },
+  lateAndMissing: {
+    title: 'Sena och saknade redovisningar',
+    body: 'En redovisning är sen när eleven skickar in den efter redovisningsdagen. Saknas betyder att eleven inte har redovisat en redovisningsdag. Eleven kan redovisa i efterhand upp till fyra veckor, så Saknas visar fyra veckor bakåt.',
+    example:
+      'Klassen redovisar tisdag och fredag. Skickar Omar in tisdagens redovisning på onsdag är den sen. Har han inte skickat in fredagens syns den under Saknas.',
+  },
+  logic: {
+    title: 'Logik',
+    body: 'Med en regel kan svaret på en fråga hoppa till en senare fråga. Utan regler får eleven frågorna i ordning. Frågan som regeln leder till blir en följdfråga.',
+    example:
+      'Har du haft kundkontakt i dag? Ja går till ”Vad gjorde du?”. Nej hoppar över den och går till nästa fråga.',
+  },
+  notes: {
+    title: 'Anteckningar',
+    body: 'Skriv det du vill att läraren vet om eleven i stort, som Beröm, Oro eller Övrigt. Bara elevens lärare ser anteckningen, aldrig eleven. Du kan ändra eller ta bort den i 24 timmar.',
+    example: 'Oro: ”Hugo har kommit 30 minuter sent tre dagar i rad.”',
+  },
+  contractSigning: {
+    title: 'Signering',
+    body: 'Läraren signerar för skolan när kontraktet skickas. Sedan signerar eleven och handledaren, i valfri ordning. När alla har signerat får läraren en notis och alla kan ladda ner kontraktet.',
+    example:
+      'Läraren skickar Hugos kontrakt på måndag. Hugo signerar samma dag och handledaren Gustav på tisdag. Då är kontraktet klart.',
+  },
+  projectCompleted: {
+    title: 'Avslutat projekt',
+    body: 'Eleverna ser inte längre projektet under Min APL och kan inte koppla nya redovisningar till det. Redovisningar och mål som redan finns sparas. Du kan öppna projektet igen när som helst.',
+    example:
+      'Projektet Laddbox för elbil är klart i december. Du avslutar det, men tabellen Mål i projektet finns kvar.',
+  },
 } as const
 
 export type HelpTopic = keyof typeof HELP

@@ -12,7 +12,7 @@ import {
   type ReportShow,
   type TeacherReport,
 } from '../../api/teacherReports'
-import { Avatar, Combobox } from '../../components'
+import { Avatar, Combobox, HelpPopover } from '../../components'
 import { longDate, relativeDay, reportTitle } from '../reports/answers'
 import styles from './Reports.module.css'
 
@@ -179,6 +179,7 @@ function AllReports({
             </button>
           )
         })}
+        <HelpPopover topic="lateAndMissing" />
       </div>
 
       {isMissing ? (

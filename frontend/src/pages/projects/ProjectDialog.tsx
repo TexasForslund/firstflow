@@ -265,6 +265,7 @@ export function ProjectDialog({
                   checked={completed}
                   onChange={setCompleted}
                 />
+                <HelpPopover topic="projectCompleted" />
               </div>
             )}
 

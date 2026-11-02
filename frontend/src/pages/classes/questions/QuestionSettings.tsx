@@ -136,7 +136,9 @@ function LogicEditor({
 
   return (
     <section className={styles.settingsSection}>
-      <h2 className={styles.settingsTitle}>Logik</h2>
+      <h2 className={styles.settingsTitle}>
+        Logik <HelpPopover topic="logic" />
+      </h2>
       {question.logic.length === 0 ? (
         <p className={styles.settingsHint}>
           Alla elever får nästa fråga. Lägg till en regel för att hoppa över frågor.

@@ -2,7 +2,7 @@ import { Check, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 
 import { clockTime, useReview, useReviewList, type ReviewItem, type ReviewVerdict } from '../../api/attendance'
-import { Avatar } from '../../components'
+import { Avatar, HelpPopover } from '../../components'
 import styles from './AttendanceReview.module.css'
 
 type Verdict = ReviewVerdict['verdict']
@@ -98,7 +98,7 @@ export function AttendanceReview() {
         <section className={styles.section} aria-labelledby="missing-title">
           <div>
             <h2 id="missing-title" className={styles.sectionTitle}>
-              Ingen incheckning den här veckan
+              Ingen incheckning den här veckan <HelpPopover topic="missingCheckIn" />
             </h2>
             <p className={styles.muted}>
               Räknas som frånvaro. Du behöver bara göra något om eleven var här men glömde checka in.

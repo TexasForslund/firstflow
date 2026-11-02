@@ -346,6 +346,7 @@ Enligt "Firstflow – Vad är det här? skiss" (Texas, 2026-10-31). En liten kna
 - **Inriktningar:** kortet Inriktningar och Visas för i frågebyggaren.
 - **APL-dagar:** APL-villkor i klassvyn.
 - **Privat kommentar:** valet Alla ser / Bara lärare och handledare vid kommentarer.
+- **Fler ställen** (Texas, 2026-11-02: "du bestämmer"): Ingen incheckning i handledarens Närvaro, Sena och Saknas i Redovisningar, Logik i frågebyggaren, Anteckningar om eleven, Signering i kontraktet och Projektet är avslutat. Skyddad identitet läggs till med importen (F25).
 - Texterna står i `frontend/src/components/helpTexts.ts` och komponenten är `HelpPopover`.
 - Inget om GDPR i texten om privata kommentarer än. Det beslutas tillsammans med Haldor senare.
 

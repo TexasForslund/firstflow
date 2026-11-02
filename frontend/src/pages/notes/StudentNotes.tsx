@@ -9,6 +9,7 @@ import {
   type NoteTag,
   type StudentNote,
 } from '../../api/notes'
+import { HelpPopover } from '../../components'
 import styles from './StudentNotes.module.css'
 
 const TAGS: NoteTag[] = ['praise', 'concern', 'other']
@@ -159,6 +160,7 @@ export function NoteForm({
             {noteTagLabel[t]}
           </button>
         ))}
+        <HelpPopover topic="notes" />
       </div>
       <label htmlFor={fieldId} className="sr-only">
         Anteckning
