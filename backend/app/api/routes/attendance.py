@@ -425,10 +425,11 @@ class ReviewList(BaseModel):
     today_items: list[ReviewItem] = Field(description="Alla elever som har APL i dag")
     earlier: list[ReviewItem] = Field(
         description="Tidigare dagar som väntar: incheckningar som inte är bekräftade, och dagar "
-        "i veckan utan incheckning. Senaste först"
+        "de senaste sju dagarna utan incheckning. Senaste först"
     )
-    this_week: list[ReviewItem] = Field(
-        description="Veckans dagar före i dag, i alla lägen. Senaste först (Texas, 2026-10-31)"
+    recent_days: list[ReviewItem] = Field(
+        description="De senaste sju dagarna före i dag, i alla lägen. Senaste först. Sju dagar så "
+        "att förra fredagen syns på måndagen (Texas, 2026-11-02)"
     )
 
 
@@ -445,7 +446,8 @@ class ReviewBody(BaseModel):
 def _review_list(db: DbSession, user: User) -> ReviewList:
     today = time.today()
     earliest = today - timedelta(days=REVIEW_DAYS - 1)
-    monday = today - timedelta(days=today.weekday())
+    # De senaste sju dagarna före i dag (Texas, 2026-11-02).
+    week_ago = today - timedelta(days=7)
     placements = db.scalars(
         select(Placement)
         .join(User, User.id == Placement.student_id)
@@ -470,7 +472,7 @@ def _review_list(db: DbSession, user: User) -> ReviewList:
     }
     today_items: list[ReviewItem] = []
     earlier: list[ReviewItem] = []
-    this_week: list[ReviewItem] = []
+    recent_days: list[ReviewItem] = []
     apl_days = student_apl_weekdays(db, {p.student_id for p in placements})
     for p in placements:
         first = max(p.start_date, earliest)
@@ -491,18 +493,18 @@ def _review_list(db: DbSession, user: User) -> ReviewList:
             if day == today:
                 today_items.append(item)
                 continue
-            if day >= monday:
-                this_week.append(item)
-            if state == DayState.PENDING or (state == DayState.MISSING and day >= monday):
+            if day >= week_ago:
+                recent_days.append(item)
+            if state == DayState.PENDING or (state == DayState.MISSING and day >= week_ago):
                 earlier.append(item)
     earlier.sort(key=lambda i: (i.date, i.student.name), reverse=True)
-    this_week.sort(key=lambda i: (i.date, i.student.name), reverse=True)
+    recent_days.sort(key=lambda i: (i.date, i.student.name), reverse=True)
     return ReviewList(
         today=today,
         earliest=earliest,
         today_items=today_items,
         earlier=earlier,
-        this_week=this_week,
+        recent_days=recent_days,
     )
 
 

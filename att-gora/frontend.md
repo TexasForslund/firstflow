@@ -323,10 +323,10 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 Enligt skiss A i "Firstflow – Handledarens närvaro skiss" (Texas, 2026-10-31). Handledaren gör bara något när något avviker. Sidan heter **Närvaro**.
 - **I dag** visas bara när någon har APL i dag: Inte på plats och Bekräfta, eller Var här ändå.
 - **Att bekräfta:** incheckningar som väntar, två veckor bakåt. Varje rad har knapparna **✕ Inte på plats** och **✓ Bekräfta** (Texas: knappar med ikon och text). **Bekräfta alla** överst. Raderna grupperas per företag när handledaren har flera.
-- **Ingen incheckning den här veckan:** en rad per elev med dagarna. Räknas som frånvaro utan att handledaren gör något (Texas, 2026-10-31). **Var här en dag** fäller ut dagarna att lägga till.
-- **Klart den här veckan:** bekräftade dagar och dagar inte på plats per elev. **Ändra** fäller ut dagarna med Var här och Inte här.
+- **Ingen incheckning senaste veckan** (de senaste sju dagarna, så att förra fredagen syns på måndagen; Texas 2026-11-02): en rad per elev med dagarna. Räknas som frånvaro utan att handledaren gör något (Texas, 2026-10-31). **Var här en dag** fäller ut dagarna att lägga till.
+- **Klart senaste veckan:** bekräftade dagar och dagar inte på plats per elev. **Ändra** fäller ut dagarna med Var här och Inte här.
 - Siffran i menyn räknar bara incheckningar som väntar, som förut.
-- Backend: `this_week` i `GET /api/supervisor/attendance/review`, veckans dagar före i dag i alla lägen.
+- Backend: `recent_days` i `GET /api/supervisor/attendance/review`, de senaste sju dagarna före i dag i alla lägen.
 
 ---
 
