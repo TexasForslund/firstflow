@@ -446,9 +446,11 @@ Skolorna ska kunna lägga in elever, lärare, SYV och rektor utan att skapa varj
 2. CSV-import med en mall som följer SS12000:s fält. Räcker för en pilot.
 3. SS12000-synk när en pilotskola har ett system att ansluta till. Kräver avtal och inloggning mellan systemen.
 
-**Att diskutera:**
-- Vilket system använder pilotskolan?
-- Hur hänger importen ihop med inbjudningar och lösenord i B6 (Hannes)? Stäm av i Discord innan någon börjar.
+**Beslut (Texas, 2026-11-02):**
+- **Pilotskolan använder Haldor.** Fråga Haldor om de kan exportera elever, klasser och lärare till fil och om de har ett SS12000-API. Haldor bygger på Microsoft 365, så "Logga in med Microsoft" kan bli aktuellt senare.
+- **CSV och Excel (.xlsx)** tas emot. Samma kolumner.
+- **Importen skapar klasserna och kopplar lärarna.** Läraren fyller bara i APL-villkoren.
+- **Inga lösenord i filen.** Varje importerad person får ett mejl med en engångslänk och väljer sitt eget lösenord, tills vidare. Samma sorts länk som handledarens inbjudan (B14). Inbjudan för elever och personal står i B6 (Hannes): stäm av i Discord vem som bygger den innan någon börjar.
 
 Frontend: F25.
 
