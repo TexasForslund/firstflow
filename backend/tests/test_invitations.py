@@ -184,6 +184,7 @@ def test_preview(client: TestClient, login: Login, world: World, mail: MagicMock
         "workplace_name": None,
         "existing_workplace_name": None,
         "has_account": False,
+        "account_name": None,
     }
 
 

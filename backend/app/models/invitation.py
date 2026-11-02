@@ -5,6 +5,8 @@ databasen sparar bara dess hash, som för inloggningen. Ingen e-post eller id st
 i länken.
 - `supervisor`: läraren bjuder in en handledare, som skapar konto och företagsprofil.
 - `colleague`: en handledare bjuder in en kollega till sin arbetsplats (högst tre).
+- `account`: en importerad elev eller ur personalen väljer sitt lösenord (B20, Texas 2026-11-02).
+  Kontot finns redan, så länken sätter bara lösenordet.
 
 Notification: en notis till en användare, t.ex. att en handledare har skapat sin
 företagsprofil.
@@ -26,12 +28,13 @@ from app.models.user import User
 class InvitationKind(StrEnum):
     SUPERVISOR = "supervisor"  # från lärare eller skoladmin, med ny företagsprofil
     COLLEAGUE = "colleague"  # från handledare, till en befintlig arbetsplats
+    ACCOUNT = "account"  # från importen: kontot finns, personen väljer lösenord
 
 
 class Invitation(Base):
     __tablename__ = "invitations"
     __table_args__ = (
-        CheckConstraint("kind IN ('supervisor', 'colleague')", name="kind_valid"),
+        CheckConstraint("kind IN ('supervisor', 'colleague', 'account')", name="kind_valid"),
         # En kollega bjuds in till en arbetsplats. En ny handledare skapar sin egen.
         CheckConstraint(
             "(kind = 'colleague') = (workplace_id IS NOT NULL)", name="workplace_matches_kind"

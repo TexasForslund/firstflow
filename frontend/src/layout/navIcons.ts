@@ -9,6 +9,7 @@ import {
   MessageCircle,
   NotebookPen,
   School,
+  Upload,
   UserCog,
   Users,
 } from 'lucide-react'
@@ -26,4 +27,5 @@ export const navIcons = {
   checkIn: MapPinCheck,
   classes: GraduationCap,
   myReports: NotebookPen,
+  upload: Upload,
 }

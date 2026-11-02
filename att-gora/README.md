@@ -60,14 +60,14 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 - **B17 och F22 (#46):** privata kommentarer på redovisningar för lärare och handledare.
 - **B18 och F23 (#47):** handledarens anteckningar om eleven (Beröm, Oro, Övrigt). Läraren läser.
 - **B19 och F24 (#48):** APL-dagar och redovisningsdagar per klass, även helger.
-- **B20 och F25:** import av elever och personal enligt SS12000, bara det som rör APL. Rör B6, stäm av mellan Texas och Hannes.
+- **B20 och F25 (#64):** import av elever och personal enligt SS12000, bara det som rör APL. Inbjudan till elever och personal byggdes här, säg till Hannes (B6).
 - **Idé 10, B22 och F27:** mål från läroplanen, steg ett: projektens taggar är mål, svar visar mål och underlaget syns med fråga, svar och följdfråga (#50).
 - **Idé 11, B21 och F26 (#49):** inriktningar i klassen och frågor per inriktning.
 
 **Nästa steg:**
 - **Texas + Claude:**
   - **Påminnelse (Texas, 2026-10-31): handledarens vy ska få mer fokus framöver.** F31, Närvaro, är klar. Nästa del av handledarens vy planeras med Texas.
-  - Besluten och skisserna för B17–B20 (se ovan).
+  - **Testa importen (Texas, 2026-11-02: väntar till senare).** Logga in som skoladmin, gå till Importera och prova mallen, en egen fil och mejllänken. Visa sedan för Haldor och fråga om de kan exportera en fil med mallens kolumner och om de har ett SS12000-API.
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
   - Påminnelser om incheckning via e-post eller push.
   - B5b: förslag utifrån läroplanen och extra frågor per elev.

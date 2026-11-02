@@ -8,6 +8,7 @@ from app.api.routes import (
     forms,
     goals,
     health,
+    imports,
     invitations,
     me,
     notes,
@@ -63,3 +64,4 @@ api_router.include_router(notes.router)
 api_router.include_router(tracks.router)
 api_router.include_router(goals.router)
 api_router.include_router(goals.student_router)
+api_router.include_router(imports.router)

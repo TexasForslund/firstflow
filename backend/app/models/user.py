@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, func, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, UniqueConstraint, func, text
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -36,7 +36,11 @@ class User(Base):
     """En person som loggar in i Firstflow."""
 
     __tablename__ = "users"
-    __table_args__ = (CheckConstraint(SCHOOL_MATCHES_ROLE_SQL, name="school_matches_role"),)
+    __table_args__ = (
+        CheckConstraint(SCHOOL_MATCHES_ROLE_SQL, name="school_matches_role"),
+        # SS12000-id från skolans system är unikt på skolan (B20, Texas 2026-11-02).
+        UniqueConstraint("school_id", "external_id", name="uq_users_school_external_id"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True)
@@ -48,6 +52,8 @@ class User(Base):
         ForeignKey("schools.id", ondelete="RESTRICT"), index=True
     )
     password_hash: Mapped[str] = mapped_column(String(200))
+    # Personens id i skolans system (SS12000), satt vid import. Känns igen vid nästa import.
+    external_id: Mapped[str | None] = mapped_column(String(100))
     is_active: Mapped[bool] = mapped_column(default=True)
     # Visningsinställningar som användaren själv väljer (textstorlek, kontrast m.m.).
     # Se DisplayPreferences i app/api/schemas.py. Gäller på alla enheter.

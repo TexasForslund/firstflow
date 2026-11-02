@@ -1870,6 +1870,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/import/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Template
+         * @description Mallen med kolumnerna och tre exempelrader.
+         */
+        get: operations["template_api_import_template_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview
+         * @description Vad som händer om filen importeras med de valda klasserna. Inget sparas.
+         */
+        post: operations["preview_api_import_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/import/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run
+         * @description Importerar filen med de valda klasserna. Rader med fel hoppas över.
+         */
+        post: operations["run_api_import_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2059,6 +2119,37 @@ export interface components {
              */
             send: boolean;
         };
+        /** Body_preview_api_import_preview_post */
+        Body_preview_api_import_preview_post: {
+            /**
+             * File
+             * @description CSV eller Excel (.xlsx) enligt mallen
+             */
+            file: string;
+            /**
+             * Classes
+             * @description Klasserna som har APL. Utan klasser visas bara filens klasser
+             */
+            classes?: string[] | null;
+        };
+        /** Body_run_api_import_run_post */
+        Body_run_api_import_run_post: {
+            /**
+             * File
+             * @description CSV eller Excel (.xlsx) enligt mallen
+             */
+            file: string;
+            /**
+             * Classes
+             * @description Klasserna som har APL. Utan klasser visas bara filens klasser
+             */
+            classes?: string[] | null;
+            /**
+             * Send Invites
+             * @default true
+             */
+            send_invites: boolean;
+        };
         /** Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put */
         Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put: {
             /**
@@ -2219,6 +2310,21 @@ export interface components {
             /** Students */
             students: components["schemas"]["PersonRead"][];
             apl_terms: components["schemas"]["AplTerms"];
+        };
+        /** ClassPlanRead */
+        ClassPlanRead: {
+            /** Name */
+            name: string;
+            /** Exists */
+            exists: boolean;
+            /** New Students */
+            new_students: number;
+            /** Changed */
+            changed: number;
+            /** Leaving */
+            leaving: number;
+            /** Teachers */
+            teachers: string[];
         };
         /** ClassSummary */
         ClassSummary: {
@@ -2543,6 +2649,20 @@ export interface components {
             answer: string;
             follow_up: components["schemas"]["FollowUpRead"] | null;
         };
+        /** FileClass */
+        FileClass: {
+            /** Name */
+            name: string;
+            /** Students */
+            students: number;
+            /** Teachers */
+            teachers: number;
+            /**
+             * Exists
+             * @description Klassen finns redan i Firstflow
+             */
+            exists: boolean;
+        };
         /** FollowUpRead */
         FollowUpRead: {
             /** Question */
@@ -2671,11 +2791,66 @@ export interface components {
              */
             database: "ok" | "unavailable";
         };
+        /** ImportPerson */
+        ImportPerson: {
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /**
+             * Role
+             * @description Elev, Lärare, SYV eller Rektor
+             */
+            role: string;
+            /** Class Name */
+            class_name: string | null;
+            /**
+             * What
+             * @description Vad som ändras
+             * @default
+             */
+            what: string;
+        };
+        /** ImportPreview */
+        ImportPreview: {
+            /** File Classes */
+            file_classes: components["schemas"]["FileClass"][];
+            /** Selected */
+            selected: string[];
+            /** New */
+            new: components["schemas"]["ImportPerson"][];
+            /** Changed */
+            changed: components["schemas"]["ImportPerson"][];
+            /** Leaving */
+            leaving: components["schemas"]["ImportPerson"][];
+            /** Errors */
+            errors: components["schemas"]["RowErrorRead"][];
+            /** Classes */
+            classes: components["schemas"]["ClassPlanRead"][];
+            /**
+             * Skipped
+             * @description Rader i klasser som inte är valda
+             */
+            skipped: number;
+        };
+        /** ImportResult */
+        ImportResult: {
+            /** Created */
+            created: number;
+            /** Changed */
+            changed: number;
+            /** Left */
+            left: number;
+            /** Invited */
+            invited: number;
+            /** Errors */
+            errors: number;
+        };
         /**
          * InvitationKind
          * @enum {string}
          */
-        InvitationKind: "supervisor" | "colleague";
+        InvitationKind: "supervisor" | "colleague" | "account";
         /** InvitationRead */
         InvitationRead: {
             /**
@@ -2734,6 +2909,11 @@ export interface components {
              * @default false
              */
             has_account: boolean;
+            /**
+             * Account Name
+             * @description Namnet på kontot, när en importerad person väljer lösenord
+             */
+            account_name?: string | null;
         };
         /**
          * LogicRule
@@ -3579,6 +3759,13 @@ export interface components {
              */
             date: string;
             verdict: components["schemas"]["AttendanceReview"];
+        };
+        /** RowErrorRead */
+        RowErrorRead: {
+            /** Row */
+            row: number;
+            /** Message */
+            message: string;
         };
         /** SchoolAccountCreate */
         SchoolAccountCreate: {
@@ -7732,6 +7919,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GoalCount"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    template_api_import_template_get: {
+        parameters: {
+            query?: {
+                format?: "csv" | "xlsx";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                    "application/vnd.ms-excel": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_import_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_preview_api_import_preview_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_api_import_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_run_api_import_run_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResult"];
                 };
             };
             /** @description Validation Error */

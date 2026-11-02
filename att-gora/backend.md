@@ -414,7 +414,7 @@ Frontend: F24.
 
 ---
 
-## B20. Import av elever och personal enligt SS12000 ⬜ (från mötet med Haldor, 2026-10-30)
+## B20. Import av elever och personal enligt SS12000 ✅ Steg 2 klart ([PR #64](https://github.com/TexasForslund/firstflow/pull/64), Texas + Claude, 2026-11-02)
 
 Skolorna ska kunna lägga in elever, lärare, SYV och rektor utan att skapa varje konto för hand. Vi följer [SS 12000](https://www.sis.se/en/produkter/information-technology-office-machines/applications-of-information-technology/it-applications-in-education/ss-120002024/) (senaste versionen SS 12000:2024), så att samma fält fungerar för CSV-import och för en senare synk mot skolans system (t.ex. IST eller Tieto Edu).
 
@@ -451,6 +451,15 @@ Skolorna ska kunna lägga in elever, lärare, SYV och rektor utan att skapa varj
 - **CSV och Excel (.xlsx)** tas emot. Samma kolumner.
 - **Importen skapar klasserna och kopplar lärarna.** Läraren fyller bara i APL-villkoren.
 - **Inga lösenord i filen.** Varje importerad person får ett mejl med en engångslänk och väljer sitt eget lösenord, tills vidare. Samma sorts länk som handledarens inbjudan (B14). Inbjudan för elever och personal står i B6 (Hannes): stäm av i Discord vem som bygger den innan någon börjar.
+
+**Byggt (PR #64):**
+- `users.external_id` (SS12000-id, unikt per skola) och inbjudan av typen `account`.
+- `GET /api/import/template` (CSV eller Excel), `POST /api/import/preview` och `POST /api/import/run`. Bara skoladmin.
+- Personer matchas på SS12000-id och sedan e-post. Elever i en vald klass som saknas i filen lämnar klassen. SYV och rektor tas alltid med.
+- Personnummer och andra kolumner läses inte. Loggen visar bara antal.
+- De importerade får ett mejl och väljer eget lösenord. **Obs Hannes (B6):** inbjudan till elever och personal är byggd här, som `InvitationKind.ACCOUNT` i `invitations.py`.
+
+**Kvar:** steg 3, SS12000-synk, när vi vet vad Haldor kan exportera. Skolform (Enrolment) sparas inte än.
 
 Frontend: F25.
 

@@ -288,7 +288,7 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
-## F25. Import av elever och personal ⬜ (från mötet med Haldor, 2026-10-30)
+## F25. Import av elever och personal ✅ Klar ([PR #64](https://github.com/TexasForslund/firstflow/pull/64), Texas + Claude, 2026-11-02)
 
 Backend: B20. Skiss först.
 - Skoladmin kan fortfarande lägga till en elev eller en ur personalen för hand.
@@ -296,6 +296,8 @@ Backend: B20. Skiss först.
 - Efter importen: vad som lades till, ändrades och avslutades.
 - **Beslut (Texas, 2026-11-02):** Excel och CSV, importen skapar klasser och kopplar lärare, och de importerade får ett mejl där de väljer eget lösenord. Pilotskolan använder Haldor.
 - **Var (Texas, 2026-11-02):** ett eget menyval, **Importera**, hos skoladmin, eftersom importen skapar både personal, elever och klasser. Skissen: "Firstflow – Import av elever och personal".
+- **Byggt:** sidan **Importera** i fyra steg: Ladda upp fil (mall i Excel och CSV), Välj klasser, Förhandsvisning (Nya, Ändras, Lämnar klassen och Rader med fel) och Klart. Förklaringar finns vid mallen, klasserna, Lämnar klassen och mejlet.
+- Den som har importerats öppnar länken i mejlet och väljer lösenord. Namnet behöver inte fyllas i.
 
 ---
 
