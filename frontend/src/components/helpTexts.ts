@@ -84,6 +84,29 @@ export const HELP = {
     example:
       'Umeåskolan bjuder in Gustav. Han tackar ja, och Umeåskolan ser samma profil som Kramforsskolan, men inte Kramforsskolans elever.',
   },
+  importTemplate: {
+    title: 'Mallen',
+    body: 'Mallen följer SS 12000, standarden för skolsystem i Sverige. Exportera från skolans system eller fyll i för hand. Personnummer, adress och vårdnadshavare behövs inte och ska inte vara med.',
+    example:
+      'En export från skolans system har ofta fler kolumner, t.ex. telefon. Firstflow läser bara kolumnerna i mallen och hoppar över resten.',
+  },
+  importClasses: {
+    title: 'Klasser med APL',
+    body: 'Firstflow ska bara ha uppgifter om elever som gör APL. Elever i andra klasser hämtas inte, även om de finns i filen. Lärare tas med om de undervisar i en vald klass, SYV och rektor alltid.',
+    example: 'Skolan väljer EL23 och EE22. Eleverna i NA23 och SA23 hoppas över.',
+  },
+  importLeaving: {
+    title: 'Lämnar klassen',
+    body: 'Eleven finns i klassen i Firstflow men inte i filen. Kopplingen till klassen tas bort. Redovisningar och närvaro sparas som vanligt.',
+    example:
+      'Liam har bytt till en klass utan APL. Han försvinner från EL23 i Firstflow, men hans redovisningar finns kvar.',
+  },
+  importInvite: {
+    title: 'Inbjudan',
+    body: 'Varje ny person får ett mejl med en länk och väljer sitt eget lösenord. Länken gäller i 14 dagar och kan bara användas en gång. Inga lösenord står i filen.',
+    example:
+      'Hugo får mejlet ”Välkommen till Firstflow”, klickar på länken och väljer ett lösenord. Sedan är han inloggad.',
+  },
 } as const
 
 export type HelpTopic = keyof typeof HELP

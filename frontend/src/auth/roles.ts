@@ -39,6 +39,7 @@ const {
   checkIn,
   classes,
   myReports,
+  upload,
 } = navIcons
 
 // Lärarens meny i tre grupper enligt Texas skiss (2026-10-26). Meddelanden och Kontrakt har siffror
@@ -92,6 +93,7 @@ export const navByRole: Record<Role, NavItem[]> = {
     { to: '/students', label: 'Elever', icon: students },
     { to: '/classes', label: 'Klasser', icon: classes },
     { to: '/users', label: 'Användare', icon: users },
+    { to: '/import', label: 'Importera', icon: upload },
     { to: '/placements', label: 'Praktikplatser', icon: placements },
     { to: '/contracts', label: 'Kontrakt', icon: contracts },
     { to: '/admin-reports', label: 'Rapporter', icon: reports },

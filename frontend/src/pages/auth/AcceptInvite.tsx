@@ -14,6 +14,8 @@ const PASSWORD_MIN = 10
  *
  * Har handledaren redan ett företag behöver hen inte fylla i det igen: skolan läggs till på
  * företagsprofilen. Har hen redan ett lösenord tackar hen bara ja (Texas, 2026-11-02).
+ *
+ * En elev eller någon i personalen som skoladmin har importerat väljer bara sitt lösenord.
  */
 export function AcceptInvite() {
   const { token = '' } = useParams()
@@ -55,6 +57,7 @@ export function AcceptInvite() {
   }
 
   const invite = preview.data
+  const isAccount = invite.kind === 'account'
   const existingCompany = invite.existing_workplace_name ?? null
   const needsAccount = !invite.has_account
   const needsCompany = invite.kind === 'supervisor' && !existingCompany
@@ -71,7 +74,7 @@ export function AcceptInvite() {
     if (needsAccount && (password.length < PASSWORD_MIN || password !== repeat)) return
     accept.mutate(
       {
-        name: needsAccount ? name.trim() : null,
+        name: needsAccount && !isAccount ? name.trim() : null,
         password: needsAccount ? password : null,
         company: needsCompany
           ? {
@@ -82,7 +85,7 @@ export function AcceptInvite() {
             }
           : null,
       },
-      { onSuccess: () => navigate('/my-students', { replace: true }) },
+      { onSuccess: () => navigate(isAccount ? '/' : '/my-students', { replace: true }) },
     )
   }
 
@@ -95,11 +98,13 @@ export function AcceptInvite() {
             {existingCompany ? `${invite.school_name} vill ha APL hos er` : 'Välkommen till Firstflow'}
           </h1>
           <p className={styles.subtitle}>
-            {invite.invited_by_name}
-            {invite.workplace_name
-              ? ` har bjudit in dig som handledare på ${invite.workplace_name}.`
-              : ` på ${invite.school_name} har bjudit in dig att handleda elever på APL.`}{' '}
-            {needsAccount && 'Skapa ditt konto så kommer du igång.'}
+            {isAccount
+              ? `${invite.school_name} har skapat ett konto åt dig${invite.account_name ? `, ${invite.account_name}` : ''}. Välj ditt lösenord så kommer du igång.`
+              : `${invite.invited_by_name}${
+                  invite.workplace_name
+                    ? ` har bjudit in dig som handledare på ${invite.workplace_name}.`
+                    : ` på ${invite.school_name} har bjudit in dig att handleda elever på APL.`
+                } ${needsAccount ? 'Skapa ditt konto så kommer du igång.' : ''}`}
           </p>
         </div>
 
@@ -124,13 +129,15 @@ export function AcceptInvite() {
             <fieldset className={own.fieldset}>
               <legend className={own.legend}>Ditt konto</legend>
               <TextField label="E-post" type="email" value={invite.email} readOnly autoComplete="username" />
-              <TextField
-                label="Ditt namn"
-                autoComplete="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              {!isAccount && (
+                <TextField
+                  label="Ditt namn"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              )}
               <TextField
                 label="Välj lösenord"
                 type="password"
@@ -192,9 +199,11 @@ export function AcceptInvite() {
             type="submit"
             variant="primary"
             className={styles.submit}
-            disabled={accept.isPending || (needsAccount && !name.trim()) || (needsCompany && !company.name.trim())}
+            disabled={
+              accept.isPending || (needsAccount && !isAccount && !name.trim()) || (needsCompany && !company.name.trim())
+            }
           >
-            {accept.isPending ? 'Sparar…' : needsAccount ? 'Skapa konto' : 'Tacka ja'}
+            {accept.isPending ? 'Sparar…' : isAccount ? 'Spara lösenord' : needsAccount ? 'Skapa konto' : 'Tacka ja'}
           </Button>
         </form>
       </div>

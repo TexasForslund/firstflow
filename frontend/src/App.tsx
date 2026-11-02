@@ -5,6 +5,7 @@ import { RequireAuth, RoleHome, RoleRoute } from './auth/RequireAuth'
 import type { Role } from './auth/roles'
 import { SchoolPage } from './pages/admin/SchoolPage'
 import { Schools } from './pages/admin/Schools'
+import { Import } from './pages/admin/Import'
 import { Users } from './pages/admin/Users'
 import { AcceptInvite } from './pages/auth/AcceptInvite'
 import { Login } from './pages/auth/Login'
@@ -111,6 +112,7 @@ const routes: RouteObject[] = [
 
       // Skolans ledning och administration
       { path: 'users', element: only(['school_admin', 'principal'], <Users />) },
+      { path: 'import', element: only(['school_admin'], <Import />) },
       placeholder('school', ['principal'], 'Översikt', 'Skolans APL i siffror: elever på APL, närvaro och kontrakt.'),
       placeholder(
         'admin-reports',

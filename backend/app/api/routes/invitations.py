@@ -95,6 +95,9 @@ class InvitePreview(BaseModel):
     has_account: bool = Field(
         default=False, description="Handledaren har redan ett lösenord och behöver inget nytt"
     )
+    account_name: str | None = Field(
+        default=None, description="Namnet på kontot, när en importerad person väljer lösenord"
+    )
 
 
 def _clean(value: str | None) -> str | None:
@@ -264,7 +267,13 @@ def _send(db: DbSession, invitation: Invitation, inviter: User) -> None:
     invitation.expires_at = time.now() + timedelta(days=settings.invitation_lifetime_days)
     link = f"{settings.frontend_url.rstrip('/')}/invite/{token}"
     school = invitation.school.name if invitation.school else ""
-    if invitation.kind == InvitationKind.COLLEAGUE and invitation.workplace:
+    if invitation.kind == InvitationKind.ACCOUNT:
+        subject = f"Välkommen till Firstflow från {school}"
+        intro = (
+            f"{school} använder Firstflow för APL (arbetsplatsförlagt lärande). "
+            "Ett konto är skapat åt dig. Välj ditt lösenord så kommer du igång."
+        )
+    elif invitation.kind == InvitationKind.COLLEAGUE and invitation.workplace:
         subject = f"{inviter.name} bjuder in dig till Firstflow"
         intro = (
             f"{inviter.name} har bjudit in dig som handledare på {invitation.workplace.name} "
@@ -278,7 +287,8 @@ def _send(db: DbSession, invitation: Invitation, inviter: User) -> None:
         )
     body = (
         f"Hej!\n\n{intro}\n\n"
-        f"Skapa ditt konto här:\n{link}\n\n"
+        f"{'Välj lösenord' if invitation.kind == InvitationKind.ACCOUNT else 'Skapa ditt konto'} "
+        f"här:\n{link}\n\n"
         f"Länken gäller i {settings.invitation_lifetime_days} dagar "
         "och kan bara användas en gång.\n\n"
         "Hälsningar\nFirstflow"
@@ -435,6 +445,9 @@ def preview_invite(token: str, db: DbSession) -> InvitePreview:
         workplace_name=invitation.workplace.name if invitation.workplace else None,
         existing_workplace_name=workplace.name if workplace else None,
         has_account=bool(existing and existing.password_hash != NO_PASSWORD),
+        account_name=existing.name
+        if existing and invitation.kind == InvitationKind.ACCOUNT
+        else None,
     )
 
 
@@ -445,6 +458,8 @@ def accept_invite(token: str, body: AcceptInvite, db: DbSession, response: Respo
     invitation = _by_token(db, token)
     # Lås inbjudan så att två samtidiga anrop inte skapar två konton.
     db.execute(select(Invitation.id).where(Invitation.id == invitation.id).with_for_update())
+    if invitation.kind == InvitationKind.ACCOUNT:
+        return _accept_account(db, invitation, body, response)
     is_supervisor_invite = invitation.kind == InvitationKind.SUPERVISOR
     _check_email_free_for_supervisor(
         db, invitation.email, school_id=invitation.school_id if is_supervisor_invite else None
@@ -547,6 +562,39 @@ def accept_invite(token: str, body: AcceptInvite, db: DbSession, response: Respo
     db.commit()
     start_session(db, supervisor, response)
     return me_read(supervisor)
+
+
+def _accept_account(
+    db: DbSession, invitation: Invitation, body: AcceptInvite, response: Response
+) -> MeRead:
+    """En importerad person väljer sitt lösenord. Kontot finns redan, på inbjudans skola."""
+    user = db.scalar(
+        select(User).where(
+            User.email == invitation.email,
+            User.school_id == invitation.school_id,
+            User.is_active,
+        )
+    )
+    if user is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="Inbjudan finns inte eller har gått ut"
+        )
+    if body.password is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Välj ett lösenord")
+    user.password_hash = hash_password(body.password)
+    invitation.accepted_at = time.now()
+    invitation.accepted_user_id = user.id
+    db.commit()
+    start_session(db, user, response)
+    return me_read(user)
+
+
+def invite_accounts(db: DbSession, inviter: User, users: list[User]) -> int:
+    """Skickar en inbjudan att välja lösenord till varje person. Returnerar antalet."""
+    assert inviter.school_id is not None
+    for user in users:
+        _create(db, inviter, user.email, InvitationKind.ACCOUNT, inviter.school_id)
+    return len(users)
 
 
 # --- Handledaren: företagsprofil och kollegor ---------------------------------------------

@@ -1,0 +1,475 @@
+/* Import av elever och personal (Texas, skiss 2026-11-02). */
+.page {
+  display: grid;
+  gap: var(--space-6);
+  max-width: var(--main-column);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.subtitle,
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.muted {
+  font-size: var(--font-size-sm);
+}
+
+/* Stegen */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.step[data-state='current'] {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.stepNumber svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.step[data-state='current'] .stepNumber,
+.step[data-state='done'] .stepNumber {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Ladda upp */
+.drop {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-6);
+  border: 2px dashed #b9a8ff;
+  border-radius: var(--radius-md);
+  background: #f9f8ff;
+  text-align: center;
+}
+
+.drop[data-dragging] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.dropIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.dropTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.titleIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.download {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.download:hover {
+  background: var(--color-surface);
+}
+
+.download svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.tableBox {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.table thead th {
+  border-top: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+}
+
+/* Välj klasser */
+.fileLine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.fileLine svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.classList {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.classListHead {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-sidebar);
+  font-weight: 600;
+  float: left;
+}
+
+.classRow {
+  display: flex;
+  clear: both;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.classRow[data-on] {
+  background: #f9f8ff;
+}
+
+.classRow input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+}
+
+.className {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.badge {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.link {
+  color: var(--color-primary-on-light);
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.actions,
+.actionsStart {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.actionsStart {
+  justify-content: flex-start;
+}
+
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.primaryLink:hover {
+  background: var(--color-primary-hover);
+}
+
+/* Förhandsvisning */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.card[data-tone='new'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.card[data-tone='changed'] {
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.card[data-tone='leaving'] {
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+.card[data-tone='error'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.cardCount {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+
+.cardLabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+}
+
+.cardSub {
+  font-size: var(--font-size-sm);
+}
+
+.people {
+  margin-top: var(--space-2);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+.people summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.people ul {
+  display: grid;
+  gap: var(--space-1);
+  max-height: 14rem;
+  margin-top: var(--space-2);
+  overflow-y: auto;
+}
+
+.errorTitle {
+  color: var(--color-attention);
+}
+
+.errorTitle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.errorList,
+.planList {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.errorList li,
+.planList li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.errorList li + li,
+.planList li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.rowNumber {
+  min-width: 4rem;
+  color: var(--color-text-secondary);
+}
+
+.planList .className {
+  flex: 0 0 5rem;
+}
+
+.invite {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.invite > span:nth-child(2) {
+  display: grid;
+  flex: 1;
+  gap: var(--space-1);
+}
+
+.invite input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+  accent-color: var(--color-primary);
+}
+
+.inviteTitle {
+  font-weight: 600;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-error);
+}
+
+.error svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* Klart */
+.done {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.doneTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.doneIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-mint);
+  color: #fff;
+}

@@ -5422,6 +5422,150 @@
           }
         }
       }
+    },
+    "/api/import/template": {
+      "get": {
+        "tags": [
+          "import"
+        ],
+        "summary": "Template",
+        "description": "Mallen med kolumnerna och tre exempelrader.",
+        "operationId": "template_api_import_template_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ],
+              "type": "string",
+              "default": "xlsx",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/csv": {},
+              "application/vnd.ms-excel": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/import/preview": {
+      "post": {
+        "tags": [
+          "import"
+        ],
+        "summary": "Preview",
+        "description": "Vad som händer om filen importeras med de valda klasserna. Inget sparas.",
+        "operationId": "preview_api_import_preview_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_preview_api_import_preview_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/import/run": {
+      "post": {
+        "tags": [
+          "import"
+        ],
+        "summary": "Run",
+        "description": "Importerar filen med de valda klasserna. Rader med fel hoppas över.",
+        "operationId": "run_api_import_run_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_run_api_import_run_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -5897,6 +6041,71 @@
         ],
         "title": "Body_create_contract_api_contracts_post"
       },
+      "Body_preview_api_import_preview_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "CSV eller Excel (.xlsx) enligt mallen"
+          },
+          "classes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classes",
+            "description": "Klasserna som har APL. Utan klasser visas bara filens klasser"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_preview_api_import_preview_post"
+      },
+      "Body_run_api_import_run_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "CSV eller Excel (.xlsx) enligt mallen"
+          },
+          "classes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classes",
+            "description": "Klasserna som har APL. Utan klasser visas bara filens klasser"
+          },
+          "send_invites": {
+            "type": "boolean",
+            "title": "Send Invites",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_run_api_import_run_post"
+      },
       "Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put": {
         "properties": {
           "file": {
@@ -6216,6 +6425,47 @@
           "apl_terms"
         ],
         "title": "ClassDetail"
+      },
+      "ClassPlanRead": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "new_students": {
+            "type": "integer",
+            "title": "New Students"
+          },
+          "changed": {
+            "type": "integer",
+            "title": "Changed"
+          },
+          "leaving": {
+            "type": "integer",
+            "title": "Leaving"
+          },
+          "teachers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teachers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "exists",
+          "new_students",
+          "changed",
+          "leaving",
+          "teachers"
+        ],
+        "title": "ClassPlanRead"
       },
       "ClassSummary": {
         "properties": {
@@ -6909,6 +7159,35 @@
         "title": "EvidenceRead",
         "description": "En redovisning som visar målet, med följdfrågans svar om det finns."
       },
+      "FileClass": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "students": {
+            "type": "integer",
+            "title": "Students"
+          },
+          "teachers": {
+            "type": "integer",
+            "title": "Teachers"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists",
+            "description": "Klassen finns redan i Firstflow"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "students",
+          "teachers",
+          "exists"
+        ],
+        "title": "FileClass"
+      },
       "FollowUpRead": {
         "properties": {
           "question": {
@@ -7260,11 +7539,157 @@
         ],
         "title": "HealthResponse"
       },
+      "ImportPerson": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "Elev, Lärare, SYV eller Rektor"
+          },
+          "class_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Name"
+          },
+          "what": {
+            "type": "string",
+            "title": "What",
+            "description": "Vad som ändras",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "role",
+          "class_name"
+        ],
+        "title": "ImportPerson"
+      },
+      "ImportPreview": {
+        "properties": {
+          "file_classes": {
+            "items": {
+              "$ref": "#/components/schemas/FileClass"
+            },
+            "type": "array",
+            "title": "File Classes"
+          },
+          "selected": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected"
+          },
+          "new": {
+            "items": {
+              "$ref": "#/components/schemas/ImportPerson"
+            },
+            "type": "array",
+            "title": "New"
+          },
+          "changed": {
+            "items": {
+              "$ref": "#/components/schemas/ImportPerson"
+            },
+            "type": "array",
+            "title": "Changed"
+          },
+          "leaving": {
+            "items": {
+              "$ref": "#/components/schemas/ImportPerson"
+            },
+            "type": "array",
+            "title": "Leaving"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/RowErrorRead"
+            },
+            "type": "array",
+            "title": "Errors"
+          },
+          "classes": {
+            "items": {
+              "$ref": "#/components/schemas/ClassPlanRead"
+            },
+            "type": "array",
+            "title": "Classes"
+          },
+          "skipped": {
+            "type": "integer",
+            "title": "Skipped",
+            "description": "Rader i klasser som inte är valda"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_classes",
+          "selected",
+          "new",
+          "changed",
+          "leaving",
+          "errors",
+          "classes",
+          "skipped"
+        ],
+        "title": "ImportPreview"
+      },
+      "ImportResult": {
+        "properties": {
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          },
+          "changed": {
+            "type": "integer",
+            "title": "Changed"
+          },
+          "left": {
+            "type": "integer",
+            "title": "Left"
+          },
+          "invited": {
+            "type": "integer",
+            "title": "Invited"
+          },
+          "errors": {
+            "type": "integer",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created",
+          "changed",
+          "left",
+          "invited",
+          "errors"
+        ],
+        "title": "ImportResult"
+      },
       "InvitationKind": {
         "type": "string",
         "enum": [
           "supervisor",
-          "colleague"
+          "colleague",
+          "account"
         ],
         "title": "InvitationKind"
       },
@@ -7385,6 +7810,18 @@
             "title": "Has Account",
             "description": "Handledaren har redan ett lösenord och behöver inget nytt",
             "default": false
+          },
+          "account_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Name",
+            "description": "Namnet på kontot, när en importerad person väljer lösenord"
           }
         },
         "type": "object",
@@ -9236,6 +9673,24 @@
           "verdict"
         ],
         "title": "ReviewVerdict"
+      },
+      "RowErrorRead": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "row",
+          "message"
+        ],
+        "title": "RowErrorRead"
       },
       "SchoolAccountCreate": {
         "properties": {
