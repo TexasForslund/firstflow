@@ -1,13 +1,14 @@
-import { Building2, GraduationCap, MapPin, Send } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { GraduationCap, MapPin, Send, Trash2, Upload } from 'lucide-react'
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 
 import {
+  useCompanyLogo,
   useInviteColleague,
   useSupervisorWorkplaces,
   useUpdateCompany,
   type SupervisorWorkplace,
 } from '../../api/invitations'
-import { Avatar, Button, Card, HelpPopover, TextField } from '../../components'
+import { Avatar, Button, Card, CompanyLogo, HelpPopover, TextField } from '../../components'
 import styles from '../classes/Classes.module.css'
 import own from '../placements/Placements.module.css'
 import page from './Company.module.css'
@@ -43,6 +44,59 @@ export function Company() {
   )
 }
 
+/** Ladda upp eller ta bort loggan. Sparas direkt, oberoende av Spara för resten av profilen. */
+function LogoField({ workplace }: { workplace: SupervisorWorkplace }) {
+  const { upload, remove } = useCompanyLogo(workplace.id)
+  const input = useRef<HTMLInputElement>(null)
+  const [tooBig, setTooBig] = useState(false)
+  const busy = upload.isPending || remove.isPending
+  const error = tooBig ? 'Loggan får vara högst 1 MB.' : (upload.error ?? remove.error)?.message
+
+  function choose(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setTooBig(file.size > 1024 * 1024)
+    if (file.size <= 1024 * 1024) upload.mutate(file)
+  }
+
+  return (
+    <div className={page.logoField}>
+      <span className={page.label}>Logga</span>
+      <div className={page.logoRow}>
+        <CompanyLogo name={workplace.name} logoUrl={workplace.logo_url} size="lg" />
+        <div className={page.logoActions}>
+          <div className={page.logoButtons}>
+            <Button icon={<Upload aria-hidden="true" />} disabled={busy} onClick={() => input.current?.click()}>
+              {workplace.logo_url ? 'Byt logga' : 'Ladda upp logga'}
+            </Button>
+            {workplace.logo_url && (
+              <Button icon={<Trash2 aria-hidden="true" />} disabled={busy} onClick={() => remove.mutate()}>
+                Ta bort
+              </Button>
+            )}
+          </div>
+          <span className={page.hint}>PNG, JPG eller WebP, högst 1 MB. En kvadratisk bild blir finast.</span>
+          {error && (
+            <span className={styles.formError} role="alert">
+              {error}
+            </span>
+          )}
+        </div>
+      </div>
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={choose}
+      />
+    </div>
+  )
+}
+
 function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
   const [editing, setEditing] = useState(false)
   const update = useUpdateCompany(workplace.id)
@@ -68,12 +122,10 @@ function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
 
   return (
     <Card>
-      <div className={styles.cardHeader}>
-        <div className={own.heading}>
-          <h2 className={styles.cardTitle}>
-            <Building2 aria-hidden="true" className={own.companyIcon} />
-            {workplace.name}
-          </h2>
+      <div className={`${styles.cardHeader} ${page.logoHeader}`}>
+        <CompanyLogo name={workplace.name} logoUrl={workplace.logo_url} size="lg" />
+        <div className={`${own.heading} ${page.headingGrow}`}>
+          <h2 className={styles.cardTitle}>{workplace.name}</h2>
           <span className={own.address}>
             {workplace.school_names.length === 1
               ? `Elever från ${workplace.school_names[0]}`
@@ -84,6 +136,7 @@ function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
       </div>
       {editing ? (
         <form className={`${styles.cardBody} ${page.form}`} onSubmit={submit}>
+          <LogoField workplace={workplace} />
           <TextField
             label="Företagets namn"
             required

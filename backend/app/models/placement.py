@@ -7,12 +7,13 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    LargeBinary,
     String,
     Table,
     Text,
     func,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, deferred, mapped_column, relationship
 
 from app.db.base import Base
 from app.models.user import User
@@ -69,6 +70,11 @@ class Workplace(Base):
     address: Mapped[str | None] = mapped_column(String(300))
     industry: Mapped[str | None] = mapped_column(String(100))
     description: Mapped[str | None] = mapped_column(Text)
+    # Logga som handledaren laddar upp (Texas, 2026-11-02): PNG, JPEG eller WebP, högst 1 MB.
+    # Laddas bara när den hämtas, som kontraktens PDF:er.
+    logo: Mapped[bytes | None] = deferred(mapped_column(LargeBinary))
+    logo_type: Mapped[str | None] = mapped_column(String(20))
+    logo_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     supervisors: Mapped[list[User]] = relationship(
@@ -91,6 +97,13 @@ class Workplace(Base):
             self.school_links.append(
                 WorkplaceSchool(school_id=school_id, owner_teacher_id=owner_teacher_id)
             )
+
+    @property
+    def logo_url(self) -> str | None:
+        """Adressen till loggan, med en version så att en ny logga inte fastnar i cachen."""
+        if self.logo_updated_at is None:
+            return None
+        return f"/api/workplaces/{self.id}/logo?v={int(self.logo_updated_at.timestamp())}"
 
     def link(self, school_id: uuid.UUID) -> WorkplaceSchool | None:
         """Kopplingen till skolan, eller None om skolan inte har elever här."""

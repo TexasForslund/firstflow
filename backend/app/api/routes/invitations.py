@@ -22,7 +22,7 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -162,6 +162,7 @@ class SupervisorWorkplace(BaseModel):
     industry: str | None
     description: str | None
     school_names: list[str] = Field(description="Skolorna som har elever på företaget")
+    logo_url: str | None = Field(description="Företagets logga, om det finns en")
     supervisors: list[Colleague]
     pending_invitations: list[InvitationRead]
     can_invite: bool = Field(description="Färre än tre kollegor, inklusive väntande inbjudningar")
@@ -590,6 +591,7 @@ def _supervisor_workplace_read(db: DbSession, workplace: Workplace) -> Superviso
         industry=workplace.industry,
         description=workplace.description,
         school_names=list(schools),
+        logo_url=workplace.logo_url,
         supervisors=[Colleague(id=s.id, name=s.name, email=s.email) for s in colleagues],
         pending_invitations=[_read(db, i) for i in pending],
         can_invite=len(colleagues) - 1 + len(pending) < MAX_COLLEAGUES,
@@ -619,6 +621,58 @@ def update_profile(
     workplace.address = body.address
     workplace.industry = body.industry
     workplace.description = body.description
+    db.commit()
+    db.refresh(workplace)
+    return _supervisor_workplace_read(db, workplace)
+
+
+MAX_LOGO_BYTES = 1024 * 1024
+
+
+def _image_type(data: bytes) -> str | None:
+    """Bildens typ utifrån innehållet. Bara PNG, JPEG och WebP: inte SVG, som kan innehålla kod."""
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if data.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
+@supervisor_router.put("/{workplace_id}/logo", response_model=SupervisorWorkplace)
+def upload_logo(
+    workplace_id: UUID,
+    db: DbSession,
+    user: Supervisor,
+    file: Annotated[UploadFile, File(description="PNG, JPEG eller WebP, högst 1 MB")],
+) -> SupervisorWorkplace:
+    """Handledaren laddar upp företagets logga. Den syns för alla skolor med elever där."""
+    workplace = _supervisor_workplace(db, user, workplace_id)
+    data = file.file.read(MAX_LOGO_BYTES + 1)
+    if len(data) > MAX_LOGO_BYTES:
+        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, detail="Loggan får vara högst 1 MB")
+    image_type = _image_type(data)
+    if image_type is None:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Loggan måste vara en PNG-, JPG- eller WebP-bild",
+        )
+    workplace.logo = data
+    workplace.logo_type = image_type
+    workplace.logo_updated_at = time.now()
+    db.commit()
+    db.refresh(workplace)
+    return _supervisor_workplace_read(db, workplace)
+
+
+@supervisor_router.delete("/{workplace_id}/logo", response_model=SupervisorWorkplace)
+def delete_logo(workplace_id: UUID, db: DbSession, user: Supervisor) -> SupervisorWorkplace:
+    """Tar bort företagets logga. Då visas första bokstaven i namnet."""
+    workplace = _supervisor_workplace(db, user, workplace_id)
+    workplace.logo = None
+    workplace.logo_type = None
+    workplace.logo_updated_at = None
     db.commit()
     db.refresh(workplace)
     return _supervisor_workplace_read(db, workplace)

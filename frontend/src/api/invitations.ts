@@ -131,6 +131,41 @@ export function useUpdateCompany(workplaceId: string) {
   })
 }
 
+/** Handledaren laddar upp eller tar bort företagets logga (Texas, 2026-11-02). */
+export function useCompanyLogo(workplaceId: string) {
+  const queryClient = useQueryClient()
+  const path = { params: { path: { workplace_id: workplaceId } } }
+  const done = () => {
+    queryClient.invalidateQueries({ queryKey: keys.supervisorWorkplaces })
+    // Loggan syns också i praktikplatser och placeringar.
+    queryClient.invalidateQueries({ queryKey: ['workplaces'] })
+  }
+  const upload = useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      const { data, error, response } = await api.PUT('/api/supervisor/workplaces/{workplace_id}/logo', {
+        ...path,
+        // Typen säger att filen är en sträng, men API:t tar emot multipart.
+        body: form as unknown as components['schemas']['Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put'],
+        bodySerializer: (body) => body as unknown as FormData,
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: done,
+  })
+  const remove = useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.DELETE('/api/supervisor/workplaces/{workplace_id}/logo', path)
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: done,
+  })
+  return { upload, remove }
+}
+
 export function useInviteColleague(workplaceId: string) {
   const queryClient = useQueryClient()
   return useMutation({

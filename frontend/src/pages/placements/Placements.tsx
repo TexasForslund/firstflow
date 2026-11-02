@@ -1,4 +1,4 @@
-import { Building2, MapPin, Send } from 'lucide-react'
+import { MapPin, Send } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import {
@@ -11,7 +11,7 @@ import {
 } from '../../api/invitations'
 import { useWorkplaces, type Workplace } from '../../api/placements'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button, Card, TextField } from '../../components'
+import { Avatar, Button, Card, CompanyLogo, TextField } from '../../components'
 import styles from '../classes/Classes.module.css'
 import own from './Placements.module.css'
 
@@ -200,12 +200,10 @@ function InvitationRow({ invitation }: { invitation: Invitation }) {
 function WorkplaceCard({ workplace }: { workplace: Workplace }) {
   return (
     <Card>
-      <div className={styles.cardHeader}>
-        <div className={own.heading}>
-          <h3 className={styles.cardTitle}>
-            <Building2 aria-hidden="true" className={own.companyIcon} />
-            {workplace.name}
-          </h3>
+      <div className={`${styles.cardHeader} ${own.logoHeader}`}>
+        <CompanyLogo name={workplace.name} logoUrl={workplace.logo_url} size="sm" />
+        <div className={`${own.heading} ${own.headingGrow}`}>
+          <h3 className={styles.cardTitle}>{workplace.name}</h3>
           <span className={own.address}>
             {workplace.industry && <span>{workplace.industry}</span>}
             {workplace.address && (

@@ -196,7 +196,6 @@
   color: var(--color-primary-on-light);
 }
 
-
 .badgeMissing {
   background: var(--color-butter-bg);
   color: var(--color-butter);
@@ -630,4 +629,11 @@
   width: 0.875rem;
   height: 0.875rem;
   vertical-align: -0.125rem;
+}
+
+/* Företagets logga bredvid namnet (Texas, 2026-11-02). */
+.companyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }

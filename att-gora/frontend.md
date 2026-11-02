@@ -323,7 +323,7 @@ Enligt "Firstflow – Frågor per inriktning skiss" (Texas, 2026-10-30). Backend
 Enligt "Firstflow – Delad företagsprofil och logga skiss". Backend: B24.
 - **Företaget (handledaren):** raden **Skolor ni tar emot elever från** med en "Vad är det här?". I Redigera står att ändringarna syns för alla skolor när det finns fler än en.
 - **Inbjudan:** har handledaren redan ett företag visas det, med "Du behöver inte fylla i något nytt". Har hen redan ett konto heter knappen **Tacka ja** och inget lösenord behövs.
-- Loggan kommer i nästa PR.
+- **Logga** ([PR #62](https://github.com/TexasForslund/firstflow/pull/62)): handledaren laddar upp och tar bort den under Redigera. Den syns på Företaget, i lärarens Praktikplatser, på elevsidan, i elevens Min APL och på projektets sida. Utan logga visas första bokstaven (`CompanyLogo`).
 
 ---
 

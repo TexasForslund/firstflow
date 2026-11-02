@@ -742,6 +742,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workplaces/{workplace_id}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Logo
+         * @description Företagets logga. Handledarna på företaget och alla på en skola med elever där får se
+         *     den: loggan är företagets, inte elevdata.
+         */
+        get: operations["get_logo_api_workplaces__workplace_id__logo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workplaces/{workplace_id}/supervisors": {
         parameters: {
             query?: never;
@@ -1158,6 +1179,30 @@ export interface paths {
         put: operations["update_profile_api_supervisor_workplaces__workplace_id__put"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/workplaces/{workplace_id}/logo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Upload Logo
+         * @description Handledaren laddar upp företagets logga. Den syns för alla skolor med elever där.
+         */
+        put: operations["upload_logo_api_supervisor_workplaces__workplace_id__logo_put"];
+        post?: never;
+        /**
+         * Delete Logo
+         * @description Tar bort företagets logga. Då visas första bokstaven i namnet.
+         */
+        delete: operations["delete_logo_api_supervisor_workplaces__workplace_id__logo_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2013,6 +2058,14 @@ export interface components {
              * @default false
              */
             send: boolean;
+        };
+        /** Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put */
+        Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put: {
+            /**
+             * File
+             * @description PNG, JPEG eller WebP, högst 1 MB
+             */
+            file: string;
         };
         /** Choice */
         Choice: {
@@ -2881,6 +2934,11 @@ export interface components {
             /** @description Företaget projektet görs på */
             workplace: components["schemas"]["Ref"] | null;
             /**
+             * Workplace Logo Url
+             * @description Företagets logga
+             */
+            workplace_logo_url?: string | null;
+            /**
              * Supervisors
              * @description Inbjudna handledare
              */
@@ -3161,6 +3219,11 @@ export interface components {
             owner: components["schemas"]["Ref"];
             /** @description Företaget projektet görs på */
             workplace: components["schemas"]["Ref"] | null;
+            /**
+             * Workplace Logo Url
+             * @description Företagets logga
+             */
+            workplace_logo_url?: string | null;
             /**
              * Supervisors
              * @description Inbjudna handledare
@@ -3990,6 +4053,11 @@ export interface components {
              * @description Skolorna som har elever på företaget
              */
             school_names: string[];
+            /**
+             * Logo Url
+             * @description Företagets logga, om det finns en
+             */
+            logo_url: string | null;
             /** Supervisors */
             supervisors: components["schemas"]["Colleague"][];
             /** Pending Invitations */
@@ -4266,6 +4334,11 @@ export interface components {
             industry: string | null;
             /** Description */
             description: string | null;
+            /**
+             * Logo Url
+             * @description Företagets logga, om det finns en
+             */
+            logo_url: string | null;
             /** Supervisors */
             supervisors: components["schemas"]["SupervisorRead"][];
         };
@@ -4280,6 +4353,11 @@ export interface components {
             name: string;
             /** Address */
             address: string | null;
+            /**
+             * Logo Url
+             * @description Företagets logga, om det finns en
+             */
+            logo_url: string | null;
         };
         /** YesNoQuestion */
         "YesNoQuestion-Input": {
@@ -5704,6 +5782,39 @@ export interface operations {
             };
         };
     };
+    get_logo_api_workplaces__workplace_id__logo_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
+                    "image/jpeg": unknown;
+                    "image/webp": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_supervisor_api_workplaces__workplace_id__supervisors_post: {
         parameters: {
             query?: never;
@@ -6308,6 +6419,72 @@ export interface operations {
                 "application/json": components["schemas"]["CompanyProfile"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorWorkplace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_logo_api_supervisor_workplaces__workplace_id__logo_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorWorkplace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_logo_api_supervisor_workplaces__workplace_id__logo_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
