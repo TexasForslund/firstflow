@@ -31,6 +31,7 @@ from app.models.attendance import Attendance
 from app.models.placement import Placement, Workplace, WorkplaceSchool, workplace_supervisors
 from app.models.school_class import class_students, class_teachers
 from app.models.user import User, UserRole
+from app.services import messaging
 from app.services.accounts import AccountCreate, create_account
 
 workplace_router = APIRouter(prefix="/workplaces", tags=["placements"])
@@ -366,6 +367,9 @@ def create_placement(
         end_date=body.end_date,
     )
     db.add(placement)
+    db.flush()
+    # Eleven, handledaren och elevens lärare får en grupp i Meddelanden (Texas, 2026-11-02).
+    messaging.ensure_placement_group(db, placement)
     db.commit()
     return placement_read(placement)
 

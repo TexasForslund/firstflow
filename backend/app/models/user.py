@@ -60,6 +60,9 @@ class User(Base):
     display_preferences: Mapped[dict[str, Any]] = mapped_column(
         JSONB, default=dict, server_default=text("'{}'")
     )
+    # Senast användaren hade Meddelanden öppet i appen (realtidsströmmen). Den som är inne får
+    # inget mejl om nya meddelanden.
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     school: Mapped[School | None] = relationship()

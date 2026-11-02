@@ -21,6 +21,7 @@ Väntar på: D0.
 - `backend/Dockerfile.prod`: utan `--reload`, utan utvecklingsberoenden, flera workers, kör som icke-root.
 - `frontend/Dockerfile.prod`: `npm run build` och statiska filer.
 - Proxy (Caddy eller nginx) med TLS, `/` till frontend och `/api` till backend på samma domän, och säkerhetsrubriker.
+- **Realtid i Meddelanden (B11):** `/api/messages/events` är en ström (server-sent events) som får inte buffras. I nginx: `proxy_buffering off` och `proxy_read_timeout` på minst 11 minuter för den adressen. I Caddy: `flush_interval -1`. Varje inloggad med appen öppen har en anslutning öppen.
 - `docker-compose.prod.yml` eller motsvarande hos Broadview.
 - Migreringar som eget steg vid driftsättning.
 - `.env.example` för produktion med alla variabler (utan värden).
@@ -64,6 +65,8 @@ Leverantör eller SMTP-relä, SPF och DKIM för domänen. Inga elevuppgifter i �
 Väntar på: D0 och B5 (bilder i veckoredovisningar).
 
 Lagring inom EU för uppladdade bilder, inte i containern. Bara inloggade med rätt behörighet ska kunna hämta en fil.
+
+I dag sparas kontraktens PDF:er, företagens loggor och bilder och filer i Meddelanden (högst 10 MB) i databasen. Det räcker för en pilot. Räkna med det i backupen (D3).
 
 ---
 

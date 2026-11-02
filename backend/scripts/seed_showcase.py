@@ -34,6 +34,7 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.contract import Contract, ContractSignature, SignerRole
+from app.models.message import Conversation, ConversationMember, Message
 from app.models.note import NoteTag, StudentNote
 from app.models.placement import Placement, Workplace, WorkplaceSchool
 from app.models.project import Project
@@ -48,6 +49,7 @@ from app.models.report import (
 from app.models.school import School
 from app.models.school_class import SchoolClass, class_students, teacher_students
 from app.models.user import User
+from app.services import messaging
 from app.services.report_forms import FormContent, dump_questions
 from scripts.demo_pdf import make_pdf
 from scripts.seed_demo import ALLOWED_ENVIRONMENTS, DEMO_PASSWORD, DOMAIN, _slug, seed
@@ -273,6 +275,17 @@ def _clear(db: Session, school: School, teacher: User, keep: set[uuid.UUID]) -> 
             .where(User.school_id == school.id)
         )
     )
+    # Samtal där läraren eller klassens elever är med.
+    people = [teacher.id, *keep]
+    db.execute(
+        delete(Conversation).where(
+            Conversation.id.in_(
+                select(ConversationMember.conversation_id).where(
+                    ConversationMember.user_id.in_(people)
+                )
+            )
+        )
+    )
     db.execute(delete(Attendance).where(Attendance.placement_id.in_(placement_ids)))
     db.execute(delete(Placement).where(Placement.id.in_(placement_ids)))
     for school_class in classes:
@@ -419,6 +432,7 @@ def showcase(db: Session) -> dict[str, int]:
     db.flush()
 
     counts = {"närvarodagar": 0, "redovisningar": 0, "kommentarer": 0, "saknas": 0}
+    placements: list[Placement] = []
     for i, (name, attend, deliver, late, stopped) in enumerate(STUDENTS):
         student = students[name]
         assert student is not None
@@ -432,6 +446,7 @@ def showcase(db: Session) -> dict[str, int]:
         )
         db.add(placement)
         db.flush()
+        placements.append(placement)
 
         # Närvaro: varje vardag fram till i dag. I dag har bara några hunnit checka in.
         # Handledarna har bekräftat tidigare veckor. Den här veckan har Sofia bekräftat allt
@@ -605,7 +620,82 @@ def showcase(db: Session) -> dict[str, int]:
             )
         )
     db.flush()
+    _messages(db, teacher, placements, students, today)
     return counts
+
+
+def _messages(
+    db: Session,
+    teacher: User,
+    placements: list[Placement],
+    students: dict[str, User | None],
+    today: date,
+) -> None:
+    """Grupper för praktikplatserna och några samtal, så att Meddelanden inte är tomt."""
+    groups = {p.student_id: messaging.ensure_placement_group(db, p) for p in placements}
+    db.flush()
+    hugo, maja = students[LIVE_STUDENT], students["Maja Nordström"]
+    assert hugo is not None and maja is not None
+    hugo_placement = next(p for p in placements if p.student_id == hugo.id)
+    gustav = hugo_placement.supervisor
+    project = db.scalar(
+        select(Project)
+        .where(Project.students.any(User.id == hugo.id), Project.completed_at.is_(None))
+        .order_by(Project.name)
+    )
+
+    def say(
+        conversation: Conversation,
+        sender: User,
+        text: str,
+        when: datetime,
+        project_id: uuid.UUID | None = None,
+    ) -> None:
+        db.add(
+            Message(
+                conversation_id=conversation.id,
+                sender_id=sender.id,
+                text=text,
+                project_id=project_id,
+                created_at=when,
+            )
+        )
+        conversation.last_message_at = when
+
+    yesterday = today - timedelta(days=1)
+    group = groups[hugo.id]
+    say(
+        group,
+        teacher,
+        "Hej båda! Här är projektet vi pratade om. Hugo, lägg gärna upp bilder här när du är "
+        "klar med delmomenten.",
+        _at(yesterday, 8, 30),
+        project.id if project else None,
+    )
+    say(group, hugo, "Gör det! Första delen är klar i dag.", _at(yesterday, 14, 5))
+    say(
+        group,
+        gustav,
+        "Bra jobbat i dag Hugo. Vi börjar 07:00 i morgon, ta med arbetsskorna.",
+        _at(today, 7, 10),
+    )
+    # Alla har läst fram till Hugos meddelande, så Gustavs är oläst för de andra.
+    for member in group.members:
+        read = _at(today, 7, 10) if member.user_id == gustav.id else _at(yesterday, 14, 5)
+        member.last_read_at = read
+
+    direct = Conversation(
+        is_group=False,
+        created_by_id=maja.id,
+        members=[ConversationMember(user_id=teacher.id), ConversationMember(user_id=maja.id)],
+    )
+    db.add(direct)
+    db.flush()
+    say(direct, maja, "Hej! Var hittar jag mitt utbildningskontrakt?", _at(today, 9, 15))
+    for member in direct.members:
+        if member.user_id == maja.id:
+            member.last_read_at = _at(today, 9, 15)
+    db.flush()
 
 
 def _contracts(  # noqa: PLR0913

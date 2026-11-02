@@ -67,6 +67,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 **Nästa steg:**
 - **Texas + Claude:**
   - **Påminnelse (Texas, 2026-10-31): handledarens vy ska få mer fokus framöver.** F31, Närvaro, är klar. Nästa del av handledarens vy planeras med Texas.
+  - **Meddelanden (B11, F32, #65) är byggda.** Senare: "Läst av" i grupper, meddelanden i notisklockan, tysta en grupp och push-notiser i mobilen.
   - **Testa importen (Texas, 2026-11-02: väntar till senare).** Logga in som skoladmin, gå till Importera och prova mallen, en egen fil och mejllänken. Visa sedan för Haldor och fråga om de kan exportera en fil med mallens kolumner och om de har ett SS12000-API.
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).
   - Påminnelser om incheckning via e-post eller push.

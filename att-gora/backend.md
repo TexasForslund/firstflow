@@ -265,11 +265,43 @@ Se detaljerad spec i [docs/mellanarkiv-dataexport.md](../docs/mellanarkiv-dataex
 
 ---
 
-## B11. Meddelanden ⬜
+## B11. Meddelanden ✅ Klar ([PR #65](https://github.com/TexasForslund/firstflow/pull/65), Texas + Claude, 2026-11-02)
 
-Ägare: bestäms. Tillagd från lärarskisserna ([larare-oversikt.png](../docs/design/larare-oversikt.png)).
+Enligt skissen "Firstflow – Meddelanden". Frontend: F32.
 
-Trådar mellan lärare och elev, och mellan lärare och handledare. Antal olästa per tråd och totalt (visas i menyn). Senaste meddelandet förhandsvisas på översikten. Detaljeras innan start.
+**Beslut (Texas, 2026-11-02):**
+- Samtal två och två och grupper, t.ex. handledare, elev och lärare i samma grupp.
+- Bilder, filer (högst 10 MB) och projekt kan delas i samtalet.
+- Nya meddelanden syns i realtid.
+- Den som inte är inne får ett mejl om ett oläst meddelande, högst ett per samtal tills det är läst. Mejlet innehåller inte texten.
+- En grupp skapas automatiskt för varje praktikplats: eleven, handledaren och elevens lärare.
+- "Skicka meddelande" finns där man redan är: elevsidan, Närvaro och projektet.
+
+**Vem får skriva till vem** (`app/services/messaging.py`):
+- Läraren skriver till sina elever och deras handledare.
+- Handledaren skriver till sina elever och deras lärare.
+- Eleven skriver till sina lärare, sina handledare och skolans SYV.
+- SYV skriver till skolans elever.
+- Den som är med i ett samtal kan alltid svara. Läraren ser inte samtal mellan elev och handledare om hen inte är med.
+
+**Byggt:**
+- Modeller i `app/models/message.py`: `Conversation`, `ConversationMember` (`last_read_at`, `emailed_at`), `Message` (text, `project_id`) och `MessageAttachment` (sparas i databasen, som kontraktens PDF:er). `users.last_seen_at` visar om någon är inne.
+- Endpoints i `app/api/routes/messages.py` under `/api/messages`:
+  - `GET /contacts`
+  - `GET` och `POST /conversations`
+  - `GET /conversations/{id}`
+  - `POST /conversations/{id}/read`
+  - `GET /conversations/{id}/projects`
+  - `GET` och `POST /conversations/{id}/messages` (multipart)
+  - `GET /attachments/{id}`
+  - `GET /unread`
+  - `GET /placement-group?student_id=`
+  - `GET /events`, en ström med server-sent events
+- Bilder visas i appen. Andra filer laddas alltid ner som `application/octet-stream`, så att en uppladdad HTML-fil inte kan köras i Firstflow.
+- Innehållet i meddelanden loggas aldrig.
+- Strömmen kollar var 2:a sekund och stängs efter 10 minuter, och webbläsaren kopplar då upp igen. Den fungerar med flera workers eftersom den läser från databasen. Proxyn får inte buffra den (D1 i drift.md).
+
+**Inte byggt än:** notisklockan samlar inte meddelanden, "Läst av" i grupper, att stänga av notiser för en grupp och push-notiser i mobilen.
 
 ---
 

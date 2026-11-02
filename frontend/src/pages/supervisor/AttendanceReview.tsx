@@ -1,5 +1,6 @@
 import { Check, Plus, X } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router'
 
 import { clockTime, useReview, useReviewList, type ReviewItem, type ReviewVerdict } from '../../api/attendance'
 import { Avatar, HelpPopover } from '../../components'
@@ -165,6 +166,11 @@ function TodayCard({ item, busy, onSend }: { item: ReviewItem; busy: boolean; on
           </span>
         </span>
       </div>
+      {(item.state === 'missing' || item.state === 'not_present') && (
+        <Link to={`/messages?group=${item.student.id}`} className={styles.link}>
+          Skriv till {item.student.name.split(' ')[0]} och läraren
+        </Link>
+      )}
       {item.state === 'pending' ? (
         <div className={styles.actions}>
           <NotPresentButton disabled={busy} onClick={() => send('not_present')} />

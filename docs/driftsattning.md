@@ -31,6 +31,7 @@ Webbläsare ──https──▶ Proxy (TLS, Caddy eller nginx)
 ```
 
 - **Samma domän för frontend och `/api`.** Inloggningen är en httpOnly-cookie (`firstflow_session`) som bara skickas till samma origin. Därför måste proxyn lägga båda under samma adress.
+- **Meddelanden i realtid:** proxyn får inte buffra `/api/messages/events`, som är en ström (server-sent events). Se D1 i [att-gora/drift.md](../att-gora/drift.md).
 - **Frontend byggs** till statiska filer (`npm run build`) och serveras av proxyn. Ingen Vite-server i produktion.
 - **Backend körs utan `--reload`** och utan källkoden monterad. Migreringar (`alembic upgrade head`) körs som ett eget steg vid driftsättning, inte vid varje uppstart.
 - **Dagens `docker-compose.yml` och Dockerfiles är för utveckling.** Produktion får egna filer (D1).

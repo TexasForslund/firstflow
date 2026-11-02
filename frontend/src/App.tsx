@@ -15,6 +15,7 @@ import { NewClass } from './pages/classes/NewClass'
 import { StudentList } from './pages/students/StudentList'
 import { StudentPage } from './pages/students/StudentPage'
 import { Placeholder } from './pages/Placeholder'
+import { Messages } from './pages/messages/Messages'
 import { Placements } from './pages/placements/Placements'
 import { Settings } from './pages/settings/Settings'
 import { AnswerReport } from './pages/student/AnswerReport'
@@ -83,12 +84,11 @@ const routes: RouteObject[] = [
       },
 
       // Flera roller
-      placeholder(
-        'messages',
-        ['teacher', 'student', 'supervisor', 'syv'],
-        'Meddelanden',
-        'Meddelanden mellan lärare, elever och handledare.',
-      ),
+      { path: 'messages', element: only(['teacher', 'student', 'supervisor', 'syv'], <Messages />) },
+      {
+        path: 'messages/:conversationId',
+        element: only(['teacher', 'student', 'supervisor', 'syv'], <Messages />),
+      },
       { path: 'placements', element: only(['teacher', 'school_admin', 'principal'], <Placements />) },
       { path: 'contracts', element: only(['teacher', 'supervisor', 'student', 'school_admin'], <Contracts />) },
       { path: 'contracts/:contractId', element: only(['teacher', 'supervisor', 'student'], <ContractPage />) },

@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
@@ -134,7 +134,23 @@ export function WeekAttendance({ classId }: { classId: string }) {
                       )}
                     </td>
                   ))}
-                  <td className={styles.supervisorCol}>{row.supervisor?.name ?? 'Ingen praktikplats'}</td>
+                  <td className={styles.supervisorCol}>
+                    {row.supervisor ? (
+                      <span className={styles.supervisorCell}>
+                        {row.supervisor.name}
+                        <Link
+                          to={`/messages?group=${row.student.id}`}
+                          className={styles.messageLink}
+                          aria-label={`Skriv i gruppen för ${row.student.name} och ${row.supervisor.name}`}
+                          title="Skriv till eleven och handledaren"
+                        >
+                          <MessageSquare aria-hidden="true" />
+                        </Link>
+                      </span>
+                    ) : (
+                      'Ingen praktikplats'
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

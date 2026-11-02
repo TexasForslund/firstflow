@@ -36,6 +36,7 @@ from app.models.school import School
 from app.models.school_class import SchoolClass, teacher_students
 from app.models.template import QuestionTemplate
 from app.models.user import User, UserRole
+from app.services import messaging
 from app.services.accounts import create_account
 from app.services.report_forms import FormContent, dump_questions
 
@@ -276,15 +277,17 @@ def _ensure_placements(db: Session, school: School, key: str) -> list[str]:
         if db.scalar(select(Placement.id).where(Placement.student_id == student.id)):
             continue
         workplace, supervisor = workplaces[0] if i < 3 else workplaces[-1]
-        db.add(
-            Placement(
-                student_id=student.id,
-                workplace_id=workplace.id,
-                supervisor_id=supervisor.id,
-                start_date=start,
-                end_date=start + timedelta(days=55),
-            )
+        placement = Placement(
+            student_id=student.id,
+            workplace_id=workplace.id,
+            supervisor_id=supervisor.id,
+            start_date=start,
+            end_date=start + timedelta(days=55),
         )
+        db.add(placement)
+        db.flush()
+        # Gruppen i Meddelanden, som när läraren lägger in praktikplatsen.
+        messaging.ensure_placement_group(db, placement)
     db.flush()
     return created
 

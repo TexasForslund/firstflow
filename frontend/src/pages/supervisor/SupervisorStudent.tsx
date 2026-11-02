@@ -1,10 +1,10 @@
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, MessageSquare } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 
 import { useStudentNotes } from '../../api/notes'
 import { useSupervisedStudents } from '../../api/placements'
 import { useSupervisorReports } from '../../api/reports'
-import { Avatar, Card } from '../../components'
+import { Avatar, ButtonLink, Card } from '../../components'
 import { NotFound } from '../NotFound'
 import { NoteForm, NoteItem } from '../notes/StudentNotes'
 import { periodWeek } from '../placements/period'
@@ -42,6 +42,9 @@ export function SupervisorStudent() {
             {row.workplace.name} · vecka {week} av {weeks}
           </p>
         </div>
+        <ButtonLink to={`/messages?group=${row.student.id}`} icon={<MessageSquare aria-hidden="true" />}>
+          Skicka meddelande
+        </ButtonLink>
       </header>
 
       <div className={styles.columns}>
