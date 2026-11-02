@@ -1,4 +1,4 @@
-import { Building2, MapPin, Send } from 'lucide-react'
+import { Building2, GraduationCap, MapPin, Send } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import {
@@ -7,12 +7,15 @@ import {
   useUpdateCompany,
   type SupervisorWorkplace,
 } from '../../api/invitations'
-import { Avatar, Button, Card, TextField } from '../../components'
+import { Avatar, Button, Card, HelpPopover, TextField } from '../../components'
 import styles from '../classes/Classes.module.css'
 import own from '../placements/Placements.module.css'
 import page from './Company.module.css'
 
-/** Handledarens företagsprofil och kollegor. Handledaren kan bjuda in upp till tre kollegor. */
+/**
+ * Handledarens företagsprofil och kollegor. Handledaren kan bjuda in upp till tre kollegor.
+ * En handledare har ett företag, som kan ta emot elever från flera skolor (Texas, 2026-11-02).
+ */
 export function Company() {
   const query = useSupervisorWorkplaces()
   const workplaces = query.data ?? []
@@ -71,7 +74,11 @@ function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
             <Building2 aria-hidden="true" className={own.companyIcon} />
             {workplace.name}
           </h2>
-          <span className={own.address}>Elever från {workplace.school_name}</span>
+          <span className={own.address}>
+            {workplace.school_names.length === 1
+              ? `Elever från ${workplace.school_names[0]}`
+              : 'Elever från flera skolor'}
+          </span>
         </div>
         {!editing && <Button onClick={() => setEditing(true)}>Redigera</Button>}
       </div>
@@ -102,6 +109,9 @@ function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </label>
+          {workplace.school_names.length > 1 && (
+            <p className={page.hint}>Ändringarna syns för alla skolor ni tar emot elever från.</p>
+          )}
           {update.isError && (
             <p className={styles.formError} role="alert">
               {update.error.message}
@@ -136,6 +146,19 @@ function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
           <div className={page.wide}>
             <dt>Om företaget</dt>
             <dd>{workplace.description ?? 'Inte ifyllt'}</dd>
+          </div>
+          <div className={page.wide}>
+            <dt>
+              Skolor ni tar emot elever från <HelpPopover topic="sharedCompany" />
+            </dt>
+            <dd className={page.schools}>
+              {workplace.school_names.map((school) => (
+                <span key={school} className={page.school}>
+                  <GraduationCap aria-hidden="true" />
+                  {school}
+                </span>
+              ))}
+            </dd>
           </div>
         </dl>
       )}

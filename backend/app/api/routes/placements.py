@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import or_, select
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import require_roles, require_same_school
 from app.api.routes.classes import CanViewClasses, get_accessible_class
@@ -28,7 +28,7 @@ from app.core import time
 from app.core.security import normalize_email
 from app.db.session import DbSession
 from app.models.attendance import Attendance
-from app.models.placement import Placement, Workplace, workplace_supervisors
+from app.models.placement import Placement, Workplace, WorkplaceSchool, workplace_supervisors
 from app.models.school_class import class_students, class_teachers
 from app.models.user import User, UserRole
 from app.services.accounts import AccountCreate, create_account
@@ -177,15 +177,29 @@ def placement_read(placement: Placement) -> PlacementRead:
 
 def _visible_to_teacher(teacher: User):  # noqa: ANN202
     """Läraren ser företag hen har bjudit in, och företag utan ägare (t.ex. från skoladmin)."""
-    return or_(Workplace.owner_teacher_id == teacher.id, Workplace.owner_teacher_id.is_(None))
+    return or_(
+        WorkplaceSchool.owner_teacher_id == teacher.id, WorkplaceSchool.owner_teacher_id.is_(None)
+    )
+
+
+def supervisor_workplace_id(db: Session, supervisor_id: UUID) -> UUID | None:
+    """Företaget handledaren finns på. En handledare hör till ett enda företag."""
+    return db.scalar(
+        select(workplace_supervisors.c.workplace_id).where(
+            workplace_supervisors.c.supervisor_id == supervisor_id
+        )
+    )
 
 
 def _get_workplace(db: DbSession, user: User, workplace_id: UUID) -> Workplace:
+    """Företaget om det har elever från användarens skola och användaren får se det."""
     workplace = db.get(Workplace, workplace_id)
-    if workplace is None:
+    if workplace is None or user.school_id is None:
         raise _not_found()
-    require_same_school(user, workplace.school_id)
-    if user.role == UserRole.TEACHER and workplace.owner_teacher_id not in (None, user.id):
+    link = workplace.link(user.school_id)
+    if link is None:
+        raise _not_found()
+    if user.role == UserRole.TEACHER and link.owner_teacher_id not in (None, user.id):
         raise _not_found()
     return workplace
 
@@ -220,7 +234,11 @@ def _require_student_access(db: DbSession, user: User, student_id: UUID) -> User
 @workplace_router.get("", response_model=list[WorkplaceRead])
 def list_workplaces(db: DbSession, user: CanViewWorkplaces) -> list[WorkplaceRead]:
     """Skolans arbetsplatser med sina handledare."""
-    query = select(Workplace).where(Workplace.school_id == user.school_id)
+    query = (
+        select(Workplace)
+        .join(WorkplaceSchool, WorkplaceSchool.workplace_id == Workplace.id)
+        .where(WorkplaceSchool.school_id == user.school_id)
+    )
     if user.role == UserRole.TEACHER:
         query = query.where(_visible_to_teacher(user))
     workplaces = db.scalars(
@@ -247,10 +265,10 @@ def add_supervisor(
 ) -> WorkplaceRead:
     """Lägger till en handledare på arbetsplatsen.
 
-    Finns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen, eftersom
-    samma handledare kan ta emot elever från flera skolor. Namnet i anropet används då inte.
-    Annars skapas ett handledarkonto utan lösenord, som sätts via inbjudan (B6).
-    En annan roll med samma e-postadress svarar 409.
+    Finns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen. Namnet i
+    anropet används då inte. Annars skapas ett handledarkonto utan lösenord, som sätts via
+    inbjudan (B6). En annan roll med samma e-postadress svarar 409, liksom en handledare som
+    redan finns på ett annat företag: en handledare hör till ett enda företag.
     """
     workplace = _get_workplace(db, user, workplace_id)
     supervisor = db.scalar(
@@ -263,6 +281,10 @@ def add_supervisor(
     if supervisor is None:
         supervisor = create_account(
             db, email=body.email, name=body.name, role=UserRole.SUPERVISOR, school_id=None
+        )
+    elif supervisor_workplace_id(db, supervisor.id) not in (None, workplace.id):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="Handledaren finns redan på ett annat företag"
         )
     db.execute(
         insert(workplace_supervisors)
@@ -284,9 +306,8 @@ def create_placement(
     placeringar (409).
     """
     student = _require_student_access(db, user, body.student_id)
+    # Eleven går på användarens skola, och _get_workplace kräver att företaget har elever därifrån.
     workplace = _get_workplace(db, user, body.workplace_id)
-    if workplace.school_id != student.school_id:
-        raise _not_found()
     supervisor = next((s for s in workplace.supervisors if s.id == body.supervisor_id), None)
     if supervisor is None or not supervisor.is_active:
         raise HTTPException(

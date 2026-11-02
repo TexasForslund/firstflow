@@ -37,7 +37,7 @@ from app.api.routes.invitations import notify
 from app.api.routes.students import get_student_for
 from app.core import time
 from app.db.session import DbSession
-from app.models.placement import Placement, Workplace
+from app.models.placement import Placement, WorkplaceSchool
 from app.models.project import Project, project_students
 from app.models.report import (
     CommentVisibility,
@@ -207,8 +207,8 @@ def _supervised_placement():
             Placement.student_id == Report.student_id,
             Placement.start_date <= Report.due_date,
             Placement.end_date >= Report.due_date,
-            Workplace.id == Placement.workplace_id,
-            Workplace.school_id == SchoolClass.school_id,
+            WorkplaceSchool.workplace_id == Placement.workplace_id,
+            WorkplaceSchool.school_id == SchoolClass.school_id,
         )
         .correlate(Report, SchoolClass)
     )
@@ -230,12 +230,12 @@ def _report_supervisors(db: DbSession, report: Report) -> list[UUID]:
     return list(
         db.scalars(
             select(Placement.supervisor_id)
-            .join(Workplace, Workplace.id == Placement.workplace_id)
+            .join(WorkplaceSchool, WorkplaceSchool.workplace_id == Placement.workplace_id)
             .where(
                 Placement.student_id == report.student_id,
                 Placement.start_date <= report.due_date,
                 Placement.end_date >= report.due_date,
-                Workplace.school_id == report.school_class.school_id,
+                WorkplaceSchool.school_id == report.school_class.school_id,
             )
             .distinct()
         )

@@ -755,10 +755,10 @@ export interface paths {
          * Add Supervisor
          * @description Lägger till en handledare på arbetsplatsen.
          *
-         *     Finns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen, eftersom
-         *     samma handledare kan ta emot elever från flera skolor. Namnet i anropet används då inte.
-         *     Annars skapas ett handledarkonto utan lösenord, som sätts via inbjudan (B6).
-         *     En annan roll med samma e-postadress svarar 409.
+         *     Finns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen. Namnet i
+         *     anropet används då inte. Annars skapas ett handledarkonto utan lösenord, som sätts via
+         *     inbjudan (B6). En annan roll med samma e-postadress svarar 409, liksom en handledare som
+         *     redan finns på ett annat företag: en handledare hör till ett enda företag.
          */
         post: operations["add_supervisor_api_workplaces__workplace_id__supervisors_post"];
         delete?: never;
@@ -1113,7 +1113,8 @@ export interface paths {
         put?: never;
         /**
          * Accept Invite
-         * @description Skapar handledarens konto (och företagsprofil) och loggar in hen.
+         * @description Skapar handledarens konto och företagsprofil, eller lägger till skolan på företaget
+         *     handledaren redan har, och loggar in hen.
          */
         post: operations["accept_invite_api_invite__token__accept_post"];
         delete?: never;
@@ -1830,11 +1831,17 @@ export interface components {
     schemas: {
         /** AcceptInvite */
         AcceptInvite: {
-            /** Name */
-            name: string;
-            /** Password */
-            password: string;
-            /** @description Krävs när en ny handledare bjuds in av en lärare */
+            /**
+             * Name
+             * @description Krävs för ett nytt konto
+             */
+            name?: string | null;
+            /**
+             * Password
+             * @description Krävs för ett nytt konto
+             */
+            password?: string | null;
+            /** @description Krävs när en ny handledare utan företag bjuds in av en lärare */
             company?: components["schemas"]["CompanyProfile"] | null;
         };
         /** AccountCreate */
@@ -2663,6 +2670,17 @@ export interface components {
              * @description Arbetsplatsen när en kollega bjuds in
              */
             workplace_name: string | null;
+            /**
+             * Existing Workplace Name
+             * @description Företaget handledaren redan har. Skolan läggs till där
+             */
+            existing_workplace_name?: string | null;
+            /**
+             * Has Account
+             * @description Handledaren har redan ett lösenord och behöver inget nytt
+             * @default false
+             */
+            has_account: boolean;
         };
         /**
          * LogicRule
@@ -3967,8 +3985,11 @@ export interface components {
             industry: string | null;
             /** Description */
             description: string | null;
-            /** School Name */
-            school_name: string;
+            /**
+             * School Names
+             * @description Skolorna som har elever på företaget
+             */
+            school_names: string[];
             /** Supervisors */
             supervisors: components["schemas"]["Colleague"][];
             /** Pending Invitations */

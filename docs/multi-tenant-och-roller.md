@@ -25,6 +25,8 @@ superadmin          Firstflow-teamet. Skapar skolor och skoladmins. Ser allt.
 
 `supervisor` är en extern roll — handledaren tillhör ett företag, inte en skola. De bjuds in per placering och har bara tillgång till sina egna elever.
 
+**Företag delas mellan skolor (Texas, 2026-11-02).** En handledare hör till ett enda företag (unik `supervisor_id` i `workplace_supervisors`). Företaget kopplas till skolorna i `workplace_schools`, med den lärare som äger företaget på varje skola. Det som delas mellan skolorna är bara företagsprofilen (namn, adress, bransch, beskrivning) och vilka som är handledare där. Elever, placeringar, närvaro, redovisningar, kontrakt och projekt hör till en skola och syns bara där. En skola når ett företag bara om det finns en koppling i `workplace_schools` (`_get_workplace` i `app/api/routes/placements.py`).
+
 ---
 
 ## Kontoskapande — vem skapar vad

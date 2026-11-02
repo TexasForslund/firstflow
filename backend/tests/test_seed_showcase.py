@@ -5,11 +5,12 @@ from sqlalchemy.orm import Session
 
 from app.models.attendance import Attendance
 from app.models.contract import Contract
-from app.models.placement import Placement, Workplace
+from app.models.placement import Placement
 from app.models.project import Project
 from app.models.report import Report, ReportComment
 from app.models.school import School
 from app.models.school_class import SchoolClass
+from app.models.user import User
 from scripts.seed_showcase import CLASS_NAME, SCHOOL, showcase
 
 
@@ -28,8 +29,8 @@ def test_showcase_replaces_classes_and_can_run_twice(db: Session) -> None:
     attendance = (
         select(func.count(Attendance.id))
         .join(Placement, Placement.id == Attendance.placement_id)
-        .join(Workplace, Workplace.id == Placement.workplace_id)
-        .where(Workplace.school_id == school.id)
+        .join(User, User.id == Placement.student_id)
+        .where(User.school_id == school.id)
     )
     assert db.scalar(attendance) == first["närvarodagar"]
     comments = select(func.count(ReportComment.id)).join(Report).where(in_class)

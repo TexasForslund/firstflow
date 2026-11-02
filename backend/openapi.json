@@ -2142,7 +2142,7 @@
           "placements"
         ],
         "summary": "Add Supervisor",
-        "description": "Lägger till en handledare på arbetsplatsen.\n\nFinns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen, eftersom\nsamma handledare kan ta emot elever från flera skolor. Namnet i anropet används då inte.\nAnnars skapas ett handledarkonto utan lösenord, som sätts via inbjudan (B6).\nEn annan roll med samma e-postadress svarar 409.",
+        "description": "Lägger till en handledare på arbetsplatsen.\n\nFinns det redan en handledare med e-postadressen kopplas hen till arbetsplatsen. Namnet i\nanropet används då inte. Annars skapas ett handledarkonto utan lösenord, som sätts via\ninbjudan (B6). En annan roll med samma e-postadress svarar 409, liksom en handledare som\nredan finns på ett annat företag: en handledare hör till ett enda företag.",
         "operationId": "add_supervisor_api_workplaces__workplace_id__supervisors_post",
         "security": [
           {
@@ -3001,7 +3001,7 @@
           "invitations"
         ],
         "summary": "Accept Invite",
-        "description": "Skapar handledarens konto (och företagsprofil) och loggar in hen.",
+        "description": "Skapar handledarens konto och företagsprofil, eller lägger till skolan på företaget\nhandledaren redan har, och loggar in hen.",
         "operationId": "accept_invite_api_invite__token__accept_post",
         "parameters": [
           {
@@ -5276,16 +5276,32 @@
       "AcceptInvite": {
         "properties": {
           "name": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Name"
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Krävs för ett nytt konto"
           },
           "password": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 10,
-            "title": "Password"
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password",
+            "description": "Krävs för ett nytt konto"
           },
           "company": {
             "anyOf": [
@@ -5296,14 +5312,10 @@
                 "type": "null"
               }
             ],
-            "description": "Krävs när en ny handledare bjuds in av en lärare"
+            "description": "Krävs när en ny handledare utan företag bjuds in av en lärare"
           }
         },
         "type": "object",
-        "required": [
-          "name",
-          "password"
-        ],
         "title": "AcceptInvite"
       },
       "AccountCreate": {
@@ -7187,6 +7199,24 @@
             ],
             "title": "Workplace Name",
             "description": "Arbetsplatsen när en kollega bjuds in"
+          },
+          "existing_workplace_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Existing Workplace Name",
+            "description": "Företaget handledaren redan har. Skolan läggs till där"
+          },
+          "has_account": {
+            "type": "boolean",
+            "title": "Has Account",
+            "description": "Handledaren har redan ett lösenord och behöver inget nytt",
+            "default": false
           }
         },
         "type": "object",
@@ -10043,9 +10073,13 @@
             ],
             "title": "Description"
           },
-          "school_name": {
-            "type": "string",
-            "title": "School Name"
+          "school_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "School Names",
+            "description": "Skolorna som har elever på företaget"
           },
           "supervisors": {
             "items": {
@@ -10074,7 +10108,7 @@
           "address",
           "industry",
           "description",
-          "school_name",
+          "school_names",
           "supervisors",
           "pending_invitations",
           "can_invite"

@@ -35,7 +35,7 @@ from app.db.session import SessionLocal
 from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
 from app.models.contract import Contract, ContractSignature, SignerRole
 from app.models.note import NoteTag, StudentNote
-from app.models.placement import Placement, Workplace
+from app.models.placement import Placement, Workplace, WorkplaceSchool
 from app.models.project import Project
 from app.models.report import (
     FormVersion,
@@ -265,9 +265,13 @@ def _clear(db: Session, school: School, teacher: User, keep: set[uuid.UUID]) -> 
     db.execute(delete(FormVersion).where(FormVersion.class_id.in_(class_ids)))
     db.execute(delete(Project).where(Project.school_id == school.id))
     db.execute(delete(Contract).where(Contract.school_id == school.id))
-    workplace_ids = list(db.scalars(select(Workplace.id).where(Workplace.school_id == school.id)))
+    # Bara skolans egna elevers placeringar. Företagen delas med andra skolor.
     placement_ids = list(
-        db.scalars(select(Placement.id).where(Placement.workplace_id.in_(workplace_ids)))
+        db.scalars(
+            select(Placement.id)
+            .join(User, User.id == Placement.student_id)
+            .where(User.school_id == school.id)
+        )
     )
     db.execute(delete(Attendance).where(Attendance.placement_id.in_(placement_ids)))
     db.execute(delete(Placement).where(Placement.id.in_(placement_ids)))
@@ -372,7 +376,9 @@ def showcase(db: Session) -> dict[str, int]:
     workplaces = []
     for name, prefix in WORKPLACES:
         workplace = db.scalar(
-            select(Workplace).where(Workplace.school_id == school.id, Workplace.name == name)
+            select(Workplace)
+            .join(WorkplaceSchool, WorkplaceSchool.workplace_id == Workplace.id)
+            .where(WorkplaceSchool.school_id == school.id, Workplace.name == name)
         )
         supervisor = db.scalar(select(User).where(User.email == f"{prefix}@{DOMAIN}"))
         assert workplace is not None and supervisor is not None
