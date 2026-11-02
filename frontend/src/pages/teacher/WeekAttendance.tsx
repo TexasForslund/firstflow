@@ -4,7 +4,7 @@ import { Link } from 'react-router'
 
 import { useClassWeek, useRemindSupervisors, type ClassWeek } from '../../api/attendance'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar, Button } from '../../components'
+import { Avatar, Button, HelpPopover } from '../../components'
 import { todayIso } from '../placements/period'
 import { parseDay } from '../reports/answers'
 import { DayMark } from './DayMark'
@@ -52,7 +52,7 @@ export function WeekAttendance({ classId }: { classId: string }) {
       <div className={styles.head}>
         <div className={styles.heading}>
           <h2 id="week-title" className={styles.title}>
-            Veckan
+            Veckan <HelpPopover topic="attendanceWeek" />
           </h2>
           {week && <span className={styles.muted}>{range(week)}</span>}
         </div>
@@ -90,6 +90,7 @@ export function WeekAttendance({ classId }: { classId: string }) {
               {remind.isSuccess ? 'Påminda' : 'Påminn handledarna'}
             </Button>
           )}
+          <HelpPopover topic="remindSupervisors" align="end" />
         </div>
       )}
 
@@ -142,6 +143,9 @@ export function WeekAttendance({ classId }: { classId: string }) {
       )}
 
       <ul className={styles.legend} aria-label="Förklaring">
+        <li>
+          <HelpPopover topic="attendanceLegend" />
+        </li>
         <li>
           <span className={styles.swatch} data-state="confirmed" /> Bekräftad av handledaren
         </li>

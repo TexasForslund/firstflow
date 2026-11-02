@@ -60,6 +60,24 @@ export const HELP = {
     example:
       'Projektet Laddbox för elbil är klart i december. Du avslutar det, men tabellen Mål i projektet finns kvar.',
   },
+  attendanceWeek: {
+    title: 'Närvaron',
+    body: 'Eleven checkar in i appen varje APL-dag. Handledaren bekräftar sedan att eleven var på plats. En APL-dag utan incheckning räknas som frånvaro.',
+    example:
+      'Hugo checkar in 07:35 och handledaren bekräftar på kvällen, så dagen blir bekräftad. Checkar Omar inte in på tisdagen räknas tisdagen som frånvaro.',
+  },
+  remindSupervisors: {
+    title: 'Väntar på handledaren',
+    body: 'Incheckningar som handledaren inte har bekräftat än. Påminn handledarna skickar en notis till varje handledare som har dagar kvar att bekräfta de senaste två veckorna.',
+    example:
+      'Gustav har tre dagar kvar. Du trycker Påminn, och han får notisen ”Ingrid påminner dig om att bekräfta närvaron, 3 dagar väntar”.',
+  },
+  attendanceLegend: {
+    title: 'Färgerna',
+    body: 'Varje ring visar en APL-dag. En blå ring med röd prick betyder att eleven checkade in men att handledaren säger att eleven inte var på plats. Prata då med eleven och handledaren.',
+    example:
+      'Liam checkade in 07:40 på torsdagen, men Gustav svarade Inte på plats. Ringen får en röd prick, så att du ser att något behöver redas ut.',
+  },
 } as const
 
 export type HelpTopic = keyof typeof HELP
