@@ -336,7 +336,9 @@
     padding: var(--space-8) var(--space-6);
     transform: translateX(-100%);
     visibility: hidden; /* stängd meny ska inte gå att tabba in i */
-    transition: transform 0.2s ease, visibility 0.2s;
+    transition:
+      transform 0.2s ease,
+      visibility 0.2s;
   }
 
   .sidebar.open {
@@ -404,6 +406,15 @@
 
   .tabActive {
     color: var(--color-primary-on-light);
+  }
+
+  .tabButton {
+    width: 100%;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--font-size-xs);
+    cursor: pointer;
   }
 
   .tabDot {

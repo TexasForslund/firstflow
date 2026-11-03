@@ -1,5 +1,6 @@
 import {
   ChevronDown,
+  Ellipsis,
   GraduationCap,
   LogOut,
   Menu,
@@ -31,6 +32,11 @@ export interface NavItem {
   group?: string
   /** Visa lärarens klasser direkt under det här valet. */
   classesAfter?: boolean
+  /**
+   * Med i flikraden i mobilen. Har ingen flik det satt visas alla. Har någon det, visas bara
+   * de och en flik Mer som öppnar menyn med resten.
+   */
+  tab?: boolean
 }
 
 export interface SidebarClass {
@@ -79,6 +85,10 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
   }
 
   // Valen i den ordning de kommer, grupperade på rubrik.
+  const flagged = nav.some((item) => item.tab)
+  const tabs = flagged ? nav.filter((item) => item.tab) : nav
+  const more = flagged ? nav.filter((item) => !item.tab) : []
+
   const groups: { name?: string; items: NavItem[] }[] = []
   for (const item of nav) {
     const last = groups[groups.length - 1]
@@ -171,7 +181,7 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
       {tabBar && (
         <nav aria-label="Flikar" className={styles.tabBar}>
           <ul>
-            {nav.map(({ to, label, icon: Icon, count }) => (
+            {tabs.map(({ to, label, icon: Icon, count }) => (
               <li key={to}>
                 <NavLink to={to} className={({ isActive }) => `${styles.tab} ${isActive ? styles.tabActive : ''}`}>
                   <Icon aria-hidden="true" />
@@ -180,6 +190,21 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
                 </NavLink>
               </li>
             ))}
+            {more.length > 0 && (
+              <li>
+                <button
+                  type="button"
+                  className={`${styles.tab} ${styles.tabButton}`}
+                  aria-expanded={menuOpen}
+                  aria-controls="sidebar"
+                  onClick={() => setMenuOpen(true)}
+                >
+                  <Ellipsis aria-hidden="true" />
+                  <span>Mer</span>
+                  {more.some((i) => i.count) ? <span className={styles.tabDot} aria-hidden="true" /> : null}
+                </button>
+              </li>
+            )}
           </ul>
         </nav>
       )}

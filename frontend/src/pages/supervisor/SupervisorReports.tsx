@@ -1,4 +1,4 @@
-import { MessageCircle } from 'lucide-react'
+import { ChevronDown, MessageCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -12,52 +12,75 @@ function commentText(count: number) {
   return count === 1 ? '1 kommentar' : `${count} kommentarer`
 }
 
+const PAGE = 20
+
 /**
- * Handledarens redovisningar (Texas skiss, 2026-10-29): ett flöde med elevernas inlägg från
- * tiden hos handledaren. Nya inlägg har en prick, och det går att välja en elev i taget.
+ * Handledarens redovisningar (Texas skiss "Handledarens vy, del 2", 2026-11-03). Fliken Att läsa
+ * med de olästa visas först. Alla visar 20 åt gången. Eleven väljs i en rullista.
  */
 export function SupervisorReports() {
   const query = useSupervisorReports()
-  const [params] = useSearchParams()
-  const [studentId, setStudentId] = useState<string | null>(params.get('student'))
+  const [params, setParams] = useSearchParams()
+  const studentId = params.get('student') ?? ''
+  const [shown, setShown] = useState(PAGE)
   const reports = query.data ?? []
-  const unread = reports.filter((r) => !r.is_read).length
+  const unread = reports.filter((r) => !r.is_read)
+  const show = params.get('show') ?? (unread.length > 0 ? 'unread' : 'all')
   const students = [...new Map(reports.map((r) => [r.student.id, r.student])).values()].sort((a, b) =>
     a.name.localeCompare(b.name, 'sv'),
   )
-  const visible = studentId ? reports.filter((r) => r.student.id === studentId) : reports
+  const list = (show === 'unread' ? unread : reports).filter((r) => !studentId || r.student.id === studentId)
+  const visible = show === 'unread' ? list : list.slice(0, shown)
+
+  function set(key: string, value: string) {
+    const next = new URLSearchParams(params)
+    if (value) next.set(key, value)
+    else next.delete(key)
+    setParams(next, { replace: true })
+    setShown(PAGE)
+  }
 
   return (
     <div className={styles.page}>
       <header className={styles.heading}>
         <h1 className={styles.title}>Redovisningar</h1>
-        <p className={styles.subtitle}>
-          Vad dina elever har skrivit om sina dagar hos er.
-          {unread > 0 && ` ${unread === 1 ? '1 ny' : `${unread} nya`} att läsa.`}
-        </p>
+        <p className={styles.subtitle}>Vad dina elever har skrivit om sina dagar hos er.</p>
       </header>
 
-      {students.length > 1 && (
-        <div className={styles.chips} role="group" aria-label="Elev">
-          <button
-            type="button"
-            className={styles.chip}
-            aria-pressed={studentId === null}
-            onClick={() => setStudentId(null)}
-          >
-            Alla elever
-          </button>
-          {students.map((s) => (
+      {reports.length > 0 && (
+        <div className={styles.filters}>
+          <div className={styles.chips} role="group" aria-label="Visa">
             <button
-              key={s.id}
               type="button"
               className={styles.chip}
-              aria-pressed={studentId === s.id}
-              onClick={() => setStudentId(s.id)}
+              aria-pressed={show === 'unread'}
+              onClick={() => set('show', 'unread')}
             >
-              {s.name}
+              Att läsa <span className={styles.chipCount}>{unread.length}</span>
             </button>
-          ))}
+            <button
+              type="button"
+              className={styles.chip}
+              aria-pressed={show === 'all'}
+              onClick={() => set('show', 'all')}
+            >
+              Alla
+            </button>
+          </div>
+          {students.length > 1 && (
+            <label className={styles.studentSelect}>
+              <span className="sr-only">Elev</span>
+              <select value={studentId} onChange={(e) => set('student', e.target.value)}>
+                <option value="">Alla elever</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown aria-hidden="true" />
+            </label>
+          )}
         </div>
       )}
 
@@ -72,6 +95,20 @@ export function SupervisorReports() {
       {visible.map((report) => (
         <Post key={report.id} report={report} />
       ))}
+
+      {query.isSuccess && reports.length > 0 && show === 'unread' && (
+        <p className={styles.state}>
+          {list.length === 0 ? 'Du har läst allt. ' : 'Inga fler att läsa. '}
+          <button type="button" className={styles.textButton} onClick={() => set('show', 'all')}>
+            Visa alla redovisningar
+          </button>
+        </p>
+      )}
+      {show === 'all' && list.length > shown && (
+        <button type="button" className={styles.moreButton} onClick={() => setShown(shown + PAGE)}>
+          Visa fler ({list.length - shown} kvar)
+        </button>
+      )}
     </div>
   )
 }

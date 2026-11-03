@@ -1,9 +1,9 @@
-import { ChevronLeft } from 'lucide-react'
-import { useEffect } from 'react'
+import { ArrowRight, ChevronLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 
 import type { Question } from '../../api/forms'
-import { useMarkRead, useReport } from '../../api/reports'
+import { useMarkRead, useReport, useSupervisorReports } from '../../api/reports'
 import { Avatar, Card, Collapsible } from '../../components'
 import { NotFound } from '../NotFound'
 import { longDate } from '../reports/answers'
@@ -16,6 +16,17 @@ export function SupervisorReport() {
   const report = useReport(reportId)
   const markRead = useMarkRead(reportId)
   const unread = report.data?.is_read === false
+  const list = useSupervisorReports()
+  // Nästa olästa, räknat när sidan öppnades så att den inte byts när den här blir läst.
+  const [saved, setSaved] = useState<{ reportId: string; items: { id: string; name: string }[] } | null>(null)
+  if (list.isSuccess && saved?.reportId !== reportId) {
+    setSaved({
+      reportId,
+      items: list.data.filter((r) => !r.is_read && r.id !== reportId).map((r) => ({ id: r.id, name: r.student.name })),
+    })
+  }
+  const queue = saved?.reportId === reportId ? saved.items : null
+  const next = queue?.[0]
 
   // Redovisningen räknas som läst när handledaren öppnar den.
   const mark = markRead.mutate
@@ -34,9 +45,16 @@ export function SupervisorReport() {
 
   return (
     <div className={styles.page}>
-      <Link to="/student-reports" className={styles.back}>
-        <ChevronLeft aria-hidden="true" /> Redovisningar
-      </Link>
+      <div className={styles.backRow}>
+        <Link to="/student-reports" className={styles.back}>
+          <ChevronLeft aria-hidden="true" /> Redovisningar
+        </Link>
+        {queue && queue.length > 0 && (
+          <span className={styles.meta}>
+            {queue.length === 1 ? '1 till att läsa' : `${queue.length} till att läsa`}
+          </span>
+        )}
+      </div>
 
       <header className={styles.reportHead}>
         <Avatar name={detail.student.name} />
@@ -64,6 +82,14 @@ export function SupervisorReport() {
           <Comments report={detail} />
         </div>
       </Card>
+
+      {next && (
+        <div className={styles.next}>
+          <Link to={`/student-reports/${next.id}`} className={styles.nextLink}>
+            Nästa: {next.name} <ArrowRight aria-hidden="true" />
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

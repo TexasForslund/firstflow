@@ -4500,6 +4500,11 @@ export interface components {
              * Format: date
              */
             end_date: string;
+            /**
+             * Teachers
+             * @default []
+             */
+            teachers: components["schemas"]["Ref"][];
         };
         /** SupervisorAttendance */
         SupervisorAttendance: {

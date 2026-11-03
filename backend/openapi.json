@@ -11438,6 +11438,14 @@
             "type": "string",
             "format": "date",
             "title": "End Date"
+          },
+          "teachers": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Teachers",
+            "default": []
           }
         },
         "type": "object",
