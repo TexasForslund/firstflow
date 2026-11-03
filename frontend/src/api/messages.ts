@@ -149,6 +149,21 @@ export async function fetchPlacementGroup(studentId: string) {
   return data
 }
 
+/** Gruppen för elevens praktikplats, eller null om det inte finns någon. */
+export function usePlacementGroup(studentId: string) {
+  return useQuery({
+    queryKey: [...keys.conversations, 'placement', studentId],
+    queryFn: async () => {
+      const { data, response } = await api.GET('/api/messages/placement-group', {
+        params: { query: { student_id: studentId } },
+      })
+      if (response.status === 404) return null
+      if (!data) throw new ApiError(undefined, response.status)
+      return data
+    },
+  })
+}
+
 export function useSendMessage(conversationId: string) {
   const queryClient = useQueryClient()
   return useMutation({

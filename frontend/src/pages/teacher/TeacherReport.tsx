@@ -1,15 +1,15 @@
-import { ArrowUpRight, BriefcaseBusiness, Folder } from 'lucide-react'
+import { ArrowUpRight, FolderOpen } from 'lucide-react'
 import { useEffect } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 
 import type { Question } from '../../api/forms'
 import { useMarkRead, useReport } from '../../api/reports'
-import { useStudentPlacements } from '../../api/students'
-import { Avatar, ButtonLink, Card, CardFooter, Collapsible } from '../../components'
+import { ButtonLink, Card, Collapsible } from '../../components'
 import { NotFound } from '../NotFound'
-import { currentPlacement, periodText } from '../placements/period'
 import { longDate, reportTitle } from '../reports/answers'
 import { AnswerContent, Comments } from '../reports/AnswerView'
+import { ReportSide } from './ReportSide'
+import side from './ReportSide.module.css'
 import { WeeklyReport } from './WeeklyReport'
 import styles from './WeeklyReport.module.css'
 
@@ -40,7 +40,6 @@ function TeacherReport({ reportId }: { reportId: string }) {
   const shown = detail.path
     .map((id) => detail.questions.find((q) => q.id === id))
     .filter((q): q is Question => !!q && q.type !== 'statement')
-  const firstName = detail.student.name.split(' ')[0]
   const submitted = detail.submitted_at
     ? new Date(detail.submitted_at).toLocaleString('sv-SE', {
         weekday: 'long',
@@ -61,11 +60,25 @@ function TeacherReport({ reportId }: { reportId: string }) {
           </ButtonLink>
         </div>
 
+        {detail.project && (
+          <Link to={`/projects/${detail.project.id}`} className={side.projectBanner}>
+            <span className={side.bannerIcon}>
+              <FolderOpen aria-hidden="true" />
+            </span>
+            <span className={side.text}>
+              <span className={side.bannerLabel}>Redovisningen hör till projektet</span>
+              <span className={side.bannerName}>{detail.project.name}</span>
+            </span>
+            <span className={side.bannerAction}>
+              Öppna projektet <ArrowUpRight aria-hidden="true" />
+            </span>
+          </Link>
+        )}
+
         <Card>
           <div className={styles.projectBar}>
             <span>
               {detail.class_name} · {longDate(detail.due_date)}
-              {detail.project ? ` · ${detail.project.name}` : ''}
             </span>
           </div>
           <div className={styles.answers}>
@@ -82,50 +95,12 @@ function TeacherReport({ reportId }: { reportId: string }) {
         </Card>
       </div>
 
-      <aside className={styles.side} aria-label={`Om ${detail.student.name}`}>
-        <Card>
-          <div className={styles.sideBody}>
-            <div className={styles.studentHeader}>
-              <Avatar name={detail.student.name} />
-              <span className={styles.studentName}>{detail.student.name}</span>
-              <span className={styles.studentClass}>{detail.class_name}</span>
-            </div>
-            <p className={styles.submitted}>Inskickad {submitted}</p>
-
-            <h2 className={styles.sideHeading}>Praktikplats kopplad till {firstName}</h2>
-            <StudentWorkplace studentId={detail.student.id} />
-
-            {detail.project && (
-              <>
-                <h2 className={styles.sideHeading}>Projekt</h2>
-                <p className={styles.notYet}>
-                  <Folder aria-hidden="true" /> {detail.project.name}
-                </p>
-              </>
-            )}
-          </div>
-          <CardFooter>
-            <ButtonLink to={`/students/${detail.student.id}`} icon={<ArrowUpRight aria-hidden="true" />}>
-              Se elevens sida
-            </ButtonLink>
-          </CardFooter>
-        </Card>
-      </aside>
+      <ReportSide
+        student={detail.student}
+        className={detail.class_name}
+        submitted={submitted}
+        projectId={detail.project?.id}
+      />
     </div>
-  )
-}
-
-function StudentWorkplace({ studentId }: { studentId: string }) {
-  const placements = useStudentPlacements(studentId)
-  const current = currentPlacement(placements.data ?? [])
-  return (
-    <p className={styles.notYet}>
-      <BriefcaseBusiness aria-hidden="true" />{' '}
-      {placements.isPending
-        ? 'Hämtar…'
-        : current
-          ? `${current.workplace.name}, ${periodText(current.start_date, current.end_date)}`
-          : 'Ingen praktikplats tilldelad än'}
-    </p>
   )
 }
