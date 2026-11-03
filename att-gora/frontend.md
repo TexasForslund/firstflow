@@ -288,6 +288,19 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
+## F34. Elevkortet i lärarens redovisning ✅ Klar ([PR #67](https://github.com/TexasForslund/firstflow/pull/67), Texas + Claude, 2026-11-03)
+
+Enligt skissen "Firstflow – Elevkortet i redovisningen" (Texas, 2026-11-03). Redovisningen hålls enkel. Närvaro och anteckningar visas inte här (Texas: "blir tydligare så").
+- **Projektet syns tydligt:** hör redovisningen till ett projekt finns en gul ruta ovanför svaren, "Redovisningen hör till projektet", som länkar till projektet.
+- **Högersidan har fyra rutor** (`pages/teacher/ReportSide.tsx`):
+  - Eleven, med elevens sida.
+  - Praktikplats, med logga, handledare och vecka av period.
+  - Projekt, där det som hör till redovisningen är markerat "Den här redovisningen".
+  - Meddelanden, med det senaste i gruppen för praktikplatsen, "Skriv i gruppen" och "Skriv till …".
+- Inget nytt i backend.
+
+---
+
 ## F33. Handledarens vy, del 2 ✅ Klar ([PR #66](https://github.com/TexasForslund/firstflow/pull/66), Texas + Claude, 2026-11-03)
 
 Enligt skissen "Firstflow – Handledarens vy, del 2" (Texas, 2026-11-03).
