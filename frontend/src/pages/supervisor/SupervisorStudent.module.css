@@ -106,3 +106,131 @@
   font-weight: 500;
   text-decoration: none;
 }
+
+/* Veckans närvaro, kontrakt och projekt (Texas skiss, 2026-11-03). */
+.stack {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.weekRow,
+.todayRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+
+.todayButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pillButton,
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.pillButton:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.pillButton svg,
+.primaryButton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.linkButton {
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.item:hover .itemTitle {
+  text-decoration: underline;
+}
+
+.itemIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.itemIcon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.itemIcon[data-tone='sky'] {
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.itemIcon[data-tone='butter'] {
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+.itemText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-weight: 600;
+}
+
+@media (max-width: 40rem) {
+  .header {
+    flex-wrap: wrap;
+  }
+}

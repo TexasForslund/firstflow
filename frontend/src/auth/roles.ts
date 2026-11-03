@@ -66,14 +66,15 @@ export const navByRole: Record<Role, NavItem[]> = {
       icon: contracts,
     },
   ],
+  // Handledarens meny i tre grupper (Texas, 2026-11-03). I mobilen en flikrad med Mer.
   supervisor: [
-    { to: '/my-students', label: 'Mina elever', icon: students },
-    { to: '/attendance-review', label: 'Närvaro', icon: checkIn },
-    { to: '/student-reports', label: 'Redovisningar', icon: reports },
-    { to: '/projects', label: 'Projekt', icon: projects },
-    { to: '/company', label: 'Företag', icon: placements },
-    { to: '/messages', label: 'Meddelanden', icon: messages },
-    { to: '/contracts', label: 'Kontrakt', icon: contracts },
+    { group: 'I dag', to: '/my-students', label: 'Översikt', icon: overview, tab: true },
+    { group: 'I dag', to: '/attendance-review', label: 'Närvaro', icon: checkIn, tab: true },
+    { group: 'I dag', to: '/messages', label: 'Meddelanden', icon: messages, tab: true },
+    { group: 'Elever', to: '/student-reports', label: 'Redovisningar', icon: reports, tab: true },
+    { group: 'Elever', to: '/projects', label: 'Projekt', icon: projects },
+    { group: 'Elever', to: '/contracts', label: 'Kontrakt', icon: contracts },
+    { group: 'Företag', to: '/company', label: 'Företagsprofil', icon: placements },
   ],
   student: [
     { to: '/my-reports', label: 'Redovisning', icon: myReports },

@@ -181,3 +181,108 @@
   gap: var(--space-3);
   padding: var(--space-6);
 }
+
+/* Att läsa, Alla och elev (Texas skiss, 2026-11-03). */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.chipCount {
+  margin-left: var(--space-1);
+  font-weight: 700;
+}
+
+.studentSelect {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.studentSelect select {
+  min-height: 2.5rem;
+  padding: 0 var(--space-10) 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  appearance: none;
+  cursor: pointer;
+}
+
+.studentSelect svg {
+  position: absolute;
+  right: var(--space-3);
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+}
+
+.textButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.textButton:hover {
+  text-decoration: underline;
+}
+
+.moreButton {
+  justify-self: center;
+  min-height: 2.75rem;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.moreButton:hover {
+  background: var(--color-surface-hover);
+}
+
+.next {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nextLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nextLink:hover {
+  background: var(--color-primary-hover);
+}
+
+.nextLink svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.backRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}

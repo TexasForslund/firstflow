@@ -288,6 +288,17 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
+## F33. Handledarens vy, del 2 ✅ Klar ([PR #66](https://github.com/TexasForslund/firstflow/pull/66), Texas + Claude, 2026-11-03)
+
+Enligt skissen "Firstflow – Handledarens vy, del 2" (Texas, 2026-11-03).
+- **Menyn i grupper:** I dag (Översikt, Närvaro, Meddelanden), Elever (Redovisningar, Projekt, Kontrakt) och Företag (Företagsprofil). I mobilen en flikrad med Översikt, Närvaro, Meddelanden, Redovisningar och Mer. `NavItem.tab` i `AppShell` styr vilka som är flikar.
+- **Översikt** (`/my-students`) ersätter Mina elever: rutor med det som väntar (bekräfta närvaro, nya redovisningar, kontrakt att signera, nya meddelanden) och eleverna med veckans närvaro som fem prickar och etiketter.
+- **Elevens sida:** veckans närvaro med knapparna för i dag, kontrakt med Signera, pågående projekt och elevens lärare. `SupervisedStudent.teachers` i backend.
+- **Redovisningar:** fliken Att läsa först, Alla med 20 åt gången och Visa fler, och eleven i en rullista.
+- **En redovisning:** knappen "Nästa: …" till nästa olästa och hur många som är kvar att läsa.
+
+---
+
 ## F32. Meddelanden ✅ Klar ([PR #65](https://github.com/TexasForslund/firstflow/pull/65), Texas + Claude, 2026-11-02)
 
 Enligt skissen "Firstflow – Meddelanden". Backend: B11.

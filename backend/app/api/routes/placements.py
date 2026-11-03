@@ -145,6 +145,8 @@ class SupervisedStudent(BaseModel):
     workplace: WorkplaceRef
     start_date: date
     end_date: date
+    # Elevens lärare, så att handledaren vet vem hen ska kontakta.
+    teachers: list[Ref] = []
 
 
 def _active(people: list[User]) -> list[SupervisorRead]:
@@ -448,7 +450,16 @@ def supervised_students(db: DbSession, user: Supervisor) -> list[SupervisedStude
         )
         .options(selectinload(Placement.student), selectinload(Placement.workplace))
         .order_by(User.name)
-    )
+    ).all()
+    teacher_ids = messaging.teachers_of(db, [p.student_id for p in placements])
+    names = {
+        u.id: u
+        for u in db.scalars(
+            select(User).where(
+                User.id.in_({t for ids in teacher_ids.values() for t in ids}), User.is_active
+            )
+        )
+    }
     return [
         SupervisedStudent(
             placement_id=p.id,
@@ -456,6 +467,14 @@ def supervised_students(db: DbSession, user: Supervisor) -> list[SupervisedStude
             workplace=_workplace_ref(p.workplace),
             start_date=p.start_date,
             end_date=p.end_date,
+            teachers=sorted(
+                (
+                    Ref(id=names[t].id, name=names[t].name)
+                    for t in teacher_ids[p.student_id]
+                    if t in names and names[t].school_id == p.student.school_id
+                ),
+                key=lambda r: r.name,
+            ),
         )
         for p in placements
     ]

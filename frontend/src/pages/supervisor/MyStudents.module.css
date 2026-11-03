@@ -1,68 +1,277 @@
-.workplaceHeading {
+/* Handledarens översikt (Texas skiss "Handledarens vy, del 2", 2026-11-03). Inga skuggor. */
+.page {
   display: grid;
-  gap: var(--space-1);
-  min-width: 0;
+  gap: var(--space-6);
+  max-width: var(--main-column);
 }
 
-.address {
+.header {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.subtitle,
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.muted {
+  font-size: var(--font-size-sm);
+}
+
+/* Att göra */
+.todos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-3);
+}
+
+.todo {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-2);
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  color: inherit;
+}
+
+.todo[data-tone='butter'] {
+  background: var(--color-butter-bg);
+  --tone: var(--color-butter);
+}
+
+.todo[data-tone='primary'] {
+  background: var(--color-primary-light);
+  --tone: var(--color-primary-on-light);
+}
+
+.todo[data-tone='sky'] {
+  background: var(--color-sky-bg);
+  --tone: var(--color-sky);
+}
+
+.todo[data-tone='mint'] {
+  background: var(--color-mint-bg);
+  --tone: var(--color-mint);
+}
+
+.todoCount {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  color: var(--tone);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+
+.todoCount svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.todoText {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.todoTitle {
+  font-weight: 600;
+}
+
+.todoDetail {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
 
-.address svg {
-  flex-shrink: 0;
+.todoAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--tone);
+  font-weight: 600;
+}
+
+.todoAction svg {
   width: 1rem;
   height: 1rem;
 }
 
-.progress {
-  display: grid;
-  flex-shrink: 0;
-  justify-items: end;
-  text-align: right;
+.todo:hover .todoAction {
+  text-decoration: underline;
 }
 
-.week {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+/* Eleverna */
+.card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
 }
 
-.countdown {
+.empty {
+  padding: var(--space-5);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
 }
 
-.status {
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
+.cardHead > span:first-child {
+  display: grid;
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.legend span {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
+  gap: var(--space-1);
 }
 
-.status::before {
-  width: 0.625rem;
-  height: 0.625rem;
+.legend span::before {
+  width: 0.75rem;
+  height: 0.75rem;
+  box-sizing: border-box;
   border-radius: 50%;
   content: '';
 }
 
-.statusPresent {
-  color: var(--color-success);
+.legend [data-state='confirmed']::before {
+  background: var(--color-mint);
 }
 
-.statusPresent::before {
-  background: var(--color-success-bar);
+.legend [data-state='pending']::before {
+  border: 2px solid var(--color-sky);
 }
 
-.statusNone {
-  color: var(--color-text-secondary);
-  font-weight: 500;
+.legend [data-state='not_present']::before {
+  background: var(--color-attention);
 }
 
-.statusNone::before {
-  border: 2px solid var(--color-border);
+.list > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.list {
+  border-top: 1px solid var(--color-border);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  color: inherit;
+}
+
+.row:hover {
+  background: var(--color-surface);
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.personText {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.tag {
+  padding: 0.1875rem var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tag[data-tone='attention'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.tag[data-tone='primary'] {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.tag[data-tone='butter'] {
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+@media (max-width: 1024px) {
+  .todos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .todo {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: none;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .todoAction {
+    font-size: var(--font-size-sm);
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .tags {
+    justify-content: flex-start;
+  }
+
+  .cardHead {
+    padding: var(--space-4);
+  }
 }

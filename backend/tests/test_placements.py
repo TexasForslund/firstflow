@@ -454,6 +454,8 @@ def test_supervisor_sees_current_students(
             },
             "start_date": str(current.start_date),
             "end_date": str(current.end_date),
+            # Läraren undervisar i elevens klass.
+            "teachers": [{"id": str(world.teacher.id), "name": "Testperson"}],
         }
     ]
 
