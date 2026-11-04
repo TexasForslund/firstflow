@@ -1,7 +1,7 @@
 # Mellanarkiv och dataexport
 
-**Status:** Planerad (krävs för Norrköpingsupphandlingen)  
-**Krav:** 4.2.1 (Ska) – data tillgänglig i 2 år efter avtalets slut
+**Status:** Planerad, inte prioriterad (Firstflow lämnade inget anbud i Norrköpingsupphandlingen)  
+**Krav:** 4.2.1 (Ska): "Tjänsten ska kunna fungera som ett mellanarkiv under två års tid." Att det gäller efter avtalets slut är vår tolkning, stödd av 3.14.1 om kostnadsfri åtkomst till historiska data efter avtalet.
 
 ---
 
