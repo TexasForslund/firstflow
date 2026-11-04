@@ -92,7 +92,7 @@ Från `main` till testmiljön automatiskt när CI är grön. Till produktion eft
 
 Väntar på: B6, D1–D7.
 
-- Begränsning av inloggningsförsök och loggning av ändringar (B6).
+- Begränsning av inloggningsförsök och loggning av ändringar (B6): byggt. Kör uvicorn med `--proxy-headers --forwarded-allow-ips=<proxyns IP>` så att försöken räknas per elevens IP och inte per proxy. Mejlen för Glömt lösenord kräver SMTP (D4).
 - Konton utan skola flyttade eller borttagna, och `VALIDATE CONSTRAINT ck_users_school_matches_role` körd.
 - `SESSION_COOKIE_SECURE=true` och säkerhetsrubriker kontrollerade.
 - Personuppgiftsbiträdesavtal med skolan och med Broadview.

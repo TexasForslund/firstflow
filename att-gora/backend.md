@@ -164,16 +164,35 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
 
 ---
 
-## B6. Inför pilot ⬜
+## B6. Inför pilot 🚧 Granskas (Hannes + Claude, 2026-11-04)
 
-**Inbjudan av handledare togs över av Texas + Claude 2026-10-26** och är byggd (se B14 nedan). Kvar för Hannes: inbjudan och lösenord för elever och personal, glömt lösenord, begränsning av inloggningsförsök och loggning.
+**Inbjudan av handledare togs över av Texas + Claude 2026-10-26** och är byggd (se B14). Inbjudan för importerade elever och personal byggdes i B20 (#64) som `InvitationKind.ACCOUNT`. B6 bygger vidare på den, utan ett nytt inbjudningsflöde.
 
-Behövs innan riktiga elever loggar in, men stoppar inte B2–B5:
+**Byggt:**
+- **Inbjudan när konton skapas för hand:** `POST /api/students`, `POST /api/schools/{id}/users` och `POST /api/superadmin/schools/{id}/admins` tar `send_invite` (standard `true`). Personen får samma mejl som vid import och väljer lösenord via `/invite/<token>`.
+- `POST /api/schools/{school_id}/users/{user_id}/invite` (skoladmin, superadmin): skickar inbjudan igen med en ny länk. 409 om kontot redan har ett lösenord, 404 för en annan skolas konto.
+- `UserRead.has_password`: om personen har valt lösenord eller väntar på inbjudan.
+- **Glömt lösenord:**
+  - `POST /api/auth/forgot-password` med `{email}` svarar alltid 204, så att det inte går att se vilka adresser som finns. Mejlet skickas efter svaret.
+  - Länken går till `/reset-password/<token>`, gäller i 60 minuter (`PASSWORD_RESET_LIFETIME_MINUTES`) och kan bara användas en gång. En ny begäran ersätter den gamla länken.
+  - `GET /api/auth/reset-password/{token}` ger `{email}`, `POST /api/auth/reset-password/{token}` med `{password}` (minst 10 tecken) sätter lösenordet, loggar ut kontot på alla andra enheter och loggar in. En ogiltig eller utgången länk svarar 404.
+  - En väntande inbjudan att välja lösenord slutar gälla när lösenordet sätts här.
+- **Begränsning av försök** (`app/services/rate_limit.py`, tabellen `rate_limit_events`):
+  - Inloggning: efter 5 misslyckade försök per e-post, eller 100 per IP, inom 15 minuter svarar inloggningen 429 med `Retry-After`, även med rätt lösenord. Gränsen per IP är hög eftersom en hel skola ofta har samma IP. En lyckad inloggning nollställer räkningen för e-posten.
+  - Glömt lösenord: högst 3 per e-post och 20 per IP och timme.
+  - E-posten sparas bara som hash, och raderna städas bort efter ett dygn. Gränserna ställs in i `.env`.
+- **Loggen** (`app/services/audit.py`, tabellen `audit_events`):
+  - Inloggning, misslyckad inloggning, spärr, utloggning, Glömt lösenord, nytt lösenord och accepterad inbjudan.
+  - Varje insert, update och delete som en inloggad användare gör: vem (id), tabell, radens id och vilka fält som ändrades. Aldrig namn, e-post eller värden.
+  - Sker automatiskt via databassessionen, så nya endpoints loggas utan extra kod. `get_current_user` sätter vem som gör ändringen. Skript som `seed_demo` loggas inte.
+- **Konton per skola** (punkten "administratörsroll eller skript") fanns redan: skoladmin (B1b), `create_user` och importen (B20).
 
-- Inbjudan och lösenord: läraren bjuder in elev eller handledare, som sätter sitt lösenord via en engångslänk (`POST /api/auth/invite`, `POST /api/auth/set-password`). Samma flöde används för glömt lösenord.
-- Begränsning av antal inloggningsförsök per e-post och IP.
-- Administratörsroll eller skript för att skapa lärarkonton per skola.
-- Loggning av inloggningar och ändringar i elevdata, utan namn eller annan elevdata i loggen.
+**Inte byggt, att ta senare:**
+- Hur länge loggen sparas (gallring, se B5) och vem som får läsa den, t.ex. en vy för superadmin eller ett utdrag till skolan.
+- Läsningar av elevdata loggas inte, bara ändringar.
+- Bakom Broadviews proxy måste uvicorn köras med `--proxy-headers` (D8), annars räknas alla försök på proxyns IP.
+
+Frontend: F35.
 
 ---
 

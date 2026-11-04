@@ -39,7 +39,8 @@ from app.models.invitation import Invitation, InvitationKind, Notification
 from app.models.placement import Workplace, WorkplaceSchool, workplace_supervisors
 from app.models.school import School
 from app.models.user import User, UserRole
-from app.services.accounts import NO_PASSWORD, AccountCreate, create_account
+from app.services.accounts import NO_PASSWORD, PASSWORD_MIN, AccountCreate, create_account
+from app.services.audit import log_event
 from app.services.email import send_email
 
 router = APIRouter(prefix="/invitations", tags=["invitations"])
@@ -51,7 +52,6 @@ CanInvite = Annotated[User, Depends(require_roles(UserRole.SCHOOL_ADMIN, UserRol
 Supervisor = Annotated[User, Depends(require_roles(UserRole.SUPERVISOR))]
 
 MAX_COLLEAGUES = 3
-PASSWORD_MIN = 10
 
 
 # --- Modeller -----------------------------------------------------------------------------
@@ -559,6 +559,7 @@ def accept_invite(token: str, body: AcceptInvite, db: DbSession, response: Respo
     )
     invitation.accepted_at = time.now()
     invitation.accepted_user_id = supervisor.id
+    log_event(db, "auth.invite_accepted", supervisor.id)
     db.commit()
     start_session(db, supervisor, response)
     return me_read(supervisor)
@@ -584,16 +585,26 @@ def _accept_account(
     user.password_hash = hash_password(body.password)
     invitation.accepted_at = time.now()
     invitation.accepted_user_id = user.id
+    log_event(db, "auth.invite_accepted", user.id)
     db.commit()
     start_session(db, user, response)
     return me_read(user)
 
 
+def invite_account(db: DbSession, inviter: User, user: User) -> None:
+    """Skickar en inbjudan att välja lösenord till en elev eller någon ur personalen.
+
+    Kontot finns redan på en skola. Används av importen och när skoladmin eller superadmin
+    lägger in någon för hand (B6). En tidigare inbjudan från samma person slutar gälla.
+    """
+    assert user.school_id is not None
+    _create(db, inviter, user.email, InvitationKind.ACCOUNT, user.school_id)
+
+
 def invite_accounts(db: DbSession, inviter: User, users: list[User]) -> int:
     """Skickar en inbjudan att välja lösenord till varje person. Returnerar antalet."""
-    assert inviter.school_id is not None
     for user in users:
-        _create(db, inviter, user.email, InvitationKind.ACCOUNT, inviter.school_id)
+        invite_account(db, inviter, user)
     return len(users)
 
 

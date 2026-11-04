@@ -38,5 +38,6 @@ from app.models.school_class import (  # noqa: F401
     class_teachers,
     teacher_students,
 )
+from app.models.security import AuditEvent, PasswordReset, RateLimitEvent  # noqa: F401
 from app.models.template import QuestionTemplate  # noqa: F401
 from app.models.user import User, UserSession  # noqa: F401

@@ -288,6 +288,17 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
+## F35. Glömt lösenord och inbjudan igen ⬜ (väntar på B6, Hannes + Claude, 2026-11-04)
+
+API:t finns i B6. Förslag, Texas bestämmer utseendet:
+- **Inloggningen:** länken "Glömt lösenord?" under formuläret. Sidan `/forgot-password` tar e-post och visar alltid samma kvitto: "Om adressen har ett konto har vi skickat ett mejl med en länk."
+- **`/reset-password/<token>`:** visar e-posten och fältet Nytt lösenord (minst 10 tecken). Efter sparat är personen inloggad och kommer till sin startsida. Svarar API:t 404: "Länken har gått ut eller är redan använd" med en länk till Glömt lösenord.
+- **429** vid inloggning och Glömt lösenord: "För många försök. Vänta en stund och försök igen." (`detail` i svaret).
+- **Användare för skoladmin och superadmin:** visa "Väntar på inbjudan" när `has_password` är `false`, med knappen Skicka inbjudan igen (`POST /api/schools/{school_id}/users/{user_id}/invite`).
+- Formulären skickar redan `send_invite: true` när en elev eller någon ur personalen läggs in (ändrat i B6). En kryssruta "Skicka inbjudan nu" kan läggas till om skolan vill vänta.
+
+---
+
 ## F34. Elevkortet i lärarens redovisning ✅ Klar ([PR #67](https://github.com/TexasForslund/firstflow/pull/67), Texas + Claude, 2026-11-03)
 
 Enligt skissen "Firstflow – Elevkortet i redovisningen" (Texas, 2026-11-03). Redovisningen hålls enkel. Närvaro och anteckningar visas inte här (Texas: "blir tydligare så").

@@ -75,6 +75,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Forgot Password
+         * @description Skickar ett mejl med en länk där användaren väljer ett nytt lösenord.
+         *
+         *     Svarar alltid 204, även när e-posten inte har något konto, så att det inte går att se
+         *     vilka adresser som finns. Mejlet skickas efter svaret, så att svarstiden inte heller
+         *     avslöjar det. En tidigare länk slutar gälla.
+         */
+        post: operations["forgot_password_api_auth_forgot_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/reset-password/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Password Reset
+         * @description Visar vilket konto länken gäller, så att sidan kan visa e-posten.
+         */
+        get: operations["preview_password_reset_api_auth_reset_password__token__get"];
+        put?: never;
+        /**
+         * Reset Password
+         * @description Sätter det nya lösenordet, loggar ut kontot överallt och loggar in här.
+         */
+        post: operations["reset_password_api_auth_reset_password__token__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/superadmin/schools": {
         parameters: {
             query?: never;
@@ -104,7 +152,8 @@ export interface paths {
         put?: never;
         /**
          * Create School Admin
-         * @description Skapar en skoladministratör. Lösenordet sätts via inbjudan (B6) eller create_user.
+         * @description Skapar en skoladministratör. Med `send_invite` (standard) får hen ett mejl med en länk
+         *     där hen väljer sitt lösenord.
          */
         post: operations["create_school_admin_api_superadmin_schools__school_id__admins_post"];
         delete?: never;
@@ -125,9 +174,33 @@ export interface paths {
         put?: never;
         /**
          * Create School User
-         * @description Skapar ett konto på skolan. Lösenordet sätts via inbjudan (B6).
+         * @description Skapar ett konto på skolan. Med `send_invite` (standard) får personen ett mejl med en
+         *     länk där hen väljer sitt lösenord.
          */
         post: operations["create_school_user_api_schools__school_id__users_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schools/{school_id}/users/{user_id}/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resend Account Invite
+         * @description Skickar inbjudan igen, med en ny länk. Den tidigare länken slutar gälla.
+         *
+         *     Bara för konton som inte har valt lösenord. Har personen ett lösenord använder hen
+         *     Glömt lösenord (409).
+         */
+        post: operations["resend_account_invite_api_schools__school_id__users__user_id__invite_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -290,7 +363,8 @@ export interface paths {
         put?: never;
         /**
          * Create Student
-         * @description Skapar en elev på skolan, med lärare och klasser. Lösenordet sätts via inbjudan (B6).
+         * @description Skapar en elev på skolan, med lärare och klasser. Med `send_invite` (standard) får
+         *     eleven ett mejl med en länk där hen väljer sitt lösenord.
          */
         post: operations["create_student_api_students_post"];
         delete?: never;
@@ -2943,6 +3017,11 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** ForgotPassword */
+        ForgotPassword: {
+            /** Email */
+            email: string;
+        };
         /**
          * FormContent
          * @description Formulärets frågor i ordning.
@@ -3188,6 +3267,19 @@ export interface components {
              */
             account_name?: string | null;
         };
+        /** InvitedAccountCreate */
+        InvitedAccountCreate: {
+            /** Email */
+            email: string;
+            /** Name */
+            name: string;
+            /**
+             * Send Invite
+             * @description Skicka ett mejl med en länk där personen väljer sitt lösenord
+             * @default true
+             */
+            send_invite: boolean;
+        };
         /**
          * LogicRule
          * @description Om svaret är `when`, gå till frågan `goto`. `goto` null betyder att gå till slutet.
@@ -3290,6 +3382,11 @@ export interface components {
             school_id: string | null;
             /** School Name */
             school_name: string | null;
+            /**
+             * Has Password
+             * @description Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan.
+             */
+            has_password: boolean;
             preferences: components["schemas"]["DisplayPreferences-Output"];
         };
         /** MessagePage */
@@ -4032,6 +4129,16 @@ export interface components {
             /** Comment Count */
             comment_count: number;
         };
+        /** ResetPassword */
+        ResetPassword: {
+            /** Password */
+            password: string;
+        };
+        /** ResetPreview */
+        ResetPreview: {
+            /** Email */
+            email: string;
+        };
         /** ReviewBody */
         ReviewBody: {
             /** Items */
@@ -4112,6 +4219,12 @@ export interface components {
             email: string;
             /** Name */
             name: string;
+            /**
+             * Send Invite
+             * @description Skicka ett mejl med en länk där personen väljer sitt lösenord
+             * @default true
+             */
+            send_invite: boolean;
             /**
              * Role
              * @enum {string}
@@ -4377,6 +4490,12 @@ export interface components {
             email: string;
             /** Name */
             name: string;
+            /**
+             * Send Invite
+             * @description Skicka ett mejl med en länk där personen väljer sitt lösenord
+             * @default true
+             */
+            send_invite: boolean;
             /** Teacher Ids */
             teacher_ids?: string[];
             /** Class Ids */
@@ -4796,6 +4915,11 @@ export interface components {
             school_id: string | null;
             /** School Name */
             school_name: string | null;
+            /**
+             * Has Password
+             * @description Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan.
+             */
+            has_password: boolean;
         };
         /**
          * UserRole
@@ -5039,6 +5163,13 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description För många misslyckade försök. Se Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     logout_api_auth_logout_post: {
@@ -5075,6 +5206,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeRead"];
+                };
+            };
+        };
+    };
+    forgot_password_api_auth_forgot_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPassword"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description För många begäranden. Se Retry-After. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    preview_password_reset_api_auth_reset_password__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_api_auth_reset_password__token__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPassword"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -5143,7 +5378,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AccountCreate"];
+                "application/json": components["schemas"]["InvitedAccountCreate"];
             };
         };
         responses: {
@@ -5217,6 +5452,38 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resend_account_invite_api_schools__school_id__users__user_id__invite_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                school_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

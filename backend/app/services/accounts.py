@@ -9,10 +9,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import normalize_email
-from app.models.user import ROLES_WITHOUT_SCHOOL, User, UserRole
+from app.models.user import NO_PASSWORD, ROLES_WITHOUT_SCHOOL, User, UserRole
 
-# Ett lösenord som aldrig godkänns av verify_password. Lösenordet sätts via inbjudan (B6).
-NO_PASSWORD = "!"
+__all__ = ["NO_PASSWORD", "PASSWORD_MIN", "AccountCreate", "InvitedAccountCreate", "create_account"]
+
+# Kortaste tillåtna lösenord, i inbjudan och i Glömt lösenord.
+PASSWORD_MIN = 10
 
 
 class AccountCreate(BaseModel):
@@ -35,6 +37,13 @@ class AccountCreate(BaseModel):
         if not name:
             raise ValueError("Namnet får inte vara tomt")
         return name
+
+
+class InvitedAccountCreate(AccountCreate):
+    send_invite: bool = Field(
+        default=True,
+        description="Skicka ett mejl med en länk där personen väljer sitt lösenord",
+    )
 
 
 def create_account(
