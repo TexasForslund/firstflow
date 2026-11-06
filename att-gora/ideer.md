@@ -191,8 +191,7 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
 - **Kalender:** handledaren lägger upp en kalender för när dagen börjar, och kanske mer. Den styr incheckningen. Eleven ska kunna checka in från tio minuter innan dagen börjar, om eleven är tidig. Hänger ihop med idé 7.
 - **Meddelanden:**
   - Handledaren ska bara kunna se och skriva till elever som har praktik hos hen, inte andra elever.
-  - Eleven ska bara kunna skriva till handledare och lärare.
-  - **Stäm av:** i dag kan eleven också skriva till skolans SYV (B11).
+  - Eleven ska kunna skriva till handledare, lärare och SYV, men inte till andra elever (Texas, 2026-11-06). Det fungerar redan så i B11.
 
 **Övrigt:**
 - **Sammanfattning av projektet:** ska eleven sammanfatta ett projekt när det är klart? Ett exempel är projektet "Bygga hemsida", där eleven delar filer, länkar och bilder. Sammanfattningen ser olika ut för olika program. Hantverkselever bygger till exempel ingen hemsida.
