@@ -177,3 +177,25 @@ Frågor:
 
 Hänger ihop med: B5b (extra frågor per elev), B20 (import), idé 10.
 
+
+---
+
+## 12. Att gå igenom nästa gång (Texas, 2026-11-06)
+
+Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs.
+
+**Handledaren:**
+- **Frånvaro med förklaring:** handledaren ska kunna markera att eleven varit borta och välja en förklaring, t.ex. sjukanmäld eller ledig. Det är upp till handledaren att välja.
+- **Mål i projekt:** handledaren ska se målen i ett projekt men inte kunna lägga till nya.
+- **Elevens sida:** handledaren ska se elevens sida med elevens information.
+- **Kalender:** handledaren lägger upp en kalender för när dagen börjar, och kanske mer. Den styr incheckningen. Eleven ska kunna checka in från tio minuter innan dagen börjar, om eleven är tidig. Hänger ihop med idé 7.
+- **Meddelanden:**
+  - Handledaren ska bara kunna se och skriva till elever som har praktik hos hen, inte andra elever.
+  - Eleven ska bara kunna skriva till handledare och lärare.
+  - **Stäm av:** i dag kan eleven också skriva till skolans SYV (B11).
+
+**Övrigt:**
+- **Sammanfattning av projektet:** ska eleven sammanfatta ett projekt när det är klart? Ett exempel är projektet "Bygga hemsida", där eleven delar filer, länkar och bilder. Sammanfattningen ser olika ut för olika program. Hantverkselever bygger till exempel ingen hemsida.
+- **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP.
+
+Hänger ihop med: B4 (närvaro), B11 (meddelanden), projekt (idé 2), B5 (frågor), idé 7 (kalender).
