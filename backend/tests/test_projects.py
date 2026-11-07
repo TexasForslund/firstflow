@@ -517,10 +517,11 @@ def test_project_comments(client: TestClient, login: Login, w: World, c: Company
         json={"student_id": str(w.maja.id), "body": "Övar ritningar.", "visibility": "staff"},
     )
     listed = client.get(url).json()
-    assert [(x["student"]["name"], x["is_mine"]) for x in listed] == [
-        (w.hugo.name, False),
-        (w.maja.name, True),
-    ]
+    # I testet skapas båda i samma transaktion och får samma tid, så ordningen jämförs inte.
+    assert {(x["student"]["id"], x["is_mine"]) for x in listed} == {
+        (str(w.hugo.id), False),
+        (str(w.maja.id), True),
+    }
     # Bara sin egen kommentar går att ta bort.
     assert client.delete(f"{url}/{comment['id']}").status_code == 404
     login(c.sofia)
