@@ -42,7 +42,7 @@ export function Projects() {
           <p className={styles.subtitle}>
             {isTeacher
               ? 'Gemensamma projekt för lärare, handledare och elever.'
-              : 'Projekt som du är inbjuden till. Du kan ändra text, slutdatum och mål.'}
+              : 'Projekt som du är inbjuden till. Du kan ändra text och slutdatum och se målen.'}
           </p>
         </div>
         {isTeacher && (

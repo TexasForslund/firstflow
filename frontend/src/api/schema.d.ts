@@ -1535,7 +1535,8 @@ export interface paths {
         /**
          * Update Project
          * @description Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar
-         *     namn, beskrivning, slutdatum och taggar, och får 403 om hen skickar något annat.
+         *     namn, beskrivning och slutdatum, och får 403 om hen skickar något annat. Handledaren ser
+         *     målen men ändrar dem inte (Texas, 2026-11-07).
          */
         put: operations["update_project_api_projects__project_id__put"];
         post?: never;

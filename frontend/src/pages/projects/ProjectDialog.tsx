@@ -14,7 +14,7 @@ const DEFAULT_TAGS = ['Elinstallation', 'Mätning', 'Dokumentation', 'Felsöknin
  * Popupen för nytt projekt och för att ändra ett projekt. Täcker nästan hela skärmen.
  *
  * Läraren som äger projektet ändrar allt: text, företag, handledare och elever. En inbjuden
- * handledare ändrar namn, beskrivning, slutdatum och mål, men inte vilka elever som är med
+ * handledare ändrar namn, beskrivning och slutdatum och ser målen, men ändrar inte vilka elever som är med
  * (Texas, 2026-10-29).
  */
 export function ProjectDialog({
@@ -191,43 +191,62 @@ export function ProjectDialog({
                 </span>
                 <HelpPopover topic="goals" />
               </span>
-              <div className={styles.tagBox}>
-                {tags.map((tag) => (
-                  <span key={tag} className={styles.tag}>
-                    {tag}
-                    <button
-                      type="button"
-                      aria-label={`Ta bort ${tag}`}
-                      onClick={() => setTags(tags.filter((t) => t !== tag))}
-                    >
-                      <X aria-hidden="true" />
-                    </button>
+              {isOwner ? (
+                <>
+                  <div className={styles.tagBox}>
+                    {tags.map((tag) => (
+                      <span key={tag} className={styles.tag}>
+                        {tag}
+                        <button
+                          type="button"
+                          aria-label={`Ta bort ${tag}`}
+                          onClick={() => setTags(tags.filter((t) => t !== tag))}
+                        >
+                          <X aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      className={styles.tagInput}
+                      aria-labelledby="tags-label"
+                      placeholder={tags.length ? '' : 'Skriv ett mål och tryck Enter'}
+                      maxLength={40}
+                      value={tagDraft}
+                      onChange={(e) => setTagDraft(e.target.value)}
+                      onKeyDown={onTagKey}
+                      onBlur={() => tagDraft && addTag(tagDraft)}
+                    />
+                  </div>
+                  <span className={styles.hint}>
+                    Vad eleverna ska visa i projektet, t.ex. Kundkontakt. Målen är gemensamma för skolan och syns i
+                    tabellen Mål i projektet.
                   </span>
-                ))}
-                <input
-                  className={styles.tagInput}
-                  aria-labelledby="tags-label"
-                  placeholder={tags.length ? '' : 'Skriv ett mål och tryck Enter'}
-                  maxLength={40}
-                  value={tagDraft}
-                  onChange={(e) => setTagDraft(e.target.value)}
-                  onKeyDown={onTagKey}
-                  onBlur={() => tagDraft && addTag(tagDraft)}
-                />
-              </div>
-              <span className={styles.hint}>
-                Vad eleverna ska visa i projektet, t.ex. Kundkontakt. Målen är gemensamma för skolan och syns i tabellen
-                Mål i projektet.
-              </span>
-              {suggestions.length > 0 && (
-                <span className={styles.suggestions}>
-                  Förslag:
-                  {suggestions.map((tag) => (
-                    <button key={tag} type="button" className={styles.suggestion} onClick={() => addTag(tag)}>
-                      {tag}
-                    </button>
-                  ))}
-                </span>
+                  {suggestions.length > 0 && (
+                    <span className={styles.suggestions}>
+                      Förslag:
+                      {suggestions.map((tag) => (
+                        <button key={tag} type="button" className={styles.suggestion} onClick={() => addTag(tag)}>
+                          {tag}
+                        </button>
+                      ))}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className={styles.tagList} aria-labelledby="tags-label">
+                    {tags.length === 0 ? (
+                      <span className={styles.readonly}>Inga mål</span>
+                    ) : (
+                      tags.map((tag) => (
+                        <span key={tag} className={styles.tagReadonly}>
+                          {tag}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                  <span className={styles.hint}>Läraren väljer projektets mål.</span>
+                </>
               )}
             </div>
 
@@ -235,7 +254,8 @@ export function ProjectDialog({
               <fieldset className={styles.supervisors}>
                 <legend className={styles.label}>Handledare som kan ändra projektet</legend>
                 <p className={styles.hint}>
-                  De ändrar text, slutdatum och mål och ser redovisningarna. De ändrar inte vilka elever som är med.
+                  De ändrar text och slutdatum, ser målen och ser redovisningarna. De ändrar inte vilka elever som är
+                  med.
                 </p>
                 {(workplace?.supervisors ?? []).length === 0 && (
                   <p className={styles.hint}>Företaget har inga handledare än. Bjud in dem under Praktikplatser.</p>
