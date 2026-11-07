@@ -4232,7 +4232,7 @@
           "projects"
         ],
         "summary": "Update Project",
-        "description": "Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar\nnamn, beskrivning, slutdatum och taggar, och får 403 om hen skickar något annat.",
+        "description": "Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar\nnamn, beskrivning och slutdatum, och får 403 om hen skickar något annat. Handledaren ser\nmålen men ändrar dem inte (Texas, 2026-11-07).",
         "operationId": "update_project_api_projects__project_id__put",
         "security": [
           {
