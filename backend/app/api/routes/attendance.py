@@ -51,6 +51,7 @@ from app.services.apl_days import (
     count_apl_days,
     student_apl_weekdays,
 )
+from app.services.hours import EARLY_CHECK_IN, day_start
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 me_router = APIRouter(prefix="/me/attendance", tags=["attendance"])
@@ -117,6 +118,12 @@ class MyAttendance(BaseModel):
     apl_weekdays: list[int] = Field(description="Elevens APL-dagar, 0 = måndag … 6 = söndag")
     days: list[AttendanceDay] = Field(
         description="Registrerade dagar i placeringen, i datumordning"
+    )
+    day_starts_at: datetime | None = Field(
+        default=None, description="När dagen börjar i dag enligt arbetstiderna, om det finns tider"
+    )
+    check_in_from: datetime | None = Field(
+        default=None, description="Tidigast eleven kan checka in i dag. null: när som helst"
     )
 
 
@@ -208,6 +215,14 @@ def check_in(db: DbSession, user: Student) -> AttendanceDay:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Du har ingen pågående APL i dag"
         )
+    starts = day_start(db, placement, today)
+    # Eleven kan checka in från tio minuter innan dagen börjar (Texas, 2026-11-07).
+    if starts is not None and time.now() < starts - EARLY_CHECK_IN:
+        opens = (starts - EARLY_CHECK_IN).strftime("%H:%M")
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Din dag börjar {starts:%H:%M}. Du kan checka in från {opens}.",
+        )
     row = _existing(db, placement.id, today)
     if row is None:
         row = Attendance(placement_id=placement.id, date=today)
@@ -251,6 +266,7 @@ def my_attendance(db: DbSession, user: Student) -> MyAttendance:
     rows = db.scalars(
         select(Attendance).where(Attendance.placement_id == placement.id).order_by(Attendance.date)
     )
+    starts = day_start(db, placement, today)
     return MyAttendance(
         apl_weekdays=apl_weekdays,
         placement_id=placement.id,
@@ -261,6 +277,8 @@ def my_attendance(db: DbSession, user: Student) -> MyAttendance:
         today=today,
         can_check_in_today=_is_apl_day(db, user.id, today),
         days=[_day(r) for r in rows],
+        day_starts_at=starts,
+        check_in_from=starts - EARLY_CHECK_IN if starts else None,
     )
 
 

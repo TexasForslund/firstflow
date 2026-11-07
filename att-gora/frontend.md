@@ -287,6 +287,17 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
+## F37. Arbetstider och incheckning ✅ Klar ([PR #75](https://github.com/TexasForslund/firstflow/pull/75), Texas + Claude, 2026-11-07)
+
+Enligt skissen "Firstflow – Schema och incheckning" (idé 12). Tiderna ligger på företaget, så att ett företag med flera elever lägger in dem en gång (Texas).
+- **Företagsprofil → Arbetstider:** start och slut för måndag till fredag, och "Samma tider alla dagar". Tiderna väljs i en rullista med svensk 24-timmarsklocka i kvartssteg. Webbläsarens tidsfält visar AM/PM på en engelsk dator (Texas: "Vi måste ha svenska klockan"). Under tiderna listas handledarens elever och om de följer arbetstiderna eller har egna (`pages/supervisor/HoursEditor.tsx`).
+- **Handledarens elevsida → Schema:** "Följer företagets arbetstider" eller egna tider, och knappen "Egna tider för …" (`ScheduleCard.tsx`).
+- **Eleven:** incheckningen är låst till tio minuter innan dagen börjar, med en nedräkning. Efter att dagen börjat går det fortfarande att checka in. Utan tider fungerar det som förut. Under veckans dagar står när dagen börjar.
+- **Läraren** ser tiderna under praktikplatsen på elevsidan men ändrar dem inte.
+- Backend: `workplace_hours`, `placement_hours`, `app/api/routes/hours.py` och `app/services/hours.py`. `MyAttendance.check_in_from` och `day_starts_at`.
+
+---
+
 ## F36. Frånvaro med förklaring ✅ Klar ([PR #72](https://github.com/TexasForslund/firstflow/pull/72), Texas + Claude, 2026-11-07)
 
 Enligt skissen "Firstflow – Frånvaro med förklaring" (idé 12).

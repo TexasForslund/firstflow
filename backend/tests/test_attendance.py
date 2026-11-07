@@ -21,7 +21,7 @@ MakeUser = Callable[..., User]
 Login = Callable[[User], None]
 
 TODAY = date(2026, 10, 21)  # onsdag
-NOW = datetime(2026, 10, 21, 6, 52, tzinfo=UTC)  # 07:52 svensk tid
+NOW = datetime(2026, 10, 21, 6, 52, tzinfo=UTC)  # 08:52 svensk sommartid
 START = date(2026, 10, 12)  # måndag, vecka 1
 END = date(2026, 11, 20)
 
@@ -548,3 +548,86 @@ def test_week_and_reminder(client: TestClient, login: Login, world: World, db: S
     # Bara läraren påminner.
     login(world.admin)
     assert client.post(f"/api/classes/{world.ee22.id}/attendance/remind").status_code == 403
+
+
+# --- Arbetstider (idé 12, Texas 2026-11-07) ------------------------------------------------
+
+
+def _set_company(client: TestClient, world: World, days: list[dict]) -> dict:
+    workplace_id = world.placement.workplace_id
+    response = client.put(f"/api/supervisor/workplaces/{workplace_id}/hours", json={"days": days})
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def test_check_in_opens_ten_minutes_before_start(
+    client: TestClient, login: Login, world: World
+) -> None:
+    # Klockan är 08:52 svensk sommartid en onsdag. Dagen börjar 09:30, så incheckningen
+    # öppnar 09:20.
+    login(world.supervisor)
+    company = _set_company(client, world, [{"weekday": 2, "start": "09:30", "end": "16:00"}])
+    assert [s["student"]["id"] for s in company["students"]] == [
+        str(world.student.id),
+        str(world.second.id),
+    ]
+    assert all(s["own_days"] is None for s in company["students"])
+
+    login(world.student)
+    mine = client.get("/api/me/attendance").json()
+    assert mine["check_in_from"].startswith("2026-10-21T09:20:00")
+    blocked = client.post("/api/attendance/check-in")
+    assert blocked.status_code == 422
+    assert blocked.json()["detail"] == "Din dag börjar 09:30. Du kan checka in från 09:20."
+
+    # Hugo får egna tider från 09:00, då går det.
+    login(world.supervisor)
+    own = client.put(
+        f"/api/supervisor/placements/{world.placement.id}/hours",
+        json={"days": [{"weekday": 2, "start": "09:00", "end": "15:00"}]},
+    ).json()
+    assert own["own"] is True and own["days"][0]["start"] == "09:00:00"
+    assert own["company_days"][0]["start"] == "09:30:00"
+    login(world.student)
+    assert client.post("/api/attendance/check-in").status_code == 200
+
+    # Tillbaka till företagets tider.
+    login(world.supervisor)
+    back = client.put(f"/api/supervisor/placements/{world.placement.id}/hours", json={"days": None})
+    assert back.json()["own"] is False
+
+
+def test_no_hours_means_any_time(client: TestClient, login: Login, world: World) -> None:
+    login(world.student)
+    assert client.get("/api/me/attendance").json()["check_in_from"] is None
+    assert client.post("/api/attendance/check-in").status_code == 200
+
+
+def test_hours_access_and_validation(client: TestClient, login: Login, world: World) -> None:
+    workplace_id = world.placement.workplace_id
+    hours_url = f"/api/placements/{world.placement.id}/hours"
+    own_url = f"/api/supervisor/placements/{world.placement.id}/hours"
+    login(world.supervisor)
+    bad = {"days": [{"weekday": 0, "start": "16:00", "end": "08:00"}]}
+    assert (
+        client.put(f"/api/supervisor/workplaces/{workplace_id}/hours", json=bad).status_code == 422
+    )
+    twice = {"days": [{"weekday": 0, "start": "07:00", "end": "16:00"}] * 2}
+    assert (
+        client.put(f"/api/supervisor/workplaces/{workplace_id}/hours", json=twice).status_code
+        == 422
+    )
+    _set_company(client, world, [{"weekday": 0, "start": "07:00", "end": "16:00"}])
+
+    # Läraren och eleven ser tiderna men ändrar dem inte.
+    login(world.teacher)
+    assert client.get(hours_url).json()["days"][0]["start"] == "07:00:00"
+    assert client.put(own_url, json={"days": None}).status_code == 403
+    login(world.student)
+    assert client.get(hours_url).status_code == 200
+    # Andra ser dem inte.
+    login(world.umea_teacher)
+    assert client.get(hours_url).status_code == 404
+    login(world.other_supervisor)
+    assert client.get(hours_url).status_code == 404
+    assert client.put(own_url, json={"days": None}).status_code == 404

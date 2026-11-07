@@ -1,6 +1,8 @@
-import { CalendarOff, Check, MapPinCheck } from 'lucide-react'
+import { CalendarOff, Check, Lock, MapPinCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import { useCheckIn, useMyAttendance, type AttendanceDay, type MyAttendance } from '../../api/attendance'
+import { hhmm, usePlacementHours } from '../../api/hours'
 import { parseDay } from '../reports/answers'
 import { WEEKDAYS } from '../classes/aplTerms'
 import styles from './CheckIn.module.css'
@@ -18,6 +20,16 @@ function addDays(day: string, n: number) {
 
 function time(iso: string) {
   return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+}
+
+/** Klockan, uppdaterad var 15:e sekund, så att incheckningen öppnar av sig själv. */
+function useNow() {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 15_000)
+    return () => window.clearInterval(timer)
+  }, [])
+  return now
 }
 
 /** Elevens incheckning: en stor knapp och veckans dagar. Mobilen först. */
@@ -61,7 +73,11 @@ export function CheckIn() {
 
 function Today({ data }: { data: MyAttendance }) {
   const checkIn = useCheckIn()
+  const now = useNow()
   const today = data.days.find((d) => d.date === data.today)
+  // Eleven kan checka in från tio minuter innan dagen börjar (Texas, 2026-11-07).
+  const opens = data.check_in_from ? new Date(data.check_in_from).getTime() : null
+  const locked = opens !== null && now < opens
 
   if (!data.can_check_in_today) {
     // Nästa APL-dag för elevens klass, t.ex. måndag eller fredag för vuxenutbildning.
@@ -95,8 +111,35 @@ function Today({ data }: { data: MyAttendance }) {
     )
   }
 
+  if (locked && data.day_starts_at && data.check_in_from) {
+    const minutes = Math.max(1, Math.ceil((opens - now) / 60_000))
+    const wait =
+      minutes < 60
+        ? `Om ${minutes} ${minutes === 1 ? 'minut' : 'minuter'}.`
+        : `Om ${Math.floor(minutes / 60)} h ${minutes % 60} min.`
+    return (
+      <section className={styles.lockedBlock} aria-label="Checka in" aria-live="polite">
+        <span className={styles.lockIcon}>
+          <Lock aria-hidden="true" />
+        </span>
+        <p className={styles.cardTitle}>Din dag börjar {time(data.day_starts_at)}</p>
+        <p className={styles.muted}>
+          Du kan checka in från {time(data.check_in_from)}. {wait}
+        </p>
+        <button type="button" className={styles.checkInButton} disabled>
+          <MapPinCheck aria-hidden="true" />
+          <span>
+            <span className={styles.checkInLabel}>Checka in</span>
+            <span className={styles.checkInPlace}>{data.workplace_name}</span>
+          </span>
+        </button>
+      </section>
+    )
+  }
+
   return (
     <section className={styles.checkInBlock} aria-label="Checka in">
+      {data.day_starts_at && <p className={styles.muted}>Din dag börjar {time(data.day_starts_at)}.</p>}
       <button
         type="button"
         className={styles.checkInButton}
@@ -123,12 +166,18 @@ function Today({ data }: { data: MyAttendance }) {
 
 /** Veckans APL-dagar för elevens klass, med dagens status som en prick (Texas, 2026-10-30). */
 function Week({ data }: { data: MyAttendance }) {
+  const hours = usePlacementHours(data.placement_id)
   const todayDate = parseDay(data.today)
   const monday = addDays(data.today, -((todayDate.getDay() + 6) % 7))
   const aplDays = data.apl_weekdays.length > 0 ? data.apl_weekdays : [0, 1, 2, 3, 4]
   const days = aplDays.map((offset) => addDays(monday, offset))
   const byDate = new Map<string, AttendanceDay>(data.days.map((d) => [d.date, d]))
   const inPlacement = (day: string) => day >= data.start_date! && day <= data.end_date!
+  // När dagen börjar enligt arbetstiderna, om det finns tider.
+  const startsAt = (day: string) => {
+    const found = hours.data?.days.find((d) => d.weekday === (parseDay(day).getDay() + 6) % 7)
+    return found && inPlacement(day) ? hhmm(found.start) : null
+  }
 
   return (
     <section className={styles.card} aria-labelledby="week-title">
@@ -160,6 +209,7 @@ function Week({ data }: { data: MyAttendance }) {
               <span className={`${styles.dot} ${styles[state]}`} aria-hidden="true">
                 {state === 'present' && <Check />}
               </span>
+              {startsAt(day) && <span className={styles.dayTime}>{startsAt(day)}</span>}
               <span className={styles.srOnly}>
                 {parseDay(day).toLocaleDateString('sv-SE', { weekday: 'long' })}: {text}
               </span>

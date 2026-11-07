@@ -6276,6 +6276,220 @@
           }
         ]
       }
+    },
+    "/api/supervisor/workplaces/{workplace_id}/hours": {
+      "get": {
+        "tags": [
+          "hours"
+        ],
+        "summary": "Get Company Hours",
+        "description": "Företagets arbetstider och vilka elever som följer dem.",
+        "operationId": "get_company_hours_api_supervisor_workplaces__workplace_id__hours_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workplace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workplace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHours"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "hours"
+        ],
+        "summary": "Set Company Hours",
+        "description": "Sparar företagets arbetstider. En tom lista tar bort dem.",
+        "operationId": "set_company_hours_api_supervisor_workplaces__workplace_id__hours_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workplace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workplace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Week"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHours"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/placements/{placement_id}/hours": {
+      "get": {
+        "tags": [
+          "hours"
+        ],
+        "summary": "Get Placement Hours",
+        "description": "Tiderna som gäller för eleven på praktikplatsen.",
+        "operationId": "get_placement_hours_api_placements__placement_id__hours_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "placement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Placement Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacementHoursRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/supervisor/placements/{placement_id}/hours": {
+      "put": {
+        "tags": [
+          "hours"
+        ],
+        "summary": "Set Own Hours",
+        "description": "Egna tider för eleven. Utan dagar följer eleven företagets tider igen.",
+        "operationId": "set_own_hours_api_supervisor_placements__placement_id__hours_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "placement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Placement Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnHours"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacementHoursRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7474,6 +7688,31 @@
         ],
         "title": "CommentVisibility"
       },
+      "CompanyHours": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "type": "array",
+            "title": "Days"
+          },
+          "students": {
+            "items": {
+              "$ref": "#/components/schemas/StudentHours"
+            },
+            "type": "array",
+            "title": "Students",
+            "description": "Handledarens elever hos företaget"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "students"
+        ],
+        "title": "CompanyHours"
+      },
       "CompanyProfile": {
         "properties": {
           "name": {
@@ -7873,6 +8112,34 @@
           "unread"
         ],
         "title": "ConversationRead"
+      },
+      "Day": {
+        "properties": {
+          "weekday": {
+            "type": "integer",
+            "maximum": 6.0,
+            "minimum": 0.0,
+            "title": "Weekday",
+            "description": "0 = måndag … 6 = söndag"
+          },
+          "start": {
+            "type": "string",
+            "format": "time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "time",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "weekday",
+          "start",
+          "end"
+        ],
+        "title": "Day"
       },
       "DayState": {
         "type": "string",
@@ -9229,6 +9496,32 @@
             "type": "array",
             "title": "Days",
             "description": "Registrerade dagar i placeringen, i datumordning"
+          },
+          "day_starts_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Starts At",
+            "description": "När dagen börjar i dag enligt arbetstiderna, om det finns tider"
+          },
+          "check_in_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check In From",
+            "description": "Tidigast eleven kan checka in i dag. null: när som helst"
           }
         },
         "type": "object",
@@ -9702,6 +9995,28 @@
         ],
         "title": "OverviewReport"
       },
+      "OwnHours": {
+        "properties": {
+          "days": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Day"
+                },
+                "type": "array",
+                "maxItems": 7
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days",
+            "description": "Egna tider. null eller tom: följ företagets"
+          }
+        },
+        "type": "object",
+        "title": "OwnHours"
+      },
       "Person": {
         "properties": {
           "id": {
@@ -9806,6 +10121,37 @@
           "end_date"
         ],
         "title": "PlacementCreate"
+      },
+      "PlacementHoursRead": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "type": "array",
+            "title": "Days",
+            "description": "Tiderna som gäller för eleven"
+          },
+          "own": {
+            "type": "boolean",
+            "title": "Own",
+            "description": "Eleven har egna tider"
+          },
+          "company_days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "type": "array",
+            "title": "Company Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "own",
+          "company_days"
+        ],
+        "title": "PlacementHoursRead"
       },
       "PlacementRead": {
         "properties": {
@@ -11524,6 +11870,40 @@
         ],
         "title": "StudentCreate"
       },
+      "StudentHours": {
+        "properties": {
+          "placement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Placement Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "own_days": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Day"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Own Days",
+            "description": "Egna tider, eller null om eleven följer företagets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "placement_id",
+          "student",
+          "own_days"
+        ],
+        "title": "StudentHours"
+      },
       "StudentLink": {
         "properties": {
           "student_id": {
@@ -12586,6 +12966,23 @@
           "count"
         ],
         "title": "WaitingSupervisor"
+      },
+      "Week": {
+        "properties": {
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/Day"
+            },
+            "type": "array",
+            "maxItems": 7,
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days"
+        ],
+        "title": "Week"
       },
       "WeekDay": {
         "properties": {
