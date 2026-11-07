@@ -3414,7 +3414,7 @@ export interface components {
             /**
              * Max Images
              * @description Högst antal bilder
-             * @default 5
+             * @default 4
              */
             max_images: number;
         };
@@ -3453,7 +3453,7 @@ export interface components {
             /**
              * Max Images
              * @description Högst antal bilder
-             * @default 5
+             * @default 4
              */
             max_images: number;
         };

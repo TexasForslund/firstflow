@@ -507,7 +507,7 @@ Texas, 2026-11-07: "Handledaren ska typ kunna se samma som läraren ser." Skisse
 
 Texas, 2026-11-07. Skissen heter "Fråga med bilder". Nästan alla bilder tas med mobilen och är stora, så de måste komprimeras.
 
-- **Läraren:** ny frågetyp "Bilder" under Övrigt, med "Högst antal bilder" (1–10, förvalt 5) och Obligatorisk.
+- **Läraren:** ny frågetyp "Bilder" under Övrigt, med "Högst antal bilder" (1–10, förvalt 4, Texas 2026-11-07) och Obligatorisk.
 - **Eleven:** "Ta foto eller välj bilder" öppnar kameran eller bilderna i mobilen. Bilderna visas som rutor med kryss för att ta bort. Varje bild laddas upp direkt.
 - **Komprimering i två steg:**
   - I mobilen görs bilden mindre (längsta sidan 1600 px, JPEG) innan den skickas. En bild från en iPhone på 5–12 MB blir några hundra kB.

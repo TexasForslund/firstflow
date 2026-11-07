@@ -9189,7 +9189,7 @@
             "minimum": 1.0,
             "title": "Max Images",
             "description": "Högst antal bilder",
-            "default": 5
+            "default": 4
           }
         },
         "additionalProperties": false,
@@ -9247,7 +9247,7 @@
             "minimum": 1.0,
             "title": "Max Images",
             "description": "Högst antal bilder",
-            "default": 5
+            "default": 4
           }
         },
         "additionalProperties": false,

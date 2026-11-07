@@ -87,7 +87,7 @@ export function newQuestion(type: QuestionType): Question {
     case 'rating':
       return { ...base, type, required: true, logic: [] }
     case 'images':
-      return { ...base, type, required: true, max_images: 5 }
+      return { ...base, type, required: true, max_images: 4 }
     case 'statement':
       return { ...base, type }
   }

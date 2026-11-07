@@ -130,7 +130,7 @@ class ImagesQuestion(_Question):
 
     type: Literal[QuestionType.IMAGES]
     required: bool = True
-    max_images: int = Field(default=5, ge=1, le=MAX_IMAGES, description="Högst antal bilder")
+    max_images: int = Field(default=4, ge=1, le=MAX_IMAGES, description="Högst antal bilder")
 
 
 class StatementQuestion(_Question):
