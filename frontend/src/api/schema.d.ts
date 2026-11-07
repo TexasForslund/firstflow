@@ -2207,6 +2207,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/supervisor/workplaces/{workplace_id}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Company Hours
+         * @description Företagets arbetstider och vilka elever som följer dem.
+         */
+        get: operations["get_company_hours_api_supervisor_workplaces__workplace_id__hours_get"];
+        /**
+         * Set Company Hours
+         * @description Sparar företagets arbetstider. En tom lista tar bort dem.
+         */
+        put: operations["set_company_hours_api_supervisor_workplaces__workplace_id__hours_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/placements/{placement_id}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Placement Hours
+         * @description Tiderna som gäller för eleven på praktikplatsen.
+         */
+        get: operations["get_placement_hours_api_placements__placement_id__hours_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/placements/{placement_id}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Own Hours
+         * @description Egna tider för eleven. Utan dagar följer eleven företagets tider igen.
+         */
+        put: operations["set_own_hours_api_supervisor_placements__placement_id__hours_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2738,6 +2802,16 @@ export interface components {
          * @enum {string}
          */
         CommentVisibility: "all" | "staff";
+        /** CompanyHours */
+        CompanyHours: {
+            /** Days */
+            days: components["schemas"]["Day"][];
+            /**
+             * Students
+             * @description Handledarens elever hos företaget
+             */
+            students: components["schemas"]["StudentHours"][];
+        };
         /** CompanyProfile */
         CompanyProfile: {
             /** Name */
@@ -2874,6 +2948,24 @@ export interface components {
             last_message_at: string | null;
             /** Unread */
             unread: number;
+        };
+        /** Day */
+        Day: {
+            /**
+             * Weekday
+             * @description 0 = måndag … 6 = söndag
+             */
+            weekday: number;
+            /**
+             * Start
+             * Format: time
+             */
+            start: string;
+            /**
+             * End
+             * Format: time
+             */
+            end: string;
         };
         /**
          * DayState
@@ -3481,6 +3573,16 @@ export interface components {
              * @description Registrerade dagar i placeringen, i datumordning
              */
             days: components["schemas"]["AttendanceDay"][];
+            /**
+             * Day Starts At
+             * @description När dagen börjar i dag enligt arbetstiderna, om det finns tider
+             */
+            day_starts_at?: string | null;
+            /**
+             * Check In From
+             * @description Tidigast eleven kan checka in i dag. null: när som helst
+             */
+            check_in_from?: string | null;
         };
         /**
          * MyPlacement
@@ -3694,6 +3796,14 @@ export interface components {
              */
             preview: components["schemas"]["AnswerPreview"][];
         };
+        /** OwnHours */
+        OwnHours: {
+            /**
+             * Days
+             * @description Egna tider. null eller tom: följ företagets
+             */
+            days?: components["schemas"]["Day"][] | null;
+        };
         /** Person */
         Person: {
             /**
@@ -3755,6 +3865,21 @@ export interface components {
              * Format: date
              */
             end_date: string;
+        };
+        /** PlacementHoursRead */
+        PlacementHoursRead: {
+            /**
+             * Days
+             * @description Tiderna som gäller för eleven
+             */
+            days: components["schemas"]["Day"][];
+            /**
+             * Own
+             * @description Eleven har egna tider
+             */
+            own: boolean;
+            /** Company Days */
+            company_days: components["schemas"]["Day"][];
         };
         /**
          * PlacementRead
@@ -4515,6 +4640,20 @@ export interface components {
             /** Class Ids */
             class_ids?: string[];
         };
+        /** StudentHours */
+        StudentHours: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            student: components["schemas"]["Ref"];
+            /**
+             * Own Days
+             * @description Egna tider, eller null om eleven följer företagets
+             */
+            own_days: components["schemas"]["Day"][] | null;
+        };
         /** StudentLink */
         StudentLink: {
             /**
@@ -4962,6 +5101,11 @@ export interface components {
              * @description Incheckningar som väntar på handledaren den här veckan
              */
             count: number;
+        };
+        /** Week */
+        Week: {
+            /** Days */
+            days: components["schemas"]["Day"][];
         };
         /** WeekDay */
         WeekDay: {
@@ -8994,6 +9138,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    get_company_hours_api_supervisor_workplaces__workplace_id__hours_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyHours"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_company_hours_api_supervisor_workplaces__workplace_id__hours_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workplace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Week"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyHours"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_placement_hours_api_placements__placement_id__hours_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                placement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacementHoursRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_own_hours_api_supervisor_placements__placement_id__hours_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                placement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OwnHours"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlacementHoursRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

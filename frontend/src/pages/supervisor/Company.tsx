@@ -1,5 +1,6 @@
-import { GraduationCap, MapPin, Send, Trash2, Upload } from 'lucide-react'
+import { Check, GraduationCap, MapPin, Send, Trash2, Upload } from 'lucide-react'
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { Link } from 'react-router'
 
 import {
   useCompanyLogo,
@@ -8,10 +9,12 @@ import {
   useUpdateCompany,
   type SupervisorWorkplace,
 } from '../../api/invitations'
+import { hoursSummary, hoursValid, useCompanyHours, useSaveCompanyHours, type HoursDay } from '../../api/hours'
 import { Avatar, Button, Card, CompanyLogo, HelpPopover, TextField } from '../../components'
 import styles from '../classes/Classes.module.css'
 import own from '../placements/Placements.module.css'
 import page from './Company.module.css'
+import { HoursEditor } from './HoursEditor'
 
 /**
  * Handledarens företagsprofil och kollegor. Handledaren kan bjuda in upp till tre kollegor.
@@ -37,6 +40,7 @@ export function Company() {
       {workplaces.map((w) => (
         <div key={w.id} className={page.company}>
           <ProfileCard workplace={w} />
+          <HoursCard workplace={w} />
           <ColleaguesCard workplace={w} />
         </div>
       ))}
@@ -215,6 +219,91 @@ function ProfileCard({ workplace }: { workplace: SupervisorWorkplace }) {
           </div>
         </dl>
       )}
+    </Card>
+  )
+}
+
+/** Företagets arbetstider. De gäller alla elever hos företaget (idé 12, Texas 2026-11-07). */
+function HoursCard({ workplace }: { workplace: SupervisorWorkplace }) {
+  const hours = useCompanyHours(workplace.id)
+  const save = useSaveCompanyHours(workplace.id)
+  const [draft, setDraft] = useState<HoursDay[] | null>(null)
+  const [saved, setSaved] = useState(false)
+  const days = draft ?? hours.data?.days ?? []
+  const students = hours.data?.students ?? []
+
+  function submit(event: FormEvent) {
+    event.preventDefault()
+    setSaved(false)
+    save.mutate(days, {
+      onSuccess: () => {
+        setDraft(null)
+        setSaved(true)
+      },
+    })
+  }
+
+  return (
+    <Card>
+      <div className={styles.cardHeader}>
+        <h2 className={styles.cardTitle}>Arbetstider</h2>
+      </div>
+      <form className={styles.cardBody} onSubmit={submit}>
+        <p className={styles.hint}>
+          Gäller alla elever hos er. Eleverna kan checka in från tio minuter innan dagen börjar.
+        </p>
+        {hours.isPending ? (
+          <p className={styles.hint}>Laddar…</p>
+        ) : (
+          <HoursEditor
+            value={days}
+            onChange={(next) => {
+              setDraft(next)
+              setSaved(false)
+            }}
+          />
+        )}
+        {students.length > 0 && (
+          <div className={page.hoursStudents}>
+            <h3 className={page.subTitle}>Elever hos er</h3>
+            <ul className={styles.list}>
+              {students.map((s) => (
+                <li key={s.placement_id} className={styles.row}>
+                  <Link to={`/my-students/${s.student.id}`} className={styles.rowLink}>
+                    <Avatar name={s.student.name} size="sm" />
+                    <span className={styles.rowText}>
+                      <span className={styles.name}>{s.student.name}</span>
+                      <span className={styles.meta}>
+                        {s.own_days ? `Egna tider: ${hoursSummary(s.own_days)}` : 'Följer arbetstiderna'}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {save.isError && (
+          <p className={styles.formError} role="alert">
+            {save.error.message}
+          </p>
+        )}
+        {saved && (
+          <p className={styles.formSuccess} role="status">
+            Arbetstiderna är sparade.
+          </p>
+        )}
+        <div className={page.hoursActions}>
+          <Button
+            type="submit"
+            variant="primary"
+            icon={<Check aria-hidden="true" />}
+            disabled={save.isPending || !draft || !hoursValid(days)}
+          >
+            Spara arbetstider
+          </Button>
+        </div>
+      </form>
     </Card>
   )
 }

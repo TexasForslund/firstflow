@@ -6,6 +6,7 @@ import {
   FileText,
   Folder,
   Lock,
+  Clock,
   MapPin,
   MapPinCheck,
   MessageSquare,
@@ -15,6 +16,7 @@ import {
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
+import { hoursSummary, usePlacementHours } from '../../api/hours'
 import { waitingText, type AttentionItem } from '../../api/overview'
 import { useStudentProjects } from '../../api/projects'
 import { useSchoolTeachers } from '../../api/classes'
@@ -182,6 +184,18 @@ function daysBefore(today: string, days: number) {
   const d = parseDay(today)
   d.setDate(d.getDate() - days)
   return d.toISOString().slice(0, 10)
+}
+
+/** Arbetstiderna som gäller för eleven. Läraren ser dem men ändrar dem inte (Texas, 2026-11-07). */
+function PlacementHoursLine({ placementId }: { placementId: string }) {
+  const hours = usePlacementHours(placementId)
+  if (!hours.data?.days.length) return null
+  return (
+    <p className={own.address}>
+      <Clock aria-hidden="true" />
+      {hoursSummary(hours.data.days)}
+    </p>
+  )
 }
 
 function ReportsSection({ studentId }: { studentId: string }) {
@@ -580,6 +594,7 @@ function PlacementCard({ studentId }: { studentId: string }) {
                     {current.workplace.address}
                   </p>
                 )}
+                <PlacementHoursLine placementId={current.id} />
               </div>
             </div>
             <div className={own.progress}>

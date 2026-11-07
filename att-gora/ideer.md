@@ -188,7 +188,7 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
 - **Frånvaro med förklaring:** handledaren ska kunna markera att eleven varit borta och välja en förklaring, t.ex. sjukanmäld eller ledig. Det är upp till handledaren att välja. ✅ Byggt i #72 (2026-11-07): Sjuk, Ledig, Annat eller Ingen förklaring, och en valfri kommentar. Läraren ser den, eleven gör det inte.
 - **Mål i projekt:** handledaren ska se målen i ett projekt men inte kunna lägga till nya. ✅ Byggt i #74 (2026-11-07): handledaren ser målen i Ändra projekt men ändrar dem inte. Backend svarar 403.
 - **Elevens sida:** handledaren ska se elevens sida med elevens information.
-- **Kalender:** handledaren lägger upp en kalender för när dagen börjar, och kanske mer. Den styr incheckningen. Eleven ska kunna checka in från tio minuter innan dagen börjar, om eleven är tidig. Hänger ihop med idé 7.
+- **Kalender:** handledaren lägger upp en kalender för när dagen börjar, och kanske mer. Den styr incheckningen. Eleven ska kunna checka in från tio minuter innan dagen börjar, om eleven är tidig. Hänger ihop med idé 7. ✅ Byggt i #75 (2026-11-07): arbetstider per företag i Företagsprofilen, egna tider per elev, incheckning från tio minuter innan. Läraren ser tiderna på elevsidan.
 - **Meddelanden:**
   - Handledaren ska bara kunna se och skriva till elever som har praktik hos hen, inte andra elever.
   - Eleven ska kunna skriva till handledare, lärare och SYV, men inte till andra elever (Texas, 2026-11-06). Det fungerar redan så i B11.

@@ -15,6 +15,7 @@ import { periodWeek } from '../placements/period'
 import { longDate } from '../reports/answers'
 import { AbsenceDialog } from './AbsenceDialog'
 import { absenceLabel } from './absence'
+import { ScheduleCard } from './ScheduleCard'
 import styles from './SupervisorStudent.module.css'
 import { WeekDots } from './WeekDots'
 import { weekDays } from './weekDays'
@@ -161,6 +162,7 @@ export function SupervisorStudent() {
         </div>
 
         <div className={styles.stack}>
+          <ScheduleCard placementId={row.placement_id} firstName={firstName} />
           {studentContracts.length > 0 && (
             <Card>
               <section className={styles.side} aria-labelledby="contract-heading">

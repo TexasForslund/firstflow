@@ -125,3 +125,21 @@
 .logoHeader {
   align-items: center;
 }
+
+/* Arbetstider (Texas, 2026-11-07). */
+.hoursStudents {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.subTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.hoursActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}
