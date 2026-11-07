@@ -1617,6 +1617,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/{project_id}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Images
+         * @description Bilderna i projektets inskickade redovisningar, senaste redovisningen först.
+         */
+        get: operations["project_images_api_projects__project_id__images_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Comments
+         * @description Kommentarer om elevernas arbete i projektet, äldst först. Bara läraren och handledarna
+         *     ser dem här.
+         */
+        get: operations["project_comments_api_projects__project_id__comments_get"];
+        put?: never;
+        /**
+         * Add Project Comment
+         * @description Läraren eller handledaren skriver om en elevs arbete i projektet.
+         */
+        post: operations["add_project_comment_api_projects__project_id__comments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/comments/{comment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Project Comment
+         * @description Tar bort en egen kommentar.
+         */
+        delete: operations["delete_project_comment_api_projects__project_id__comments__comment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{project_id}/goals": {
         parameters: {
             query?: never;
@@ -4149,6 +4214,39 @@ export interface components {
             /** Completed */
             completed: boolean;
         };
+        /** ProjectCommentRead */
+        ProjectCommentRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            student: components["schemas"]["Ref"];
+            author: components["schemas"]["Ref"];
+            author_role: components["schemas"]["UserRole"];
+            /** Body */
+            body: string;
+            visibility: components["schemas"]["CommentVisibility"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Is Mine */
+            is_mine: boolean;
+        };
+        /** ProjectCommentWrite */
+        ProjectCommentWrite: {
+            /**
+             * Student Id
+             * Format: uuid
+             */
+            student_id: string;
+            /** Body */
+            body: string;
+            /** @default all */
+            visibility: components["schemas"]["CommentVisibility"];
+        };
         /** ProjectGoals */
         ProjectGoals: {
             /** Goals */
@@ -4160,6 +4258,25 @@ export interface components {
              * @description En cell per mål och elev, även utan underlag
              */
             cells: components["schemas"]["GoalCell"][];
+        };
+        /** ProjectImage */
+        ProjectImage: {
+            /**
+             * Report Id
+             * Format: uuid
+             */
+            report_id: string;
+            /**
+             * Image Id
+             * Format: uuid
+             */
+            image_id: string;
+            student: components["schemas"]["Ref"];
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
         };
         /** ProjectRead */
         ProjectRead: {
@@ -8311,6 +8428,133 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ProjectReport"][];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_images_api_projects__project_id__images_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectImage"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_comments_api_projects__project_id__comments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectCommentRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_project_comment_api_projects__project_id__comments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectCommentWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectCommentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_project_comment_api_projects__project_id__comments__comment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                comment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

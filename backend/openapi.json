@@ -4571,6 +4571,221 @@
         }
       }
     },
+    "/api/projects/{project_id}/images": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Project Images",
+        "description": "Bilderna i projektets inskickade redovisningar, senaste redovisningen först.",
+        "operationId": "project_images_api_projects__project_id__images_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectImage"
+                  },
+                  "title": "Response Project Images Api Projects  Project Id  Images Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/comments": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Project Comments",
+        "description": "Kommentarer om elevernas arbete i projektet, äldst först. Bara läraren och handledarna\nser dem här.",
+        "operationId": "project_comments_api_projects__project_id__comments_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectCommentRead"
+                  },
+                  "title": "Response Project Comments Api Projects  Project Id  Comments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Add Project Comment",
+        "description": "Läraren eller handledaren skriver om en elevs arbete i projektet.",
+        "operationId": "add_project_comment_api_projects__project_id__comments_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCommentWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCommentRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/comments/{comment_id}": {
+      "delete": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Delete Project Comment",
+        "description": "Tar bort en egen kommentar.",
+        "operationId": "delete_project_comment_api_projects__project_id__comments__comment_id__delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Comment Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/projects/{project_id}/goals": {
       "get": {
         "tags": [
@@ -10801,6 +11016,77 @@
         ],
         "title": "ProjectChoice"
       },
+      "ProjectCommentRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "author": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "author_role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/CommentVisibility"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "is_mine": {
+            "type": "boolean",
+            "title": "Is Mine"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student",
+          "author",
+          "author_role",
+          "body",
+          "visibility",
+          "created_at",
+          "is_mine"
+        ],
+        "title": "ProjectCommentRead"
+      },
+      "ProjectCommentWrite": {
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Student Id"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Body"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/CommentVisibility",
+            "default": "all"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student_id",
+          "body"
+        ],
+        "title": "ProjectCommentWrite"
+      },
       "ProjectGoals": {
         "properties": {
           "goals": {
@@ -10833,6 +11119,36 @@
           "cells"
         ],
         "title": "ProjectGoals"
+      },
+      "ProjectImage": {
+        "properties": {
+          "report_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Report Id"
+          },
+          "image_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Image Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "report_id",
+          "image_id",
+          "student",
+          "due_date"
+        ],
+        "title": "ProjectImage"
       },
       "ProjectRead": {
         "properties": {

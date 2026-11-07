@@ -2,7 +2,13 @@ import { Eye, Lock, Send, Star } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import type { Question } from '../../api/forms'
-import { useAddComment, type AnswerRead, type CommentVisibility, type ReportDetail } from '../../api/reports'
+import {
+  useAddComment,
+  type AnswerRead,
+  type Comment,
+  type CommentVisibility,
+  type ReportDetail,
+} from '../../api/reports'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, HelpPopover } from '../../components'
 import { answerText } from './answers'
@@ -84,9 +90,47 @@ function timeAgo(iso: string) {
  * förvalt varje gång, så att ingen skriver privat av misstag. Eleven får aldrig privata kommentarer.
  */
 export function Comments({ report }: { report: ReportDetail }) {
+  const add = useAddComment(report.id)
+  return (
+    <CommentThread
+      id={report.id}
+      comments={report.comments}
+      pending={add.isPending}
+      error={add.error?.message}
+      onSend={(body, visibility, done) => add.mutate({ body, visibility }, { onSuccess: done })}
+    />
+  )
+}
+
+type ThreadComment = {
+  id: string
+  author: { name: string }
+  author_role: Comment['author_role']
+  body: string
+  visibility: CommentVisibility
+  created_at: string
+}
+
+/** Själva tråden, som också används för kommentarer om en elev i ett projekt. */
+export function CommentThread({
+  id,
+  comments,
+  title = 'Kommentarer',
+  placeholder = 'Skriv en kommentar…',
+  pending,
+  error,
+  onSend,
+}: {
+  id: string
+  comments: ThreadComment[]
+  title?: string
+  placeholder?: string
+  pending: boolean
+  error?: string
+  onSend: (body: string, visibility: CommentVisibility, done: () => void) => void
+}) {
   const [body, setBody] = useState('')
   const [visibility, setVisibility] = useState<CommentVisibility>('all')
-  const add = useAddComment(report.id)
   const { data: me } = useCurrentUser()
   const isStaff = me?.role === 'teacher' || me?.role === 'supervisor'
   const isPrivate = isStaff && visibility === 'staff'
@@ -97,27 +141,22 @@ export function Comments({ report }: { report: ReportDetail }) {
   function submit(event: FormEvent) {
     event.preventDefault()
     if (!body.trim()) return
-    add.mutate(
-      { body, visibility: isPrivate ? 'staff' : 'all' },
-      {
-        onSuccess: () => {
-          setBody('')
-          setVisibility('all')
-        },
-      },
-    )
+    onSend(body, isPrivate ? 'staff' : 'all', () => {
+      setBody('')
+      setVisibility('all')
+    })
   }
 
   return (
-    <section className={styles.comments} aria-labelledby={`comments-${report.id}`}>
-      <h2 id={`comments-${report.id}`} className={styles.commentsTitle}>
-        Kommentarer {report.comments.length > 0 && <span className={styles.count}>{report.comments.length}</span>}
+    <section className={styles.comments} aria-labelledby={`comments-${id}`}>
+      <h2 id={`comments-${id}`} className={styles.commentsTitle}>
+        {title} {comments.length > 0 && <span className={styles.count}>{comments.length}</span>}
       </h2>
-      {report.comments.length === 0 ? (
+      {comments.length === 0 ? (
         <p className={styles.none}>Inga kommentarer än.</p>
       ) : (
         <ul className={styles.commentList}>
-          {report.comments.map((comment) => (
+          {comments.map((comment) => (
             <li key={comment.id} className={styles.comment}>
               <Avatar name={comment.author.name} size="sm" />
               <div className={styles.bubble} data-private={comment.visibility === 'staff' ? '' : undefined}>
@@ -162,23 +201,18 @@ export function Comments({ report }: { report: ReportDetail }) {
         </div>
       )}
       <form className={styles.commentForm} data-private={isPrivate ? '' : undefined} onSubmit={submit}>
-        <label htmlFor={`comment-${report.id}`} className="sr-only">
-          Skriv en kommentar
+        <label htmlFor={`comment-${id}`} className="sr-only">
+          {placeholder}
         </label>
         <input
-          id={`comment-${report.id}`}
+          id={`comment-${id}`}
           className={styles.commentInput}
           value={body}
-          placeholder={isPrivate ? 'Skriv en privat kommentar…' : 'Skriv en kommentar…'}
+          placeholder={isPrivate ? 'Skriv en privat kommentar…' : placeholder}
           maxLength={2000}
           onChange={(e) => setBody(e.target.value)}
         />
-        <button
-          type="submit"
-          className={styles.send}
-          aria-label="Skicka kommentar"
-          disabled={!body.trim() || add.isPending}
-        >
+        <button type="submit" className={styles.send} aria-label="Skicka kommentar" disabled={!body.trim() || pending}>
           <Send aria-hidden="true" />
         </button>
       </form>
@@ -196,9 +230,9 @@ export function Comments({ report }: { report: ReportDetail }) {
           )}
         </p>
       )}
-      {add.isError && (
+      {error && (
         <p className={styles.error} role="alert">
-          {add.error.message}
+          {error}
         </p>
       )}
     </section>

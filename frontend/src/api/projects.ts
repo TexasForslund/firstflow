@@ -132,3 +132,49 @@ export function useDeleteProject() {
     onSuccess: invalidate,
   })
 }
+
+// --- Flikarna Bilder och Kommentarer på projektsidan (Texas skiss, 2026-11-07) -----------
+
+export type ProjectImage = components['schemas']['ProjectImage']
+export type ProjectComment = components['schemas']['ProjectCommentRead']
+
+export function useProjectImages(projectId: string) {
+  return useQuery({
+    queryKey: ['projects', projectId, 'images'],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/projects/{project_id}/images', {
+        params: { path: { project_id: projectId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+export function useProjectComments(projectId: string) {
+  return useQuery({
+    queryKey: ['projects', projectId, 'comments'],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/projects/{project_id}/comments', {
+        params: { path: { project_id: projectId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+export function useAddProjectComment(projectId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: components['schemas']['ProjectCommentWrite']) => {
+      const { data, error, response } = await api.POST('/api/projects/{project_id}/comments', {
+        params: { path: { project_id: projectId } },
+        body,
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'comments'] }),
+  })
+}

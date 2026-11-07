@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { useState, type KeyboardEvent } from 'react'
+import { useState, type KeyboardEvent, type ReactNode } from 'react'
 
 import { reportImageUrl } from '../../api/reportImages'
 import styles from './Images.module.css'
@@ -9,51 +9,48 @@ import styles from './Images.module.css'
  * (Texas skiss "Fråga med bilder", 2026-11-07).
  */
 export function ImageGallery({ reportId, imageIds }: { reportId: string; imageIds: string[] }) {
+  return <Gallery images={imageIds.map((id) => ({ id, src: reportImageUrl(reportId, id) }))} />
+}
+
+export type GalleryImage = { id: string; src: string; caption?: ReactNode }
+
+/** Bilder i ett rutnät. Ett klick visar bilden stor, med bildtexten under. */
+export function Gallery({ images, large = false }: { images: GalleryImage[]; large?: boolean }) {
   const [open, setOpen] = useState<number | null>(null)
   return (
     <>
-      <ul className={styles.gallery}>
-        {imageIds.map((id, i) => (
-          <li key={id}>
+      <ul className={large ? `${styles.gallery} ${styles.galleryLarge}` : styles.gallery}>
+        {images.map((image, i) => (
+          <li key={image.id}>
             <button
               type="button"
               className={styles.galleryButton}
-              aria-label={`Visa bild ${i + 1} av ${imageIds.length} större`}
+              aria-label={`Visa bild ${i + 1} av ${images.length} större`}
               onClick={() => setOpen(i)}
             >
-              <img src={reportImageUrl(reportId, id)} alt="" className={styles.thumb} loading="lazy" />
+              <img src={image.src} alt="" className={styles.thumb} loading="lazy" />
             </button>
           </li>
         ))}
       </ul>
-      {open !== null && (
-        <Lightbox
-          reportId={reportId}
-          imageIds={imageIds}
-          index={open}
-          onIndex={setOpen}
-          onClose={() => setOpen(null)}
-        />
-      )}
+      {open !== null && <Lightbox images={images} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />}
     </>
   )
 }
 
 function Lightbox({
-  reportId,
-  imageIds,
+  images,
   index,
   onIndex,
   onClose,
 }: {
-  reportId: string
-  imageIds: string[]
+  images: GalleryImage[]
   index: number
   onIndex: (i: number) => void
   onClose: () => void
 }) {
-  const many = imageIds.length > 1
-  const go = (step: number) => onIndex((index + step + imageIds.length) % imageIds.length)
+  const many = images.length > 1
+  const go = (step: number) => onIndex((index + step + images.length) % images.length)
 
   function onKeyDown(event: KeyboardEvent) {
     if (event.key === 'ArrowLeft' && many) go(-1)
@@ -66,7 +63,7 @@ function Lightbox({
         if (node && !node.open) node.showModal()
       }}
       className={styles.lightbox}
-      aria-label={`Bild ${index + 1} av ${imageIds.length}`}
+      aria-label={`Bild ${index + 1} av ${images.length}`}
       onClose={onClose}
       onKeyDown={onKeyDown}
       onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -80,16 +77,18 @@ function Lightbox({
             <ChevronLeft aria-hidden="true" />
           </button>
         )}
-        <img src={reportImageUrl(reportId, imageIds[index])} alt={`Bild ${index + 1}`} className={styles.big} />
+        <img src={images[index].src} alt={`Bild ${index + 1}`} className={styles.big} />
         {many && (
           <button type="button" className={styles.lightboxNav} aria-label="Nästa bild" onClick={() => go(1)}>
             <ChevronRight aria-hidden="true" />
           </button>
         )}
       </div>
-      {many && (
+      {(many || images[index].caption) && (
         <p className={styles.lightboxCount}>
-          {index + 1} av {imageIds.length}
+          {images[index].caption}
+          {images[index].caption && many && ' · '}
+          {many && `${index + 1} av ${images.length}`}
         </p>
       )}
     </dialog>

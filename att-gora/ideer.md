@@ -195,6 +195,17 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
 
 **Övrigt:**
 - **Sammanfattning av projektet:** ska eleven sammanfatta ett projekt när det är klart? Ett exempel är projektet "Bygga hemsida", där eleven delar filer, länkar och bilder. Sammanfattningen ser olika ut för olika program. Hantverkselever bygger till exempel ingen hemsida.
+  - **Beslutat med Texas 2026-11-07** (skissen "Sammanfattning av projekt"). Det ska vara enkelt, eleven ska inte skriva ett gediget arbete.
+    - **Projektsidan** får elevval överst ("Elev: Alla, Elsa, Hugo …") och flikarna Översikt, Redovisningar, Bilder och Kommentarer. Elevvalet gäller alla flikar, så att man ser en elevs helhet i projektet. Med bara en elev visas inget elevval. ✅ Steg 1 byggt i #78.
+    - **Kommentarer** om en elevs arbete i projektet skrivs av läraren och handledaren under hela projektet, på ett ställe per elev. "Alla ser" eller "Bara lärare och handledare". ✅ #78.
+    - **Kedjan läroplan → mål → projekt → redovisning → sammanfattning.** En elevs Översikt visar varje mål med läroplanstexten, antal redovisningar och vilka. Mål utan underlag syns. ✅ #78.
+    - **Steg 2, sammanfattningen:**
+      - Projektet är klart när läraren eller handledaren markerar det, inte automatiskt vid slutdatumet.
+      - Eleven får kortet "Projektet är klart!" med fyra korta frågor: hur det gick (1–5 stjärnor), vad eleven är mest nöjd med (en mening), vilka av projektets mål eleven tycker att den visade (knappar) och bilder på slutresultatet (valfritt, högst 4).
+      - Frivilligt: en påminnelse, sedan ligger kortet kvar. I ett grupprojekt svarar varje elev själv.
+      - Frågorna är fasta tills vidare. Läraren ändrar dem inte.
+    - **Steg 3:** eleven ser sin egen vy av projektet i Min APL, med samma flikar och utan att kunna ändra något. Där ser eleven också kommentarerna som alla ser.
+    - **Väntar:** kopplingen till Skolverket (idé 10).
 - **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP. ✅ Byggt i #77 (2026-11-07).
 
 Hänger ihop med: B4 (närvaro), B11 (meddelanden), projekt (idé 2), B5 (frågor), idé 7 (kalender).

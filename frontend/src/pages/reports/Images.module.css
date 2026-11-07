@@ -163,6 +163,16 @@
   list-style: none;
 }
 
+.galleryLarge {
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  max-width: none;
+}
+
+.lightboxCount a {
+  color: #fff;
+  font-weight: 600;
+}
+
 .galleryButton {
   display: block;
   width: 100%;

@@ -47,9 +47,12 @@ export function EvidenceList({ items, reportPath }: { items: GoalEvidence[]; rep
 export function ProjectGoalsTable({
   projectId,
   reportPath,
+  onStudent,
 }: {
   projectId: string
   reportPath: (id: string) => string
+  /** Klick på elevens namn väljer eleven på projektsidan. */
+  onStudent?: (studentId: string) => void
 }) {
   const query = useProjectGoals(projectId)
   const [open, setOpen] = useState<{ goalId: string; studentId: string } | null>(null)
@@ -94,7 +97,13 @@ export function ProjectGoalsTable({
             {data.students.map((s) => (
               <tr key={s.id}>
                 <th scope="row" className={styles.studentCol}>
-                  {s.name}
+                  {onStudent ? (
+                    <button type="button" className={styles.studentLink} onClick={() => onStudent(s.id)}>
+                      {s.name}
+                    </button>
+                  ) : (
+                    s.name
+                  )}
                 </th>
                 {data.goals.map((g) => {
                   const c = cell(g.id, s.id)
@@ -135,6 +144,79 @@ export function ProjectGoalsTable({
           <EvidenceList items={selected.evidence} reportPath={reportPath} />
         </div>
       )}
+    </section>
+  )
+}
+
+/**
+ * En elevs mål i ett projekt: läroplanstexten, hur många gånger eleven har visat målet och i
+ * vilka redovisningar. Mål utan underlag syns tydligt (Texas skiss, 2026-11-07).
+ */
+export function StudentProjectGoals({
+  projectId,
+  studentId,
+  firstName,
+  reportPath,
+}: {
+  projectId: string
+  studentId: string
+  firstName: string
+  reportPath: (id: string) => string
+}) {
+  const query = useProjectGoals(projectId)
+  const [open, setOpen] = useState<string | null>(null)
+  const data = query.data
+  if (!data || data.goals.length === 0) return null
+  return (
+    <section className={styles.card} aria-labelledby="student-project-goals-title">
+      <div className={styles.head}>
+        <span className={styles.iconBox}>
+          <Target aria-hidden="true" />
+        </span>
+        <h2 id="student-project-goals-title" className={styles.title}>
+          {firstName}s mål <HelpPopover topic="goals" />
+        </h2>
+      </div>
+      <ul className={styles.goalList}>
+        {data.goals.map((g) => {
+          const cell = data.cells.find((c) => c.goal_id === g.id && c.student_id === studentId)
+          const count = cell?.count ?? 0
+          return (
+            <li key={g.id}>
+              <div className={styles.projectGoal}>
+                {count === 0 ? (
+                  <span className={styles.zero}>0</span>
+                ) : (
+                  <span className={styles.count} data-strong={count >= 4 ? '' : undefined}>
+                    {count}
+                  </span>
+                )}
+                <span className={styles.projectGoalText}>
+                  <span className={styles.goalName}>{g.name}</span>
+                  {g.curriculum && <span className={styles.muted}>Läroplanen: {g.curriculum}</span>}
+                </span>
+                {count === 0 ? (
+                  <span className={styles.muted}>Inget underlag än</span>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.linkButton}
+                    aria-expanded={open === g.id}
+                    onClick={() => setOpen(open === g.id ? null : g.id)}
+                  >
+                    {open === g.id ? 'Dölj' : 'Visa redovisningar'}
+                  </button>
+                )}
+              </div>
+              {open === g.id && cell && (
+                <div className={styles.goalDetail}>
+                  <EvidenceList items={cell.evidence} reportPath={reportPath} />
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }

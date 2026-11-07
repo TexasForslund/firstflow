@@ -32,8 +32,15 @@ from app.api.routes.reports import TextAnswer, _is_late, text_answers
 from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
-from app.models.project import Project, project_students, project_supervisors
-from app.models.report import CommentVisibility, Report, ReportComment, ReportRead, ReportStatus
+from app.models.project import Project, ProjectComment, project_students, project_supervisors
+from app.models.report import (
+    CommentVisibility,
+    Report,
+    ReportAnswer,
+    ReportComment,
+    ReportRead,
+    ReportStatus,
+)
 from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -400,6 +407,133 @@ def project_reports(
         )
         for report, count in rows
     ]
+
+
+# --- Flikarna Bilder och Kommentarer på projektsidan (Texas skiss, 2026-11-07) -------------
+
+
+class ProjectImage(BaseModel):
+    report_id: UUID
+    image_id: UUID
+    student: Ref
+    due_date: date
+
+
+@router.get("/{project_id}/images", response_model=list[ProjectImage])
+def project_images(project_id: UUID, db: DbSession, user: Member) -> list[ProjectImage]:
+    """Bilderna i projektets inskickade redovisningar, senaste redovisningen först."""
+    project = _project_for(db, user, project_id)
+    student_ids = [s.id for s in project.students if s.is_active]
+    rows = db.execute(
+        select(Report, ReportAnswer.image_ids)
+        .join(ReportAnswer, ReportAnswer.report_id == Report.id)
+        .where(
+            Report.project_id == project.id,
+            Report.status == ReportStatus.SUBMITTED,
+            Report.student_id.in_(student_ids),
+            ReportAnswer.image_ids.is_not(None),
+        )
+        .options(selectinload(Report.student))
+        .order_by(Report.submitted_at.desc())
+    ).all()
+    return [
+        ProjectImage(
+            report_id=report.id,
+            image_id=image_id,
+            student=_ref(report.student),
+            due_date=report.due_date,
+        )
+        for report, image_ids in rows
+        for image_id in image_ids
+    ]
+
+
+class ProjectCommentRead(BaseModel):
+    id: UUID
+    student: Ref
+    author: Ref
+    author_role: UserRole
+    body: str
+    visibility: CommentVisibility
+    created_at: datetime
+    is_mine: bool
+
+
+class ProjectCommentWrite(BaseModel):
+    student_id: UUID
+    body: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    visibility: CommentVisibility = CommentVisibility.ALL
+
+
+def _comment_read(comment: ProjectComment, students: dict[UUID, User], user: User):  # noqa: ANN202
+    return ProjectCommentRead(
+        id=comment.id,
+        student=_ref(students[comment.student_id]),
+        author=_ref(comment.author),
+        author_role=comment.author.role,
+        body=comment.body,
+        visibility=CommentVisibility(comment.visibility),
+        created_at=comment.created_at,
+        is_mine=comment.author_id == user.id,
+    )
+
+
+@router.get("/{project_id}/comments", response_model=list[ProjectCommentRead])
+def project_comments(project_id: UUID, db: DbSession, user: Member) -> list[ProjectCommentRead]:
+    """Kommentarer om elevernas arbete i projektet, äldst först. Bara läraren och handledarna
+    ser dem här."""
+    project = _project_for(db, user, project_id)
+    students = {s.id: s for s in project.students if s.is_active}
+    comments = db.scalars(
+        select(ProjectComment)
+        .where(
+            ProjectComment.project_id == project.id,
+            ProjectComment.student_id.in_(list(students)),
+        )
+        .options(selectinload(ProjectComment.author))
+        .order_by(ProjectComment.created_at)
+    ).all()
+    return [_comment_read(c, students, user) for c in comments]
+
+
+@router.post(
+    "/{project_id}/comments",
+    response_model=ProjectCommentRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_project_comment(
+    project_id: UUID, body: ProjectCommentWrite, db: DbSession, user: Member
+) -> ProjectCommentRead:
+    """Läraren eller handledaren skriver om en elevs arbete i projektet."""
+    project = _project_for(db, user, project_id)
+    students = {s.id: s for s in project.students if s.is_active}
+    if body.student_id not in students:
+        raise _not_found()
+    comment = ProjectComment(
+        project_id=project.id,
+        student_id=body.student_id,
+        author_id=user.id,
+        body=body.body,
+        visibility=body.visibility.value,
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return _comment_read(comment, students, user)
+
+
+@router.delete("/{project_id}/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project_comment(
+    project_id: UUID, comment_id: UUID, db: DbSession, user: Member
+) -> Response:
+    """Tar bort en egen kommentar."""
+    project = _project_for(db, user, project_id)
+    comment = db.get(ProjectComment, comment_id)
+    if comment is None or comment.project_id != project.id or comment.author_id != user.id:
+        raise _not_found()
+    db.delete(comment)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @student_router.get("", response_model=list[ProjectRead])
