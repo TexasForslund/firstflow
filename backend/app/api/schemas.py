@@ -18,6 +18,9 @@ class UserRead(BaseModel):
     role: UserRole
     school_id: UUID | None
     school_name: str | None
+    has_password: bool = Field(
+        description="Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan."
+    )
 
 
 class DisplayPreferences(BaseModel):

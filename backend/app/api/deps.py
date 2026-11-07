@@ -12,6 +12,7 @@ from app.core.security import hash_session_token
 from app.db.session import DbSession
 from app.models.school import School
 from app.models.user import User, UserRole, UserSession
+from app.services.audit import set_actor
 
 session_cookie = APIKeyCookie(name=settings.session_cookie_name, auto_error=False)
 
@@ -35,6 +36,8 @@ def get_current_user(db: DbSession, token: Annotated[str | None, Depends(session
             )
         )
         if user is not None:
+            # Ändringar i anropet loggas med användarens id (B6).
+            set_actor(db, user.id)
             return user
     raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Du är inte inloggad")
 

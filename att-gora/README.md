@@ -74,7 +74,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
   - Påminnelser om incheckning via e-post eller push.
   - B5b: förslag utifrån läroplanen och extra frågor per elev.
   - Gå igenom [ideer.md](ideer.md) med Texas.
-- **Hannes + Claude:** B6 (inbjudningar och lösenord). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare och kalender och schema. Kommentarer från handledaren är byggda (B16).
+- **Hannes + Claude:** B6 granskas: inbjudan när konton läggs in för hand, Glömt lösenord, begränsning av inloggningsförsök och logg över inloggningar och ändringar. Gränssnittet är F35 (Texas). B4 togs över av Texas + Claude 2026-10-26. Flera idéer i [ideer.md](ideer.md) rör dem: handledarinbjudan via länk, praktikplatser per lärare och kalender och schema. Kommentarer från handledaren är byggda (B16).
 - **Öppet att planera:** att radera elevkonton som har redovisningar (gallring och mellanarkiv). Se B5 i backend.md och punkt 9 i ideer.md.
 
 ## Instruktion till Claude

@@ -8,11 +8,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import require_roles
+from app.api.routes.invitations import invite_account
 from app.api.schemas import SchoolRead, UserRead
 from app.db.session import DbSession
 from app.models.school import School
 from app.models.user import User, UserRole
-from app.services.accounts import AccountCreate, create_account
+from app.services.accounts import InvitedAccountCreate, create_account
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
 
@@ -40,12 +41,17 @@ def list_schools(db: DbSession, _: Superadmin) -> list[School]:
 @router.post(
     "/schools/{school_id}/admins", response_model=UserRead, status_code=status.HTTP_201_CREATED
 )
-def create_school_admin(school_id: UUID, body: AccountCreate, db: DbSession, _: Superadmin) -> User:
-    """Skapar en skoladministratör. Lösenordet sätts via inbjudan (B6) eller create_user."""
+def create_school_admin(
+    school_id: UUID, body: InvitedAccountCreate, db: DbSession, superadmin: Superadmin
+) -> User:
+    """Skapar en skoladministratör. Med `send_invite` (standard) får hen ett mejl med en länk
+    där hen väljer sitt lösenord."""
     if db.get(School, school_id) is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Skolan finns inte")
     user = create_account(
         db, email=body.email, name=body.name, role=UserRole.SCHOOL_ADMIN, school_id=school_id
     )
     db.commit()
+    if body.send_invite:
+        invite_account(db, superadmin, user)
     return user

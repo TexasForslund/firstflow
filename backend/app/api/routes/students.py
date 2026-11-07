@@ -21,6 +21,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, selectinload
 
 from app.api.deps import require_roles, require_same_school
+from app.api.routes.invitations import invite_account
 from app.api.routes.placements import PlacementRead, placement_read
 from app.core import time
 from app.db.session import DbSession
@@ -29,7 +30,7 @@ from app.models.project import project_students
 from app.models.report import Report, ReportStatus
 from app.models.school_class import SchoolClass, class_students, class_teachers, teacher_students
 from app.models.user import User, UserRole
-from app.services.accounts import AccountCreate, create_account
+from app.services.accounts import InvitedAccountCreate, create_account
 
 router = APIRouter(prefix="/students", tags=["students"])
 
@@ -73,7 +74,7 @@ class StudentRead(BaseModel):
     project_count: int = Field(description="Projekt som eleven är med i")
 
 
-class StudentCreate(AccountCreate):
+class StudentCreate(InvitedAccountCreate):
     teacher_ids: list[UUID] = Field(default_factory=list, max_length=20)
     # En elev går i en klass (Texas, 2026-10-26). Listan har högst ett id.
     class_ids: list[UUID] = Field(default_factory=list, max_length=1)
@@ -242,7 +243,8 @@ def list_students(
 
 @router.post("", response_model=StudentRead, status_code=status.HTTP_201_CREATED)
 def create_student(body: StudentCreate, db: DbSession, user: SchoolAdmin) -> StudentRead:
-    """Skapar en elev på skolan, med lärare och klasser. Lösenordet sätts via inbjudan (B6)."""
+    """Skapar en elev på skolan, med lärare och klasser. Med `send_invite` (standard) får
+    eleven ett mejl med en länk där hen väljer sitt lösenord."""
     teachers = _school_teachers(db, user.school_id, body.teacher_ids)
     classes = []
     if body.class_ids:
@@ -273,6 +275,8 @@ def create_student(body: StudentCreate, db: DbSession, user: SchoolAdmin) -> Stu
             .on_conflict_do_nothing()
         )
     db.commit()
+    if body.send_invite:
+        invite_account(db, user, student)
     return _describe(db, [student])[0]
 
 

@@ -29,6 +29,10 @@ ROLES_WITHOUT_SCHOOL = frozenset({UserRole.SUPERADMIN, UserRole.SUPERVISOR})
 
 # Samma regel som i ROLES_WITHOUT_SCHOOL, som villkor i databasen.
 # role::text används eftersom nya enum-värden inte får jämföras i samma transaktion som de skapas.
+# Ett lösenord som aldrig godkänns av verify_password. Kontot har inget lösenord än, och
+# personen väljer ett via inbjudan eller Glömt lösenord (B6).
+NO_PASSWORD = "!"
+
 SCHOOL_MATCHES_ROLE_SQL = "(role::text IN ('superadmin', 'supervisor')) = (school_id IS NULL)"
 
 
@@ -73,6 +77,10 @@ class User(Base):
     @property
     def school_name(self) -> str | None:
         return self.school.name if self.school else None
+
+    @property
+    def has_password(self) -> bool:
+        return self.password_hash != NO_PASSWORD
 
 
 class UserSession(Base):

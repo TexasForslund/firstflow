@@ -54,6 +54,9 @@
               }
             }
           },
+          "429": {
+            "description": "För många misslyckade försök. Se Retry-After."
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -111,6 +114,138 @@
             "APIKeyCookie": []
           }
         ]
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Forgot Password",
+        "description": "Skickar ett mejl med en länk där användaren väljer ett nytt lösenord.\n\nSvarar alltid 204, även när e-posten inte har något konto, så att det inte går att se\nvilka adresser som finns. Mejlet skickas efter svaret, så att svarstiden inte heller\navslöjar det. En tidigare länk slutar gälla.",
+        "operationId": "forgot_password_api_auth_forgot_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "429": {
+            "description": "För många begäranden. Se Retry-After."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/reset-password/{token}": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Preview Password Reset",
+        "description": "Visar vilket konto länken gäller, så att sidan kan visa e-posten.",
+        "operationId": "preview_password_reset_api_auth_reset_password__token__get",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Reset Password",
+        "description": "Sätter det nya lösenordet, loggar ut kontot överallt och loggar in här.",
+        "operationId": "reset_password_api_auth_reset_password__token__post",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPassword"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/superadmin/schools": {
@@ -193,7 +328,7 @@
           "superadmin"
         ],
         "summary": "Create School Admin",
-        "description": "Skapar en skoladministratör. Lösenordet sätts via inbjudan (B6) eller create_user.",
+        "description": "Skapar en skoladministratör. Med `send_invite` (standard) får hen ett mejl med en länk\ndär hen väljer sitt lösenord.",
         "operationId": "create_school_admin_api_superadmin_schools__school_id__admins_post",
         "security": [
           {
@@ -217,7 +352,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountCreate"
+                "$ref": "#/components/schemas/InvitedAccountCreate"
               }
             }
           }
@@ -318,7 +453,7 @@
           "schools"
         ],
         "summary": "Create School User",
-        "description": "Skapar ett konto på skolan. Lösenordet sätts via inbjudan (B6).",
+        "description": "Skapar ett konto på skolan. Med `send_invite` (standard) får personen ett mejl med en\nlänk där hen väljer sitt lösenord.",
         "operationId": "create_school_user_api_schools__school_id__users_post",
         "security": [
           {
@@ -349,6 +484,65 @@
         },
         "responses": {
           "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schools/{school_id}/users/{user_id}/invite": {
+      "post": {
+        "tags": [
+          "schools"
+        ],
+        "summary": "Resend Account Invite",
+        "description": "Skickar inbjudan igen, med en ny länk. Den tidigare länken slutar gälla.\n\nBara för konton som inte har valt lösenord. Har personen ett lösenord använder hen\nGlömt lösenord (409).",
+        "operationId": "resend_account_invite_api_schools__school_id__users__user_id__invite_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "school_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "School Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -853,7 +1047,7 @@
           "students"
         ],
         "summary": "Create Student",
-        "description": "Skapar en elev på skolan, med lärare och klasser. Lösenordet sätts via inbjudan (B6).",
+        "description": "Skapar en elev på skolan, med lärare och klasser. Med `send_invite` (standard) får\neleven ett mejl med en länk där hen väljer sitt lösenord.",
         "operationId": "create_student_api_students_post",
         "security": [
           {
@@ -7939,6 +8133,20 @@
         ],
         "title": "FollowUpRead"
       },
+      "ForgotPassword": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ForgotPassword"
+      },
       "FormContent-Input": {
         "properties": {
           "questions": {
@@ -8567,6 +8775,34 @@
         ],
         "title": "InvitePreview"
       },
+      "InvitedAccountCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "send_invite": {
+            "type": "boolean",
+            "title": "Send Invite",
+            "description": "Skicka ett mejl med en länk där personen väljer sitt lösenord",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "name"
+        ],
+        "title": "InvitedAccountCreate"
+      },
       "LogicRule": {
         "properties": {
           "when": {
@@ -8761,6 +8997,11 @@
             ],
             "title": "School Name"
           },
+          "has_password": {
+            "type": "boolean",
+            "title": "Has Password",
+            "description": "Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan."
+          },
           "preferences": {
             "$ref": "#/components/schemas/DisplayPreferences-Output"
           }
@@ -8773,6 +9014,7 @@
           "role",
           "school_id",
           "school_name",
+          "has_password",
           "preferences"
         ],
         "title": "MeRead",
@@ -10471,6 +10713,34 @@
         ],
         "title": "ReportSummary"
       },
+      "ResetPassword": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "ResetPassword"
+      },
+      "ResetPreview": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "ResetPreview"
+      },
       "ReviewBody": {
         "properties": {
           "items": {
@@ -10681,6 +10951,12 @@
             "maxLength": 200,
             "minLength": 1,
             "title": "Name"
+          },
+          "send_invite": {
+            "type": "boolean",
+            "title": "Send Invite",
+            "description": "Skicka ett mejl med en länk där personen väljer sitt lösenord",
+            "default": true
           },
           "role": {
             "type": "string",
@@ -11215,6 +11491,12 @@
             "maxLength": 200,
             "minLength": 1,
             "title": "Name"
+          },
+          "send_invite": {
+            "type": "boolean",
+            "title": "Send Invite",
+            "description": "Skicka ett mejl med en länk där personen väljer sitt lösenord",
+            "default": true
           },
           "teacher_ids": {
             "items": {
@@ -12214,6 +12496,11 @@
               }
             ],
             "title": "School Name"
+          },
+          "has_password": {
+            "type": "boolean",
+            "title": "Has Password",
+            "description": "Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan."
           }
         },
         "type": "object",
@@ -12223,7 +12510,8 @@
           "name",
           "role",
           "school_id",
-          "school_name"
+          "school_name",
+          "has_password"
         ],
         "title": "UserRead"
       },
