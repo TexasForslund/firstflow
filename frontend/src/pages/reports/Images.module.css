@@ -1,0 +1,275 @@
+/* Bildfrågor (Texas skiss "Fråga med bilder", 2026-11-07). Inga skuggor. */
+
+/* --- Eleven svarar ----------------------------------------------------------------------- */
+.input {
+  display: grid;
+  gap: var(--space-3);
+  width: min(100%, 32rem);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 50%;
+  background: rgb(7 4 20 / 70%);
+  color: #fff;
+  cursor: pointer;
+}
+
+.remove svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid var(--color-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.count {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.addLarge,
+.addSmall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  border: 2px dashed var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.addLarge {
+  flex-direction: column;
+  min-height: 13rem;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.addSmall {
+  min-height: 3.25rem;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: var(--radius-full);
+}
+
+.addLarge:disabled,
+.addSmall:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.addIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addLarge .addIcon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.addIcon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.addLarge .addIcon svg {
+  width: 1.625rem;
+  height: 1.625rem;
+}
+
+.addText {
+  font-weight: 600;
+}
+
+.addHint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+/* --- Läraren och handledaren läser ------------------------------------------------------- */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--space-2);
+  max-width: 40rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.galleryButton {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+  cursor: zoom-in;
+}
+
+.galleryButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.lightbox {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: var(--space-4);
+  border: none;
+  background: transparent;
+  color: #fff;
+}
+
+.lightbox::backdrop {
+  background: rgb(7 4 20 / 88%);
+}
+
+.lightbox[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.lightboxBody {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.big {
+  max-width: min(100%, 75rem);
+  max-height: calc(100dvh - 7rem);
+  min-width: 0;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.lightboxClose,
+.lightboxNav {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 15%);
+  color: #fff;
+  cursor: pointer;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+}
+
+.lightboxClose svg,
+.lightboxNav svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.lightboxCount {
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 40rem) {
+  .lightboxNav {
+    position: absolute;
+    bottom: var(--space-4);
+  }
+
+  .lightboxNav:first-child {
+    left: var(--space-4);
+  }
+
+  .lightboxNav:last-child {
+    right: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}

@@ -1,4 +1,4 @@
-import { AlignLeft, ListChecks, Quote, Star, TextCursorInput, ToggleLeft, type LucideIcon } from 'lucide-react'
+import { AlignLeft, Images, ListChecks, Quote, Star, TextCursorInput, ToggleLeft, type LucideIcon } from 'lucide-react'
 
 import type { LogicRule, Question, QuestionType } from '../../../api/forms'
 
@@ -28,6 +28,12 @@ export const QUESTION_TYPES: Record<QuestionType, TypeInfo> = {
   },
   yes_no: { label: 'Ja/Nej', description: 'Ett enkelt ja eller nej', icon: ToggleLeft, group: 'choice' },
   rating: { label: 'Betyg', description: 'Stjärnor från 1 till 5', icon: Star, group: 'rating' },
+  images: {
+    label: 'Bilder',
+    description: 'Eleven tar foton eller väljer bilder',
+    icon: Images,
+    group: 'other',
+  },
   statement: { label: 'Meddelande', description: 'Text utan svar, t.ex. en påminnelse', icon: Quote, group: 'other' },
 }
 
@@ -35,13 +41,16 @@ export const TYPE_GROUPS: { id: TypeGroup; label: string; types: QuestionType[] 
   { id: 'text', label: 'Text', types: ['long_text', 'short_text'] },
   { id: 'choice', label: 'Val', types: ['choice', 'yes_no'] },
   { id: 'rating', label: 'Betyg', types: ['rating'] },
-  { id: 'other', label: 'Övrigt', types: ['statement'] },
+  { id: 'other', label: 'Övrigt', types: ['images', 'statement'] },
 ]
 
 /** Bokstäverna framför alternativen, som i Typeform. */
 export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 export const RATING_MAX = 5
+
+/** Högst antal bilder som läraren kan välja för en bildfråga. */
+export const IMAGES_MAX = 10
 
 export function newId(): string {
   // randomUUID finns bara i säkra sammanhang (https eller localhost). Annars byggs id:t själv.
@@ -77,6 +86,8 @@ export function newQuestion(type: QuestionType): Question {
       return { ...base, type, required: true, logic: [], goals: [] }
     case 'rating':
       return { ...base, type, required: true, logic: [] }
+    case 'images':
+      return { ...base, type, required: true, max_images: 5 }
     case 'statement':
       return { ...base, type }
   }

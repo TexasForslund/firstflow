@@ -5,6 +5,7 @@ import type { Question } from '../../api/forms'
 import type { AnswerValue } from '../../api/reports'
 import { LETTERS } from '../classes/questions/questionTypes'
 import { isAnswered, isRequired, visiblePath, type Answers } from './answers'
+import { ImagesInput } from './ImagesInput'
 import styles from './ReportStepper.module.css'
 
 /** Hur länge ett val syns innan nästa fråga kommer (pulsen är 250 ms). */
@@ -27,6 +28,8 @@ interface Props {
    * Skicka in finns då på det steget, med `submitLabel` som text.
    */
   finalStep?: { content: ReactNode; submitLabel?: string }
+  /** Redovisningen, för bildfrågor. Saknas i förhandsgranskningen. */
+  reportId?: string
 }
 
 /**
@@ -45,6 +48,7 @@ export function ReportStepper({
   done,
   badge,
   finalStep,
+  reportId,
 }: Props) {
   const [answers, setAnswers] = useState<Answers>(initialAnswers)
   const answersRef = useRef(answers)
@@ -76,7 +80,7 @@ export function ReportStepper({
   const stepRef = useRef<HTMLElement>(null)
   // Fokus till svarsfältet om frågan har ett, annars till rubriken så att skärmläsaren läser frågan.
   useEffect(() => {
-    const field = stepRef.current?.querySelector<HTMLElement>('input, textarea')
+    const field = stepRef.current?.querySelector<HTMLElement>('input:not([type=file]), textarea')
     ;(field ?? headingRef.current ?? stepRef.current?.querySelector<HTMLElement>('h2'))?.focus()
   }, [index, finished])
 
@@ -95,7 +99,13 @@ export function ReportStepper({
     const current = answersRef.current
     const answer = current[question.id]
     if (isRequired(question) && !isAnswered(question, answer)) {
-      setError(question.type === 'choice' ? 'Välj ett alternativ för att gå vidare' : 'Svara på frågan för att gå vidare')
+      setError(
+        question.type === 'choice'
+          ? 'Välj ett alternativ för att gå vidare'
+          : question.type === 'images'
+            ? 'Lägg till minst en bild för att gå vidare'
+            : 'Svara på frågan för att gå vidare',
+      )
       return
     }
     setBusy(true)
@@ -201,7 +211,9 @@ export function ReportStepper({
   const touch = useRef<{ x: number; y: number } | null>(null)
   function onTouchStart(event: TouchEvent) {
     const target = event.target as HTMLElement
-    touch.current = target.closest('input, textarea') ? null : { x: event.touches[0].clientX, y: event.touches[0].clientY }
+    touch.current = target.closest('input, textarea')
+      ? null
+      : { x: event.touches[0].clientX, y: event.touches[0].clientY }
   }
   function onTouchEnd(event: TouchEvent) {
     if (!touch.current) return
@@ -264,7 +276,13 @@ export function ReportStepper({
             )}
           </section>
           <footer className={styles.bottom}>
-            <button type="button" className={styles.back} onClick={goBack} disabled={busy} aria-label="Föregående fråga">
+            <button
+              type="button"
+              className={styles.back}
+              onClick={goBack}
+              disabled={busy}
+              aria-label="Föregående fråga"
+            >
               <ChevronLeft aria-hidden="true" />
               <span>Föregående</span>
             </button>
@@ -293,6 +311,7 @@ export function ReportStepper({
             <div className={styles.answer}>
               <AnswerInput
                 question={question}
+                reportId={reportId}
                 answer={answers[question.id]}
                 onChange={(value) => setAnswer(question.id, value)}
                 onChoose={(value) => chooseAndAdvance(question.id, value)}
@@ -332,11 +351,13 @@ export function ReportStepper({
 
 function AnswerInput({
   question,
+  reportId,
   answer,
   onChange,
   onChoose,
 }: {
   question: Question
+  reportId?: string
   answer: AnswerValue | undefined
   onChange: (value: AnswerValue) => void
   onChoose: (value: AnswerValue) => void
@@ -363,7 +384,7 @@ function AnswerInput({
             aria-label={question.title}
             maxLength={5000}
             rows={2}
-              onChange={(e) => onChange({ text: e.target.value })}
+            onChange={(e) => onChange({ text: e.target.value })}
           />
           <p className={styles.hint}>Shift + Enter ger ny rad</p>
         </>
@@ -410,6 +431,8 @@ function AnswerInput({
           })}
         </div>
       )
+    case 'images':
+      return <ImagesInput question={question} reportId={reportId} answer={answer} onChange={onChange} />
     case 'statement':
       return null
   }

@@ -16,6 +16,8 @@ export function isAnswered(question: Question, answer: AnswerValue | undefined):
       return answer.boolean !== null && answer.boolean !== undefined
     case 'rating':
       return !!answer.rating
+    case 'images':
+      return (answer.image_ids?.length ?? 0) > 0
     case 'statement':
       return true
   }
@@ -77,6 +79,10 @@ export function answerText(question: Question, answer: AnswerValue | undefined):
       return answer.boolean ? 'Ja' : 'Nej'
     case 'rating':
       return `${answer.rating} av 5`
+    case 'images': {
+      const n = answer.image_ids?.length ?? 0
+      return n === 1 ? '1 bild' : `${n} bilder`
+    }
     case 'statement':
       return ''
   }

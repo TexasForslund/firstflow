@@ -33,6 +33,7 @@ export function AnswerReport() {
       title={reportTitle(detail.due_date)}
       subtitle={detail.class_name}
       questions={detail.questions}
+      reportId={reportId}
       initialAnswers={initialAnswers}
       onSave={async (questionId, value) => {
         await save.mutateAsync({ questionId, value })

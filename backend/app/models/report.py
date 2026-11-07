@@ -22,6 +22,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     SmallInteger,
     String,
     Text,
@@ -31,7 +32,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, deferred, mapped_column, relationship
 
 from app.db.base import Base
 from app.models.project import Project
@@ -144,7 +145,8 @@ class ReportAnswer(Base):
         CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),
         # Ett svar har ett värde: text, flerval (med eller utan Annat), ja/nej eller betyg.
         CheckConstraint(
-            "num_nonnulls(text, boolean, rating, coalesce(choice_ids::text, other_text)) = 1",
+            "num_nonnulls(text, boolean, rating, coalesce(choice_ids::text, other_text), "
+            "image_ids) = 1",
             name="one_value",
         ),
     )
@@ -159,9 +161,33 @@ class ReportAnswer(Base):
     other_text: Mapped[str | None] = mapped_column(Text)
     boolean: Mapped[bool | None] = mapped_column(Boolean)
     rating: Mapped[int | None] = mapped_column(SmallInteger)
+    # Bilderna i ordning (frågetypen Bilder). Se `ReportImage`.
+    image_ids: Mapped[list[uuid.UUID] | None] = mapped_column(ARRAY(Uuid))
     answered_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class ReportImage(Base):
+    """En bild som eleven har laddat upp till en fråga av typen Bilder (idé 12).
+
+    Bilden är redan mindre (längsta sidan 1600 px) och sparad som WebP utan platsdata. Den
+    räknas som svar först när dess id finns i svarets `image_ids`. Bilder som inte används tas
+    bort när svaret sparas och när redovisningen skickas in.
+    """
+
+    __tablename__ = "report_images"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    report_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("reports.id", ondelete="CASCADE"), index=True
+    )
+    question_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    width: Mapped[int] = mapped_column(Integer)
+    height: Mapped[int] = mapped_column(Integer)
+    size: Mapped[int] = mapped_column(Integer)
+    data: Mapped[bytes] = deferred(mapped_column(LargeBinary, nullable=False))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class ReportRead(Base):

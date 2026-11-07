@@ -503,3 +503,19 @@ Texas, 2026-11-07: "Handledaren ska typ kunna se samma som läraren ser." Skisse
 - Elevens namn öppnar elevsidan från Närvaro och från en redovisning.
 - Backend: `GET /api/supervisor/students/{id}`, `/attendance` och `/reports`. 404 om eleven inte har eller har haft praktik hos handledaren.
 
+## F39. Fråga med bilder ✅ Klar (PR #77)
+
+Texas, 2026-11-07. Skissen heter "Fråga med bilder". Nästan alla bilder tas med mobilen och är stora, så de måste komprimeras.
+
+- **Läraren:** ny frågetyp "Bilder" under Övrigt, med "Högst antal bilder" (1–10, förvalt 5) och Obligatorisk.
+- **Eleven:** "Ta foto eller välj bilder" öppnar kameran eller bilderna i mobilen. Bilderna visas som rutor med kryss för att ta bort. Varje bild laddas upp direkt.
+- **Komprimering i två steg:**
+  - I mobilen görs bilden mindre (längsta sidan 1600 px, JPEG) innan den skickas. En bild från en iPhone på 5–12 MB blir några hundra kB.
+  - Servern gör samma sak igen med Pillow och sparar bilden som WebP utan EXIF, alltså utan platsdata. Bilden vrids rätt enligt EXIF först.
+- **Läraren och handledaren:** bilderna visas i redovisningen. Ett klick visar bilden stor, med pilar för att bläddra.
+- **Backend:**
+  - Tabellen `report_images` och kolumnen `report_answers.image_ids`.
+  - `POST`, `DELETE` och `GET /api/reports/{id}/images`.
+  - Bilder som inte används tas bort när redovisningen skickas in.
+- **Nytt beroende:** `pillow`.
+

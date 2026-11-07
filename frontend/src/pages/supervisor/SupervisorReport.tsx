@@ -75,7 +75,7 @@ export function SupervisorReport() {
         <div className={styles.answers}>
           {shown.map((question) => (
             <Collapsible key={question.id} title={question.title}>
-              <AnswerContent question={question} answer={answers.get(question.id)} />
+              <AnswerContent question={question} answer={answers.get(question.id)} reportId={reportId} />
             </Collapsible>
           ))}
         </div>

@@ -29,6 +29,7 @@ from app.models.report import (  # noqa: F401
     Report,
     ReportAnswer,
     ReportComment,
+    ReportImage,
     ReportRead,
 )
 from app.models.school import School  # noqa: F401

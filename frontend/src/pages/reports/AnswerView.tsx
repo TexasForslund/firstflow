@@ -7,6 +7,7 @@ import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, HelpPopover } from '../../components'
 import { answerText } from './answers'
 import styles from './AnswerView.module.css'
+import { ImageGallery } from './ImageGallery'
 
 /** Svaren i en inskickad redovisning, fråga för fråga. Används av eleven och läraren. */
 export function AnswerView({ report }: { report: ReportDetail }) {
@@ -23,7 +24,7 @@ export function AnswerView({ report }: { report: ReportDetail }) {
           <div key={question.id} className={styles.item}>
             <dt className={styles.question}>{question.title}</dt>
             <dd className={styles.answer}>
-              <AnswerContent question={question} answer={answer} />
+              <AnswerContent question={question} answer={answer} reportId={report.id} />
             </dd>
           </div>
         )
@@ -32,12 +33,22 @@ export function AnswerView({ report }: { report: ReportDetail }) {
   )
 }
 
-/** Ett svar: text, alternativ som etiketter eller betyg som stjärnor. */
-export function AnswerContent({ question, answer }: { question: Question; answer: AnswerRead | undefined }) {
+/** Ett svar: text, alternativ som etiketter, betyg som stjärnor eller bilder. */
+export function AnswerContent({
+  question,
+  answer,
+  reportId,
+}: {
+  question: Question
+  answer: AnswerRead | undefined
+  reportId: string
+}) {
   return (
     <>
       {!answer ? (
         <span className={styles.none}>Inget svar</span>
+      ) : question.type === 'images' ? (
+        <ImageGallery reportId={reportId} imageIds={answer.image_ids ?? []} />
       ) : question.type === 'rating' ? (
         <span className={styles.stars} aria-label={`${answer.rating} av 5`}>
           {[1, 2, 3, 4, 5].map((n) => (

@@ -25,6 +25,7 @@ MAX_QUESTIONS = 50
 MAX_CHOICES = 20
 MAX_RULES = 20
 MAX_TRACKS = 20
+MAX_IMAGES = 10
 
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 Description = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)]
@@ -38,6 +39,7 @@ class QuestionType(StrEnum):
     YES_NO = "yes_no"
     RATING = "rating"
     STATEMENT = "statement"  # text utan svar
+    IMAGES = "images"  # eleven tar foton eller väljer bilder (idé 12)
 
 
 YES = "yes"
@@ -123,6 +125,14 @@ class RatingQuestion(_Question):
     logic: list[LogicRule] = Field(default_factory=list, max_length=MAX_RULES)
 
 
+class ImagesQuestion(_Question):
+    """Eleven tar foton eller väljer bilder. Bilderna görs mindre och sparas som WebP."""
+
+    type: Literal[QuestionType.IMAGES]
+    required: bool = True
+    max_images: int = Field(default=5, ge=1, le=MAX_IMAGES, description="Högst antal bilder")
+
+
 class StatementQuestion(_Question):
     """Ett meddelande till eleven, t.ex. en påminnelse om säkerhet. Har inget svar."""
 
@@ -135,6 +145,7 @@ Question = Annotated[
     | ChoiceQuestion
     | YesNoQuestion
     | RatingQuestion
+    | ImagesQuestion
     | StatementQuestion,
     Field(discriminator="type"),
 ]
@@ -255,6 +266,7 @@ class AnswerValue(BaseModel):
     - Flerval: `choice_ids` och, om "Annat" är tillåtet, `other_text`
     - Ja/Nej: `boolean`
     - Betyg: `rating` (1–5)
+    - Bilder: `image_ids`, i ordning. Bilderna laddas upp först, var för sig
     Ett tomt svar (t.ex. bara mellanslag) räknas som obesvarat.
     """
 
@@ -267,6 +279,7 @@ class AnswerValue(BaseModel):
     other_text: str | None = Field(default=None, max_length=OTHER_TEXT_MAX)
     boolean: bool | None = None
     rating: int | None = Field(default=None, ge=1, le=RATING_MAX)
+    image_ids: list[UUID] | None = Field(default=None, max_length=MAX_IMAGES)
 
 
 _ALLOWED_FIELDS = {
@@ -275,6 +288,7 @@ _ALLOWED_FIELDS = {
     QuestionType.CHOICE: {"choice_ids", "other_text"},
     QuestionType.YES_NO: {"boolean"},
     QuestionType.RATING: {"rating"},
+    QuestionType.IMAGES: {"image_ids"},
     QuestionType.STATEMENT: set(),
 }
 
@@ -315,6 +329,14 @@ def normalize_answer(question: Any, answer: AnswerValue) -> AnswerValue | None:
 
         case QuestionType.RATING:
             return None if answer.rating is None else AnswerValue(rating=answer.rating)
+
+        case QuestionType.IMAGES:
+            ids = list(dict.fromkeys(answer.image_ids or []))
+            if not ids:
+                return None
+            if len(ids) > question.max_images:
+                raise AnswerError(f"Du kan skicka högst {question.max_images} bilder")
+            return AnswerValue(image_ids=ids)
 
     raise AnswerError("Okänd frågetyp")  # pragma: no cover
 

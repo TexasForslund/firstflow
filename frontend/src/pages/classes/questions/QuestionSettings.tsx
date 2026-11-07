@@ -4,9 +4,9 @@ import { useId, useState } from 'react'
 import type { LogicRule, Question } from '../../../api/forms'
 import { useCreateGoal, type Goal } from '../../../api/goals'
 import type { Track } from '../../../api/tracks'
-import { HelpPopover, Switch } from '../../../components'
+import { HelpPopover, SelectField, Switch } from '../../../components'
 import styles from './FormBuilder.module.css'
-import { answerOptions, hasLogic, QUESTION_TYPES, questionTitle } from './questionTypes'
+import { answerOptions, hasLogic, IMAGES_MAX, QUESTION_TYPES, questionTitle } from './questionTypes'
 import { TypeBadge } from './TypeBadge'
 
 interface Props {
@@ -54,6 +54,22 @@ export function QuestionSettings({
             checked={question.required}
             onChange={(required) => onChange({ ...question, required })}
           />
+          {question.type === 'images' && (
+            <>
+              <SelectField
+                label="Högst antal bilder"
+                value={String(question.max_images)}
+                onChange={(v) => onChange({ ...question, max_images: Number(v) })}
+              >
+                {Array.from({ length: IMAGES_MAX }, (_, i) => (
+                  <option key={i} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </SelectField>
+              <p className={styles.settingsHint}>Bilderna görs mindre och sparas som WebP. Platsdata tas bort.</p>
+            </>
+          )}
           {question.type === 'choice' && (
             <>
               <Switch

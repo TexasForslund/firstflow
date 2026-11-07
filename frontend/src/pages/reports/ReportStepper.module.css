@@ -312,7 +312,9 @@
   width: 2.5rem;
   height: 2.5rem;
   color: var(--color-star-empty);
-  transition: color 150ms, fill 150ms;
+  transition:
+    color 150ms,
+    fill 150ms;
 }
 
 .starFilled svg {
