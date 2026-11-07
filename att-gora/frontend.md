@@ -519,3 +519,20 @@ Texas, 2026-11-07. Skissen heter "Fråga med bilder". Nästan alla bilder tas me
   - Bilder som inte används tas bort när redovisningen skickas in.
 - **Nytt beroende:** `pillow`.
 
+## F40. Projektsidan med elevval och flikar ✅ Klar (PR #78)
+
+Texas, 2026-11-07, skissen "Sammanfattning av projekt", steg 1 av idé 12:6. Steg 2 (sammanfattningen) och steg 3 (elevens egen vy) står i `ideer.md`.
+
+- **Elevval överst:** "Elev: Alla, Elsa, Hugo …". Det gäller alla flikar och döljs när projektet bara har en elev. Valet och fliken står i adressen (`?elev=…&flik=…`), så att länken går att dela.
+- **Flikarna** Översikt, Redovisningar, Bilder och Kommentarer, med antal. Pilarna på tangentbordet byter flik.
+- **Översikt:**
+  - Med alla elever: fakta, målrutan (där ett klick på ett namn väljer eleven), Om projektet, Elever och Vem kan ändra.
+  - Med en elev: elevens mål med läroplanstext, antal och redovisningarna bakom, och Om projektet.
+- **Redovisningar:** som förut. Handledaren kan nu också öppna redovisningen, i sin egen vy.
+- **Bilder:** alla bilder från redovisningarna i projektet. Ett klick visar bilden stor, med elev, dag och "Öppna redovisningen".
+- **Kommentarer:** en tråd per elev, för läraren och handledaren, med "Alla ser" eller "Bara lärare och handledare". Samma komponent som kommentarerna på redovisningar (`CommentThread`).
+- **Backend:**
+  - Tabellen `project_comments`.
+  - `GET` och `POST /api/projects/{id}/comments` och `DELETE /api/projects/{id}/comments/{comment_id}` (bara egna kommentarer).
+  - `GET /api/projects/{id}/images`.
+

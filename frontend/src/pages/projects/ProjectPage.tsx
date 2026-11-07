@@ -1,21 +1,39 @@
 import { FolderKanban, MessageSquare, Pencil } from 'lucide-react'
-import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { useState, type KeyboardEvent } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 
-import { useProject, useProjectReports, type Project, type ProjectReport } from '../../api/projects'
+import {
+  useProject,
+  useProjectComments,
+  useProjectImages,
+  useProjectReports,
+  type Project,
+  type ProjectReport,
+} from '../../api/projects'
 import { Avatar, Button, ButtonLink, CompanyLogo } from '../../components'
 import { useCurrentUser } from '../../auth/useCurrentUser'
-import { ProjectGoalsTable } from '../goals/GoalViews'
+import { ProjectGoalsTable, StudentProjectGoals } from '../goals/GoalViews'
+import { CommentsTab, ImagesTab } from './ProjectTabs'
 import { ProjectDialog } from './ProjectDialog'
 import styles from './ProjectPage.module.css'
 import { daysLeftText, longDate, projectTone, reportsWord } from './projectText'
 
 const PAGE = 10
 
+type Tab = 'overview' | 'reports' | 'images' | 'comments'
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'overview', label: 'Översikt' },
+  { id: 'reports', label: 'Redovisningar' },
+  { id: 'images', label: 'Bilder' },
+  { id: 'comments', label: 'Kommentarer' },
+]
+
 /**
- * Projektets egen sida (Texas, 2026-10-29). Redovisningarna i projektet till vänster, om
- * projektet, eleverna och vem som kan ändra till höger. Läraren och inbjudna handledare ser
- * sidan.
+ * Projektets egen sida (Texas, 2026-10-29). Läraren och inbjudna handledare ser den.
+ *
+ * Överst väljer man elev och sedan flik: Översikt, Redovisningar, Bilder och Kommentarer
+ * (Texas skiss "Sammanfattning av projekt", 2026-11-07). Valet av elev gäller alla flikar, så att
+ * man ser en elevs helhet i projektet. Med bara en elev visas inget elevval.
  */
 export function ProjectPage() {
   const { projectId = '' } = useParams()
@@ -23,6 +41,7 @@ export function ProjectPage() {
   const navigate = useNavigate()
   const { data: user } = useCurrentUser()
   const [editing, setEditing] = useState(false)
+  const [params, setParams] = useSearchParams()
 
   if (query.isPending) return <p className={styles.state}>Laddar projektet…</p>
   if (query.isError) {
@@ -40,6 +59,24 @@ export function ProjectPage() {
   const others = [...project.students, ...project.supervisors, project.owner]
     .map((p) => p.id)
     .filter((id, i, all) => id !== user?.id && all.indexOf(id) === i)
+  const single = project.students.length === 1
+  const chosen = project.students.find((s) => s.id === params.get('elev'))
+  const student = single ? project.students[0] : chosen
+  const tab = (TABS.find((t) => t.id === params.get('flik'))?.id ?? 'overview') as Tab
+  const reportPath = (id: string) => (user?.role === 'supervisor' ? `/student-reports/${id}` : `/reports/${id}`)
+
+  function choose(next: { elev?: string | null; flik?: Tab }) {
+    const p = new URLSearchParams(params)
+    if (next.elev !== undefined) {
+      if (next.elev) p.set('elev', next.elev)
+      else p.delete('elev')
+    }
+    if (next.flik) {
+      if (next.flik === 'overview') p.delete('flik')
+      else p.set('flik', next.flik)
+    }
+    setParams(p, { replace: true })
+  }
 
   return (
     <div className={styles.page}>
@@ -79,72 +116,207 @@ export function ProjectPage() {
         </Button>
       </header>
 
-      <Facts project={project} />
-
-      <ProjectGoalsTable
-        projectId={project.id}
-        reportPath={(id) => (user?.role === 'supervisor' ? `/student-reports/${id}` : `/reports/${id}`)}
-      />
-
-      <div className={styles.columns}>
-        <ReportsSection project={project} />
-
-        <div className={styles.side}>
-          <section className={styles.box} aria-labelledby="about-title">
-            <h2 id="about-title" className={styles.boxTitle}>
-              Om projektet
-            </h2>
-            <p className={styles.description}>{project.description || 'Ingen beskrivning än.'}</p>
-          </section>
-
-          <section className={styles.box} aria-labelledby="students-title">
-            <h2 id="students-title" className={styles.boxTitle}>
-              Elever
-            </h2>
-            {project.students.length === 0 && <p className={styles.muted}>Inga elever i projektet än.</p>}
-            <ul className={styles.people}>
-              {project.students.map((s) => {
-                const inner = (
-                  <>
-                    <Avatar name={s.name} size="sm" />
-                    <span className={styles.personName}>{s.name}</span>
-                  </>
-                )
-                return (
-                  <li key={s.id}>
-                    {project.is_owner ? (
-                      <Link to={`/students/${s.id}`} className={styles.person}>
-                        {inner}
-                      </Link>
-                    ) : (
-                      <span className={styles.person}>{inner}</span>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-
-          <section className={styles.box} aria-labelledby="who-title">
-            <h2 id="who-title" className={styles.boxTitle}>
-              Vem kan ändra
-            </h2>
-            <p className={styles.muted}>
-              {project.owner.name} (lärare, skapade projektet)
-              {project.supervisors.length > 0 &&
-                ` och ${project.supervisors.map((s) => s.name).join(', ')} (handledare${
-                  project.workplace ? `, ${project.workplace.name}` : ''
-                })`}
-              . Bara läraren ändrar vilka elever som är med.
-            </p>
-          </section>
+      {project.students.length > 1 && (
+        <div role="group" aria-label="Elev" className={styles.picker}>
+          <span className={styles.pickerLabel}>Elev</span>
+          <button
+            type="button"
+            className={styles.segment}
+            aria-pressed={!student}
+            onClick={() => choose({ elev: null })}
+          >
+            Alla
+          </button>
+          {project.students.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={styles.segment}
+              aria-pressed={student?.id === s.id}
+              onClick={() => choose({ elev: s.id })}
+            >
+              {s.name.split(' ')[0]}
+            </button>
+          ))}
         </div>
+      )}
+
+      <Tabs project={project} studentId={student?.id} tab={tab} onTab={(flik) => choose({ flik })} />
+
+      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className={styles.panel}>
+        {tab === 'overview' &&
+          (student ? (
+            <StudentOverview project={project} student={student} reportPath={reportPath} />
+          ) : (
+            <Overview project={project} reportPath={reportPath} onStudent={(id) => choose({ elev: id })} />
+          ))}
+        {tab === 'reports' && <ReportsSection project={project} studentId={student?.id} reportPath={reportPath} />}
+        {tab === 'images' && <ImagesTab project={project} studentId={student?.id} reportPath={reportPath} />}
+        {tab === 'comments' && <CommentsTab project={project} studentId={student?.id} />}
       </div>
 
       {editing && (
         <ProjectDialog project={project} onClose={() => setEditing(false)} onDeleted={() => navigate('/projects')} />
       )}
     </div>
+  )
+}
+
+/** Flikarna, med antal för den valda eleven. Pilarna flyttar mellan flikarna. */
+function Tabs({
+  project,
+  studentId,
+  tab,
+  onTab,
+}: {
+  project: Project
+  studentId?: string
+  tab: Tab
+  onTab: (tab: Tab) => void
+}) {
+  const reports = useProjectReports(project.id, studentId)
+  const images = useProjectImages(project.id)
+  const comments = useProjectComments(project.id)
+  const mine = <T extends { student: { id: string } }>(rows: T[] | undefined) =>
+    rows?.filter((r) => !studentId || r.student.id === studentId).length
+  const counts: Record<Tab, number | undefined> = {
+    overview: undefined,
+    reports: studentId ? reports.data?.length : project.report_count,
+    images: mine(images.data),
+    comments: mine(comments.data),
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const i = TABS.findIndex((t) => t.id === tab)
+    const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+    if (!step) return
+    event.preventDefault()
+    const next = TABS[(i + step + TABS.length) % TABS.length]
+    onTab(next.id)
+    document.getElementById(`tab-${next.id}`)?.focus()
+  }
+
+  return (
+    <div role="tablist" aria-label="Projektet" className={styles.tabs} onKeyDown={onKeyDown}>
+      {TABS.map((t) => (
+        <button
+          key={t.id}
+          id={`tab-${t.id}`}
+          type="button"
+          role="tab"
+          aria-selected={tab === t.id}
+          aria-controls={`panel-${t.id}`}
+          tabIndex={tab === t.id ? 0 : -1}
+          className={styles.tab}
+          onClick={() => onTab(t.id)}
+        >
+          {t.label}
+          {counts[t.id] !== undefined && counts[t.id]! > 0 && <span className={styles.tabCount}>{counts[t.id]}</span>}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Översikten för alla elever: fakta, målen och om projektet. */
+function Overview({
+  project,
+  reportPath,
+  onStudent,
+}: {
+  project: Project
+  reportPath: (id: string) => string
+  onStudent: (id: string) => void
+}) {
+  return (
+    <>
+      <Facts project={project} />
+      <ProjectGoalsTable projectId={project.id} reportPath={reportPath} onStudent={onStudent} />
+      <div className={styles.boxes}>
+        <About project={project} />
+        <section className={styles.box} aria-labelledby="students-title">
+          <h2 id="students-title" className={styles.boxTitle}>
+            Elever
+          </h2>
+          {project.students.length === 0 && <p className={styles.muted}>Inga elever i projektet än.</p>}
+          <ul className={styles.people}>
+            {project.students.map((s) => (
+              <li key={s.id}>
+                <button type="button" className={styles.person} onClick={() => onStudent(s.id)}>
+                  <Avatar name={s.name} size="sm" />
+                  <span className={styles.personName}>{s.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section className={styles.box} aria-labelledby="who-title">
+          <h2 id="who-title" className={styles.boxTitle}>
+            Vem kan ändra
+          </h2>
+          <p className={styles.muted}>
+            {project.owner.name} (lärare, skapade projektet)
+            {project.supervisors.length > 0 &&
+              ` och ${project.supervisors.map((s) => s.name).join(', ')} (handledare${
+                project.workplace ? `, ${project.workplace.name}` : ''
+              })`}
+            . Bara läraren ändrar vilka elever som är med.
+          </p>
+        </section>
+      </div>
+    </>
+  )
+}
+
+function About({ project }: { project: Project }) {
+  return (
+    <section className={styles.box} aria-labelledby="about-title">
+      <h2 id="about-title" className={styles.boxTitle}>
+        Om projektet
+      </h2>
+      <p className={styles.description}>{project.description || 'Ingen beskrivning än.'}</p>
+    </section>
+  )
+}
+
+/** En elevs helhet i projektet: målen med läroplanen och om projektet. */
+function StudentOverview({
+  project,
+  student,
+  reportPath,
+}: {
+  project: Project
+  student: Project['students'][number]
+  reportPath: (id: string) => string
+}) {
+  const { data: user } = useCurrentUser()
+  const reports = useProjectReports(project.id, student.id)
+  const latest = reports.data?.[0]
+  const firstName = student.name.split(' ')[0]
+  const studentPage = user?.role === 'supervisor' ? `/my-students/${student.id}` : `/students/${student.id}`
+  return (
+    <>
+      <div className={styles.studentHead}>
+        <Avatar name={student.name} />
+        <span className={styles.studentWho}>
+          <span className={styles.studentName}>{student.name}</span>
+          {reports.isSuccess && (
+            <span className={styles.muted}>
+              {reports.data.length} {reportsWord(reports.data.length)} i projektet
+              {latest && ` · senast ${longDate(latest.due_date)}`}
+            </span>
+          )}
+        </span>
+        <ButtonLink to={studentPage}>Elevens sida</ButtonLink>
+      </div>
+      <StudentProjectGoals
+        projectId={project.id}
+        studentId={student.id}
+        firstName={firstName}
+        reportPath={reportPath}
+      />
+      <About project={project} />
+    </>
   )
 }
 
@@ -188,42 +360,24 @@ function Facts({ project }: { project: Project }) {
   )
 }
 
-function ReportsSection({ project }: { project: Project }) {
-  const [studentId, setStudentId] = useState<string | undefined>()
+function ReportsSection({
+  project,
+  studentId,
+  reportPath,
+}: {
+  project: Project
+  studentId?: string
+  reportPath: (id: string) => string
+}) {
   const [shown, setShown] = useState(PAGE)
   const reports = useProjectReports(project.id, studentId)
   const rows = reports.data ?? []
 
   return (
     <section className={styles.main} aria-labelledby="reports-title">
-      <div className={styles.reportsHead}>
-        <h2 id="reports-title" className={styles.sectionTitle}>
-          Redovisningar i projektet
-        </h2>
-        {project.students.length > 1 && (
-          <div role="group" aria-label="Elev" className={styles.segments}>
-            <button
-              type="button"
-              className={styles.segment}
-              aria-pressed={studentId === undefined}
-              onClick={() => setStudentId(undefined)}
-            >
-              Alla
-            </button>
-            {project.students.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className={styles.segment}
-                aria-pressed={studentId === s.id}
-                onClick={() => setStudentId(s.id)}
-              >
-                {s.name.split(' ')[0]}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <h2 id="reports-title" className="sr-only">
+        Redovisningar i projektet
+      </h2>
 
       {reports.isPending && <p className={styles.muted}>Hämtar redovisningar…</p>}
       {reports.isError && <p className={styles.muted}>Redovisningarna gick inte att hämta.</p>}
@@ -231,7 +385,7 @@ function ReportsSection({ project }: { project: Project }) {
         <p className={styles.emptyBox}>Inga redovisningar i projektet än. De dyker upp här när eleverna skickar in.</p>
       )}
       {rows.slice(0, shown).map((report) => (
-        <ReportCard key={report.id} report={report} canOpen={project.is_owner} />
+        <ReportCard key={report.id} report={report} href={reportPath(report.id)} />
       ))}
       {rows.length > shown && (
         <Button className={styles.more} onClick={() => setShown(shown + PAGE)}>
@@ -265,7 +419,7 @@ function submittedText(iso: string) {
     : `inskickad ${date.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })} ${time}`
 }
 
-function ReportCard({ report, canOpen }: { report: ProjectReport; canOpen: boolean }) {
+function ReportCard({ report, href }: { report: ProjectReport; href: string }) {
   return (
     <article className={styles.report}>
       <div className={styles.reportBody}>
@@ -294,11 +448,9 @@ function ReportCard({ report, canOpen }: { report: ProjectReport; canOpen: boole
             ? 'Inga kommentarer'
             : `${report.comment_count} ${report.comment_count === 1 ? 'kommentar' : 'kommentarer'}`}
         </span>
-        {canOpen && (
-          <ButtonLink to={`/reports/${report.id}`} variant="soft">
-            Öppna
-          </ButtonLink>
-        )}
+        <ButtonLink to={href} variant="soft">
+          Öppna
+        </ButtonLink>
       </div>
     </article>
   )

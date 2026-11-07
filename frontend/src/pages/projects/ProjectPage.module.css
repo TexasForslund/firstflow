@@ -351,3 +351,110 @@ a.person:hover .personName {
   align-items: center;
   gap: var(--space-2);
 }
+
+/* Elevval och flikar (Texas skiss "Sammanfattning av projekt", 2026-11-07). */
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pickerLabel {
+  margin-right: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-5);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+  scrollbar-width: none;
+}
+
+.tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 0.125rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary-on-light);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.tabCount {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 60rem;
+}
+
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.studentHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.studentWho {
+  display: grid;
+  flex: 1 1 14rem;
+}
+
+.studentName {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.threads {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.thread {
+  display: grid;
+  gap: var(--space-2);
+}
+
+button.person {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.person:hover .personName {
+  color: var(--color-primary);
+  text-decoration: underline;
+}

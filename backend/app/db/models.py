@@ -20,6 +20,7 @@ from app.models.placement import (  # noqa: F401
 )
 from app.models.project import (  # noqa: F401
     Project,
+    ProjectComment,
     project_students,
     project_supervisors,
 )

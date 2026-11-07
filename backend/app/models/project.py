@@ -1,7 +1,18 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Column, Date, DateTime, ForeignKey, String, Table, Text, func
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    Table,
+    Text,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -64,3 +75,26 @@ class Project(Base):
     workplace: Mapped[Workplace | None] = relationship()
     # Projektets mål (idé 10). Visas som projektets taggar.
     goals: Mapped[list[Goal]] = relationship(secondary=project_goals, order_by=Goal.name)
+
+
+class ProjectComment(Base):
+    """En kommentar om en elevs arbete i ett projekt, från läraren eller handledaren (Texas,
+    2026-11-07). Kan skrivas under hela projektet. Synlig för eleven eller bara för lärare och
+    handledare, som kommentarer på redovisningar."""
+
+    __tablename__ = "project_comments"
+    __table_args__ = (
+        CheckConstraint("visibility IN ('all', 'staff')", name="visibility_values"),
+        Index("ix_project_comments_project_id_student_id", "project_id", "student_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"))
+    student_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    body: Mapped[str] = mapped_column(Text)
+    # "all": eleven ser den också. "staff": bara lärare och handledare.
+    visibility: Mapped[str] = mapped_column(String(10), default="all", server_default="all")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    author: Mapped[User] = relationship(foreign_keys=[author_id])

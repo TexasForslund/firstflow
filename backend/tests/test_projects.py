@@ -13,7 +13,14 @@ from sqlalchemy.orm import Session
 from app.models.invitation import Notification
 from app.models.placement import Workplace
 from app.models.project import Project
-from app.models.report import FormVersion, Report, ReportAnswer, ReportRead, ReportStatus
+from app.models.report import (
+    FormVersion,
+    Report,
+    ReportAnswer,
+    ReportImage,
+    ReportRead,
+    ReportStatus,
+)
 from app.models.school import School
 from app.models.school_class import SchoolClass, teacher_students
 from app.models.user import User, UserRole
@@ -432,3 +439,92 @@ def test_student_opens_own_project(client: TestClient, db: Session, login: Login
     assert client.get(f"/api/me/projects/{project_id}").status_code == 404
     login(w.teacher)
     assert client.get(f"/api/me/projects/{project_id}").status_code == 403
+
+
+# --- Flikarna Bilder och Kommentarer (Texas, 2026-11-07) -----------------------------------
+
+
+def test_project_images(
+    client: TestClient, db: Session, login: Login, w: World, c: Company
+) -> None:
+    login(w.teacher)
+    project_id = client.post("/api/projects", json=with_company(w, c)).json()["id"]
+    form = FormVersion(
+        class_id=w.ee22.id,
+        version=1,
+        questions=[{"id": str(QUESTION), "type": "images", "title": "Bilder", "max_images": 4}],
+    )
+    db.add(form)
+    db.flush()
+    report = Report(
+        class_id=w.ee22.id,
+        student_id=w.hugo.id,
+        form_version_id=form.id,
+        due_date=date(2026, 10, 6),
+        project_id=project_id,
+        status=ReportStatus.SUBMITTED,
+        submitted_at=datetime(2026, 10, 6, 15, tzinfo=UTC),
+    )
+    db.add(report)
+    db.flush()
+    images = [
+        ReportImage(report_id=report.id, question_id=QUESTION, width=1, height=1, size=1, data=b"x")
+        for _ in range(2)
+    ]
+    db.add_all(images)
+    db.flush()
+    db.add(
+        ReportAnswer(report_id=report.id, question_id=QUESTION, image_ids=[i.id for i in images])
+    )
+    db.flush()
+
+    got = client.get(f"/api/projects/{project_id}/images").json()
+    assert [g["image_id"] for g in got] == [str(i.id) for i in images]
+    assert got[0]["student"]["name"] == w.hugo.name
+    # Handledaren i projektet ser bilderna, en annan lärare gör det inte.
+    login(c.sofia)
+    assert len(client.get(f"/api/projects/{project_id}/images").json()) == 2
+    login(w.other_teacher)
+    assert client.get(f"/api/projects/{project_id}/images").status_code == 404
+
+
+@pytest.fixture
+def c(company: Company) -> Company:
+    return company
+
+
+def test_project_comments(client: TestClient, login: Login, w: World, c: Company) -> None:
+    login(w.teacher)
+    project_id = client.post("/api/projects", json=with_company(w, c)).json()["id"]
+    url = f"/api/projects/{project_id}/comments"
+
+    login(c.sofia)
+    made = client.post(
+        url, json={"student_id": str(w.hugo.id), "body": " Hugo tar egna initiativ. "}
+    )
+    assert made.status_code == 201, made.text
+    comment = made.json()
+    assert comment["body"] == "Hugo tar egna initiativ."
+    assert comment["author_role"] == "supervisor"
+    assert comment["visibility"] == "all"
+    # Bara elever i projektet.
+    stranger = client.post(url, json={"student_id": str(w.stranger.id), "body": "Hej"})
+    assert stranger.status_code == 404
+
+    login(w.teacher)
+    client.post(
+        url,
+        json={"student_id": str(w.maja.id), "body": "Övar ritningar.", "visibility": "staff"},
+    )
+    listed = client.get(url).json()
+    assert [(x["student"]["name"], x["is_mine"]) for x in listed] == [
+        (w.hugo.name, False),
+        (w.maja.name, True),
+    ]
+    # Bara sin egen kommentar går att ta bort.
+    assert client.delete(f"{url}/{comment['id']}").status_code == 404
+    login(c.sofia)
+    assert client.delete(f"{url}/{comment['id']}").status_code == 204
+
+    login(w.other_teacher)
+    assert client.get(url).status_code == 404
