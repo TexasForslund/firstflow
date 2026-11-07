@@ -297,7 +297,7 @@ Enligt skissen "Firstflow – Frånvaro med förklaring" (idé 12).
 
 ---
 
-## F35. Glömt lösenord och inbjudan igen ⬜ (väntar på B6, Hannes + Claude, 2026-11-04)
+## F35. Glömt lösenord och inbjudan igen ⬜ (Hannes + Claude, Texas 2026-11-07: Hannes tar den, B6 är mergad)
 
 API:t finns i B6. Förslag, Texas bestämmer utseendet:
 - **Inloggningen:** länken "Glömt lösenord?" under formuläret. Sidan `/forgot-password` tar e-post och visar alltid samma kvitto: "Om adressen har ett konto har vi skickat ett mejl med en länk."
