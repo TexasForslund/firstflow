@@ -85,3 +85,11 @@
 .time[data-conflict] {
   color: var(--color-attention);
 }
+
+/* Handledarens förklaring under en dag eleven inte var på plats. * betyder att det finns en
+   kommentar, som visas när man pekar på dagen. */
+.reason {
+  color: var(--color-attention);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}

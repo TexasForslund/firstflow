@@ -185,7 +185,7 @@ Hänger ihop med: B5b (extra frågor per elev), B20 (import), idé 10.
 Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs.
 
 **Handledaren:**
-- **Frånvaro med förklaring:** handledaren ska kunna markera att eleven varit borta och välja en förklaring, t.ex. sjukanmäld eller ledig. Det är upp till handledaren att välja.
+- **Frånvaro med förklaring:** handledaren ska kunna markera att eleven varit borta och välja en förklaring, t.ex. sjukanmäld eller ledig. Det är upp till handledaren att välja. ✅ Byggt i #72 (2026-11-07): Sjuk, Ledig, Annat eller Ingen förklaring, och en valfri kommentar. Läraren ser den, eleven gör det inte.
 - **Mål i projekt:** handledaren ska se målen i ett projekt men inte kunna lägga till nya.
 - **Elevens sida:** handledaren ska se elevens sida med elevens information.
 - **Kalender:** handledaren lägger upp en kalender för när dagen börjar, och kanske mer. Den styr incheckningen. Eleven ska kunna checka in från tio minuter innan dagen börjar, om eleven är tidig. Hänger ihop med idé 7.

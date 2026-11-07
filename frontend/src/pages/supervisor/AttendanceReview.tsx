@@ -4,10 +4,14 @@ import { Link } from 'react-router'
 
 import { clockTime, useReview, useReviewList, type ReviewItem, type ReviewVerdict } from '../../api/attendance'
 import { Avatar, HelpPopover } from '../../components'
+import { AbsenceDialog } from './AbsenceDialog'
+import { absenceLabel } from './absence'
 import styles from './AttendanceReview.module.css'
 
 type Verdict = ReviewVerdict['verdict']
 type Send = (items: ReviewVerdict[]) => void
+/** Öppnar valet av förklaring när eleven inte var på plats. */
+type Absent = (item: ReviewItem) => void
 
 function longDay(iso: string) {
   const text = new Date(`${iso}T12:00:00`).toLocaleDateString('sv-SE', {
@@ -55,6 +59,7 @@ function groupBy<T>(items: T[], by: (item: T) => string): [string, T[]][] {
 export function AttendanceReview() {
   const query = useReviewList()
   const review = useReview()
+  const [asking, setAsking] = useState<ReviewItem | null>(null)
 
   if (query.isPending) return <p className={styles.state}>Laddar närvaron…</p>
   if (query.isError) return <p className={styles.state}>Närvaron gick inte att hämta. Ladda om sidan.</p>
@@ -65,6 +70,7 @@ export function AttendanceReview() {
   const done = week.filter((i) => i.state === 'confirmed' || i.state === 'not_present')
   const send: Send = (items) => review.mutate(items)
   const busy = review.isPending
+  const absent: Absent = setAsking
 
   return (
     <div className={styles.page}>
@@ -88,12 +94,12 @@ export function AttendanceReview() {
             I dag
           </h2>
           {todayItems.map((item) => (
-            <TodayCard key={key(item)} item={item} busy={busy} onSend={send} />
+            <TodayCard key={key(item)} item={item} busy={busy} onSend={send} onAbsent={absent} />
           ))}
         </section>
       )}
 
-      <Waiting items={waiting} busy={busy} onSend={send} />
+      <Waiting items={waiting} busy={busy} onSend={send} onAbsent={absent} />
 
       {missing.length > 0 && (
         <section className={styles.section} aria-labelledby="missing-title">
@@ -107,7 +113,7 @@ export function AttendanceReview() {
           </div>
           <ul className={styles.list}>
             {groupBy(missing, (i) => i.placement_id).map(([id, days]) => (
-              <StudentDays key={id} days={days} mode="missing" busy={busy} onSend={send} />
+              <StudentDays key={id} days={days} mode="missing" busy={busy} onSend={send} onAbsent={absent} />
             ))}
           </ul>
         </section>
@@ -120,11 +126,13 @@ export function AttendanceReview() {
           </h2>
           <ul className={styles.list}>
             {groupBy(done, (i) => i.placement_id).map(([id, days]) => (
-              <StudentDays key={id} days={days} mode="done" busy={busy} onSend={send} />
+              <StudentDays key={id} days={days} mode="done" busy={busy} onSend={send} onAbsent={absent} />
             ))}
           </ul>
         </section>
       )}
+
+      {asking && <AbsenceDialog item={asking} today={today} onClose={() => setAsking(null)} />}
     </div>
   )
 }
@@ -145,13 +153,29 @@ function NotPresentButton({ label = 'Inte på plats', ...props }: { label?: stri
   )
 }
 
-function TodayCard({ item, busy, onSend }: { item: ReviewItem; busy: boolean; onSend: Send }) {
+function TodayCard({
+  item,
+  busy,
+  onSend,
+  onAbsent,
+}: {
+  item: ReviewItem
+  busy: boolean
+  onSend: Send
+  onAbsent: Absent
+}) {
   const time = item.checked_in_at ? clockTime(item.checked_in_at) : null
   const status = {
     pending: `Checkade in ${time}`,
     missing: 'Har inte checkat in',
     confirmed: time ? `Bekräftad · in ${time}` : 'Bekräftad · du lade till dagen',
-    not_present: time ? `Inte på plats · checkade in ${time}` : 'Inte på plats',
+    not_present: [
+      'Inte på plats',
+      item.absence_reason && absenceLabel[item.absence_reason],
+      time && `checkade in ${time}`,
+    ]
+      .filter(Boolean)
+      .join(' · '),
   }[item.state]
   const send = (v: Verdict) => onSend([verdict(item, v)])
 
@@ -173,11 +197,12 @@ function TodayCard({ item, busy, onSend }: { item: ReviewItem; busy: boolean; on
       )}
       {item.state === 'pending' ? (
         <div className={styles.actions}>
-          <NotPresentButton disabled={busy} onClick={() => send('not_present')} />
+          <NotPresentButton disabled={busy} onClick={() => onAbsent(item)} />
           <ConfirmButton disabled={busy} onClick={() => send('confirmed')} />
         </div>
       ) : item.state === 'missing' ? (
         <div className={styles.actions}>
+          <NotPresentButton disabled={busy} onClick={() => onAbsent(item)} />
           <button type="button" className={styles.add} disabled={busy} onClick={() => send('confirmed')}>
             <Plus aria-hidden="true" /> Var här ändå
           </button>
@@ -187,7 +212,7 @@ function TodayCard({ item, busy, onSend }: { item: ReviewItem; busy: boolean; on
           type="button"
           className={styles.link}
           disabled={busy}
-          onClick={() => send(item.state === 'confirmed' ? 'not_present' : 'confirmed')}
+          onClick={() => (item.state === 'confirmed' ? onAbsent(item) : send('confirmed'))}
         >
           {item.state === 'confirmed' ? 'Ändra till inte på plats' : 'Ändra till på plats'}
         </button>
@@ -196,7 +221,17 @@ function TodayCard({ item, busy, onSend }: { item: ReviewItem; busy: boolean; on
   )
 }
 
-function Waiting({ items, busy, onSend }: { items: ReviewItem[]; busy: boolean; onSend: Send }) {
+function Waiting({
+  items,
+  busy,
+  onSend,
+  onAbsent,
+}: {
+  items: ReviewItem[]
+  busy: boolean
+  onSend: Send
+  onAbsent: Absent
+}) {
   const companies = groupBy(items, (i) => i.workplace_name)
   return (
     <section className={styles.section} aria-labelledby="waiting-title">
@@ -241,7 +276,7 @@ function Waiting({ items, busy, onSend }: { items: ReviewItem[]; busy: boolean; 
                       <NotPresentButton
                         disabled={busy}
                         aria-label={`Inte på plats: ${item.student.name}, ${shortDay(item.date)}`}
-                        onClick={() => onSend([verdict(item, 'not_present')])}
+                        onClick={() => onAbsent(item)}
                       />
                       <ConfirmButton
                         disabled={busy}
@@ -269,11 +304,13 @@ function StudentDays({
   mode,
   busy,
   onSend,
+  onAbsent,
 }: {
   days: ReviewItem[]
   mode: 'missing' | 'done'
   busy: boolean
   onSend: Send
+  onAbsent: Absent
 }) {
   const [open, setOpen] = useState(false)
   const student = days[0].student
@@ -292,6 +329,7 @@ function StudentDays({
                 {d.state === 'confirmed' && <Check aria-hidden="true" />}
                 {d.state === 'not_present' && <X aria-hidden="true" />}
                 {weekdayShort(d.date)}
+                {d.state === 'not_present' && d.absence_reason && ` · ${absenceLabel[d.absence_reason]}`}
                 <span className="sr-only">
                   {d.state === 'confirmed'
                     ? ' på plats'
@@ -302,6 +340,13 @@ function StudentDays({
               </span>
             ))}
           </span>
+          {ordered
+            .filter((d) => d.state === 'not_present' && d.absence_note)
+            .map((d) => (
+              <span key={d.date} className={styles.absenceNote}>
+                {weekdayShort(d.date)}: ”{d.absence_note}”
+              </span>
+            ))}
         </span>
         <button
           type="button"
@@ -320,14 +365,12 @@ function StudentDays({
             <li key={d.date} className={styles.dayRow}>
               <span>{shortDay(d.date)}</span>
               <span className={styles.rowActions}>
-                {mode === 'done' && (
-                  <NotPresentButton
-                    label="Inte här"
-                    aria-pressed={d.state === 'not_present'}
-                    disabled={busy || d.state === 'not_present'}
-                    onClick={() => onSend([verdict(d, 'not_present')])}
-                  />
-                )}
+                <NotPresentButton
+                  label={d.state === 'not_present' ? 'Ändra förklaring' : 'Inte här'}
+                  aria-pressed={d.state === 'not_present'}
+                  disabled={busy}
+                  onClick={() => onAbsent(d)}
+                />
                 <ConfirmButton
                   label="Var här"
                   aria-pressed={d.state === 'confirmed'}

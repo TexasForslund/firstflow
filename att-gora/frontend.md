@@ -288,6 +288,16 @@ Enligt "Firstflow – APL-dagar och redovisningsdagar skiss" (Texas, 2026-10-30)
 
 ---
 
+## F36. Frånvaro med förklaring ✅ Klar ([PR #72](https://github.com/TexasForslund/firstflow/pull/72), Texas + Claude, 2026-11-07)
+
+Enligt skissen "Firstflow – Frånvaro med förklaring" (idé 12).
+- **Handledaren:** "Inte på plats" öppnar en ruta (`pages/supervisor/AbsenceDialog.tsx`) med Sjuk, Ledig, Annat eller Ingen förklaring och en valfri kommentar. I mobilen kommer rutan nerifrån. Finns i Närvaro (i dag, Att bekräfta, Ingen incheckning och Klart) och på elevens sida. En dag utan incheckning kan också markeras.
+- **Läraren:** i veckovyn i Närvaro står förklaringen under dagen. En stjärna betyder att det finns en kommentar, som visas när man pekar på dagen.
+- **Eleven** ser inte förklaringen.
+- Backend: `attendance.absence_reason` och `absence_note`, i `ReviewVerdict`, `ReviewItem` och `WeekDay`.
+
+---
+
 ## F34. Elevkortet i lärarens redovisning ✅ Klar ([PR #67](https://github.com/TexasForslund/firstflow/pull/67), Texas + Claude, 2026-11-03)
 
 Enligt skissen "Firstflow – Elevkortet i redovisningen" (Texas, 2026-11-03). Redovisningen hålls enkel. Närvaro och anteckningar visas inte här (Texas: "blir tydligare så").
