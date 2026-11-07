@@ -67,6 +67,7 @@ Uppdateras när ett arbetspass avslutas, så att båda ser var vi är.
 **Nästa steg:**
 - **Texas + Claude:**
   - **Påminnelse (Texas, 2026-10-31): handledarens vy ska få mer fokus framöver.** F31 (Närvaro) och F33 (meny, Översikt, elevens sida och Redovisningar, #66) är klara. Nästa del planeras med Texas.
+  - **Gå igenom idé 12 i [ideer.md](ideer.md) med Texas först (2026-11-06):** handledarens frånvaro med förklaring, kalender, elevens sida och meddelanden, projektsammanfattning och fråga med bilder.
   - **Meddelanden (B11, F32, #65) är byggda.** Senare: "Läst av" i grupper, meddelanden i notisklockan, tysta en grupp och push-notiser i mobilen.
   - **Testa importen (Texas, 2026-11-02: väntar till senare).** Logga in som skoladmin, gå till Importera och prova mallen, en egen fil och mejllänken. Visa sedan för Haldor och fråga om de kan exportera en fil med mallens kolumner och om de har ett SS12000-API.
   - Elevkortet i lärarens redovisningsvy (närvaro, praktikplats och projekt).

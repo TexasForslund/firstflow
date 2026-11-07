@@ -1,4 +1,5 @@
 import { Check, ChevronLeft, FileText, FolderKanban, MessageSquare, Plus, X } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
 import { useReview, useReviewList, type ReviewItem } from '../../api/attendance'
@@ -12,46 +13,55 @@ import { NotFound } from '../NotFound'
 import { NoteForm, NoteItem } from '../notes/StudentNotes'
 import { periodWeek } from '../placements/period'
 import { longDate } from '../reports/answers'
+import { AbsenceDialog } from './AbsenceDialog'
+import { absenceLabel } from './absence'
 import styles from './SupervisorStudent.module.css'
 import { WeekDots } from './WeekDots'
 import { weekDays } from './weekDays'
 
 /** Knappar för dagens närvaro, samma som i Närvaro. */
-function TodayButtons({ item }: { item: ReviewItem }) {
+function TodayButtons({ item, today }: { item: ReviewItem; today: string }) {
   const review = useReview()
-  const send = (verdict: 'confirmed' | 'not_present') =>
-    review.mutate([{ placement_id: item.placement_id, date: item.date, verdict }])
+  const [asking, setAsking] = useState(false)
+  const confirm = () => review.mutate([{ placement_id: item.placement_id, date: item.date, verdict: 'confirmed' }])
   const busy = review.isPending
-  if (item.state === 'pending') {
+  const dialog = asking && <AbsenceDialog item={item} today={today} onClose={() => setAsking(false)} />
+  if (item.state === 'pending' || item.state === 'missing') {
     return (
       <span className={styles.todayButtons}>
-        <button type="button" className={styles.pillButton} disabled={busy} onClick={() => send('not_present')}>
+        <button type="button" className={styles.pillButton} disabled={busy} onClick={() => setAsking(true)}>
           <X aria-hidden="true" /> Inte på plats
         </button>
-        <button type="button" className={styles.primaryButton} disabled={busy} onClick={() => send('confirmed')}>
-          <Check aria-hidden="true" /> Bekräfta
+        <button
+          type="button"
+          className={item.state === 'pending' ? styles.primaryButton : styles.pillButton}
+          disabled={busy}
+          onClick={confirm}
+        >
+          {item.state === 'pending' ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
+          {item.state === 'pending' ? 'Bekräfta' : 'Var här i dag'}
         </button>
-      </span>
-    )
-  }
-  if (item.state === 'missing') {
-    return (
-      <span className={styles.todayButtons}>
-        <button type="button" className={styles.pillButton} disabled={busy} onClick={() => send('confirmed')}>
-          <Plus aria-hidden="true" /> Var här i dag
-        </button>
+        {dialog}
       </span>
     )
   }
   return (
-    <button
-      type="button"
-      className={styles.linkButton}
-      disabled={busy}
-      onClick={() => send(item.state === 'confirmed' ? 'not_present' : 'confirmed')}
-    >
-      {item.state === 'confirmed' ? 'Ändra till inte på plats' : 'Ändra till på plats'}
-    </button>
+    <span className={styles.todayButtons}>
+      {item.state === 'not_present' && (
+        <span className={styles.muted}>
+          Inte på plats{item.absence_reason && ` · ${absenceLabel[item.absence_reason]}`}
+        </span>
+      )}
+      <button
+        type="button"
+        className={styles.linkButton}
+        disabled={busy}
+        onClick={() => (item.state === 'confirmed' ? setAsking(true) : confirm())}
+      >
+        {item.state === 'confirmed' ? 'Ändra till inte på plats' : 'Ändra till på plats'}
+      </button>
+      {dialog}
+    </span>
   )
 }
 
@@ -123,7 +133,7 @@ export function SupervisorStudent() {
               {today ? (
                 <div className={styles.todayRow}>
                   <span className={styles.muted}>I dag:</span>
-                  <TodayButtons item={today} />
+                  <TodayButtons item={today} today={review.data?.today ?? today.date} />
                 </div>
               ) : (
                 review.isSuccess && <p className={styles.muted}>{firstName} har ingen APL i dag.</p>

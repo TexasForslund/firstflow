@@ -130,7 +130,13 @@ export function WeekAttendance({ classId }: { classId: string }) {
                       ) : day.date > week.today ? (
                         <span className="sr-only">Kommande dag</span>
                       ) : (
-                        <DayMark state={day.state} checkedInAt={day.checked_in_at} showTime />
+                        <DayMark
+                          state={day.state}
+                          checkedInAt={day.checked_in_at}
+                          absenceReason={day.absence_reason}
+                          absenceNote={day.absence_note}
+                          showTime
+                        />
                       )}
                     </td>
                   ))}

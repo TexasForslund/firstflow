@@ -344,3 +344,9 @@
     width: 100%;
   }
 }
+
+/* Handledarens kommentar när eleven inte var på plats (Texas, 2026-11-07). */
+.absenceNote {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

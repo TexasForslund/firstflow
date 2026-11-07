@@ -1,7 +1,7 @@
 """Inloggningsskydd och logg: Glömt lösenord, begränsning av försök och audit_events (B6)
 
 Revision ID: b60c0f1eebed
-Revises: 0877a878778b
+Revises: 081b49030962
 Create Date: 2026-11-04 08:53:15.155630
 
 """
@@ -15,7 +15,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "b60c0f1eebed"
-down_revision: str | Sequence[str] | None = "0877a878778b"
+down_revision: str | Sequence[str] | None = "081b49030962"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

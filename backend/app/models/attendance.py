@@ -35,6 +35,15 @@ class AttendanceReview(StrEnum):
     NOT_PRESENT = "not_present"
 
 
+class AbsenceReason(StrEnum):
+    """Handledarens förklaring när eleven inte var på plats (Texas, 2026-11-07). Valfri, och bara
+    personalen ser den."""
+
+    SICK = "sick"  # Sjuk
+    LEAVE = "leave"  # Ledig
+    OTHER = "other"  # Annat
+
+
 class Attendance(Base):
     __tablename__ = "attendance"
     __table_args__ = (
@@ -47,6 +56,10 @@ class Attendance(Base):
         ),
         CheckConstraint(
             "review IS NULL OR review IN ('confirmed', 'not_present')", name="review_valid"
+        ),
+        CheckConstraint(
+            "absence_reason IS NULL OR absence_reason IN ('sick', 'leave', 'other')",
+            name="absence_reason_valid",
         ),
     )
 
@@ -64,6 +77,10 @@ class Attendance(Base):
     reviewed_by_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL")
     )
+    # Handledarens förklaring och kommentar när eleven inte var på plats. Visas för personalen,
+    # inte för eleven (Texas, 2026-11-07).
+    absence_reason: Mapped[AbsenceReason | None] = mapped_column(String(20))
+    absence_note: Mapped[str | None] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

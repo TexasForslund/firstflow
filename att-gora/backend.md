@@ -196,26 +196,21 @@ Frontend: F35.
 
 ---
 
-## B7. Skoladministratör – lärarkategorier och rapporter ⬜
+## B7. Skoladministratör – lärlingsersättning och ekonomiunderlag ⬜
 
-Låser upp: F7.
+Låser upp: F7. Rättad 2026-11-04: krav 1.8.1 i Norrköpings upphandling gäller Skolverkets lärlingsersättning, inte lärarkategorier.
 
-Se detaljerad spec i [docs/skoladmin-funktioner.md](../docs/skoladmin-funktioner.md).
+Se spec i [docs/skoladmin-funktioner.md](../docs/skoladmin-funktioner.md). Inte prioriterad.
 
-**Mål:** Ny roll `school_admin` med endpoints för lärarkategorier och Excel-rapporter.
+**Mål:** Skoladmin tar ut underlag för lärlingsersättning, statsbidrag och matersättning. Firstflow betalar inte ut något.
 
 **Gör så här**
 
-1. Lägg till `UserRole.SCHOOL_ADMIN` i rollmodellen. Skapa migrering.
-2. Modell `TeacherCategory` och `TeacherCategoryAssignment` (se spec-dokumentet). Skapa migrering.
-3. Endpoints (alla kräver `school_admin`-roll):
-   - `GET /api/admin/teacher-categories` – Skolverkets kategorilista
-   - `PUT /api/admin/teachers/{user_id}/category` – sätt kategori för lärare
-   - `GET /api/admin/reports/material-compensation?from=&to=` → Excel-fil
-   - `GET /api/admin/reports/state-subsidy?school_year=` → Excel-fil
-4. Seeda in Skolverkets aktuella kategorier (1–5) i migreringen som startvärden.
+1. Org.nr på företaget, och bankuppgifter (bank, BG/PG, kontonummer, märkning) per företag och skola. Bara skoladmin får se och ändra bankuppgifterna.
+2. `GET /api/admin/reports/state-subsidy?from=&to=` (skoladmin): Excel med en rad per företag och de tio kolumnerna i spec-dokumentet. Inga personnummer.
+3. Matersättning när en pilotskola har visat vilket underlag de använder.
 
-**Klart när:** tester täcker behörighetsskydd och att Excel-filerna genereras utan fel.
+**Klart när:** tester täcker behörigheten (lärare 403, annan skola 404) och att Excel-filen har rätt kolumner.
 
 ---
 
@@ -577,3 +572,82 @@ Handledaren laddar upp företagets logga. Den syns för alla skolor med elever p
 - `GET /api/workplaces/{id}/logo`: företagets handledare och alla på en skola med elever där. Adressen har en version (`?v=`) och cachas.
 - `logo_url` i `WorkplaceRead`, `WorkplaceRef` och handledarens profil, och `workplace_logo_url` i projekt.
 
+---
+
+## Förslag från Norrköpings upphandling (2026-11-04)
+
+Hannes beslutade att inte lämna anbud, men kommunens krav är ett bra underlag. Uppgifterna nedan är **förslag och inte prioriterade**. Stäm av med Texas innan någon börjar. Kravnumren hänvisar till bilaga 09, se [docs/upphandling-norrköping.md](../docs/upphandling-norrköping.md).
+
+---
+
+## B26. Inloggning via skolans IdP ⬜
+
+Krav 3.8.1, 3.8.5, 3.8.7, 3.8.8 och 1.0.19–1.0.21.
+
+- Logga in med Microsoft (Entra ID) och Google via OIDC. Pilotskolan använder Haldor på Microsoft 365 (B20), så Microsoft först.
+- BankID och Freja via en e-legitimationstjänst, för handledare som saknar skolkonto.
+- Konton matchas på e-post eller SS12000-id. Ett inaktiverat konto i skolans katalog kan inte logga in.
+- Utloggning efter inaktivitet (i dag gäller sessionen i 14 dagar).
+
+---
+
+## B27. BankID-signering och fler parter på kontraktet ⬜
+
+Krav 1.0.10, 1.4.14–1.4.16, 1.5.1, 1.6.1 och 1.6.2. Bygger vidare på B8.
+
+- BankID i stället för testknappen, via en signeringstjänst. Välj tjänst först: pris per signering, och den blir ett underbiträde i PUB-avtalet.
+- Rektor och vårdnadshavare (för omyndig elev) som parter. Vårdnadshavaren har inget konto och signerar via en länk.
+- Kontraktsmallar med skolans text, där bara rektor eller skoladmin får ändra texten och läraren fyller i fälten.
+- Avtal med företagets org.nr, inte bara med en handledare (1.1.6).
+
+---
+
+## B28. Trepartssamtal och besöksjournal ⬜
+
+Krav 1.2.5, 1.3.9, 1.4.11–1.4.13, 1.4.20 och 1.4.21.
+
+- Läraren registrerar trepartssamtal, praktiska besök och spontana besök i en besöksjournal per elev. Typerna går att ställa in.
+- Strukturerat formulär för trepartssamtalet: nuläge, generellt (yrkesspecifikt), överenskomna arbetsuppgifter och planerade möten.
+- Eleven och handledaren förbereder sig i samma formulär. De överenskomna uppgifterna och mötestiderna syns sedan för eleven och handledaren.
+- Kan bygga på anteckningarna i B18.
+
+---
+
+## B29. Omdömen från handledaren ⬜
+
+Krav 1.3.11–1.3.14 och 1.2.11.
+
+- Handledaren skriver löpande omdömen och ett avslutande omdöme efter APL-perioden, med fasta rubriker och fritext.
+- Läraren läser omdömena. Eleven kan ladda ner dem som PDF.
+- Omdömen är underlag för lärarens bedömning, aldrig ett betyg.
+
+---
+
+## B30. Ämnen, nivåer och progression (Gy11 och Gy25) ⬜
+
+Krav 1.0.13–1.0.18, 1.2.4, 1.4.1 och 1.4.2. Steg två av B22.
+
+- Ämnen och nivåer från Skolverkets Syllabus-API (Gy25), och kurser för elever som läser enligt Gy11. Eleven hör till en av dem.
+- Momentlista per program eller kurs som eleven och handledaren ser.
+- Redovisningar, observationer och omdömen kopplas till ämnesnivåer, så att läraren ser elevens progression över flera nivåer och APL-perioder.
+
+---
+
+## B31. Standardrapporter och export ⬜
+
+Krav 1.9.1–1.9.7 och 3.9.1.
+
+- Närvaro per skolenhet och vald period, per elev.
+- Om eleverna fullföljer sina APL-perioder under en vald period.
+- Alla aktuella utbildningskontrakt i en sammanställning, t.ex. vid inspektion från en myndighet.
+- Export till Excel och PDF. Hänger ihop med exportknappen på elevsidan (F17), som väntar på ett beslut om innehållet.
+
+---
+
+## B32. Intyg från handledarutbildningen ⬜
+
+Krav 1.3.1, 1.3.2, 1.4.4 och 1.8.2.
+
+- Handledaren laddar upp intyget (PDF) på företaget och anger vilken utbildning det gäller.
+- Lärare och skoladmin på skolor med elever på företaget ser intyget. Uppgiften behövs också i B7.
+- En länk till Skolverkets handledarutbildning i handledarens vy.

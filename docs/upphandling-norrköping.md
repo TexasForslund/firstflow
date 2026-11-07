@@ -1,129 +1,60 @@
 # Upphandling – Norrköpings kommun (UN 2026/1145)
 
-**Deadline:** 2026-10-22  
-**Kontraktperiod:** 2026-11-30 – 2030-11-29  
-**Uppskattad kontraktsvärde:** 1 500 000 SEK  
-**Plattform:** e-Avrop  
-**Partner:** Haldor (gemensamt anbud)
+**Beslut (Hannes, 2026-11-04):** Firstflow lämnar inget anbud. Kravbilden används i stället som underlag för vad en kommun kräver av ett APL-system.
 
----
+**Varför:** skakraven i bilaga 02 kräver minst tre års leverans av ett APL-system och två referenser från kommunal gymnasie- eller vuxenutbildning. Det har Firstflow inte. Dessutom måste alla ska-krav i bilaga 09 besvaras Ja, och bilaga 14 (KLASSA) kräver ett dokumenterat ledningssystem för informationssäkerhet.
 
-## Kravtyper
+## Fakta om upphandlingen
 
-| Typ | Innebär |
-|---|---|
-| **Ska** | Måste uppfyllas. Nej = diskvalificering. |
-| **Ska-Beskriv** | Måste uppfyllas + skriftlig beskrivning krävs. |
-| **Bör** | Poängsätts 1–3 viktpoäng. Påverkar rangordning. |
-| **Bör-Beskriv** | Poängsätts + skriftlig beskrivning. |
+- **Systemstöd för administration av APL och lärlingsutbildning** inom gymnasieskola och vuxenutbildning.
+- Sista anbudsdag 2026-10-22 via e-Avrop. Demo v. 45–46.
+- Avtal i 4 år, preliminärt 2026-12-01 – 2030-11-30. Tjänsten ska vara levererad senast 2027-03-31.
+- 11 skolenheter med yrkesprogram (ca 1 200 elever) och 1 lärlingsskola (ca 125 elever). Option: vuxenutbildning (ca 100 elever).
+- Utvärdering: kvalitet 60 %, pris 40 %. Användbarheten vid demon väger 70 % av kvaliteten, och under 60 % av maxpoängen diskvalificerar. Uppfyllda bör-krav väger 30 %.
+- Integrationer som krävs: IST Administration via Educloud och Alvis, båda med SS 12000:2020 eller senare. Skola24 för närvaro är ett bör-krav.
 
----
+Hela checklistan per bilaga, alla 213 krav i bilaga 09 och de 68 KLASSA-kraven ligger i projektmappen (`anbud-norrkoping-apl/`), inte i repot.
 
-## Gap-analys: Ska-krav vi är osäkra på eller saknar
+## Rättelser till den tidigare versionen av det här dokumentet
 
-Dessa krav är Ska (måste-krav). Att svara Ja på något vi inte har riskerar diskvalificering eller kontraktsbrott.
+Några krav var feltolkade. Rätt lydelse enligt bilaga 09:
 
-### 🔴 Troligen saknas idag
+| Krav | Rätt innebörd |
+| --- | --- |
+| 1.0.13 | Arbetsuppgifter, observationer och bedömningar kan kopplas till ämnesnivåer. Handlar inte om flera skolor i samma instans. |
+| 1.8.1 | Skoladministratören administrerar registrering av Skolverkets **lärlingsersättning** för statsbidrag. Det finns inget krav på lärarkategorier. |
+| 1.8.3 | Underlag för utbetalning av **matersättning** (utbetalning sker i ekonomisystemet). Inte materialersättning. |
+| 1.8.6 | Excelrapport inför ansökan om statsbidrag, **en rad per företag**: företagsnamn, org.nr, bank, BG/PG, kontonummer med clearing, kostnadsställe, handledarens namn, om handledaren gått Skolverkets handledarutbildning, lärarens kommentar och kontraktets giltighet. Inga personnummer. |
+| 4.1.6 | Attribut som ska kunna synkas från IST via Educloud/SS 12000. För elever ingår personnummer, telefon och vårdnadshavares kontaktuppgifter. Handlar inte om IdP. |
+| 4.2.1 | "Tjänsten ska kunna fungera som ett mellanarkiv under två års tid." Kravet säger inte uttryckligen att det gäller efter avtalets slut, men 3.14.1 kräver kostnadsfri åtkomst till historiska data även efter avtalet. |
+| Bör-poäng | Viktade bör-krav finns bara i IT-kraven: 3 p för OAuth 2.0 (3.10.10), paginering och filtrering (3.10.16), skriv-API (3.10.5), DIGG:s REST-profil (3.10.6) och JSON (3.10.7). 2 p för bl.a. versionshanterat API (3.10.14) och OpenAPI-dokumentation online (3.10.15). UTF-8 (3.10.12), autentiserat API (3.10.9) och utloggning vid inaktivitet (3.8.8) är ska-krav. |
 
-| Krav | Beskrivning |
-|---|---|
-| 1.0.10, 1.3.15, 1.5.1, 1.6.1 | BankID/Freja OrgID-signering av utbildningskontrakt (elev, handledare, rektor, vårdnadshavare) |
-| 4.1.3 | Educloud-integration (IST Administration via SS 12000:2020) |
-| 4.1.4 | Alvis-integration (SS 12000:2020) |
-| 4.1.7 | SS 12000:2020-standard specifikt (inte äldre version) |
-| 4.1.6 | Automatisk attributsynkronisering från IdP |
-| 1.8.1 | Registrera Skolverkets lärarkategorikoder |
-| 1.8.3 | Skapa underlag för materialsersättning |
-| 1.8.6 | Generera statsbidragsrapport i Excel (Skolverkets format) |
-| 4.2.1 | Mellanarkiv i 2 år efter avtalets slut (PDF/A + strukturerad export) |
-| 1.0.14 | Stöd för Gy11 och Gy25 parallellt i samma system |
+## Vad kommunen kräver som vi inte har i planen
 
-### 🟡 Osäkert – behöver bekräftas
+Det här är det värdefulla med upphandlingen: en kommuns egen lista över vad ett APL-system ska klara. Uppgifterna B26–B32 i [att-gora/backend.md](../att-gora/backend.md) kommer härifrån. De är förslag och inte prioriterade.
 
-| Krav | Beskrivning |
-|---|---|
-| 3.8.5, 3.8.7 | SSO via SAML/OIDC mot Entra ID/Azure AD |
-| 3.1.7 | WCAG 2.1 AA + publicerat tillgänglighetsutlåtande |
-| 1.0.13 | Stöd för flera skolor i samma instans (multi-tenant) |
-| 3.14.x | Data ägs av beställaren, ingen AI-träning på elevdata |
+- **Inloggning via skolans IdP** (3.8.1, 3.8.5, 3.8.7): Entra ID, Google och BankID/Freja via OIDC eller SAML, utan månadskostnad för SSO. Utloggning efter inaktivitet (3.8.8). → B26
+- **BankID-signering av utbildningskontrakt** för elev, handledare, rektor och vårdnadshavare, med mallar som bara rektor får ändra (1.0.10, 1.4.14–1.4.16, 1.5.1, 1.6.1–1.6.2). Bygger vidare på B8. → B27
+- **Trepartssamtal och besöksjournal** (1.2.5, 1.3.9, 1.4.11–1.4.13): eleven, handledaren och läraren förbereder samtalet i ett strukturerat formulär, och överenskomna uppgifter och mötestider tilldelas eleven. → B28
+- **Omdömen från handledaren**, löpande och avslutande, med struktur, fritext och PDF (1.3.11–1.3.14, 1.2.11). → B29
+- **Ämnen, nivåer och progression** för Gy11 och Gy25 samtidigt, momentlistor och en portfölj som följer eleven genom alla APL-perioder (1.0.13–1.0.18, 1.2.4, 1.4.1–1.4.2). Steg två av B22. → B30
+- **Rapporter och export**: närvaro per skolenhet och period, om eleverna fullföljer sin APL, alla aktuella kontrakt vid inspektion, egna rapporter och export till Excel och PDF (1.9.1–1.9.7, 3.9.1). → B31
+- **Handledarutbildning**: handledaren laddar upp intyget på företaget, och lärare och skoladmin ser det (1.3.1–1.3.2, 1.4.4, 1.8.2). Uppgiften behövs också i statsbidragsrapporten. → B32
+- **Skoladministratörens ekonomiunderlag**: lärlingsersättning, matersättning och statsbidragsrapport. → B7 (rättad)
+- **SS 12000-synk** mot IST/Educloud och Alvis (4.1.3, 4.1.4, 4.1.7). → B9
 
----
+## Krav som krockar med våra regler
 
-## Bör-krav med högst poäng (prioritera dessa)
+Båda behöver ett beslut innan de byggs:
 
-| Poäng | Krav | Beskrivning |
-|---|---|---|
-| 3p | 3.10.6 | REST API (DIGG-kompatibelt) |
-| 3p | 3.10.7 | JSON som standardformat |
-| 3p | 3.10.9 | OAuth 2.0 på API:t |
-| 3p | 3.10.12 | Paginering i API-svar |
-| 3p | 3.8.6 | MFA-stöd |
-| 2p | 3.10.10 | API-versionering |
-| 2p | 3.10.11 | Swagger/OpenAPI-dokumentation |
-| 2p | 3.8.8 | Lösenordspolicy |
+1. **Personnummer.** 4.1.6 vill synka elevers personnummer från elevregistret, och kommunens PUB-instruktion listar personnummer bland uppgifterna. Vår regel är att inte samla in personnummer, och B20 läser medvetet inte `civicNo`. Statsbidragsrapporten (1.8.6) kräver inte personnummer.
+2. **404 när data saknas.** 3.10.21 säger att ett API inte ska svara 404 när det inte hittar data, bara när adressen är fel. Vi svarar 404 när en resurs tillhör någon annan, så att det inte går att gissa vilka id:n som finns.
 
-**Total möjlig poäng IT-krav:** ~43p
+## KLASSA och leverantörskrav
 
----
+Gäller oss som leverantör, inte produkten. De behövs i nästa upphandling oavsett kommun:
 
-## Nyckelkrav att besvara i anbudet
-
-### 1. BankID/Freja OrgID (Ska)
-
-Krävs för signering av utbildningskontrakt av alla parter. Alternativ:
-- Integrera mot [Scrive](https://www.scrive.com/) eller [Verified](https://www.verified.eu/) som hanterar BankID
-- Bygg eget BankID-flöde via Nets eID Gateway
-
-Tidplan: måste vara på plats vid driftsättning (2026-11-30) eller med tydlig leveransplan i anbudet.
-
-### 2. SS 12000:2020 / Educloud (Ska)
-
-- Registrera Firstflow som konsument i Educloud (kräver avtal med IST)
-- Implementera OAuth 2.0-flöde mot Educloud API
-- Hantera synkronisering av elever, klasser, personal
-- Alvis har liknande SS 12000-stöd men är enklare — prioritera IST/Educloud
-
-Se: [docs/ss12000-integration.md](ss12000-integration.md) (att skapa)
-
-### 3. Mellanarkiv (Ska)
-
-Vid avtalets slut (2030-11-29) ska data finnas tillgänglig i 2 år.
-
-Krav på implementation:
-- Exportfunktion: all data i öppet format (JSON/XML med dokumenterat schema)
-- Signerade kontrakt som PDF/A-2b
-- Tillgängligt utan aktiv licens under mellanarkivperioden
-- Referens: SS-ISO 14721 (OAIS)
-
-### 4. Gy11 + Gy25 parallellt (Ska)
-
-Systemet måste veta vilken läroplan en elev tillhör och visa rätt:
-- Kursmål och momentlistor
-- Bedömningsstrukturer
-- Kopplingar till utbildningsmoment
-
-Elever som börjat före 2025 → Gy11. Elever från 2025 → Gy25.
-
-### 5. Skoladministratörsfunktioner (Ska)
-
-- **Lärarkategorikoder:** Skolverkets kategorier (uppdateras, måste vara konfigurerbara)
-- **Materialsersättning:** Rapport per elev/arbetsplats/period
-- **Statsbidragsrapport:** Excel-export i Skolverkets format för lärlingsutbildning
-
----
-
-## Kontakter
-
-| Person | Roll | Kontakt |
-|---|---|---|
-| Haldor | Anbudspartner | — |
-| Norrköpings kommun | Beställare | Via e-Avrop |
-
----
-
-## Bilagor att läsa
-
-- [x] Bilaga 09: Anbudsformulär med kravspecifikation (`/tmp/upphandling/bilagor/`)
-- [ ] Bilaga 02: Ska-krav leverantör (formella kvalifikationskrav)
-- [ ] Bilaga 10: Anbudsprisformulär
-- [ ] Bilaga 19: Anbudspresentation med systemvisning (demokrav)
+- Ett dokumenterat ledningssystem för informationssäkerhet baserat på ISO 27001 (behöver inte vara certifierat), med incidenthantering, behörighetsgranskning, bakgrundskontroll, årlig säkerhetsutbildning och oberoende granskning vart tredje år.
+- Ett kvalitetsledningssystem i ett dokument som täcker kvalitetspolicy, kvalitetsmål, avvikelsehantering och hur personalen känner till det (bilaga 02, punkt 7).
+- Drift som klarar 99 % tillgänglighet, backup med RPO 1 timme på annan plats, separat testmiljö och datahall enligt MSB629 nivå 2. Se [drift.md](../att-gora/drift.md).
+- Support med 2 timmars reaktionstid vid kritiskt fel under kontorstid, och e-faktura via Peppol.
