@@ -59,7 +59,11 @@ export function SupervisorReport() {
       <header className={styles.reportHead}>
         <Avatar name={detail.student.name} />
         <span className={styles.who}>
-          <h1 className={styles.reportTitle}>{detail.student.name}</h1>
+          <h1 className={styles.reportTitle}>
+            <Link to={`/my-students/${detail.student.id}`} className={styles.nameLink}>
+              {detail.student.name}
+            </Link>
+          </h1>
           <span className={styles.meta}>
             {day.charAt(0).toUpperCase() + day.slice(1)} · {detail.class_name}
             {detail.project && <span className={styles.project}> · {detail.project.name}</span>}

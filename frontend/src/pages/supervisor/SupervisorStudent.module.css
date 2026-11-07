@@ -234,3 +234,43 @@
     flex-wrap: wrap;
   }
 }
+
+/* Handledarens elevsida, i stil med lärarens (Texas skiss, 2026-11-07). */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chip {
+  padding: 0.125rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-sidebar);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.todayCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+}
+
+.todayLabel {
+  font-weight: 600;
+}
+
+.address {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.address svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}

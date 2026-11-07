@@ -2271,6 +2271,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/supervisor/students/{student_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervisor Student
+         * @description Eleven, placeringen hos handledaren, klassen och lärarna.
+         */
+        get: operations["supervisor_student_api_supervisor_students__student_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/students/{student_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervisor Student Attendance
+         * @description Närvaron under placeringen hos handledaren.
+         */
+        get: operations["supervisor_student_attendance_api_supervisor_students__student_id__attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supervisor/students/{student_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervisor Student Reports
+         * @description Redovisningarna för dagar då eleven var hos handledaren, och de som saknas.
+         */
+        get: operations["supervisor_student_reports_api_supervisor_students__student_id__reports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4835,6 +4895,47 @@ export interface components {
             project: components["schemas"]["PersonBrief"] | null;
             /** @description Första textsvaret, förkortat */
             excerpt: components["schemas"]["TextAnswer"] | null;
+        };
+        /** SupervisorStudentDetail */
+        SupervisorStudentDetail: {
+            /**
+             * Placement Id
+             * Format: uuid
+             */
+            placement_id: string;
+            student: components["schemas"]["Ref"];
+            workplace: components["schemas"]["WorkplaceRef"];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Teachers */
+            teachers: components["schemas"]["Ref"][];
+            /** School Name */
+            school_name: string | null;
+            /** Class Name */
+            class_name: string | null;
+            /**
+             * Track Name
+             * @description Elevens inriktning i klassen, om den finns
+             */
+            track_name: string | null;
+        };
+        /** SupervisorStudentReports */
+        SupervisorStudentReports: {
+            /** Reports */
+            reports: components["schemas"]["StudentReportSummary"][];
+            /**
+             * Missing Days
+             * @description Redovisningsdagar hos handledaren före i dag utan inskickad redovisning, senaste först
+             */
+            missing_days: string[];
         };
         /** SupervisorWorkplace */
         SupervisorWorkplace: {
@@ -9261,6 +9362,99 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlacementHoursRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    supervisor_student_api_supervisor_students__student_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorStudentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    supervisor_student_attendance_api_supervisor_students__student_id__attendance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentAttendanceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    supervisor_student_reports_api_supervisor_students__student_id__reports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorStudentReports"];
                 };
             };
             /** @description Validation Error */

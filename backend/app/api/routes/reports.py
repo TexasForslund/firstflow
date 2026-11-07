@@ -770,15 +770,8 @@ class StudentReportSummary(ReportSummary):
     answers: list[TextAnswer] = Field(description="Alla textsvar, för sök och filter på elevsidan")
 
 
-@student_router.get("", response_model=list[StudentReportSummary])
-def list_student_reports(
-    student_id: UUID, db: DbSession, user: Teacher
-) -> list[StudentReportSummary]:
-    """Elevens inskickade redovisningar, senaste först. Går eleven i en klass som läraren
-    undervisar syns alla, även från tidigare klasser. Annars bara från lärarens klasser."""
-    student = get_student_for(db, user, student_id)
-    taught = select(class_teachers.c.class_id).where(class_teachers.c.teacher_id == user.id)
-    in_class = true() if _teaches_student_now(db, user, student.id) else Report.class_id.in_(taught)
+def report_summaries(db: DbSession, user: User, *where) -> list[StudentReportSummary]:
+    """Inskickade redovisningar med alla textsvar, senaste först. `user` avgör om de är lästa."""
     is_read = (
         exists()
         .where(ReportRead.report_id == Report.id, ReportRead.user_id == user.id)
@@ -792,6 +785,7 @@ def list_student_reports(
     )
     query = (
         select(Report, is_read, comment_count)
+        .join(SchoolClass, SchoolClass.id == Report.class_id)
         .options(
             selectinload(Report.student),
             selectinload(Report.school_class),
@@ -799,11 +793,7 @@ def list_student_reports(
             selectinload(Report.answers),
             selectinload(Report.project),
         )
-        .where(
-            Report.student_id == student.id,
-            Report.status == ReportStatus.SUBMITTED,
-            in_class,
-        )
+        .where(Report.status == ReportStatus.SUBMITTED, *where)
         .order_by(Report.submitted_at.desc())
     )
     return [
@@ -823,6 +813,28 @@ def list_student_reports(
         )
         for report, read, count in db.execute(query).all()
     ]
+
+
+@student_router.get("", response_model=list[StudentReportSummary])
+def list_student_reports(
+    student_id: UUID, db: DbSession, user: Teacher
+) -> list[StudentReportSummary]:
+    """Elevens inskickade redovisningar, senaste först. Går eleven i en klass som läraren
+    undervisar syns alla, även från tidigare klasser. Annars bara från lärarens klasser."""
+    student = get_student_for(db, user, student_id)
+    taught = select(class_teachers.c.class_id).where(class_teachers.c.teacher_id == user.id)
+    in_class = true() if _teaches_student_now(db, user, student.id) else Report.class_id.in_(taught)
+    return report_summaries(db, user, Report.student_id == student.id, in_class)
+
+
+def supervised_reports(db: DbSession, user: User, student_id: UUID) -> list[StudentReportSummary]:
+    """Elevens redovisningar för dagar då eleven var hos handledaren, som i handledarens lista."""
+    return report_summaries(
+        db,
+        user,
+        Report.student_id == student_id,
+        _supervised_placement().where(Placement.supervisor_id == user.id),
+    )
 
 
 class SupervisorReport(ReportSummary):

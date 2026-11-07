@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, FileText, FolderKanban, MessageSquare, Plus, X } from 'lucide-react'
+import { Check, ChevronLeft, FileText, FolderKanban, MapPin, MessageSquare, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
@@ -6,18 +6,16 @@ import { useReview, useReviewList, type ReviewItem } from '../../api/attendance'
 import { useContracts } from '../../api/contracts'
 import { useStudentNotes } from '../../api/notes'
 import { useProjects } from '../../api/projects'
-import { useSupervisedStudents } from '../../api/placements'
-import { useSupervisorReports } from '../../api/reports'
+import { useSupervisorStudent } from '../../api/students'
 import { Avatar, ButtonLink, Card } from '../../components'
 import { NotFound } from '../NotFound'
 import { NoteForm, NoteItem } from '../notes/StudentNotes'
-import { periodWeek } from '../placements/period'
-import { longDate } from '../reports/answers'
+import { periodStatus, periodText, periodWeek } from '../placements/period'
+import { AttendanceCard, ReportsSection } from '../students/StudentPage'
 import { AbsenceDialog } from './AbsenceDialog'
 import { absenceLabel } from './absence'
 import { ScheduleCard } from './ScheduleCard'
 import styles from './SupervisorStudent.module.css'
-import { WeekDots } from './WeekDots'
 import { weekDays } from './weekDays'
 
 /** Knappar för dagens närvaro, samma som i Närvaro. */
@@ -67,35 +65,31 @@ function TodayButtons({ item, today }: { item: ReviewItem; today: string }) {
 }
 
 /**
- * Handledarens sida om en elev (Texas skiss "Handledarens vy, del 2", 2026-11-03): veckans
- * närvaro, anteckningar, kontrakt, projekt och de senaste redovisningarna.
+ * Handledarens sida om en elev, i stil med lärarens elevsida (Texas skiss "Handledarens
+ * elevsida", 2026-11-07): redovisningarna som läraren ser dem, närvaron under perioden,
+ * praktikplatsen, projekt, kontrakt och anteckningar. Bara tiden hos handledaren syns.
  */
 export function SupervisorStudent() {
   const { studentId = '' } = useParams()
-  const students = useSupervisedStudents()
-  const row = students.data?.find((s) => s.student.id === studentId)
+  const student = useSupervisorStudent(studentId)
+  const row = student.data
   const notes = useStudentNotes(studentId, !!row)
-  const reports = useSupervisorReports()
   const review = useReviewList()
   const contracts = useContracts()
   const projects = useProjects()
 
-  if (students.isPending) return <p className={styles.state}>Laddar eleven…</p>
+  if (student.isPending) return <p className={styles.state}>Laddar eleven…</p>
   if (!row) return <NotFound what="Eleven" />
 
   const firstName = row.student.name.split(' ')[0]
   const { week, weeks } = periodWeek(row.start_date, row.end_date)
-  const latest = (reports.data ?? []).filter((r) => r.student.id === studentId).slice(0, 3)
-  const days = weekDays(review.data, row.placement_id)
-  const today = days.find((d) => d.isToday)?.item
-  const present = days.filter((d) => d.item?.state === 'confirmed' && !d.isToday).length
-  // Dagar före i dag. I dag räknas inte förrän dagen är bekräftad.
-  const passed = days.filter((d) => d.item && !d.future && !d.isToday).length
+  const active = periodStatus(row.start_date, row.end_date) === 'active'
+  const today = weekDays(review.data, row.placement_id).find((d) => d.isToday)?.item
   const studentContracts = (contracts.data ?? []).filter((c) => c.student.id === studentId)
   const studentProjects = (projects.data ?? []).filter(
     (p) => !p.completed_at && p.students.some((s) => s.id === studentId),
   )
-  const teachers = row.teachers ?? []
+  const chips = [row.track_name, row.class_name, row.school_name].filter(Boolean)
 
   return (
     <div className={styles.page}>
@@ -106,9 +100,15 @@ export function SupervisorStudent() {
         <Avatar name={row.student.name} size="md" />
         <div className={styles.heading}>
           <h1 className={styles.title}>{row.student.name}</h1>
-          <p className={styles.muted}>
-            {row.workplace.name} · vecka {week} av {weeks}
-            {teachers.length > 0 && ` · lärare ${teachers.map((t) => t.name).join(' och ')}`}
+          <p className={styles.chips}>
+            {chips.map((c) => (
+              <span key={c} className={styles.chip}>
+                {c}
+              </span>
+            ))}
+            {row.teachers.length > 0 && (
+              <span className={styles.muted}>Lärare: {row.teachers.map((t) => t.name).join(' och ')}</span>
+            )}
           </p>
         </div>
         <ButtonLink to={`/messages?group=${row.student.id}`} icon={<MessageSquare aria-hidden="true" />}>
@@ -118,29 +118,15 @@ export function SupervisorStudent() {
 
       <div className={styles.columns}>
         <div className={styles.stack}>
-          <Card>
-            <section className={styles.side} aria-labelledby="week-heading">
-              <h2 id="week-heading" className={styles.sectionTitle}>
-                Närvaro den här veckan
-              </h2>
-              <div className={styles.weekRow}>
-                <WeekDots days={days} />
-                {passed > 0 && (
-                  <span className={styles.muted}>
-                    {present} av {passed} {passed === 1 ? 'dag' : 'dagar'} på plats
-                  </span>
-                )}
-              </div>
-              {today ? (
-                <div className={styles.todayRow}>
-                  <span className={styles.muted}>I dag:</span>
-                  <TodayButtons item={today} today={review.data?.today ?? today.date} />
-                </div>
-              ) : (
-                review.isSuccess && <p className={styles.muted}>{firstName} har ingen APL i dag.</p>
-              )}
-            </section>
-          </Card>
+          {today && (
+            <Card>
+              <section className={styles.todayCard} aria-label="Närvaro i dag">
+                <span className={styles.todayLabel}>I dag</span>
+                <TodayButtons item={today} today={review.data?.today ?? today.date} />
+              </section>
+            </Card>
+          )}
+          <ReportsSection studentId={studentId} supervisor />
           <Card>
             <section className={styles.notes} aria-labelledby="notes-heading">
               <div>
@@ -162,6 +148,30 @@ export function SupervisorStudent() {
         </div>
 
         <div className={styles.stack}>
+          <AttendanceCard studentId={studentId} supervisor />
+          <Card>
+            <section className={styles.side} aria-labelledby="placement-heading">
+              <h2 id="placement-heading" className={styles.sideTitle}>
+                Praktikplats
+              </h2>
+              <div className={styles.itemText}>
+                <span className={styles.itemTitle}>{row.workplace.name}</span>
+                {row.workplace.address && (
+                  <span className={`${styles.muted} ${styles.address}`}>
+                    <MapPin aria-hidden="true" />
+                    {row.workplace.address}
+                  </span>
+                )}
+              </div>
+              <div className={styles.itemText}>
+                <span className={styles.muted}>Period</span>
+                <span>
+                  {periodText(row.start_date, row.end_date)}
+                  {active && ` · vecka ${week} av ${weeks}`}
+                </span>
+              </div>
+            </section>
+          </Card>
           <ScheduleCard placementId={row.placement_id} firstName={firstName} />
           {studentContracts.length > 0 && (
             <Card>
@@ -218,30 +228,6 @@ export function SupervisorStudent() {
               </section>
             </Card>
           )}
-          <Card>
-            <section className={styles.side} aria-labelledby="latest-heading">
-              <h2 id="latest-heading" className={styles.sideTitle}>
-                Senaste redovisningar
-              </h2>
-              {reports.isSuccess && latest.length === 0 && <p className={styles.muted}>Inga redovisningar än.</p>}
-              <ul className={styles.reportList}>
-                {latest.map((r) => {
-                  const day = longDate(r.due_date)
-                  return (
-                    <li key={r.id}>
-                      <Link to={`/student-reports/${r.id}`} className={styles.reportLink}>
-                        <span className={styles.reportDay}>{day.charAt(0).toUpperCase() + day.slice(1)}</span>
-                        {r.excerpt && <span className={styles.muted}>{r.excerpt.text}</span>}
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-              <Link to={`/student-reports?student=${studentId}`} className={styles.more}>
-                Se alla {firstName}s redovisningar
-              </Link>
-            </section>
-          </Card>
         </div>
       </div>
     </div>

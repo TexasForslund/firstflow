@@ -243,3 +243,54 @@ def test_private_comment_notifies_the_other_side(
     assert links(w.gustav) == [f"/student-reports/{report.id}"]
     # Sofia hade inte Hugo den dagen.
     assert links(w.sofia) == []
+
+
+# --- Handledarens elevsida (Texas, 2026-11-07) ----------------------------------------------
+
+
+@pytest.fixture
+def nov5(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.core import time
+
+    monkeypatch.setattr(time, "today", lambda: date(2026, 11, 5))
+
+
+def test_supervisor_student_page(client: TestClient, login: Login, w: World, nov5: None) -> None:
+    login(w.gustav)
+    detail = client.get(f"/api/supervisor/students/{w.hugo.id}").json()
+    assert detail["workplace"]["name"] == "Kramfors El"
+    assert detail["start_date"] == "2026-10-01"
+    assert detail["class_name"] == "EE22"
+    assert detail["school_name"] == "Kramforsskolan"
+    assert [t["id"] for t in detail["teachers"]] == [str(w.teacher.id)]
+
+    body = client.get(f"/api/supervisor/students/{w.hugo.id}/reports").json()
+    assert [r["id"] for r in body["reports"]] == [
+        str(w.reports["hugo_oct2"].id),
+        str(w.reports["hugo_oct"].id),
+    ]
+    assert body["reports"][0]["answers"][0]["text"] == "Bytte belysning"
+    # Saknade dagar bara under tiden hos Gustav, och inte dagar med en redovisning.
+    assert all("2026-10-01" <= d < "2026-11-05" for d in body["missing_days"])
+    assert "2026-10-06" not in body["missing_days"]
+
+    attendance = client.get(f"/api/supervisor/students/{w.hugo.id}/attendance").json()
+    assert attendance["from_date"] == "2026-10-01"
+    assert attendance["to_date"] == "2026-11-05"
+
+
+def test_supervisor_student_page_only_own_students(
+    client: TestClient, login: Login, w: World, nov5: None
+) -> None:
+    login(w.gustav)
+    for path in ("", "/reports", "/attendance"):
+        assert client.get(f"/api/supervisor/students/{w.maja.id}{path}").status_code == 404
+
+    # Sofia hade Hugo i september och ser bara den tiden.
+    login(w.sofia)
+    assert client.get(f"/api/supervisor/students/{w.hugo.id}").json()["end_date"] == "2026-09-30"
+    reports = client.get(f"/api/supervisor/students/{w.hugo.id}/reports").json()["reports"]
+    assert [r["id"] for r in reports] == [str(w.reports["hugo_sep"].id)]
+
+    login(w.teacher)
+    assert client.get(f"/api/supervisor/students/{w.hugo.id}").status_code == 403

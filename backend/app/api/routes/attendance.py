@@ -764,10 +764,21 @@ def student_attendance(
 ) -> StudentAttendanceDetail:
     """Elevens närvaro. Utan period gäller den pågående eller senaste placeringen."""
     student = get_student_for(db, user, student_id)
-    today = time.today()
     placements = db.scalars(
         select(Placement).where(Placement.student_id == student.id).order_by(Placement.start_date)
     ).all()
+    return attendance_detail(db, student, list(placements), from_date, to_date)
+
+
+def attendance_detail(
+    db: DbSession,
+    student: User,
+    placements: list[Placement],
+    from_date: date | None = None,
+    to_date: date | None = None,
+) -> StudentAttendanceDetail:
+    """Närvaron i de angivna placeringarna. Utan period gäller den pågående eller senaste."""
+    today = time.today()
     if from_date is None or to_date is None:
         started = [p for p in placements if p.start_date <= today]
         if started:

@@ -6490,6 +6490,153 @@
           }
         }
       }
+    },
+    "/api/supervisor/students/{student_id}": {
+      "get": {
+        "tags": [
+          "supervisor"
+        ],
+        "summary": "Supervisor Student",
+        "description": "Eleven, placeringen hos handledaren, klassen och lärarna.",
+        "operationId": "supervisor_student_api_supervisor_students__student_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupervisorStudentDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/supervisor/students/{student_id}/attendance": {
+      "get": {
+        "tags": [
+          "supervisor"
+        ],
+        "summary": "Supervisor Student Attendance",
+        "description": "Närvaron under placeringen hos handledaren.",
+        "operationId": "supervisor_student_attendance_api_supervisor_students__student_id__attendance_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentAttendanceDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/supervisor/students/{student_id}/reports": {
+      "get": {
+        "tags": [
+          "supervisor"
+        ],
+        "summary": "Supervisor Student Reports",
+        "description": "Redovisningarna för dagar då eleven var hos handledaren, och de som saknas.",
+        "operationId": "supervisor_student_reports_api_supervisor_students__student_id__reports_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupervisorStudentReports"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12321,6 +12468,111 @@
           "excerpt"
         ],
         "title": "SupervisorReport"
+      },
+      "SupervisorStudentDetail": {
+        "properties": {
+          "placement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Placement Id"
+          },
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "workplace": {
+            "$ref": "#/components/schemas/WorkplaceRef"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          },
+          "teachers": {
+            "items": {
+              "$ref": "#/components/schemas/Ref"
+            },
+            "type": "array",
+            "title": "Teachers"
+          },
+          "school_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "School Name"
+          },
+          "class_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Name"
+          },
+          "track_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Name",
+            "description": "Elevens inriktning i klassen, om den finns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "placement_id",
+          "student",
+          "workplace",
+          "start_date",
+          "end_date",
+          "teachers",
+          "school_name",
+          "class_name",
+          "track_name"
+        ],
+        "title": "SupervisorStudentDetail"
+      },
+      "SupervisorStudentReports": {
+        "properties": {
+          "reports": {
+            "items": {
+              "$ref": "#/components/schemas/StudentReportSummary"
+            },
+            "type": "array",
+            "title": "Reports"
+          },
+          "missing_days": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Missing Days",
+            "description": "Redovisningsdagar hos handledaren före i dag utan inskickad redovisning, senaste först"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reports",
+          "missing_days"
+        ],
+        "title": "SupervisorStudentReports"
       },
       "SupervisorWorkplace": {
         "properties": {
