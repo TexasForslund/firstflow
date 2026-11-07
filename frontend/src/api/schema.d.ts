@@ -708,6 +708,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reports/{report_id}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Image
+         * @description Laddar upp en bild till en fråga av typen Bilder. Bilden görs mindre (längsta sidan
+         *     1600 px) och sparas som WebP utan platsdata. Den blir ett svar när eleven sparar svaret
+         *     med bildens id.
+         */
+        post: operations["upload_image_api_reports__report_id__images_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report_id}/images/{image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Image
+         * @description Bilden, för eleven och för de som får läsa redovisningen.
+         */
+        get: operations["get_image_api_reports__report_id__images__image_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Image
+         * @description Tar bort en bild ur ett utkast, och ur svaret om den fanns där.
+         */
+        delete: operations["delete_image_api_reports__report_id__images__image_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reports/{report_id}/submit": {
         parameters: {
             query?: never;
@@ -2383,6 +2429,8 @@ export interface components {
             boolean: boolean | null;
             /** Rating */
             rating: number | null;
+            /** Image Ids */
+            image_ids: string[] | null;
             /**
              * Question Id
              * Format: uuid
@@ -2397,6 +2445,7 @@ export interface components {
          *     - Flerval: `choice_ids` och, om "Annat" är tillåtet, `other_text`
          *     - Ja/Nej: `boolean`
          *     - Betyg: `rating` (1–5)
+         *     - Bilder: `image_ids`, i ordning. Bilderna laddas upp först, var för sig
          *     Ett tomt svar (t.ex. bara mellanslag) räknas som obesvarat.
          */
         AnswerValue: {
@@ -2410,6 +2459,8 @@ export interface components {
             boolean?: boolean | null;
             /** Rating */
             rating?: number | null;
+            /** Image Ids */
+            image_ids?: string[] | null;
         };
         /**
          * AplTerms
@@ -2587,6 +2638,19 @@ export interface components {
              * @description Bilder och filer, högst 10 MB var
              */
             files?: string[] | null;
+        };
+        /** Body_upload_image_api_reports__report_id__images_post */
+        Body_upload_image_api_reports__report_id__images_post: {
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /**
+             * File
+             * @description En bild, högst 20 MB
+             */
+            file: string;
         };
         /** Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put */
         Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put: {
@@ -3188,7 +3252,7 @@ export interface components {
          */
         "FormContent-Input": {
             /** Questions */
-            questions?: (components["schemas"]["ShortTextQuestion-Input"] | components["schemas"]["LongTextQuestion-Input"] | components["schemas"]["ChoiceQuestion-Input"] | components["schemas"]["YesNoQuestion-Input"] | components["schemas"]["RatingQuestion-Input"] | components["schemas"]["StatementQuestion-Input"])[];
+            questions?: (components["schemas"]["ShortTextQuestion-Input"] | components["schemas"]["LongTextQuestion-Input"] | components["schemas"]["ChoiceQuestion-Input"] | components["schemas"]["YesNoQuestion-Input"] | components["schemas"]["RatingQuestion-Input"] | components["schemas"]["ImagesQuestion-Input"] | components["schemas"]["StatementQuestion-Input"])[];
         };
         /**
          * FormContent
@@ -3196,7 +3260,7 @@ export interface components {
          */
         "FormContent-Output": {
             /** Questions */
-            questions: (components["schemas"]["ShortTextQuestion-Output"] | components["schemas"]["LongTextQuestion-Output"] | components["schemas"]["ChoiceQuestion-Output"] | components["schemas"]["YesNoQuestion-Output"] | components["schemas"]["RatingQuestion-Output"] | components["schemas"]["StatementQuestion-Output"])[];
+            questions: (components["schemas"]["ShortTextQuestion-Output"] | components["schemas"]["LongTextQuestion-Output"] | components["schemas"]["ChoiceQuestion-Output"] | components["schemas"]["YesNoQuestion-Output"] | components["schemas"]["RatingQuestion-Output"] | components["schemas"]["ImagesQuestion-Output"] | components["schemas"]["StatementQuestion-Output"])[];
         };
         /** FormRead */
         FormRead: {
@@ -3302,6 +3366,96 @@ export interface components {
              * @enum {string}
              */
             database: "ok" | "unavailable";
+        };
+        /** ImageRead */
+        ImageRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+        };
+        /**
+         * ImagesQuestion
+         * @description Eleven tar foton eller väljer bilder. Bilderna görs mindre och sparas som WebP.
+         */
+        "ImagesQuestion-Input": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks?: string[];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "images";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /**
+             * Max Images
+             * @description Högst antal bilder
+             * @default 4
+             */
+            max_images: number;
+        };
+        /**
+         * ImagesQuestion
+         * @description Eleven tar foton eller väljer bilder. Bilderna görs mindre och sparas som WebP.
+         */
+        "ImagesQuestion-Output": {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Tracks
+             * @description Inriktningar som får frågan. Tom = alla elever
+             */
+            tracks: string[];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "images";
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /**
+             * Max Images
+             * @description Högst antal bilder
+             * @default 4
+             */
+            max_images: number;
         };
         /** ImportPerson */
         ImportPerson: {
@@ -4255,7 +4409,7 @@ export interface components {
             /** Form Version */
             form_version: number;
             /** Questions */
-            questions: (components["schemas"]["ShortTextQuestion-Output"] | components["schemas"]["LongTextQuestion-Output"] | components["schemas"]["ChoiceQuestion-Output"] | components["schemas"]["YesNoQuestion-Output"] | components["schemas"]["RatingQuestion-Output"] | components["schemas"]["StatementQuestion-Output"])[];
+            questions: (components["schemas"]["ShortTextQuestion-Output"] | components["schemas"]["LongTextQuestion-Output"] | components["schemas"]["ChoiceQuestion-Output"] | components["schemas"]["YesNoQuestion-Output"] | components["schemas"]["RatingQuestion-Output"] | components["schemas"]["ImagesQuestion-Output"] | components["schemas"]["StatementQuestion-Output"])[];
             /** Answers */
             answers: components["schemas"]["AnswerRead"][];
             /**
@@ -6653,6 +6807,103 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReportDetail"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_image_api_reports__report_id__images_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_image_api_reports__report_id__images_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_image_api_reports__report_id__images__image_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_image_api_reports__report_id__images__image_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -644,7 +644,9 @@
   background: var(--color-surface);
   appearance: none;
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
 }
 
 .switch::after {
@@ -656,7 +658,9 @@
   height: 1rem;
   border-radius: 50%;
   background: var(--color-text-muted);
-  transition: transform 0.15s, background-color 0.15s;
+  transition:
+    transform 0.15s,
+    background-color 0.15s;
 }
 
 .switch:checked {
@@ -979,4 +983,23 @@
 .goalInput {
   flex: 1;
   min-width: 0;
+}
+
+/* Bildfråga (idé 12): så här ser rutan ut för eleven. */
+.fakePhotos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: min(100%, 22rem);
+  min-height: 7rem;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.fakePhotos svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }

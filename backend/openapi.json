@@ -2013,6 +2013,170 @@
         }
       }
     },
+    "/api/reports/{report_id}/images": {
+      "post": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Upload Image",
+        "description": "Laddar upp en bild till en fråga av typen Bilder. Bilden görs mindre (längsta sidan\n1600 px) och sparas som WebP utan platsdata. Den blir ett svar när eleven sparar svaret\nmed bildens id.",
+        "operationId": "upload_image_api_reports__report_id__images_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_image_api_reports__report_id__images_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/{report_id}/images/{image_id}": {
+      "delete": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Delete Image",
+        "description": "Tar bort en bild ur ett utkast, och ur svaret om den fanns där.",
+        "operationId": "delete_image_api_reports__report_id__images__image_id__delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Image",
+        "description": "Bilden, för eleven och för de som får läsa redovisningen.",
+        "operationId": "get_image_api_reports__report_id__images__image_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Report Id"
+            }
+          },
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/webp": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/{report_id}/submit": {
       "post": {
         "tags": [
@@ -6802,6 +6966,22 @@
             ],
             "title": "Rating"
           },
+          "image_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Ids"
+          },
           "question_id": {
             "type": "string",
             "format": "uuid",
@@ -6816,6 +6996,7 @@
           "other_text",
           "boolean",
           "rating",
+          "image_ids",
           "question_id"
         ],
         "title": "AnswerRead"
@@ -6885,12 +7066,28 @@
               }
             ],
             "title": "Rating"
+          },
+          "image_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Ids"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "title": "AnswerValue",
-        "description": "Ett svar. Fyll bara i fältet som passar frågetypen.\n\n- Kort text och fritext: `text`\n- Flerval: `choice_ids` och, om \"Annat\" är tillåtet, `other_text`\n- Ja/Nej: `boolean`\n- Betyg: `rating` (1–5)\nEtt tomt svar (t.ex. bara mellanslag) räknas som obesvarat."
+        "description": "Ett svar. Fyll bara i fältet som passar frågetypen.\n\n- Kort text och fritext: `text`\n- Flerval: `choice_ids` och, om \"Annat\" är tillåtet, `other_text`\n- Ja/Nej: `boolean`\n- Betyg: `rating` (1–5)\n- Bilder: `image_ids`, i ordning. Bilderna laddas upp först, var för sig\nEtt tomt svar (t.ex. bara mellanslag) räknas som obesvarat."
       },
       "AplTerms": {
         "properties": {
@@ -7271,6 +7468,27 @@
         },
         "type": "object",
         "title": "Body_send_message_api_messages_conversations__conversation_id__messages_post"
+      },
+      "Body_upload_image_api_reports__report_id__images_post": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Question Id"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "En bild, högst 20 MB"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "file"
+        ],
+        "title": "Body_upload_image_api_reports__report_id__images_post"
       },
       "Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put": {
         "properties": {
@@ -8582,6 +8800,9 @@
                   "$ref": "#/components/schemas/RatingQuestion-Input"
                 },
                 {
+                  "$ref": "#/components/schemas/ImagesQuestion-Input"
+                },
+                {
                   "$ref": "#/components/schemas/StatementQuestion-Input"
                 }
               ],
@@ -8589,6 +8810,7 @@
                 "propertyName": "type",
                 "mapping": {
                   "choice": "#/components/schemas/ChoiceQuestion-Input",
+                  "images": "#/components/schemas/ImagesQuestion-Input",
                   "long_text": "#/components/schemas/LongTextQuestion-Input",
                   "rating": "#/components/schemas/RatingQuestion-Input",
                   "short_text": "#/components/schemas/ShortTextQuestion-Input",
@@ -8628,6 +8850,9 @@
                   "$ref": "#/components/schemas/RatingQuestion-Output"
                 },
                 {
+                  "$ref": "#/components/schemas/ImagesQuestion-Output"
+                },
+                {
                   "$ref": "#/components/schemas/StatementQuestion-Output"
                 }
               ],
@@ -8635,6 +8860,7 @@
                 "propertyName": "type",
                 "mapping": {
                   "choice": "#/components/schemas/ChoiceQuestion-Output",
+                  "images": "#/components/schemas/ImagesQuestion-Output",
                   "long_text": "#/components/schemas/LongTextQuestion-Output",
                   "rating": "#/components/schemas/RatingQuestion-Output",
                   "short_text": "#/components/schemas/ShortTextQuestion-Output",
@@ -8893,6 +9119,150 @@
           "database"
         ],
         "title": "HealthResponse"
+      },
+      "ImageRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "width",
+          "height"
+        ],
+        "title": "ImageRead"
+      },
+      "ImagesQuestion-Input": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
+          "type": {
+            "type": "string",
+            "const": "images",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "max_images": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Images",
+            "description": "Högst antal bilder",
+            "default": 4
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "type"
+        ],
+        "title": "ImagesQuestion",
+        "description": "Eleven tar foton eller väljer bilder. Bilderna görs mindre och sparas som WebP."
+      },
+      "ImagesQuestion-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "default": ""
+          },
+          "tracks": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Tracks",
+            "description": "Inriktningar som får frågan. Tom = alla elever"
+          },
+          "type": {
+            "type": "string",
+            "const": "images",
+            "title": "Type"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "max_images": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Images",
+            "description": "Högst antal bilder",
+            "default": 4
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "tracks",
+          "type",
+          "required",
+          "max_images"
+        ],
+        "title": "ImagesQuestion",
+        "description": "Eleven tar foton eller väljer bilder. Bilderna görs mindre och sparas som WebP."
       },
       "ImportPerson": {
         "properties": {
@@ -11036,6 +11406,9 @@
                   "$ref": "#/components/schemas/RatingQuestion-Output"
                 },
                 {
+                  "$ref": "#/components/schemas/ImagesQuestion-Output"
+                },
+                {
                   "$ref": "#/components/schemas/StatementQuestion-Output"
                 }
               ],
@@ -11043,6 +11416,7 @@
                 "propertyName": "type",
                 "mapping": {
                   "choice": "#/components/schemas/ChoiceQuestion-Output",
+                  "images": "#/components/schemas/ImagesQuestion-Output",
                   "long_text": "#/components/schemas/LongTextQuestion-Output",
                   "rating": "#/components/schemas/RatingQuestion-Output",
                   "short_text": "#/components/schemas/ShortTextQuestion-Output",

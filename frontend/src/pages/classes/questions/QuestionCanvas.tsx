@@ -1,4 +1,4 @@
-import { Check, Star, X } from 'lucide-react'
+import { Camera, Check, Star, X } from 'lucide-react'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 
 import type { ChoiceQuestion, Question } from '../../../api/forms'
@@ -111,6 +111,17 @@ function AnswerPreview({ question, onChange }: { question: Question; onChange: (
             </span>
           ))}
         </div>
+      )
+    case 'images':
+      return (
+        <>
+          <p className={styles.fakePhotos}>
+            <Camera aria-hidden="true" /> Ta foto eller välj bilder
+          </p>
+          <p className={styles.hintText}>
+            Högst {question.max_images} {question.max_images === 1 ? 'bild' : 'bilder'}
+          </p>
+        </>
       )
     case 'statement':
       return (

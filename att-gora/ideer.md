@@ -195,6 +195,6 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
 
 **Övrigt:**
 - **Sammanfattning av projektet:** ska eleven sammanfatta ett projekt när det är klart? Ett exempel är projektet "Bygga hemsida", där eleven delar filer, länkar och bilder. Sammanfattningen ser olika ut för olika program. Hantverkselever bygger till exempel ingen hemsida.
-- **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP.
+- **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP. ✅ Byggt i #77 (2026-11-07).
 
 Hänger ihop med: B4 (närvaro), B11 (meddelanden), projekt (idé 2), B5 (frågor), idé 7 (kalender).

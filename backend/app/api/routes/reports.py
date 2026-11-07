@@ -24,9 +24,19 @@ from datetime import date, datetime, timedelta
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from pydantic import BaseModel, Field, StringConstraints
-from sqlalchemy import exists, func, select, true
+from sqlalchemy import delete, exists, func, select, true
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -45,11 +55,13 @@ from app.models.report import (
     Report,
     ReportAnswer,
     ReportComment,
+    ReportImage,
     ReportRead,
     ReportStatus,
 )
 from app.models.school_class import SchoolClass, class_students, class_teachers
 from app.models.user import User, UserRole
+from app.services.images import MAX_UPLOAD_BYTES, ImageError, compress
 from app.services.report_forms import (
     AnswerError,
     AnswerValue,
@@ -535,6 +547,17 @@ def save_answer(
     except AnswerError as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)) from None
 
+    if answer is not None and answer.image_ids:
+        own = set(
+            db.scalars(
+                select(ReportImage.id).where(
+                    ReportImage.report_id == report.id, ReportImage.question_id == question_id
+                )
+            )
+        )
+        if any(i not in own for i in answer.image_ids):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Bilden finns inte")
+
     if answer is None:
         existing = db.get(ReportAnswer, (report.id, question_id))
         if existing is not None:
@@ -582,6 +605,101 @@ def set_project(report_id: UUID, body: ReportProject, db: DbSession, user: Stude
     return _detail(db, user, report)
 
 
+class ImageRead(BaseModel):
+    id: UUID
+    width: int
+    height: int
+
+
+def _images_question(report: Report, question_id: UUID):  # noqa: ANN202
+    question = next(
+        (q for q in parse_questions(report.form_version.questions) if q.id == question_id), None
+    )
+    if question is None or question.type != QuestionType.IMAGES:
+        raise _not_found()
+    return question
+
+
+@router.post("/{report_id}/images", response_model=ImageRead, status_code=status.HTTP_201_CREATED)
+def upload_image(
+    report_id: UUID,
+    db: DbSession,
+    user: Student,
+    question_id: Annotated[UUID, Form()],
+    file: Annotated[UploadFile, File(description="En bild, högst 20 MB")],
+) -> ImageRead:
+    """Laddar upp en bild till en fråga av typen Bilder. Bilden görs mindre (längsta sidan
+    1600 px) och sparas som WebP utan platsdata. Den blir ett svar när eleven sparar svaret
+    med bildens id."""
+    data = file.file.read(MAX_UPLOAD_BYTES + 1)
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Bilden är för stor")
+    report = _get_report(db, user, report_id, for_update=True)
+    _require_draft(report)
+    question = _images_question(report, question_id)
+    count = db.scalar(
+        select(func.count()).where(
+            ReportImage.report_id == report.id, ReportImage.question_id == question_id
+        )
+    )
+    if (count or 0) >= question.max_images:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Du kan skicka högst {question.max_images} bilder",
+        )
+    try:
+        webp, width, height = compress(data)
+    except ImageError as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)) from None
+    image = ReportImage(
+        report_id=report.id,
+        question_id=question_id,
+        width=width,
+        height=height,
+        size=len(webp),
+        data=webp,
+    )
+    db.add(image)
+    db.commit()
+    return ImageRead(id=image.id, width=width, height=height)
+
+
+@router.delete("/{report_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_image(report_id: UUID, image_id: UUID, db: DbSession, user: Student) -> Response:
+    """Tar bort en bild ur ett utkast, och ur svaret om den fanns där."""
+    report = _get_report(db, user, report_id, for_update=True)
+    _require_draft(report)
+    image = db.get(ReportImage, image_id)
+    if image is None or image.report_id != report.id:
+        raise _not_found()
+    answer = db.get(ReportAnswer, (report.id, image.question_id))
+    if answer is not None and answer.image_ids and image_id in answer.image_ids:
+        rest = [i for i in answer.image_ids if i != image_id]
+        if rest:
+            answer.image_ids = rest
+        else:
+            db.delete(answer)
+    db.delete(image)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/{report_id}/images/{image_id}",
+    response_class=Response,
+    responses={200: {"content": {"image/webp": {}}}},
+)
+def get_image(report_id: UUID, image_id: UUID, db: DbSession, user: Reader) -> Response:
+    """Bilden, för eleven och för de som får läsa redovisningen."""
+    report = _get_report(db, user, report_id)
+    image = db.get(ReportImage, image_id)
+    if image is None or image.report_id != report.id:
+        raise _not_found()
+    return Response(
+        image.data, media_type="image/webp", headers={"Cache-Control": "private, max-age=86400"}
+    )
+
+
 @router.post("/{report_id}/submit", response_model=ReportDetail)
 def submit_report(report_id: UUID, db: DbSession, user: Student) -> ReportDetail:
     """Skickar in redovisningen. Alla obligatoriska frågor som eleven får måste vara besvarade.
@@ -607,9 +725,16 @@ def submit_report(report_id: UUID, db: DbSession, user: Student) -> ReportDetail
                 detail=f'Svara på frågan "{question.title}" innan du skickar in',
             )
     on_path = set(path)
+    kept: set[UUID] = set()
     for question_id, answer in answers.items():
         if question_id not in on_path:
             db.delete(answer)
+        else:
+            kept.update(answer.image_ids or [])
+    # Bilder som eleven laddade upp men inte skickar in tas bort.
+    db.execute(
+        delete(ReportImage).where(ReportImage.report_id == report.id, ReportImage.id.not_in(kept))
+    )
     report.status = ReportStatus.SUBMITTED
     report.submitted_at = time.now()
     db.commit()
