@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { hhmm, type HoursDay } from '../../api/hours'
 import styles from './HoursEditor.module.css'
 
-const DAYS = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag']
+const DAYS = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+const WEEKDAYS = [0, 1, 2, 3, 4]
 
 // Svensk 24-timmarsklocka i kvartssteg. Webbläsarens tidsfält visar AM/PM på en engelsk dator
 // (Texas, 2026-11-07: "Vi måste ha svenska klockan").
@@ -35,7 +36,7 @@ function TimeSelect({
 }
 
 /**
- * Arbetstider måndag till fredag: en rad per dag med på/av och start- och sluttid, och en rad
+ * Arbetstider måndag till söndag: en rad per dag med på/av och start- och sluttid, och en rad
  * överst som fyller i samma tider alla dagar (Texas skiss "Schema och incheckning", 2026-11-07).
  */
 export function HoursEditor({ value, onChange }: { value: HoursDay[]; onChange: (days: HoursDay[]) => void }) {
@@ -60,7 +61,11 @@ export function HoursEditor({ value, onChange }: { value: HoursDay[]; onChange: 
           type="button"
           className={styles.use}
           disabled={!allStart || !allEnd || allEnd <= allStart}
-          onClick={() => onChange(DAYS.map((_, weekday) => ({ weekday, start: allStart, end: allEnd })))}
+          onClick={() => {
+            // De dagar som är på, annars måndag till fredag. Helgen slås bara på för hand (Texas 2026-11-07).
+            const on = value.length > 0 ? value.map((d) => d.weekday) : WEEKDAYS
+            onChange(on.map((weekday) => ({ weekday, start: allStart, end: allEnd })))
+          }}
         >
           Använd
         </button>
