@@ -1,159 +1,68 @@
 # Skoladministratörsfunktioner
 
-**Status:** Planerad (krävs för Norrköpingsupphandlingen)  
-**Krav:** 1.8.1, 1.8.3, 1.8.6 (alla Ska)
+**Status:** Planerad, inte prioriterad  
+**Källa:** krav 1.8.1–1.8.6 i Norrköpings upphandling (se [upphandling-norrköping.md](upphandling-norrköping.md))
+
+Rollen `school_admin` finns redan (B1b). Det som saknas är de ekonomiska underlagen: lärlingsersättning, matersättning och statsbidrag. Firstflow betalar inte ut något. Underlagen exporteras och utbetalningen sker i kommunens ekonomisystem.
+
+> Den tidigare versionen av dokumentet beskrev Skolverkets "lärarkategorier". Det kravet finns inte i upphandlingen och är borttaget. 1.8.1 handlar om lärlingsersättning.
 
 ---
 
-## Översikt
+## 1.8.1 – Lärlingsersättning för statsbidrag (Ska)
 
-Skoladministratören är en separat roll i Firstflow med administrativa funktioner som inte är relevanta för lärare, elever eller handledare. Dessa funktioner krävs primärt för kommunal rapportering och bidragshantering.
+Skolor med lärlingsutbildning kan söka statsbidrag från Skolverket och betalar ut lärlingsersättning till arbetsplatserna för handledningen. Skoladministratören ska kunna administrera registreringen i Firstflow.
 
-Ny roll att lägga till: `school_admin`
+Det som behövs per arbetsplats och period:
+- Företagets juridiska namn och eventuellt annat namn, org.nr.
+- Bankuppgifter för utbetalning: bank, BG eller PG, kontonummer med clearingnummer och märkning på insättningen.
+- Handledarens namn och om handledaren har gått Skolverkets handledarutbildning (vilken version) eller annan godkänd utbildning (se B32).
+- Utbildningskontraktets giltighetstid (B8).
+- Lärarens kommentar inför utbetalningen, t.ex. om ersättningen delas.
 
----
+Frågor att stämma av med en pilotskola innan något byggs:
+- Vilka uppgifter Skolverket faktiskt kräver i ansökan och om de ändras mellan åren.
+- Vem som ska få lägga in och se bankuppgifter. Uppgifterna rör företag, men handledarens namn och elevkopplingen är personuppgifter.
 
-## 1.8.1 – Skolverkets lärarkategorier
+## 1.8.3 – Underlag för matersättning (Ska)
 
-### Vad det är
+Elever på APL kan ha rätt till ersättning för måltider. Skoladministratören tar fram ett underlag som sedan betalas ut via ekonomisystemet.
 
-Skolverket definierar kategorier för hur lärare klassificeras i APL-sammanhang. Kategorierna används för statistikrapportering och påverkar statsbidragsberäkningar.
+Underlaget bör innehålla per elev och period: elev, klass, APL-plats, period och antal APL-dagar (finns via B3, B4 och B19). Exakt vilka fält kommunen behöver är inte angivet i upphandlingen.
 
-### Nuvarande kategorier (kan uppdateras av Skolverket)
+## 1.8.2 – Intyg från handledarutbildningen (Ska)
 
-| Kod | Beskrivning |
-|---|---|
-| 1 | Lärare med lärarlegitimation och behörighet i ämnet |
-| 2 | Lärare med lärarlegitimation men utan behörighet i ämnet |
-| 3 | Lärare utan lärarlegitimation |
-| 4 | Yrkeslärare med relevant yrkeserfarenhet (APL-specifik) |
-| 5 | Annan personal |
+Skoladministratören ser intygen som handledarna har laddat upp. Se B32.
 
-> ⚠️ Dessa koder måste vara konfigurerbara i systemet — Skolverket uppdaterar dem vid regeländringar. Hårdkoda dem inte.
+## 1.8.4 – Egen arbetsyta (Bör)
 
-### Implementation
+Skoladministratören har en egen startsida.
 
-- Administrerbar lista i databasen (inte hårdkodad enum)
-- Skoladministratör kan se och uppdatera lärares kategoritillhörighet
-- Kategorin exporteras i statsbidragsrapporten
+## 1.8.5 och 1.8.6 – Excelrapporter
 
-```python
-# app/models/teacher_category.py
-class TeacherCategory(Base):
-    id: int
-    code: str           # t.ex. "1", "2", "3"
-    description: str    # Skolverkets text
-    is_active: bool
+- **1.8.5 (Bör):** rapport inför utbetalning till praktikplatsen.
+- **1.8.6 (Ska):** rapport inför ansökan om statsbidrag.
 
-class TeacherCategoryAssignment(Base):
-    user_id: UUID       # läraren
-    category_id: int
-    school_id: UUID
-    valid_from: date
-    valid_until: date | None
-```
+Båda har en rad per företag med samma tio kolumner: företagsnamn (juridiskt och annat), org.nr, bank, BG/PG, kontonummer med clearingnummer, märkning eller kostnadsställe, handledarens namn, handledarutbildning, lärarens kommentar och kontraktets giltighet. Inga personnummer.
 
----
-
-## 1.8.3 – Underlag för materialsersättning
-
-### Vad det är
-
-När en elev är på APL kan skolan ha rätt till ersättning för material som används på arbetsplatsen. Skoladministratören behöver ett sammanställt underlag att skicka till kommunen.
-
-### Vad underlaget ska innehålla
-
-Per rad:
-- Elevens namn
-- Klass och program
-- APL-plats (arbetsplatsens namn och adress)
-- Period (start- och slutdatum)
-- Antal APL-dagar
-- Eventuell kommentar
-
-### Exportformat
-
-- Excel (xlsx) med en rad per elev/period
-- Filtrerbart per klass, program, period
-
-### Endpoint
-
-```
-GET /api/admin/reports/material-compensation?from=&to=&class_id=
-  → Excel-fil
-```
-
----
-
-## 1.8.6 – Statsbidragsrapport i Excel
-
-### Vad det är
-
-Skolverket betalar ut statsbidrag för lärlingsutbildning. Skolan rapporterar underlag i ett specifikt Excel-format som Skolverket definierar.
-
-### Skolverkets format (lärlingsutbildning)
-
-Rapporten innehåller typiskt:
-
-| Kolumn | Beskrivning |
-|---|---|
-| Skolenhetens namn | |
-| Skolenhetskod | Skolverkets 8-siffriga kod |
-| Elevens personnummer | |
-| Elevens namn | |
-| Program | Gy11/Gy25-programkod |
-| Kurs | Kurskod |
-| Lärarens lärarkategori | Skolverkets kod (1–5) |
-| APL-period start | |
-| APL-period slut | |
-| Antal timmar APL | |
-| Arbetsplats | |
-
-> ⚠️ Skolverket uppdaterar rapportformatet vid regeländringar. Håll formatet konfigurerbart eller lätt att uppdatera.
-
-### Implementation
-
-Använd `openpyxl` för att generera xlsx med rätt kolumnrubriker och format.
-
-```python
-# app/api/routes/admin_reports.py
-
-@router.get("/admin/reports/state-subsidy")
-async def state_subsidy_report(
-    school_year: str,  # t.ex. "2026/2027"
-    db: DbSession,
-    user: Annotated[User, Depends(require_roles(UserRole.SCHOOL_ADMIN))]
-):
-    # Hämta data, generera xlsx, returnera som StreamingResponse
-    ...
-```
-
-### Endpoint
-
-```
-GET /api/admin/reports/state-subsidy?school_year=2026/2027
-  → Excel-fil (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
-```
+Excel genereras med `openpyxl`, som redan används i importen (B20).
 
 ---
 
 ## Rollmodell för school_admin
 
 `school_admin` ska kunna:
-- Se alla elever, klasser och lärare på sin skola
-- Registrera och uppdatera lärarkategorier
-- Generera alla rapporter
-- Hantera exportfunktioner
+- se elever, klasser, lärare och företag på sin skola
+- lägga in och ändra uppgifter för lärlingsersättning
+- ta ut rapporterna ovan
 
-`school_admin` ska **inte** kunna:
-- Redigera elevdokumentation eller bedömningar
-- Se kommunikation mellan elev och lärare
-- Administrera andra skolor (om multi-tenant används)
+`school_admin` ska inte kunna:
+- redigera elevens redovisningar eller lärarens bedömningar
+- läsa meddelanden mellan elev, lärare och handledare
+- se andra skolor
 
----
+## Ordning (förslag)
 
-## Prioriteringsordning
-
-1. Lärarkategorier (databas + admin-UI) — relativt enkelt
-2. Materialsersättningsunderlag — Excel-export
-3. Statsbidragsrapport — kräver att Skolverkets exakta format är känt
+1. Org.nr och bankuppgifter på företaget, med behörighet för skoladmin.
+2. Rapporten för 1.8.6, som också täcker 1.8.5.
+3. Matersättning, när en pilotskola har visat vilket underlag de använder i dag.

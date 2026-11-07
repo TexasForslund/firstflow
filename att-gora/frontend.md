@@ -117,19 +117,18 @@ Ursprunglig spec: När F1–F5 fungerar mot demodatan från `scripts/seed_demo.p
 
 ---
 
-## F7. Skoladministratör – lärarkategorier och rapporter ⬜
+## F7. Skoladministratör – lärlingsersättning och ekonomiunderlag ⬜
 
-Väntar på: B7 (skoladmin-endpoints, backend).
+Väntar på: B7. Rättad 2026-11-04 av Hannes + Claude: kravet gäller lärlingsersättning, inte lärarkategorier.
 
-**Mål:** Skoladministratören kan registrera lärarkategorier och exportera rapporter.
+**Mål:** Skoladministratören lägger in företagens uppgifter för utbetalning och laddar ner statsbidragsrapporten.
 
 **Gör så här**
 
-1. Ny roll `school_admin` i appskalet: navigering med flikarna Lärarkategorier, Rapporter.
-2. `/admin/teacher-categories`: lista lärare med nuvarande kategori (Skolverkets kod + beskrivning). Formulär för att ändra kategori.
-3. `/admin/reports`: två knappar — "Materialsersättningsunderlag" och "Statsbidragsrapport". Datumväljare för period/läsår. Knapp triggar nedladdning av Excel-fil från backend.
+1. Under Praktikplatser för skoladmin: org.nr och bankuppgifter per företag.
+2. Sidan Rapporter: datumväljare och knappen "Statsbidragsrapport" som laddar ner Excel-filen från B7.
 
-**Klart när:** det går att ändra en lärares kategori och ladda ner båda rapporterna.
+**Klart när:** det går att lägga in uppgifterna för ett företag och ladda ner rapporten.
 
 ---
 
