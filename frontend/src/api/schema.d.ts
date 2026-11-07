@@ -2136,6 +2136,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AbsenceReason
+         * @description Handledarens förklaring när eleven inte var på plats (Texas, 2026-11-07). Valfri, och bara
+         *     personalen ser den.
+         * @enum {string}
+         */
+        AbsenceReason: "sick" | "leave" | "other";
         /** AcceptInvite */
         AcceptInvite: {
             /**
@@ -4055,6 +4062,9 @@ export interface components {
             state: components["schemas"]["DayState"];
             /** Checked In At */
             checked_in_at: string | null;
+            absence_reason?: components["schemas"]["AbsenceReason"] | null;
+            /** Absence Note */
+            absence_note?: string | null;
         };
         /** ReviewList */
         ReviewList: {
@@ -4098,6 +4108,9 @@ export interface components {
              */
             date: string;
             verdict: components["schemas"]["AttendanceReview"];
+            absence_reason?: components["schemas"]["AbsenceReason"] | null;
+            /** Absence Note */
+            absence_note?: string | null;
         };
         /** RowErrorRead */
         RowErrorRead: {
@@ -4840,6 +4853,10 @@ export interface components {
             state: components["schemas"]["DayState"];
             /** Checked In At */
             checked_in_at: string | null;
+            /** @description Handledarens förklaring när eleven inte var på plats */
+            absence_reason?: components["schemas"]["AbsenceReason"] | null;
+            /** Absence Note */
+            absence_note?: string | null;
         };
         /** WeekStudent */
         WeekStudent: {

@@ -1,6 +1,7 @@
 import { Check, Minus } from 'lucide-react'
 
 import { clockTime, dayStateText, type DayState } from '../../api/attendance'
+import { absenceLabel, type AbsenceReason } from '../supervisor/absence'
 import styles from './DayMark.module.css'
 
 /**
@@ -12,14 +13,21 @@ export function DayMark({
   state,
   checkedInAt,
   showTime = false,
+  absenceReason,
+  absenceNote,
 }: {
   state: DayState
   checkedInAt?: string | null
   showTime?: boolean
+  /** Handledarens förklaring när eleven inte var på plats (Texas, 2026-11-07). */
+  absenceReason?: AbsenceReason | null
+  absenceNote?: string | null
 }) {
   const conflict = state === 'not_present' && !!checkedInAt
   const added = state === 'confirmed' && !checkedInAt
-  const text = dayStateText(state, checkedInAt)
+  const reason = state === 'not_present' && absenceReason ? absenceLabel[absenceReason] : null
+  const note = state === 'not_present' && absenceNote ? absenceNote : null
+  const text = [dayStateText(state, checkedInAt), reason, note && `”${note}”`].filter(Boolean).join(' · ')
   return (
     <span className={styles.wrap} title={text}>
       <span className="sr-only">{text}</span>
@@ -32,6 +40,12 @@ export function DayMark({
       {showTime && checkedInAt && (state === 'pending' || conflict) && (
         <span className={styles.time} data-conflict={conflict ? '' : undefined} aria-hidden="true">
           {clockTime(checkedInAt)}
+        </span>
+      )}
+      {showTime && reason && (
+        <span className={styles.reason} aria-hidden="true">
+          {reason}
+          {note && '*'}
         </span>
       )}
     </span>

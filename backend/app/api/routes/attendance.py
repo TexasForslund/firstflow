@@ -31,7 +31,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -41,7 +41,7 @@ from app.api.routes.invitations import notify
 from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
-from app.models.attendance import Attendance, AttendanceReview, AttendanceStatus
+from app.models.attendance import AbsenceReason, Attendance, AttendanceReview, AttendanceStatus
 from app.models.placement import Placement
 from app.models.school_class import SchoolClass, class_students
 from app.models.user import User, UserRole
@@ -417,6 +417,8 @@ class ReviewItem(BaseModel):
     date: date
     state: DayState
     checked_in_at: datetime | None
+    absence_reason: AbsenceReason | None = None
+    absence_note: str | None = None
 
 
 class ReviewList(BaseModel):
@@ -437,6 +439,11 @@ class ReviewVerdict(BaseModel):
     placement_id: UUID
     date: date
     verdict: AttendanceReview
+    # Bara när eleven inte var på plats. Båda är valfria.
+    absence_reason: AbsenceReason | None = None
+    absence_note: Annotated[
+        str | None, StringConstraints(strip_whitespace=True, max_length=300)
+    ] = None
 
 
 class ReviewBody(BaseModel):
@@ -489,6 +496,8 @@ def _review_list(db: DbSession, user: User) -> ReviewList:
                 date=day,
                 state=state,
                 checked_in_at=row.checked_in_at if row else None,
+                absence_reason=row.absence_reason if row else None,
+                absence_note=row.absence_note if row else None,
             )
             if day == today:
                 today_items.append(item)
@@ -545,6 +554,12 @@ def review(body: ReviewBody, db: DbSession, user: Supervisor) -> ReviewList:
         elif row.checked_in_at is None:
             row.status = AttendanceStatus.ABSENT
         row.review = verdict.verdict
+        if verdict.verdict == AttendanceReview.NOT_PRESENT:
+            row.absence_reason = verdict.absence_reason
+            row.absence_note = verdict.absence_note or None
+        else:
+            row.absence_reason = None
+            row.absence_note = None
         row.reviewed_at = now
         row.reviewed_by_id = user.id
         db.flush()
@@ -560,6 +575,10 @@ class WeekDay(BaseModel):
     on_apl: bool = Field(description="Eleven har en placering den dagen")
     state: DayState
     checked_in_at: datetime | None
+    absence_reason: AbsenceReason | None = Field(
+        default=None, description="Handledarens förklaring när eleven inte var på plats"
+    )
+    absence_note: str | None = None
 
 
 class WeekStudent(BaseModel):
@@ -645,6 +664,8 @@ def class_week(
                     on_apl=placement is not None,
                     state=state,
                     checked_in_at=row.checked_in_at if row else None,
+                    absence_reason=row.absence_reason if row else None,
+                    absence_note=row.absence_note if row else None,
                 )
             )
         current = next((p for p in own if p.start_date <= today <= p.end_date), None) or (

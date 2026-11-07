@@ -6086,6 +6086,16 @@
   },
   "components": {
     "schemas": {
+      "AbsenceReason": {
+        "type": "string",
+        "enum": [
+          "sick",
+          "leave",
+          "other"
+        ],
+        "title": "AbsenceReason",
+        "description": "Handledarens förklaring när eleven inte var på plats (Texas, 2026-11-07). Valfri, och bara\npersonalen ser den."
+      },
       "AcceptInvite": {
         "properties": {
           "name": {
@@ -10512,6 +10522,27 @@
               }
             ],
             "title": "Checked In At"
+          },
+          "absence_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AbsenceReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "absence_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Absence Note"
           }
         },
         "type": "object",
@@ -10587,6 +10618,28 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/AttendanceReview"
+          },
+          "absence_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AbsenceReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "absence_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Absence Note"
           }
         },
         "type": "object",
@@ -12272,6 +12325,28 @@
               }
             ],
             "title": "Checked In At"
+          },
+          "absence_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AbsenceReason"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Handledarens förklaring när eleven inte var på plats"
+          },
+          "absence_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Absence Note"
           }
         },
         "type": "object",

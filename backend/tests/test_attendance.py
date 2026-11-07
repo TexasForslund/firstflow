@@ -440,6 +440,47 @@ def test_not_present_does_not_count(
     assert row["days"][1]["checked_in_at"] is not None
 
 
+def test_absence_reason(client: TestClient, login: Login, world: World, db: Session) -> None:
+    """Handledaren väljer en förklaring när eleven inte var på plats (Texas, 2026-11-07)."""
+    login(world.supervisor)
+    item = {"placement_id": str(world.placement.id), "date": "2026-10-20"}
+    body = {
+        "items": [
+            {
+                **item,
+                "verdict": "not_present",
+                "absence_reason": "sick",
+                "absence_note": "  Sms 06:40 ",
+            }
+        ]
+    }
+    listed = client.post("/api/supervisor/attendance/review", json=body).json()
+    day = next(i for i in listed["recent_days"] if i["date"] == "2026-10-20")
+    assert (day["absence_reason"], day["absence_note"]) == ("sick", "Sms 06:40")
+    bad = {"items": [{**item, "verdict": "not_present", "absence_reason": "semester"}]}
+    assert client.post("/api/supervisor/attendance/review", json=bad).status_code == 422
+
+    login(world.teacher)
+    week = client.get(f"/api/classes/{world.ee22.id}/attendance/week").json()
+    row = next(s for s in week["students"] if s["student"]["id"] == str(world.student.id))
+    assert (row["days"][1]["absence_reason"], row["days"][1]["absence_note"]) == (
+        "sick",
+        "Sms 06:40",
+    )
+
+    # Eleven ser inte förklaringen.
+    login(world.student)
+    mine = client.get("/api/me/attendance")
+    assert mine.status_code == 200 and "Sms 06:40" not in mine.text and "absence" not in mine.text
+
+    # Bekräftar handledaren dagen i stället försvinner förklaringen.
+    login(world.supervisor)
+    body = {"items": [{**item, "verdict": "confirmed"}]}
+    listed = client.post("/api/supervisor/attendance/review", json=body).json()
+    day = next(i for i in listed["recent_days"] if i["date"] == "2026-10-20")
+    assert day["absence_reason"] is None and day["absence_note"] is None
+
+
 def test_review_list_recent_days(
     client: TestClient, login: Login, world: World, db: Session
 ) -> None:
