@@ -224,11 +224,17 @@ def test_supervisor_edits_text_but_not_students(
     assert listed[0]["can_edit_students"] is False
     assert client.get(f"/api/projects/{project_id}").status_code == 200
 
-    text = {"name": "Laddbox", "description": "Ny text", "deadline": None, "tags": ["Ladd"]}
+    tags = listed[0]["tags"]
+    text = {"name": "Laddbox", "description": "Ny text", "deadline": None, "tags": tags}
     response = client.put(f"/api/projects/{project_id}", json=text)
     assert response.status_code == 200, response.text
     assert response.json()["description"] == "Ny text"
     assert len(response.json()["students"]) == 2
+    # Handledaren ser målen men ändrar dem inte (Texas, 2026-11-07).
+    assert response.json()["tags"] == tags
+    changed = client.put(f"/api/projects/{project_id}", json={**text, "tags": [*tags, "Nytt mål"]})
+    assert changed.status_code == 403
+    assert client.put(f"/api/projects/{project_id}", json={**text, "tags": []}).status_code == 403
 
     for field, value in [
         ("student_ids", []),

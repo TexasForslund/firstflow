@@ -283,7 +283,8 @@ def update_project(
     project_id: UUID, body: ProjectWrite, db: DbSession, user: Member
 ) -> ProjectRead:
     """Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar
-    namn, beskrivning, slutdatum och taggar, och får 403 om hen skickar något annat."""
+    namn, beskrivning och slutdatum, och får 403 om hen skickar något annat. Handledaren ser
+    målen men ändrar dem inte (Texas, 2026-11-07)."""
     project = _project_for(db, user, project_id)
     is_owner = project.owner_id == user.id
     owner_fields = (
@@ -293,6 +294,11 @@ def update_project(
         or body.supervisor_ids is not None
         or body.completed is not None
     )
+    same_goals = sorted(t.strip().lower() for t in body.tags) == sorted(
+        g.name.lower() for g in project.goals
+    )
+    if not is_owner and not same_goals:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Bara läraren ändrar projektets mål")
     if not is_owner and owner_fields:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
@@ -301,8 +307,8 @@ def update_project(
     project.name = body.name
     project.description = body.description
     project.deadline = body.deadline
-    project.goals = goals_named(db, project.school_id, body.tags)
     if is_owner:
+        project.goals = goals_named(db, project.school_id, body.tags)
         if body.student_ids is not None:
             project.students = _students(db, user, body.student_ids)
         if body.completed is not None:

@@ -454,3 +454,17 @@
     padding-inline: var(--space-5);
   }
 }
+
+/* Handledaren ser målen men ändrar dem inte (Texas, 2026-11-07). */
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tagReadonly {
+  padding: 0.25rem var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
