@@ -184,7 +184,9 @@ function TodayCard({
       <div className={styles.person}>
         <Avatar name={item.student.name} />
         <span className={styles.personText}>
-          <span className={styles.name}>{item.student.name}</span>
+          <Link to={`/my-students/${item.student.id}`} className={`${styles.name} ${styles.nameLink}`}>
+            {item.student.name}
+          </Link>
           <span className={styles.status} data-state={item.state}>
             {status}
           </span>
@@ -267,7 +269,9 @@ function Waiting({
                   <li key={key(item)} className={styles.row}>
                     <Avatar name={item.student.name} />
                     <span className={styles.personText}>
-                      <span className={styles.name}>{item.student.name}</span>
+                      <Link to={`/my-students/${item.student.id}`} className={`${styles.name} ${styles.nameLink}`}>
+                        {item.student.name}
+                      </Link>
                       <span className={styles.muted}>
                         {shortDay(item.date)} · checkade in {item.checked_in_at ? clockTime(item.checked_in_at) : ''}
                       </span>
@@ -322,7 +326,9 @@ function StudentDays({
       <div className={styles.studentHead}>
         <Avatar name={student.name} size={mode === 'done' ? 'sm' : undefined} />
         <span className={styles.personText}>
-          <span className={styles.name}>{student.name}</span>
+          <Link to={`/my-students/${student.id}`} className={`${styles.name} ${styles.nameLink}`}>
+            {student.name}
+          </Link>
           <span className={styles.chips}>
             {ordered.map((d) => (
               <span key={d.date} className={styles.dayChip} data-state={d.state}>

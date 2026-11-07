@@ -489,3 +489,17 @@ Skissen är gjord och godkänd av Texas (Design-ytan "Firstflow – Elevsida ski
 - **`/invite/:token`** (ingen inloggning): handledaren skapar konto och företagsprofil, och hamnar sedan på Mina elever.
 - **Företag** (handledare, `/company`): företagsprofilen med Redigera, handledarna och Bjud in en kollega (högst tre).
 - **Notiser:** en klocka i menyn (och i mobilens toppfält) med antal olästa. Notiserna markeras som lästa när listan öppnas.
+
+## F38. Handledarens elevsida som lärarens ✅ Klar (PR #76)
+
+Texas, 2026-11-07: "Handledaren ska typ kunna se samma som läraren ser." Skissen heter "Handledarens elevsida".
+
+- **Överst:** inriktning, klass, skola och lärare, och "Skicka meddelande".
+- **Redovisningar:** samma lista som på lärarens elevsida, med sök, filter och dagar som saknas. Bara redovisningar för dagar då eleven var hos handledaren.
+- **Närvaro:** samma ruta som lärarens, för perioden hos handledaren.
+- **Praktikplats:** företag, adress och period. Schema, kontrakt, projekt och anteckningar finns kvar.
+- **I dag:** knapparna för dagens närvaro visas överst när eleven har APL i dag.
+- Handledaren ser inte andra praktikplatser eller lärarens "Behöver uppmärksamhet".
+- Elevens namn öppnar elevsidan från Närvaro och från en redovisning.
+- Backend: `GET /api/supervisor/students/{id}`, `/attendance` och `/reports`. 404 om eleven inte har eller har haft praktik hos handledaren.
+

@@ -350,3 +350,13 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
+
+/* Elevens namn öppnar elevsidan (Texas, 2026-11-07). */
+.nameLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nameLink:hover {
+  text-decoration: underline;
+}

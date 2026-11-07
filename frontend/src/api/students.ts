@@ -90,9 +90,10 @@ export function useStudentPlacements(studentId: string, enabled = true) {
   })
 }
 
-export function useStudentAttendance(studentId: string) {
+export function useStudentAttendance(studentId: string, enabled = true) {
   return useQuery({
     queryKey: ['students', studentId, 'attendance'],
+    enabled,
     queryFn: async () => {
       const { data, error, response } = await api.GET('/api/students/{student_id}/attendance', {
         params: { path: { student_id: studentId } },
@@ -119,11 +120,56 @@ export function useStudentReports(studentId: string, enabled: boolean) {
 }
 
 /** Det som behöver följas upp för eleven, med samma regler som lärarens översikt. */
-export function useStudentAttention(studentId: string) {
+export function useStudentAttention(studentId: string, enabled = true) {
   return useQuery({
     queryKey: ['students', studentId, 'attention'],
+    enabled,
     queryFn: async () => {
       const { data, error, response } = await api.GET('/api/students/{student_id}/attention', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+// --- Handledarens elevsida (Texas, 2026-11-07) ----------------------------------------------
+// Bara det som hör till praktiken hos handledaren.
+
+export function useSupervisorStudent(studentId: string) {
+  return useQuery({
+    queryKey: ['supervisor', 'students', studentId],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/supervisor/students/{student_id}', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+export function useSupervisorStudentAttendance(studentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['supervisor', 'students', studentId, 'attendance'],
+    enabled,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/supervisor/students/{student_id}/attendance', {
+        params: { path: { student_id: studentId } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+export function useSupervisorStudentReports(studentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['supervisor', 'students', studentId, 'reports'],
+    enabled,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/supervisor/students/{student_id}/reports', {
         params: { path: { student_id: studentId } },
       })
       if (!data) throw new ApiError(error, response.status)

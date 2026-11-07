@@ -27,6 +27,8 @@ import {
   useStudentAttention,
   useStudentPlacements,
   useStudentReports,
+  useSupervisorStudentAttendance,
+  useSupervisorStudentReports,
   type Student,
   type StudentReportSummary,
 } from '../../api/students'
@@ -198,9 +200,15 @@ function PlacementHoursLine({ placementId }: { placementId: string }) {
   )
 }
 
-function ReportsSection({ studentId }: { studentId: string }) {
-  const reports = useStudentReports(studentId, true)
-  const attention = useStudentAttention(studentId)
+/**
+ * Elevens redovisningar med filter. Handledaren ser samma lista som läraren, men bara för dagar då
+ * eleven var hos hen (`supervisor`, Texas 2026-11-07).
+ */
+export function ReportsSection({ studentId, supervisor = false }: { studentId: string; supervisor?: boolean }) {
+  const teacherReports = useStudentReports(studentId, !supervisor)
+  const attention = useStudentAttention(studentId, !supervisor)
+  const supervisorReports = useSupervisorStudentReports(studentId, supervisor)
+  const reports = supervisor ? { ...supervisorReports, data: supervisorReports.data?.reports } : teacherReports
   const [search, setSearch] = useState('')
   const [period, setPeriod] = useState<Period>('all')
   const [questionId, setQuestionId] = useState('')
@@ -209,7 +217,7 @@ function ReportsSection({ studentId }: { studentId: string }) {
   const [shown, setShown] = useState(REPORTS_PER_PAGE)
 
   const list = reports.data ?? []
-  const missingDays = attention.data?.missing_report_days ?? []
+  const missingDays = (supervisor ? supervisorReports.data?.missing_days : attention.data?.missing_report_days) ?? []
   const today = todayIso()
   const from = period === 'week' ? weekStart(today) : period === 'month' ? daysBefore(today, 27) : ''
 
@@ -336,7 +344,12 @@ function ReportsSection({ studentId }: { studentId: string }) {
             <span className={own.missingText}>Eleven har inte lämnat redovisningen</span>
           </article>
         ) : (
-          <ReportCard key={entry.report.id} report={entry.report} questionId={questionId} />
+          <ReportCard
+            key={entry.report.id}
+            report={entry.report}
+            questionId={questionId}
+            href={supervisor ? `/student-reports/${entry.report.id}` : `/reports/${entry.report.id}`}
+          />
         ),
       )}
 
@@ -349,7 +362,7 @@ function ReportsSection({ studentId }: { studentId: string }) {
   )
 }
 
-function ReportCard({ report, questionId }: { report: StudentReportSummary; questionId: string }) {
+function ReportCard({ report, questionId, href }: { report: StudentReportSummary; questionId: string; href: string }) {
   const answers = (questionId ? report.answers.filter((a) => a.question_id === questionId) : report.answers).slice(0, 2)
   return (
     <Card>
@@ -381,11 +394,7 @@ function ReportCard({ report, questionId }: { report: StudentReportSummary; ques
             {report.comment_count > 0 ? plural(report.comment_count, 'kommentar', 'kommentarer') : 'Inga kommentarer'}
             {report.class_name ? ` · ${report.class_name}` : ''}
           </span>
-          <Link
-            to={`/reports/${report.id}`}
-            className={own.open}
-            aria-label={`Öppna redovisningen för ${shortDate(report.due_date)}`}
-          >
+          <Link to={href} className={own.open} aria-label={`Öppna redovisningen för ${shortDate(report.due_date)}`}>
             Öppna
           </Link>
         </div>
@@ -467,8 +476,11 @@ function AttentionBox({ studentId }: { studentId: string }) {
   )
 }
 
-function AttendanceCard({ studentId }: { studentId: string }) {
-  const query = useStudentAttendance(studentId)
+/** Närvaron. Handledaren ser bara tiden hos sig (`supervisor`). */
+export function AttendanceCard({ studentId, supervisor = false }: { studentId: string; supervisor?: boolean }) {
+  const teacherQuery = useStudentAttendance(studentId, !supervisor)
+  const supervisorQuery = useSupervisorStudentAttendance(studentId, supervisor)
+  const query = supervisor ? supervisorQuery : teacherQuery
   const [showAll, setShowAll] = useState(false)
   const data = query.data
   const summary = data?.summary
