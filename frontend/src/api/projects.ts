@@ -6,6 +6,11 @@ import type { components } from './schema'
 
 export type Project = components['schemas']['ProjectRead']
 export type ProjectWrite = components['schemas']['ProjectWrite']
+
+/** Projektets alla mål att visa: klassens mål från läroplanen först, sedan skolans. */
+export function goalNames(project: Pick<Project, 'tags' | 'class_goals'>): string[] {
+  return [...(project.class_goals ?? []).map((g) => g.name), ...project.tags]
+}
 export type ProjectReport = components['schemas']['ProjectReport']
 
 const keys = {

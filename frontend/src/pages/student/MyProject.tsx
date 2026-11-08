@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, FolderKanban } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
-import { useMyProject, type MyProject as Project } from '../../api/projects'
+import { goalNames, useMyProject, type MyProject as Project } from '../../api/projects'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar } from '../../components'
 import { NotFound } from '../NotFound'
@@ -128,9 +128,9 @@ function About({ project }: { project: Project }) {
           Om projektet
         </h2>
         <p className={styles.description}>{project.description || 'Läraren har inte skrivit någon beskrivning än.'}</p>
-        {project.tags.length > 0 && (
+        {goalNames(project).length > 0 && (
           <ul className={styles.tags} aria-label="Mål">
-            {project.tags.map((tag) => (
+            {goalNames(project).map((tag) => (
               <li key={tag} className={styles.tag}>
                 {tag}
               </li>

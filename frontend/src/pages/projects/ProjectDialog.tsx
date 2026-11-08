@@ -1,12 +1,15 @@
 import { Search, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 
-import { useGoals } from '../../api/goals'
+import { useGoals, useGoalsForStudents, type Goal } from '../../api/goals'
 import { useWorkplaces } from '../../api/placements'
 import { useDeleteProject, useProjects, useSaveProject, type Project, type ProjectWrite } from '../../api/projects'
 import { useStudents } from '../../api/students'
 import { Avatar, Button, HelpPopover, matches, SelectField, Switch, TextField } from '../../components'
+import { suggestGoals } from './goalSuggestions'
 import styles from './ProjectDialog.module.css'
+
+const SHOWN_SUGGESTIONS = 3
 
 const DEFAULT_TAGS = ['Elinstallation', 'Mätning', 'Dokumentation', 'Felsökning', 'Kundkontakt']
 
@@ -16,6 +19,9 @@ const DEFAULT_TAGS = ['Elinstallation', 'Mätning', 'Dokumentation', 'Felsöknin
  * Läraren som äger projektet ändrar allt: text, företag, handledare och elever. En inbjuden
  * handledare ändrar namn, beskrivning och slutdatum och ser målen, men ändrar inte vilka elever som är med
  * (Texas, 2026-10-29).
+ *
+ * Målen är skolans (`tags`) och klassens mål från läroplanen (`goal_ids`). Firstflow föreslår
+ * klassens mål utifrån orden i beskrivningen (idé 13, steg 4, Texas 2026-11-08).
  */
 export function ProjectDialog({
   project,
@@ -47,6 +53,8 @@ export function ProjectDialog({
   const [deadline, setDeadline] = useState(project?.deadline ?? '')
   const [tags, setTags] = useState<string[]>(project?.tags ?? [])
   const [tagDraft, setTagDraft] = useState('')
+  const [goalIds, setGoalIds] = useState<string[]>((project?.class_goals ?? []).map((g) => g.id))
+  const [showAllGoals, setShowAllGoals] = useState(false)
   const [workplaceId, setWorkplaceId] = useState(project?.workplace?.id ?? '')
   const [supervisorIds, setSupervisorIds] = useState<string[]>(project?.supervisors.map((s) => s.id) ?? [])
   const [studentIds, setStudentIds] = useState<string[]>(project?.students.map((s) => s.id) ?? [])
@@ -61,6 +69,27 @@ export function ProjectDialog({
   const chosenElsewhere = (project?.students ?? []).filter(
     (s) => studentIds.includes(s.id) && !studentOptions.some((o) => o.id === s.id),
   )
+
+  // Klassens mål för klasserna som eleverna går i.
+  const classGoals = useGoalsForStudents(studentIds, isOwner)
+  const knownGoals = useMemo(() => {
+    const all = new Map<string, Goal>((project?.class_goals ?? []).map((g) => [g.id, g]))
+    for (const g of classGoals.data ?? []) all.set(g.id, g)
+    return all
+  }, [project, classGoals.data])
+  const chosenGoals = goalIds.flatMap((id) => {
+    const goal = knownGoals.get(id)
+    return goal ? [goal] : []
+  })
+  const goalSuggestions = useMemo(
+    () => suggestGoals(description, classGoals.data ?? [], new Set(goalIds)),
+    [description, classGoals.data, goalIds],
+  )
+  const otherGoals = (classGoals.data ?? []).filter((g) => !goalIds.includes(g.id))
+
+  function addGoal(id: string) {
+    if (!goalIds.includes(id) && goalIds.length < 20) setGoalIds([...goalIds, id])
+  }
 
   const suggestions = useMemo(() => {
     const used = new Set(tags.map((t) => t.toLowerCase()))
@@ -115,6 +144,8 @@ export function ProjectDialog({
       ? {
           ...text,
           student_ids: studentIds,
+          // Mål från en klass som ingen av eleverna går i längre följer inte med.
+          goal_ids: classGoals.data ? goalIds.filter((id) => classGoals.data.some((g) => g.id === id)) : goalIds,
           workplace_id: workplaceId || null,
           clear_workplace: !workplaceId,
           supervisor_ids: workplaceId ? supervisorIds : [],
@@ -194,6 +225,21 @@ export function ProjectDialog({
               {isOwner ? (
                 <>
                   <div className={styles.tagBox}>
+                    {chosenGoals.map((goal) => (
+                      <span key={goal.id} className={styles.tag}>
+                        <span className={styles.goalChip}>
+                          {goal.name}
+                          <span className={styles.goalGroup}>{goal.group}</span>
+                        </span>
+                        <button
+                          type="button"
+                          aria-label={`Ta bort ${goal.name}`}
+                          onClick={() => setGoalIds(goalIds.filter((id) => id !== goal.id))}
+                        >
+                          <X aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))}
                     {tags.map((tag) => (
                       <span key={tag} className={styles.tag}>
                         {tag}
@@ -209,7 +255,7 @@ export function ProjectDialog({
                     <input
                       className={styles.tagInput}
                       aria-labelledby="tags-label"
-                      placeholder={tags.length ? '' : 'Skriv ett mål och tryck Enter'}
+                      placeholder={tags.length || goalIds.length ? '' : 'Skriv ett eget mål och tryck Enter'}
                       maxLength={40}
                       value={tagDraft}
                       onChange={(e) => setTagDraft(e.target.value)}
@@ -218,9 +264,53 @@ export function ProjectDialog({
                     />
                   </div>
                   <span className={styles.hint}>
-                    Vad eleverna ska visa i projektet, t.ex. Kundkontakt. Målen är gemensamma för skolan och syns i
-                    tabellen Mål i projektet.
+                    Vad eleverna ska visa i projektet. Välj klassens mål från läroplanen nedan, eller skriv ett eget,
+                    t.ex. Kundkontakt. Målen syns i tabellen Mål i projektet.
                   </span>
+                  {(classGoals.data ?? []).length > 0 && (
+                    <section className={styles.curriculum} aria-labelledby="curriculum-goals-title">
+                      <div>
+                        <h3 id="curriculum-goals-title" className={styles.curriculumTitle}>
+                          Förslag från läroplanen
+                        </h3>
+                        <p className={styles.hint}>
+                          {goalSuggestions.length > 0
+                            ? 'Klassens mål som passar orden i beskrivningen. Du väljer.'
+                            : 'Skriv en beskrivning, så föreslår Firstflow klassens mål som passar.'}
+                        </p>
+                      </div>
+                      <ul className={styles.goalList}>
+                        {(showAllGoals
+                          ? otherGoals.map((goal) => ({ goal, word: null as string | null }))
+                          : goalSuggestions.slice(0, SHOWN_SUGGESTIONS)
+                        ).map(({ goal, word }) => (
+                          <li key={goal.id} className={styles.goalRow}>
+                            <span className={styles.goalText}>
+                              <span>
+                                <span className={styles.optionName}>{goal.name}</span>
+                                <span className={styles.goalGroupInline}> · {goal.group}</span>
+                              </span>
+                              <span className={styles.hint}>
+                                {word ? `Beskrivningen nämner ${word}` : goal.curriculum}
+                              </span>
+                            </span>
+                            <button type="button" className={styles.suggestion} onClick={() => addGoal(goal.id)}>
+                              + Lägg till
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      {otherGoals.length > 0 && (
+                        <button
+                          type="button"
+                          className={styles.linkButton}
+                          onClick={() => setShowAllGoals(!showAllGoals)}
+                        >
+                          {showAllGoals ? 'Visa bara förslagen' : `Visa alla klassens mål (${otherGoals.length})`}
+                        </button>
+                      )}
+                    </section>
+                  )}
                   {suggestions.length > 0 && (
                     <span className={styles.suggestions}>
                       Förslag:
@@ -235,10 +325,10 @@ export function ProjectDialog({
               ) : (
                 <>
                   <div className={styles.tagList} aria-labelledby="tags-label">
-                    {tags.length === 0 ? (
+                    {tags.length === 0 && chosenGoals.length === 0 ? (
                       <span className={styles.readonly}>Inga mål</span>
                     ) : (
-                      tags.map((tag) => (
+                      [...chosenGoals.map((g) => g.name), ...tags].map((tag) => (
                         <span key={tag} className={styles.tagReadonly}>
                           {tag}
                         </span>

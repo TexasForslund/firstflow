@@ -88,6 +88,7 @@ export function ProjectGoalsTable({
               </th>
               {data.goals.map((g) => (
                 <th key={g.id} scope="col" title={g.curriculum ?? undefined}>
+                  {g.group && <span className={styles.goalGroup}>{g.group}</span>}
                   {g.name}
                 </th>
               ))}

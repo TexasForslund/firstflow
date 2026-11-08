@@ -13,7 +13,7 @@ from datetime import date
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import func, select, true
 from sqlalchemy.orm import Session, selectinload
@@ -24,7 +24,7 @@ from app.api.routes.students import get_student_for
 from app.db.session import DbSession
 from app.models.goal import Goal
 from app.models.report import ClassForm, FormVersion, Report, ReportStatus
-from app.models.school_class import class_teachers
+from app.models.school_class import class_students, class_teachers
 from app.models.user import User, UserRole
 from app.services.goal_evidence import evidence
 
@@ -187,6 +187,26 @@ def list_goals(db: DbSession, user: Staff, class_id: UUID | None = None) -> list
         .order_by(func.lower(Goal.name))
     )
     return [read_goal(g) for g in found]
+
+
+@router.get("/for-students", response_model=list[GoalRead])
+def goals_for_students(
+    db: DbSession,
+    user: Teacher,
+    student_id: Annotated[list[UUID], Query()] = [],  # noqa: B006
+) -> list[GoalRead]:
+    """Klassens mål från läroplanen för klasserna som eleverna går i. Används för förslagen när
+    läraren väljer projektets mål (idé 13, steg 4)."""
+    students = [get_student_for(db, user, i).id for i in dict.fromkeys(student_id)]
+    if not students:
+        return []
+    classes = select(class_students.c.class_id).where(class_students.c.student_id.in_(students))
+    goals = db.scalars(
+        select(Goal)
+        .where(Goal.class_id.in_(classes))
+        .order_by(Goal.subject_name, Goal.level_code, Goal.created_at)
+    )
+    return [read_goal(g) for g in goals]
 
 
 @router.post("", response_model=GoalRead, status_code=status.HTTP_201_CREATED)
