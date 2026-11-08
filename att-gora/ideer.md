@@ -190,7 +190,7 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
 - **Elevens sida:** handledaren ska se elevens sida med elevens information. ✅ Byggt i #76 (2026-11-07): sidan är som lärarens, med redovisningarna som läraren ser dem, men bara tiden hos handledaren.
 - **Kalender:** handledaren lägger upp en kalender för när dagen börjar, och kanske mer. Den styr incheckningen. Eleven ska kunna checka in från tio minuter innan dagen börjar, om eleven är tidig. Hänger ihop med idé 7. ✅ Byggt i #75 (2026-11-07): arbetstider per företag i Företagsprofilen, egna tider per elev, incheckning från tio minuter innan. Läraren ser tiderna på elevsidan.
 - **Meddelanden:**
-  - Handledaren ska bara kunna se och skriva till elever som har praktik hos hen, inte andra elever.
+  - Handledaren ska bara kunna se och skriva till elever som har praktik hos hen, inte andra elever. ✅ Fungerar redan så i B11: handledaren når bara sina elever och deras lärare.
   - Eleven ska kunna skriva till handledare, lärare och SYV, men inte till andra elever (Texas, 2026-11-06). Det fungerar redan så i B11.
 
 **Övrigt:**
