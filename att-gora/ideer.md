@@ -214,7 +214,7 @@ Hänger ihop med: B4 (närvaro), B11 (meddelanden), projekt (idé 2), B5 (frågo
 
 ## 13. Från läroplan till betyg (Texas, 2026-11-08)
 
-Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar → projekt ↔ frågor som läraren skapar → redovisningar → historik och elevsida.** På elevsidan sammanfattar Firstflow mål, redovisningar och projekt mot läroplanen, så att läraren får hjälp att sätta betyg. Texas projektleder delen tillsammans med Claude.
+Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar → projekt ↔ frågor som läraren skapar. Projekten ger elevens sammanfattning och frågorna ger redovisningar. Båda samlas i historiken och på elevsidan.** På elevsidan sammanfattar Firstflow mål, redovisningar och projekt mot läroplanen, så att läraren får hjälp att sätta betyg. Texas projektleder delen tillsammans med Claude.
 
 **Beslutat 2026-11-08:**
 - **Ingen AI i Firstflow än.** Förslagen byggs direkt på läroplanen.
@@ -228,8 +228,9 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 3. **Målförslag:** varje punkt i det centrala innehållet blir ett förslag. Läraren bockar för de som passar och skriver om dem till vanlig svenska. Målet visar alltid vilken del av läroplanen det kommer från. Det ersätter dagens fria text på målet.
 4. **Projekt:** när läraren skapar ett projekt föreslår Firstflow mål genom att söka på orden i beskrivningen. Läraren väljer.
 5. **Frågor:** till varje mål finns färdiga mallar för frågor, till exempel "Läste du ritningen själv i dag?" som ja/nej där Ja är kopplat till målet. Läraren lägger till med ett klick och ändrar.
-6. **Elevsidan:** målen ordnas efter ämne och nivå, eller kurs, och varje del av läroplanen visar redovisningarna och projekten som visar den. Delar utan underlag syns tydligt.
-7. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera.
+6. **Projektets sammanfattning** (idé 12:6, steg 2): när projektet är klart svarar eleven på fyra korta frågor, bland annat vilka av projektets mål eleven tycker att den visade.
+7. **Elevsidan och historiken:** målen ordnas efter ämne och nivå, eller kurs. Varje del av läroplanen visar redovisningarna och projekten som visar den. Delar utan underlag syns tydligt. Varje avslutat projekt visas med elevens sammanfattning (stjärnor, mening, bilder och de mål eleven valde), bredvid redovisningarna för samma del av läroplanen.
+8. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera.
 
 **Öppna frågor:**
 - Ska målet pekas mot centralt innehåll (vad eleven gör), mot betygskriterierna (hur bra) eller mot båda? Claude föreslår centralt innehåll först, eftersom APL handlar om vad eleven får göra på arbetsplatsen.
