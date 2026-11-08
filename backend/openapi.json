@@ -7768,6 +7768,37 @@
         }
       }
     },
+    "/api/supervisor/student-list": {
+      "get": {
+        "tags": [
+          "supervisor"
+        ],
+        "summary": "Supervisor Student List",
+        "description": "Alla elever som har, har haft eller ska ha praktik hos handledaren. En rad per elev med\nden pågående placeringen, annars den kommande, annars den senaste.",
+        "operationId": "supervisor_student_list_api_supervisor_student_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SupervisorStudentRow"
+                  },
+                  "type": "array",
+                  "title": "Response Supervisor Student List Api Supervisor Student List Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
     "/api/syllabus/programs": {
       "get": {
         "tags": [
@@ -11556,6 +11587,24 @@
           "name"
         ],
         "title": "InvitedAccountCreate"
+      },
+      "LatestNote": {
+        "properties": {
+          "tag": {
+            "$ref": "#/components/schemas/NoteTag"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tag",
+          "created_at"
+        ],
+        "title": "LatestNote"
       },
       "LevelContent": {
         "properties": {
@@ -15607,6 +15656,100 @@
           "missing_days"
         ],
         "title": "SupervisorStudentReports"
+      },
+      "SupervisorStudentRow": {
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "school_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "School Name"
+          },
+          "class_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Name"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ongoing",
+              "upcoming",
+              "ended"
+            ],
+            "title": "Status"
+          },
+          "attendance_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attendance Percent",
+            "description": "Närvaro under perioden hittills"
+          },
+          "report_count": {
+            "type": "integer",
+            "title": "Report Count"
+          },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count",
+            "description": "Redovisningar handledaren inte har läst"
+          },
+          "latest_note": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestNote"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Handledarens senaste anteckning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student",
+          "school_name",
+          "class_name",
+          "start_date",
+          "end_date",
+          "status",
+          "attendance_percent",
+          "report_count",
+          "unread_count",
+          "latest_note"
+        ],
+        "title": "SupervisorStudentRow"
       },
       "SupervisorWorkplace": {
         "properties": {

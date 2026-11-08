@@ -1,0 +1,180 @@
+/* Mina elever (Texas skiss "Handledarens elever", 2026-11-08). Inga skuggor. */
+.page {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 72rem;
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.muted,
+.small {
+  color: var(--color-text-secondary);
+}
+
+.small {
+  font-size: var(--font-size-sm);
+}
+
+.search {
+  max-width: 26rem;
+}
+
+.empty {
+  padding: var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  cursor: default;
+}
+
+summary.groupHead {
+  cursor: pointer;
+}
+
+.groupTitle {
+  flex: 1;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.columnsHead,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) 1.3fr 0.8fr 1.3fr 1.5fr 1.25rem;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+}
+
+.columnsHead {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  border-top: 1px solid var(--color-border);
+}
+
+.row {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.row:hover .name {
+  text-decoration: underline;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.whoText {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.mobileLabel {
+  display: none;
+}
+
+.newBadge {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+}
+
+.note {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+}
+
+.note[data-tag='praise'] {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.note[data-tag='concern'] {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.arrow {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--color-text-secondary);
+}
+
+/* I mobilen: namnet överst och resten på en rad under. */
+@media (max-width: 48rem) {
+  .columnsHead {
+    display: none;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .who {
+    flex-basis: 100%;
+  }
+
+  .arrow {
+    display: none;
+  }
+
+  .mobileLabel {
+    display: inline;
+  }
+}

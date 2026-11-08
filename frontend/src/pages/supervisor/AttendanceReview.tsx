@@ -184,7 +184,7 @@ function TodayCard({
       <div className={styles.person}>
         <Avatar name={item.student.name} />
         <span className={styles.personText}>
-          <Link to={`/my-students/${item.student.id}`} className={`${styles.name} ${styles.nameLink}`}>
+          <Link to={`/supervised-students/${item.student.id}`} className={`${styles.name} ${styles.nameLink}`}>
             {item.student.name}
           </Link>
           <span className={styles.status} data-state={item.state}>
@@ -269,7 +269,10 @@ function Waiting({
                   <li key={key(item)} className={styles.row}>
                     <Avatar name={item.student.name} />
                     <span className={styles.personText}>
-                      <Link to={`/my-students/${item.student.id}`} className={`${styles.name} ${styles.nameLink}`}>
+                      <Link
+                        to={`/supervised-students/${item.student.id}`}
+                        className={`${styles.name} ${styles.nameLink}`}
+                      >
                         {item.student.name}
                       </Link>
                       <span className={styles.muted}>
@@ -326,7 +329,7 @@ function StudentDays({
       <div className={styles.studentHead}>
         <Avatar name={student.name} size={mode === 'done' ? 'sm' : undefined} />
         <span className={styles.personText}>
-          <Link to={`/my-students/${student.id}`} className={`${styles.name} ${styles.nameLink}`}>
+          <Link to={`/supervised-students/${student.id}`} className={`${styles.name} ${styles.nameLink}`}>
             {student.name}
           </Link>
           <span className={styles.chips}>

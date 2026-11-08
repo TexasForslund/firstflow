@@ -58,6 +58,19 @@
   .columns {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  /* I mobilen blir korten en lista: dagens närvaro först, sedan anteckningarna. */
+  .columns > .stack {
+    display: contents;
+  }
+
+  .todayCardWrap {
+    order: -2;
+  }
+
+  .notesCard {
+    order: -1;
+  }
 }
 
 .notes,

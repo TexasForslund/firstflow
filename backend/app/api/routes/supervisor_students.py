@@ -5,8 +5,8 @@ under den och redovisningarna för dagar då eleven var där. Andra praktikplats
 egna uppföljningar syns inte.
 """
 
-from datetime import date
-from typing import Annotated
+from datetime import date, datetime
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -21,6 +21,7 @@ from app.api.routes.reports import StudentReportSummary, due_days, supervised_re
 from app.api.routes.students import Ref
 from app.core import time
 from app.db.session import DbSession
+from app.models.note import NoteTag, StudentNote
 from app.models.placement import Placement
 from app.models.report import FormVersion, Report, ReportStatus
 from app.models.school_class import ClassTrack, SchoolClass, class_students
@@ -157,3 +158,97 @@ def supervisor_student_reports(
             reverse=True,
         )
     return SupervisorStudentReports(reports=reports, missing_days=missing)
+
+
+# --- Mina elever (Texas skiss "Handledarens elever", 2026-11-08) ---------------------------
+
+list_router = APIRouter(prefix="/supervisor/student-list", tags=["supervisor"])
+
+
+class LatestNote(BaseModel):
+    tag: NoteTag
+    created_at: datetime
+
+
+class SupervisorStudentRow(BaseModel):
+    student: Ref
+    school_name: str | None
+    class_name: str | None
+    start_date: date
+    end_date: date
+    status: Literal["ongoing", "upcoming", "ended"]
+    attendance_percent: int | None = Field(description="Närvaro under perioden hittills")
+    report_count: int
+    unread_count: int = Field(description="Redovisningar handledaren inte har läst")
+    latest_note: LatestNote | None = Field(description="Handledarens senaste anteckning")
+
+
+@list_router.get("", response_model=list[SupervisorStudentRow])
+def supervisor_student_list(db: DbSession, user: Supervisor) -> list[SupervisorStudentRow]:
+    """Alla elever som har, har haft eller ska ha praktik hos handledaren. En rad per elev med
+    den pågående placeringen, annars den kommande, annars den senaste."""
+    today = time.today()
+    placements = db.scalars(
+        select(Placement)
+        .join(User, User.id == Placement.student_id)
+        .where(Placement.supervisor_id == user.id, User.is_active)
+        .options(selectinload(Placement.student))
+        .order_by(User.name, Placement.start_date.desc())
+    ).all()
+    by_student: dict[UUID, list[Placement]] = {}
+    for p in placements:
+        by_student.setdefault(p.student_id, []).append(p)
+
+    notes: dict[UUID, StudentNote] = {}
+    for note in db.scalars(
+        select(StudentNote)
+        .where(StudentNote.author_id == user.id, StudentNote.student_id.in_(list(by_student)))
+        .order_by(StudentNote.created_at)
+    ):
+        notes[note.student_id] = note
+
+    rows: list[SupervisorStudentRow] = []
+    for student_id, items in by_student.items():
+        placement = (
+            next((p for p in items if p.start_date <= today <= p.end_date), None)
+            or next(
+                (p for p in sorted(items, key=lambda p: p.start_date) if p.start_date > today), None
+            )
+            or items[0]
+        )
+        status_ = (
+            "upcoming"
+            if placement.start_date > today
+            else "ended"
+            if placement.end_date < today
+            else "ongoing"
+        )
+        percent = None
+        if status_ != "upcoming":
+            summary = attendance_detail(
+                db,
+                placement.student,
+                [placement],
+                placement.start_date,
+                min(placement.end_date, today),
+            ).summary
+            if summary.expected_days:
+                percent = round(100 * summary.present / summary.expected_days)
+        reports = supervised_reports(db, user, student_id)
+        school_class, _ = _school_class(db, student_id)
+        note = notes.get(student_id)
+        rows.append(
+            SupervisorStudentRow(
+                student=Ref(id=placement.student.id, name=placement.student.name),
+                school_name=school_class.school.name if school_class else None,
+                class_name=school_class.name if school_class else None,
+                start_date=placement.start_date,
+                end_date=placement.end_date,
+                status=status_,
+                attendance_percent=percent,
+                report_count=len(reports),
+                unread_count=sum(1 for r in reports if not r.is_read),
+                latest_note=LatestNote(tag=note.tag, created_at=note.created_at) if note else None,
+            )
+        )
+    return rows

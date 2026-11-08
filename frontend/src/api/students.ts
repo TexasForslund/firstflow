@@ -177,3 +177,15 @@ export function useSupervisorStudentReports(studentId: string, enabled: boolean)
     },
   })
 }
+
+/** Handledarens alla elever: pågående, kommande och avslutade (Mina elever). */
+export function useSupervisorStudentList() {
+  return useQuery({
+    queryKey: ['supervisor', 'student-list'],
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/supervisor/student-list')
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}

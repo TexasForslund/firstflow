@@ -35,6 +35,7 @@ import { ContractPage } from './pages/contracts/ContractPage'
 import { AttendanceReview } from './pages/supervisor/AttendanceReview'
 import { SupervisorReport } from './pages/supervisor/SupervisorReport'
 import { SupervisorStudent } from './pages/supervisor/SupervisorStudent'
+import { OldStudentPath, SupervisorStudents } from './pages/supervisor/SupervisorStudents'
 import { SupervisorReports } from './pages/supervisor/SupervisorReports'
 import { Contracts } from './pages/contracts/Contracts'
 import { ProjectPage } from './pages/projects/ProjectPage'
@@ -110,7 +111,11 @@ const routes: RouteObject[] = [
 
       // Handledare (F4)
       { path: 'my-students', element: only(['supervisor'], <MyStudents />) },
-      { path: 'my-students/:studentId', element: only(['supervisor'], <SupervisorStudent />) },
+      // Mina elever och elevens sida (Texas skiss "Handledarens elever", 2026-11-08). Den gamla
+      // adressen finns kvar för länkar i notiser och mejl.
+      { path: 'supervised-students', element: only(['supervisor'], <SupervisorStudents />) },
+      { path: 'supervised-students/:studentId', element: only(['supervisor'], <SupervisorStudent />) },
+      { path: 'my-students/:studentId', element: only(['supervisor'], <OldStudentPath />) },
       { path: 'student-reports', element: only(['supervisor'], <SupervisorReports />) },
       { path: 'student-reports/:reportId', element: only(['supervisor'], <SupervisorReport />) },
       { path: 'company', element: only(['supervisor'], <Company />) },
