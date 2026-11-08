@@ -56,6 +56,7 @@ import {
   periodWeek,
   todayIso,
 } from '../placements/period'
+import { DayMark } from '../teacher/DayMark'
 import { CheckList } from './CheckList'
 import { noteTagLabel, useStudentNotes, type NoteTag } from '../../api/notes'
 import { NoteItem } from '../notes/StudentNotes'
@@ -492,7 +493,7 @@ export function AttendanceCard({ studentId, supervisor = false }: { studentId: s
   const summary = data?.summary
   const total = summary ? Math.max(summary.expected_days, summary.present) : 0
   const percent = summary && total > 0 ? Math.round((summary.present / total) * 100) : null
-  const present = new Set(data?.days.filter((d) => d.status === 'present').map((d) => d.date))
+  const byDate = new Map((data?.days ?? []).map((d) => [d.date, d]))
 
   // Den här veckans APL-dagar för elevens klass.
   const today = todayIso()
@@ -503,8 +504,7 @@ export function AttendanceCard({ studentId, supervisor = false }: { studentId: s
     d.setDate(monday.getDate() + offset)
     const iso = d.toISOString().slice(0, 10)
     const label = d.toLocaleDateString('sv-SE', { weekday: 'short' }).replace('.', '')
-    const state = present.has(iso) ? 'present' : iso <= today ? 'missing' : 'future'
-    return { iso, label: label.charAt(0).toUpperCase() + label.slice(1), state }
+    return { iso, label: label.charAt(0).toUpperCase() + label.slice(1), day: byDate.get(iso), future: iso > today }
   })
 
   return (
@@ -539,14 +539,12 @@ export function AttendanceCard({ studentId, supervisor = false }: { studentId: s
                 {week.map((day) => (
                   <li key={day.iso} className={own.weekDay}>
                     {day.label}
-                    <span
-                      className={own.dot}
-                      data-state={day.state}
-                      aria-label={
-                        day.state === 'present' ? 'Incheckad' : day.state === 'missing' ? 'Ej incheckad' : 'Kommande'
-                      }
-                      role="img"
-                    />
+                    {/* Samma markeringar som veckan i Närvaro (Texas, 2026-11-08). */}
+                    {day.future ? (
+                      <span className={own.dot} data-state="future" aria-label="Kommande" role="img" />
+                    ) : (
+                      <DayMark state={day.day?.state ?? 'missing'} checkedInAt={day.day?.checked_in_at} />
+                    )}
                   </li>
                 ))}
               </ul>

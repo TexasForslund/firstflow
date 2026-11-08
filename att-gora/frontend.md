@@ -685,4 +685,5 @@ Texas skiss "Tydligare närvaro" (2026-11-08), med mjuka färger.
 - Markeringarna i tre färggrupper: **Var där** (grön bock, "H" om handledaren lade till dagen), **Väntar** (blå klocka, och gul ! när incheckningen och handledaren inte stämmer) och **Var inte där** (röd kryss enligt handledaren, streckad röd ring för ej incheckad).
 - Förklaringen under tabellen är grupperad på samma sätt.
 - Ny kolumn **På plats**, till exempel "4 av 5". Incheckade dagar som väntar på handledaren räknas med.
+- Rutan Närvaro på elevsidan (lärarens och handledarens) visar veckan med samma markeringar.
 
