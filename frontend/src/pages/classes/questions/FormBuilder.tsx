@@ -56,7 +56,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
   const publish = usePublishForm(classId)
   const discard = useDiscardForm(classId)
   const tracks = useClassTracks(classId).data ?? []
-  const goals = useGoals().data ?? []
+  const goals = useGoals(true, classId).data ?? []
 
   const [questions, setQuestions] = useState(initial)
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null)

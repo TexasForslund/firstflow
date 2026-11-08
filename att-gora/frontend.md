@@ -563,3 +563,25 @@ Idé 13, steg 1 (Texas, 2026-11-08, skissen "Mål från läroplanen", bild 1).
   - Skolverkets svar sparas i `syllabus_cache` och hämtas om efter sju dagar. Svarar inte Skolverket används det sparade svaret, och utan sparat svar blir det 503.
   - `class_subjects` sparar klassens nivåer och kurser med namn.
   - Testerna använder Skolverkets riktiga svar från 2026-11-08 i `backend/tests/fixtures/skolverket`.
+
+## F42. Mål från läroplanen ✅ Klar (PR #82)
+
+Idé 13, steg 2 (Texas, 2026-11-08, skissen "Mål från läroplanen – steg 2").
+
+- **Två sorters mål:**
+  - **Klassens mål från läroplanen.** Läraren skapar dem under fliken Läroplan. De hör till klassen.
+  - **Skolans mål**, till exempel Kundkontakt, fungerar som förut. Projekten använder dem. Läroplanens mål i projekten kommer i steg 4.
+- **Fliken Läroplan, "Mål från läroplanen":**
+  - Till vänster klassens valda ämnen, med antal mål.
+  - Till höger ämnets centrala innehåll från Skolverket, en punkt per rad.
+  - Läraren kryssar för punkter och ger målen ett kort namn (högst 40 tecken).
+  - Målet sparar texten ur läroplanen, eftersom läroplanen kan få nya versioner.
+  - Ett mål som frågorna har använt kan bytas namn på men inte tas bort, eftersom svaren är underlag.
+  - Rektorn ser målen men kan inte ändra.
+- **Frågor:** målen är ordnade efter ämne, med skolans mål sist under "Utan koppling". Under det valda målet syns vilken del av läroplanen det kommer från.
+- **Backend:**
+  - `goals` har `class_id`, ämnet, nivån eller kursen och punkten (`content`). Samma namn får finnas en gång bland skolans mål och en gång i varje klass.
+  - `GET /api/classes/{id}/subjects/{nivå}/content`: det centrala innehållet med klassens mål.
+  - `PUT /api/classes/{id}/subjects/{nivå}/goals`: klassens lärare och skoladministratören.
+  - `GET /api/goals?class_id=…`: klassens mål först, sedan skolans.
+  - Frågorna i en klass kan använda skolans mål och klassens egna.

@@ -11,13 +11,15 @@ export type ProjectGoals = components['schemas']['ProjectGoals']
 
 const goalsKey = ['goals'] as const
 
-/** Skolans mål (idé 10). */
-export function useGoals(enabled = true) {
+/** Skolans mål (idé 10). Med klassen kommer klassens mål från läroplanen först (idé 13). */
+export function useGoals(enabled = true, classId?: string) {
   return useQuery({
-    queryKey: goalsKey,
+    queryKey: [...goalsKey, classId ?? 'school'],
     enabled,
     queryFn: async () => {
-      const { data, error, response } = await api.GET('/api/goals')
+      const { data, error, response } = await api.GET('/api/goals', {
+        params: { query: classId ? { class_id: classId } : {} },
+      })
       if (!data) throw new ApiError(error, response.status)
       return data
     },
@@ -34,6 +36,18 @@ export function useCreateGoal() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: goalsKey }),
   })
+}
+
+/** Målen i grupper: klassens mål per ämne, sist skolans mål ("Utan koppling"). */
+export function goalGroups(goals: Goal[]): { title: string | null; goals: Goal[] }[] {
+  const groups: { title: string | null; goals: Goal[] }[] = []
+  for (const goal of goals) {
+    const title = goal.group ?? (goals.some((g) => g.group) ? 'Utan koppling' : null)
+    const last = groups[groups.length - 1]
+    if (last && last.title === title) last.goals.push(goal)
+    else groups.push({ title, goals: [goal] })
+  }
+  return groups
 }
 
 /** Elevens underlag per mål, flest först. */

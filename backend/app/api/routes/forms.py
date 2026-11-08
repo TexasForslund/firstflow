@@ -14,7 +14,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 
 from app.api.routes.classes import CanEditClasses, CanViewClasses, get_accessible_class
@@ -113,13 +113,20 @@ def _check_tracks(db: DbSession, class_id: UUID, body: FormContent) -> None:
 
 
 def _check_goals(db: DbSession, class_id: UUID, body: FormContent) -> None:
-    """Målen som frågornas svar visar måste finnas på klassens skola."""
+    """Målen som frågornas svar visar måste vara skolans eller klassens egna."""
     used = {g.goal_id for q in body.questions for g in getattr(q, "goals", [])}
     if not used:
         return
     school_class = db.get(SchoolClass, class_id)
     assert school_class is not None
-    existing = set(db.scalars(select(Goal.id).where(Goal.school_id == school_class.school_id)))
+    existing = set(
+        db.scalars(
+            select(Goal.id).where(
+                Goal.school_id == school_class.school_id,
+                or_(Goal.class_id.is_(None), Goal.class_id == class_id),
+            )
+        )
+    )
     if not used <= existing:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,

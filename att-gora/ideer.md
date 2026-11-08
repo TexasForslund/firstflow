@@ -228,8 +228,8 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 
 **Flödet:**
 1. **Ämnen och nivåer:** klassen har program och inriktning (finns i dag). Läraren väljer vilka ämnen och nivåer, eller kurser, som APL-perioden ska träna. ✅ Steg 1 byggt i #81 (fliken Läroplan på klassidan).
-2. **Anropet:** Firstflow hämtar läroplanen från Skolverkets öppna API (`api.skolverket.se/syllabus`, med ämnen, kurser och läroplaner). ✅ Program och ämnen i #81. Det centrala innehållet hämtas i steg 2.
-3. **Målförslag:** varje punkt i det centrala innehållet blir ett förslag. Läraren bockar för de som passar och skriver om dem till vanlig svenska. Målet visar alltid vilken del av läroplanen det kommer från. Det ersätter dagens fria text på målet.
+2. **Anropet:** Firstflow hämtar läroplanen från Skolverkets öppna API (`api.skolverket.se/syllabus`, med ämnen, kurser och läroplaner). ✅ Program och ämnen i #81, det centrala innehållet i #82.
+3. **Målförslag:** varje punkt i det centrala innehållet blir ett förslag. Läraren bockar för de som passar och skriver om dem till vanlig svenska. Målet visar alltid vilken del av läroplanen det kommer från. Det ersätter dagens fria text på målet. ✅ Steg 2 byggt i #82: målen hör till klassen (Texas 2026-11-08). Skolans mål utan koppling, till exempel Kundkontakt, finns kvar och används i projekten tills steg 4.
 4. **Projekt:** när läraren skapar ett projekt föreslår Firstflow mål genom att söka på orden i beskrivningen. Läraren väljer.
 5. **Frågor:** till varje mål finns färdiga mallar för frågor, till exempel "Läste du ritningen själv i dag?" som ja/nej där Ja är kopplat till målet. Läraren lägger till med ett klick och ändrar.
 6. **Projektets sammanfattning** (idé 12:6, steg 2): när projektet är klart svarar eleven på fyra korta frågor, bland annat vilka av projektets mål eleven tycker att den visade.

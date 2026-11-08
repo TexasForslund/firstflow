@@ -2,7 +2,7 @@ import { ArrowDown, ArrowUp, Copy, Plus, Trash2, X } from 'lucide-react'
 import { useId, useState } from 'react'
 
 import type { LogicRule, Question } from '../../../api/forms'
-import { useCreateGoal, type Goal } from '../../../api/goals'
+import { goalGroups, useCreateGoal, type Goal } from '../../../api/goals'
 import type { Track } from '../../../api/tracks'
 import { HelpPopover, SelectField, Switch } from '../../../components'
 import styles from './FormBuilder.module.css'
@@ -321,23 +321,43 @@ function GoalEditor({
       <p className={styles.settingsHint}>
         Välj vilket mål ett svar visar. Svaret blir underlag för eleven, och nästa textfråga följer med som beskrivning.
       </p>
-      {options.map((o) => (
-        <label key={o.value} className={styles.goalField}>
-          <span className={styles.goalLabel}>När eleven svarar {o.label}</span>
-          <select
-            className={styles.goalSelect}
-            value={goalFor(o.value)}
-            onChange={(e) => setGoal(o.value, e.target.value)}
-          >
-            <option value="">Inget mål</option>
-            {goals.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
+      {options.map((o) => {
+        const chosen = goals.find((g) => g.id === goalFor(o.value))
+        return (
+          <label key={o.value} className={styles.goalField}>
+            <span className={styles.goalLabel}>När eleven svarar {o.label}</span>
+            <select
+              className={styles.goalSelect}
+              value={goalFor(o.value)}
+              onChange={(e) => setGoal(o.value, e.target.value)}
+            >
+              <option value="">Inget mål</option>
+              {goalGroups(goals).map((group) =>
+                group.title ? (
+                  <optgroup key={group.title} label={group.title}>
+                    {group.goals.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  group.goals.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))
+                ),
+              )}
+            </select>
+            {chosen?.group && (
+              <span className={styles.settingsHint}>
+                {chosen.group} · ”{chosen.curriculum}”
+              </span>
+            )}
+          </label>
+        )
+      })}
       <form
         className={styles.goalNew}
         onSubmit={(e) => {
