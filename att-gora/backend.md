@@ -350,9 +350,11 @@ Enkel första version, beslutad av Texas 2026-10-26:
 
 ---
 
-## B13. "Behöver uppmärksamhet" ⬜
+## B13. "Behöver uppmärksamhet" ✅ Klar (byggt i B15, #31 och #38)
 
 Ägare: bestäms. Tillagd från lärarskisserna.
+
+Allt nedan finns på lärarens översikt (Texas + Claude, 2026-11-08): flikarna Närvaro, Redovisningar, Kontrakt och Praktikplats. Se B15.
 
 Ett endpoint som ger lärarens lista över saker att följa upp, viktigast först: upprepad frånvaro som inte är anmäld, saknade veckoredovisningar, närvaro som handledaren inte bekräftat och kontrakt som saknar underskrift. Bygger på B4, B5 och avtalshanteringen (B8).
 
