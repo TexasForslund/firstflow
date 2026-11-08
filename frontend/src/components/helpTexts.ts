@@ -5,7 +5,7 @@
 export const HELP = {
   goals: {
     title: 'Mål',
-    body: 'Ett mål är något eleven ska visa under APL. Målen är gemensamma för skolan och kan kopplas till läroplanen. När eleven svarar på en fråga som är kopplad till ett mål blir svaret underlag.',
+    body: 'Ett mål är något eleven ska visa under APL. Klassens mål kommer från läroplanen. Skolans egna mål, till exempel Kundkontakt, finns kvar utan koppling. När eleven svarar på en fråga som är kopplad till ett mål blir svaret underlag.',
     example:
       'Svarar Hugo Ja på ”Har du haft kundkontakt i dag?” räknas det för målet Kundkontakt, med hans svar på följdfrågan.',
   },
@@ -106,6 +106,42 @@ export const HELP = {
     body: 'Varje ny person får ett mejl med en länk och väljer sitt eget lösenord. Länken gäller i 14 dagar och kan bara användas en gång. Inga lösenord står i filen.',
     example:
       'Hugo får mejlet ”Välkommen till Firstflow”, klickar på länken och väljer ett lösenord. Sedan är han inloggad.',
+  },
+  // Läroplanen (idé 13, Texas 2026-11-08). Varje text säger vad valet styr längre fram.
+  curriculum: {
+    title: 'Läroplan och program',
+    body: 'Klassen följer Gy25 eller Gy11 och ett program hos Skolverket. Det avgör vilka ämnen du kan välja. Därifrån kommer målen, som sedan används i frågor, projekt och underlag inför betyg.',
+    example:
+      'EL25 läser Gy25 på El- och energiprogrammet. Då föreslås ämnen som Elteknik och Ellära, och målen hämtas ur deras centrala innehåll.',
+  },
+  orientations: {
+    title: 'Inriktningar och Skolverket',
+    body: 'Koppla klassens inriktningar till Skolverkets inriktningar. Då föreslås ämnena för den inriktningen också. Inriktningen styr fortfarande vilka frågor eleverna får.',
+    example:
+      'Klassens inriktning El kopplas till Elteknik. Då kryssas Installationsteknik i, och eleverna på El kan få egna frågor.',
+  },
+  subjects: {
+    title: 'Ämnen under APL',
+    body: 'Välj de ämnen eleverna tränar på APL, inte alla ämnen de läser. Bara de valda ämnena får mål. Du kan ändra valet senare.',
+    example: 'EL23 tränar Elteknik och Installationsteknik på APL men inte Matematik. Därför väljer du bara de två.',
+  },
+  curriculumGoals: {
+    title: 'Mål från läroplanen',
+    body: 'Varje mål är en punkt i ämnets centrala innehåll, med ett kort namn. Målen används i frågorna och projekten. Elevens svar blir underlag, som syns på elevsidan och i Underlag inför betyg.',
+    example:
+      'Punkten om ritningar blir målet Ritningsläsning. Frågan ”Har du läst en ritning i dag?” kopplas till målet, och Hugos svar blir underlag.',
+  },
+  goalQuestions: {
+    title: 'Frågor från målen',
+    body: 'Färdiga frågor där svaret redan är kopplat till ett mål. När eleven svarar Ja eller beskriver vad hen gjort räknas det som underlag för målet.',
+    example:
+      'Frågan ”Har du arbetat med elsäkerhet i dag?” är kopplad till målet Elsäkerhet. Svarar Maja Ja syns det under Elsäkerhet på hennes elevsida.',
+  },
+  projectGoals: {
+    title: 'Mål i projektet',
+    body: 'Välj de mål eleverna tränar i projektet. Redovisningarna i projektet visar sedan vilka mål eleven har underlag för. När projektet är klart väljer eleven själv vilka mål hen visade.',
+    example:
+      'Projektet Laddbox för elbil har målen Ansluta apparater och Elsäkerhet. Alva ser dem i sitt projekt och kryssar i dem i sammanfattningen.',
   },
 } as const
 
