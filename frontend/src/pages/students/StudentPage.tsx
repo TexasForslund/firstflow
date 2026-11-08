@@ -540,7 +540,8 @@ export function AttendanceCard({ studentId, supervisor = false }: { studentId: s
                   <li key={day.iso} className={own.weekDay}>
                     {day.label}
                     <span
-                      className={`${own.dot} ${own[day.state]}`}
+                      className={own.dot}
+                      data-state={day.state}
                       aria-label={
                         day.state === 'present' ? 'Incheckad' : day.state === 'missing' ? 'Ej incheckad' : 'Kommande'
                       }
