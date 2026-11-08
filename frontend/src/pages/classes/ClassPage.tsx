@@ -30,13 +30,14 @@ import { NotFound } from '../NotFound'
 import { currentPlacement } from '../placements/period'
 import { AplTermsForm } from './AplTermsForm'
 import { ClassReports } from './ClassReports'
+import { CurriculumTab } from './CurriculumTab'
 import { FormBuilder } from './questions/FormBuilder'
 import { aplSummary } from './aplTerms'
 import { StudentTrackSelect, TracksCard } from './TracksCard'
 import styles from './Classes.module.css'
 import { PlacementPanel } from './PlacementPanel'
 
-type TabId = 'students' | 'reports' | 'terms' | 'questions' | 'teachers'
+type TabId = 'students' | 'reports' | 'terms' | 'questions' | 'curriculum' | 'teachers'
 
 export function ClassPage() {
   const { classId = '' } = useParams()
@@ -62,6 +63,7 @@ export function ClassPage() {
     ...(isTeacher ? [{ id: 'reports' as const, label: 'Redovisningar', count: unread.data?.length || undefined }] : []),
     { id: 'terms', label: 'APL-villkor' },
     { id: 'questions', label: 'Frågor' },
+    { id: 'curriculum', label: 'Läroplan' },
     ...(canAssignTeachers ? [{ id: 'teachers' as const, label: 'Lärare', count: cls.teachers.length }] : []),
   ]
   const requested = params.get('tab') as TabId | null
@@ -135,6 +137,7 @@ export function ClassPage() {
         {tab === 'reports' && <ClassReports classId={cls.id} students={cls.students} />}
         {tab === 'terms' && <AplTermsForm classId={cls.id} terms={cls.apl_terms} canEdit={canEdit} />}
         {tab === 'questions' && <FormBuilder classId={cls.id} canEdit={canEdit} />}
+        {tab === 'curriculum' && <CurriculumTab classId={cls.id} canEdit={canEdit} />}
         {tab === 'teachers' && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
       </div>
     </div>

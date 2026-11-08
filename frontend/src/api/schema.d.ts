@@ -2442,6 +2442,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/syllabus/programs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Programs
+         * @description Gymnasieskolans program i läroplanen, med inriktningar, från Skolverket.
+         */
+        get: operations["list_programs_api_syllabus_programs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/syllabus/programs/{program_code}/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Program Groups
+         * @description Programmets ämnen att välja bland: först det alla läser, sedan inriktningen, dess
+         *     yrkesutgångar och sist programfördjupningen.
+         */
+        get: operations["program_groups_api_syllabus_programs__program_code__groups_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/curriculum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Class Curriculum
+         * @description Klassens läroplan, program, inriktning och ämnen, och programmets ämnen att välja bland.
+         */
+        get: operations["get_class_curriculum_api_classes__class_id__curriculum_get"];
+        /**
+         * Set Class Curriculum
+         * @description Sparar klassens läroplan, program, inriktning och ämnen. Ämnena skrivs över.
+         */
+        put: operations["set_class_curriculum_api_classes__class_id__curriculum_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2857,6 +2922,42 @@ export interface components {
         ClassCreate: {
             /** Name */
             name: string;
+        };
+        /** ClassCurriculum */
+        ClassCurriculum: {
+            /** Curriculum */
+            curriculum: ("gy25" | "gy11") | null;
+            /**
+             * Suggested Curriculum
+             * @description Gissad utifrån året i klassens namn: 25 eller senare blir Gy25
+             * @enum {string}
+             */
+            suggested_curriculum: "gy25" | "gy11";
+            /** Program Code */
+            program_code: string | null;
+            /** Program Name */
+            program_name: string | null;
+            /** Orientation Code */
+            orientation_code: string | null;
+            /**
+             * Subjects
+             * @description Klassens valda ämnen
+             */
+            subjects: components["schemas"]["LevelRead"][];
+        };
+        /** ClassCurriculumWrite */
+        ClassCurriculumWrite: {
+            /**
+             * Curriculum
+             * @enum {string}
+             */
+            curriculum: "gy25" | "gy11";
+            /** Program Code */
+            program_code: string;
+            /** Orientation Code */
+            orientation_code?: string | null;
+            /** Level Codes */
+            level_codes: string[];
         };
         /** ClassDetail */
         ClassDetail: {
@@ -3414,6 +3515,18 @@ export interface components {
             /** Curriculum */
             curriculum?: string | null;
         };
+        /** GroupRead */
+        GroupRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "program" | "orientation" | "outcome" | "specialization";
+            /** Title */
+            title: string;
+            /** Levels */
+            levels: components["schemas"]["LevelRead"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -3658,6 +3771,22 @@ export interface components {
              * @default true
              */
             send_invite: boolean;
+        };
+        /** LevelRead */
+        LevelRead: {
+            /** Subject Code */
+            subject_code: string;
+            /** Subject Name */
+            subject_name: string;
+            /** Level Code */
+            level_code: string;
+            /**
+             * Level Name
+             * @description "Nivå 1" (Gy25) eller kursens namn (Gy11)
+             */
+            level_name: string;
+            /** Points */
+            points: number | null;
         };
         /**
          * LogicRule
@@ -4044,6 +4173,13 @@ export interface components {
             /** Read */
             read: boolean;
         };
+        /** OrientationRead */
+        OrientationRead: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+        };
         /** OverviewReport */
         OverviewReport: {
             /**
@@ -4183,6 +4319,15 @@ export interface components {
              * Format: date
              */
             end_date: string;
+        };
+        /** ProgramRead */
+        ProgramRead: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Orientations */
+            orientations: components["schemas"]["OrientationRead"][];
         };
         /** ProjectCard */
         ProjectCard: {
@@ -9950,6 +10095,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupervisorStudentReports"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_programs_api_syllabus_programs_get: {
+        parameters: {
+            query: {
+                curriculum: "gy25" | "gy11";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    program_groups_api_syllabus_programs__program_code__groups_get: {
+        parameters: {
+            query?: {
+                orientation?: string | null;
+            };
+            header?: never;
+            path: {
+                program_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_class_curriculum_api_classes__class_id__curriculum_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassCurriculum"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_class_curriculum_api_classes__class_id__curriculum_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClassCurriculumWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassCurriculum"];
                 };
             };
             /** @description Validation Error */

@@ -1,0 +1,180 @@
+/* Klassens läroplan och ämnen (Texas skiss "Mål från läroplanen", 2026-11-08). Inga skuggor. */
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+}
+
+.head {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.hint {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.groupHead,
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.summary {
+  justify-content: flex-start;
+  gap: var(--space-4);
+  min-height: 2.75rem;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::after {
+  color: var(--color-text-secondary);
+  content: 'Visa';
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+details[open] > .summary::after {
+  content: 'Dölj';
+}
+
+.groupTitle {
+  font-weight: 700;
+}
+
+.source {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.levels,
+.plain {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.levels li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.level {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3rem;
+  padding: var(--space-2) 0;
+  cursor: pointer;
+}
+
+.level input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.levelText {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.levelName {
+  font-weight: 600;
+}
+
+.plain {
+  gap: var(--space-2);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-success, var(--color-mint));
+  font-weight: 600;
+}
+
+.saved svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.grow {
+  flex: 1;
+}
+
+details.card:not([open]) {
+  display: block;
+  padding-block: var(--space-3);
+}

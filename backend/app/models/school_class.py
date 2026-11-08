@@ -65,6 +65,7 @@ class SchoolClass(Base):
         ),
         # Redovisningsdagarna väljs bland APL-dagarna (Texas, 2026-10-30).
         CheckConstraint("report_due_weekdays <@ apl_weekdays", name="report_due_on_apl_days"),
+        CheckConstraint("curriculum IN ('gy25', 'gy11')", name="curriculum_values"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -73,6 +74,12 @@ class SchoolClass(Base):
     )
     name: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # Läroplanen klassen följer, gy25 eller gy11, och programmet och inriktningen hos Skolverket,
+    # till exempel EE25 och EEELK (idé 13, Texas 2026-11-08). Tomma tills läraren väljer.
+    curriculum: Mapped[str | None] = mapped_column(String(4))
+    program_code: Mapped[str | None] = mapped_column(String(10))
+    orientation_code: Mapped[str | None] = mapped_column(String(10))
 
     # APL-villkor för hela klassen. Veckodagar: 0 = måndag … 6 = söndag.
     # APL-dagar: dagarna eleverna är på APL och checkar in, även helger för t.ex.

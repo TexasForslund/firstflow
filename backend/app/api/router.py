@@ -22,6 +22,7 @@ from app.api.routes import (
     students,
     superadmin,
     supervisor_students,
+    syllabus,
     teacher_reports,
     templates,
     tracks,
@@ -71,3 +72,4 @@ api_router.include_router(imports.router)
 api_router.include_router(messages.router)
 api_router.include_router(hours.router)
 api_router.include_router(supervisor_students.router)
+api_router.include_router(syllabus.router)
