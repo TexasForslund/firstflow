@@ -701,3 +701,14 @@ Texas skiss "Enklare frågor" (2026-11-08). Steg 2 är förslagssidan med frågo
 - **Läraren och handledaren** ser följdfrågan indragen under svaret i redovisningen.
 - **Backend:** frågor har `show_if` (`question_id`, `when`). En följdfråga ligger direkt efter sin fråga och kan inte ha egna följdfrågor. Underlaget för ett mål tar texten från frågans egen följdfråga. Gamla versioner med regler fungerar som förut.
 
+## F53. Enklare frågor, steg 2: förslag från klassens mål ✅ Klar
+
+Texas skiss "Enklare frågor", bild 1 (2026-11-08).
+
+- **Förslag på frågor från klassens mål** visas först när klassen har mål men inga frågor, och annars via "Förslag från målen (N kvar)" under frågorna.
+- Förslagen är grupperade per ämne. Varje förslag är en Ja/Nej-fråga där Ja visar målet, med följdfrågan "Berätta vad du gjorde." om Ja. Samma mall som "Från målen".
+- **Lägg till** per förslag eller **Lägg till alla**. Mål som redan har en fråga visas som Tillagd.
+- **Grundfrågor varje vecka** utan mål: Vad har du gjort den här veckan?, Vad lärde du dig? och Hur kändes veckan?
+- Längst ner står hur många frågor det är och ungefär hur lång tid det tar för eleven.
+- Bara frontend.
+

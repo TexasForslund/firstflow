@@ -1,6 +1,7 @@
 import { AlignLeft, Images, ListChecks, Quote, Star, TextCursorInput, ToggleLeft, type LucideIcon } from 'lucide-react'
 
 import type { LogicRule, Question, QuestionType } from '../../../api/forms'
+import type { Goal } from '../../../api/goals'
 
 export type TypeGroup = 'text' | 'choice' | 'rating' | 'other'
 
@@ -220,4 +221,10 @@ export function convertJump(questions: Question[], id: string): Question[] {
     if (ids.has(q.id)) return { ...q, show_if: { question_id: id, when: 'yes' } }
     return q
   })
+}
+
+/** Klassens mål som ingen fråga visar än. */
+export function unusedGoals(questions: Question[], goals: Goal[]): Goal[] {
+  const used = new Set(questions.flatMap((q) => ('goals' in q ? q.goals.map((g) => g.goal_id) : [])))
+  return goals.filter((g) => g.class_id && !used.has(g.id))
 }

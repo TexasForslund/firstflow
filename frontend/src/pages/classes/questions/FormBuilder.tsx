@@ -1,4 +1,14 @@
-import { BookmarkPlus, ChevronDown, CircleCheck, Eye, LayoutTemplate, LoaderCircle, Plus, Undo2 } from 'lucide-react'
+import {
+  BookmarkPlus,
+  ChevronDown,
+  CircleCheck,
+  Eye,
+  LayoutTemplate,
+  LoaderCircle,
+  Plus,
+  Sparkles,
+  Undo2,
+} from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -18,6 +28,7 @@ import { useGoals } from '../../../api/goals'
 import { useClassTracks } from '../../../api/tracks'
 import styles from './FormBuilder.module.css'
 import { PhonePreview } from './PhonePreview'
+import { Suggestions } from './Suggestions'
 import { QuestionCards } from './QuestionCards'
 import cardStyles from './QuestionCards.module.css'
 import { SaveTemplateDialog, UseTemplateDialog } from './TemplateDialogs'
@@ -33,6 +44,7 @@ import {
   questionProblems,
   questionTitle,
   sanitizeLogic,
+  unusedGoals,
 } from './questionTypes'
 import { TypeBadge } from './TypeBadge'
 
@@ -67,6 +79,8 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null)
   const [focusId, setFocusId] = useState<string | null>(null)
   const [moreOpen, setMoreOpen] = useState(false)
+  // Förslagen från målen visas först när klassen har mål men inga frågor (Texas, 2026-11-08).
+  const [suggesting, setSuggesting] = useState(initial.length === 0)
   const [adding, setAdding] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
@@ -170,6 +184,12 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     update(next)
     setSelectedId(added[0].id)
     setAdding(false)
+  }
+
+  /** Frågor från förslagen. Läggs sist, i den ordning läraren väljer dem. */
+  function appendQuestions(added: Question[]) {
+    update([...questions, ...added])
+    setSelectedId(added[0].id)
   }
 
   /** En följdfråga om ett svar, sist bland frågans följdfrågor (Texas, 2026-11-08). */
@@ -349,7 +369,9 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
         {notice && <p className={styles.notice}>{notice}</p>}
       </div>
 
-      {groups.length === 0 ? (
+      {suggesting && goals.some((g) => g.class_id) ? (
+        <Suggestions questions={questions} goals={goals} onAdd={appendQuestions} onClose={() => setSuggesting(false)} />
+      ) : groups.length === 0 ? (
         <section className={`${styles.canvas} ${styles.emptyCanvas}`}>
           <h2 className={styles.emptyTitle}>Inga frågor än</h2>
           <p className={styles.settingsHint}>
@@ -381,9 +403,16 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
               canConvertJump={(id) => jumpAsFollowUps(questions, id) !== null}
               onConvertJump={(id) => update(convertJump(questions, id))}
             />
-            <button type="button" className={cardStyles.addQuestion} onClick={() => setAdding(true)}>
-              <Plus aria-hidden="true" /> Lägg till fråga
-            </button>
+            <div className={cardStyles.addRow}>
+              <button type="button" className={cardStyles.addQuestion} onClick={() => setAdding(true)}>
+                <Plus aria-hidden="true" /> Lägg till fråga
+              </button>
+              {unusedGoals(questions, goals).length > 0 && (
+                <button type="button" className={cardStyles.suggest} onClick={() => setSuggesting(true)}>
+                  <Sparkles aria-hidden="true" /> Förslag från målen ({unusedGoals(questions, goals).length} kvar)
+                </button>
+              )}
+            </div>
           </div>
           {selectedGroup && (
             <PhonePreview

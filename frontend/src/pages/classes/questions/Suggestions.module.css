@@ -1,0 +1,175 @@
+/* Förslag på frågor från klassens mål (Texas skiss "Enklare frågor", steg 2, 2026-11-08). */
+.page {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 56rem;
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+}
+
+.bannerIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-primary-on-light);
+}
+
+.bannerIcon svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.bannerText {
+  display: grid;
+  flex: 1 1 20rem;
+  gap: var(--space-1);
+}
+
+.bannerText strong {
+  font-size: var(--font-size-lg);
+}
+
+.bannerText span {
+  color: var(--color-text-secondary);
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.group {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
+.groupTitle {
+  flex: 1;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.rowText {
+  display: grid;
+  flex: 1 1 20rem;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.type {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-sm, 0.375rem);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.goal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.1875rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.goal svg,
+.followUp svg {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.followUp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.added {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.added svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
