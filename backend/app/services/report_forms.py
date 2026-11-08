@@ -4,9 +4,14 @@ Ett formulär är en lista med frågor. Läraren redigerar ett utkast och public
 ny version. Varje version sparas oförändrad, så att ett svar alltid går att tolka mot frågan
 som eleven faktiskt såg. Frågor och alternativ har fasta id:n som följer med mellan versioner.
 
-Logik: en regel på en fråga säger "om svaret är X, gå till fråga Y" (eller till slutet).
+Följdfrågor (Texas skiss "Enklare frågor", 2026-11-08): en fråga med `show_if` är en följdfråga
+till en tidigare fråga och visas bara när eleven svarar som `show_if.when`, t.ex. Ja. Följdfrågan
+ligger direkt efter sin fråga och har inga egna följdfrågor. Eleven ser den på samma skärm.
+
+Logik (äldre): en regel på en fråga säger "om svaret är X, gå till fråga Y" (eller till slutet).
 Regler får bara peka framåt, så det kan aldrig bli en slinga. Utan matchande regel kommer
-nästa fråga i ordningen.
+nästa fråga i ordningen. Nya frågor använder följdfrågor i stället, men gamla versioner med
+regler fungerar som förut.
 
 Se docs/design/fragor-typeform.md.
 """
@@ -69,6 +74,19 @@ class GoalRule(BaseModel):
     goal_id: UUID
 
 
+class ShowIf(BaseModel):
+    """Följdfrågan visas när eleven svarar `when` på frågan `question_id`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    question_id: UUID
+    when: str = Field(
+        min_length=1,
+        max_length=64,
+        description="Ett alternativs id, 'yes' eller 'no', eller ett betyg '1'–'5'",
+    )
+
+
 class Choice(BaseModel):
     # I API-svaren är alla fält med standardvärde obligatoriska, så att frontend slipper gissa.
     model_config = ConfigDict(extra="forbid", json_schema_serialization_defaults_required=True)
@@ -89,6 +107,9 @@ class _Question(BaseModel):
         default_factory=list,
         max_length=MAX_TRACKS,
         description="Inriktningar som får frågan. Tom = alla elever",
+    )
+    show_if: ShowIf | None = Field(
+        default=None, description="Följdfråga: visas bara efter ett visst svar. null = alltid"
     )
 
 
@@ -190,6 +211,8 @@ class FormContent(BaseModel):
                     raise ValueError(
                         f'Ett mål i frågan "{question.title}" gäller ett svar som inte finns'
                     )
+            if question.show_if is not None:
+                self._check_follow_up(i, question, position)
             for rule in getattr(question, "logic", []):
                 if rule.when not in allowed:
                     raise ValueError(
@@ -200,6 +223,24 @@ class FormContent(BaseModel):
                         f'En regel i frågan "{question.title}" måste peka på en senare fråga'
                     )
         return self
+
+    def _check_follow_up(self, i: int, question: Any, position: dict[UUID, int]) -> None:
+        """Följdfrågan ligger efter sin fråga, med bara andra följdfrågor till samma fråga
+        emellan, och gäller ett svar som finns."""
+        rule = question.show_if
+        at = position.get(rule.question_id, -1)
+        if at < 0 or at >= i:
+            raise ValueError(f'Följdfrågan "{question.title}" måste ligga efter sin fråga')
+        parent = self.questions[at]
+        if parent.show_if is not None:
+            raise ValueError(f'Följdfrågan "{question.title}" kan inte följa en annan följdfråga')
+        if rule.when not in _allowed_when(parent):
+            raise ValueError(f'Följdfrågan "{question.title}" gäller ett svar som inte finns')
+        for between in self.questions[at + 1 : i]:
+            if between.show_if is None or between.show_if.question_id != rule.question_id:
+                raise ValueError(
+                    f'Följdfrågan "{question.title}" måste ligga direkt efter sin fråga'
+                )
 
 
 def parse_questions(raw: list[dict[str, Any]]) -> list[Any]:
@@ -220,6 +261,7 @@ def copy_with_new_ids(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     questions = parse_questions(raw)
     question_ids = {q.id: uuid4() for q in questions}
+    choice_ids_by_question: dict[UUID, dict[str, str]] = {}
     copies = []
     for question in questions:
         choice_ids: dict[str, str] = {}
@@ -246,6 +288,16 @@ def copy_with_new_ids(raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 goal.model_copy(update={"when": choice_ids.get(goal.when, goal.when)})
                 for goal in question.goals
             ]
+        if question.show_if is not None:
+            update["show_if"] = question.show_if.model_copy(
+                update={
+                    "question_id": question_ids[question.show_if.question_id],
+                    "when": choice_ids_by_question.get(question.show_if.question_id, {}).get(
+                        question.show_if.when, question.show_if.when
+                    ),
+                }
+            )
+        choice_ids_by_question[question.id] = choice_ids
         # Inriktningarna hör till en klass och följer inte med till en annan.
         update["tracks"] = []
         copies.append(question.model_copy(update=update))
@@ -376,6 +428,11 @@ def visible_path(
         if not for_track(question, track_id) and question.id not in answers:
             i += 1
             continue
+        if question.show_if is not None and not _follows(
+            question.show_if, path, questions, answers
+        ):
+            i += 1
+            continue
         path.append(question.id)
         following = i + 1
         answer = answers.get(question.id)
@@ -388,6 +445,17 @@ def visible_path(
         # Reglerna pekar alltid framåt (FormContent), men skydda mot slingor ändå.
         i = max(following, i + 1)
     return path
+
+
+def _follows(rule: ShowIf, path: list[UUID], questions: list[Any], answers: dict) -> bool:
+    """Om följdfrågan ska visas: frågan den följer är på vägen och har svaret `when`."""
+    if rule.question_id not in path:
+        return False
+    answer = answers.get(rule.question_id)
+    if answer is None:
+        return False
+    parent = next(q for q in questions if q.id == rule.question_id)
+    return rule.when in answer_keys(parent, answer)
 
 
 def is_answerable(question: Any) -> bool:

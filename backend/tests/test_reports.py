@@ -674,3 +674,69 @@ def test_follow_up_answer_comes_with_the_evidence(
         "question": "Vad gjorde du?",
         "text": "Visade kunden hur laddboxen fungerar.",
     }
+
+
+def test_follow_up_shows_only_after_its_answer(
+    client: TestClient, db: Session, login: Login, w: World
+) -> None:
+    """Följdfrågor (Texas skiss "Enklare frågor", 2026-11-08): visas bara efter Ja, och svaret
+    blir underlagets text."""
+    login(w.teacher)
+    goal = client.post("/api/goals", json={"name": "Ritningsläsning"}).json()
+    drawing = q("yes_no", "Har du läst en ritning?", goals=[{"when": "yes", "goal_id": goal["id"]}])
+    told = q(
+        "long_text",
+        "Berätta vad ritningen visade.",
+        show_if={"question_id": drawing["id"], "when": "yes"},
+    )
+    url = f"/api/classes/{w.ee22.id}/form"
+    response = client.put(url, json={"questions": [drawing, told, w.summary]})
+    assert response.status_code == 200, response.text
+    assert client.post(f"{url}/publish").status_code == 200
+    db.execute(insert(teacher_students).values(teacher_id=w.teacher.id, student_id=w.student.id))
+
+    login(w.student)
+    report = start(client, w)
+    # Nej: följdfrågan hoppas över och krävs inte.
+    path = answer(client, report, drawing, boolean=False).json()["path"]
+    assert told["id"] not in path
+    answer(client, report, w.summary, text="Bra dag")
+    # Ja: följdfrågan visas och krävs.
+    path = answer(client, report, drawing, boolean=True).json()["path"]
+    assert path.index(told["id"]) == path.index(drawing["id"]) + 1
+    assert client.post(f"/api/reports/{report['id']}/submit").status_code == 422
+    answer(client, report, told, text="En installationsritning för ett kök.")
+    assert client.post(f"/api/reports/{report['id']}/submit").status_code == 200
+
+    login(w.teacher)
+    (count,) = client.get(f"/api/students/{w.student.id}/goals").json()
+    assert count["evidence"][0]["follow_up"]["text"] == "En installationsritning för ett kök."
+
+
+@pytest.mark.parametrize(
+    "where",
+    ["before", "other_between", "follow_up_of_follow_up", "bad_answer"],
+)
+def test_invalid_follow_ups_are_rejected(
+    client: TestClient, login: Login, w: World, where: str
+) -> None:
+    login(w.teacher)
+    parent = q("yes_no", "Har du läst en ritning?")
+    follow = q("long_text", "Berätta.", show_if={"question_id": parent["id"], "when": "yes"})
+    other = q("long_text", "Annat")
+    questions = {
+        "before": [follow, parent],
+        "other_between": [parent, other, follow],
+        "follow_up_of_follow_up": [
+            parent,
+            {**q("yes_no", "Mer?"), "show_if": {"question_id": parent["id"], "when": "yes"}},
+        ],
+        "bad_answer": [parent, {**follow, "show_if": {"question_id": parent["id"], "when": "x"}}],
+    }[where]
+    if where == "follow_up_of_follow_up":
+        middle = questions[1]
+        questions.append(
+            q("long_text", "Djupare", show_if={"question_id": middle["id"], "when": "yes"})
+        )
+    response = client.put(f"/api/classes/{w.ee22.id}/form", json={"questions": questions})
+    assert response.status_code == 422

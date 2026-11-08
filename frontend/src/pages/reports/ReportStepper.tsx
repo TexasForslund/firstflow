@@ -52,15 +52,19 @@ export function ReportStepper({
 }: Props) {
   const [answers, setAnswers] = useState<Answers>(initialAnswers)
   const answersRef = useRef(answers)
-  const path = visiblePath(questions, answers)
+  // Följdfrågor visas på samma skärm som sin fråga (Texas skiss "Enklare frågor", 2026-11-08),
+  // så stegen är frågorna utan följdfrågorna.
+  const path = steps(questions, answers)
   // Fortsätt där eleven slutade: första obesvarade frågan, eller sista steget om allt är besvarat.
   const [pos, setPos] = useState(() => {
-    const start = visiblePath(questions, initialAnswers)
+    const start = steps(questions, initialAnswers)
     if (Object.keys(initialAnswers).length === 0) return 0
-    const first = start.findIndex((id) => {
-      const q = questions.find((x) => x.id === id)!
-      return q.type !== 'statement' && !isAnswered(q, initialAnswers[id])
-    })
+    const first = start.findIndex((id) =>
+      [id, ...followUpIds(questions, initialAnswers, id)].some((qid) => {
+        const q = questions.find((x) => x.id === qid)!
+        return q.type !== 'statement' && !isAnswered(q, initialAnswers[qid])
+      }),
+    )
     return first === -1 ? start.length - 1 : first
   })
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
@@ -108,10 +112,18 @@ export function ReportStepper({
       )
       return
     }
+    const shown = followUpQuestions(questions, current, question.id)
+    if (shown.some((q) => isRequired(q) && !isAnswered(q, current[q.id]))) {
+      setError('Svara på följdfrågan för att gå vidare')
+      return
+    }
     setBusy(true)
     try {
       if (question.type !== 'statement' && onSave) await onSave(question.id, answer ?? {})
-      const nextPath = visiblePath(questions, current)
+      if (onSave) {
+        await Promise.all(shown.filter((q) => q.type !== 'statement').map((q) => onSave(q.id, current[q.id] ?? {})))
+      }
+      const nextPath = steps(questions, current)
       if (nextPath.indexOf(question.id) >= nextPath.length - 1 && hasFinalStep) {
         setDirection('forward')
         setPos(nextPath.length)
@@ -150,14 +162,18 @@ export function ReportStepper({
     setPos(index - 1)
   }
 
-  /** Enkelval, ja/nej och betyg går vidare av sig självt efter en kort bekräftelse. */
+  /**
+   * Enkelval, ja/nej och betyg går vidare av sig självt efter en kort bekräftelse, utom när
+   * svaret ger en följdfråga. Då stannar eleven och svarar på den under.
+   */
   const chooseAndAdvance = useCallback(
     (questionId: string, value: AnswerValue) => {
       setAnswer(questionId, value)
       window.clearTimeout(advanceTimer.current)
+      if (followUpIds(questions, answersRef.current, questionId).length > 0) return
       advanceTimer.current = window.setTimeout(() => void goNext(), AUTO_ADVANCE_MS)
     },
-    [setAnswer, goNext],
+    [setAnswer, goNext, questions],
   )
 
   // Tangentbordet på dator.
@@ -317,6 +333,13 @@ export function ReportStepper({
                 onChoose={(value) => chooseAndAdvance(question.id, value)}
               />
             </div>
+            <FollowUps
+              questions={questions}
+              answers={answers}
+              questionId={question.id}
+              reportId={reportId}
+              onChange={setAnswer}
+            />
             {error && (
               <p className={styles.error} role="alert">
                 {error}
@@ -536,5 +559,69 @@ function OptionButton({
       <span className={styles.optionLabel}>{label}</span>
       {selected && <Check className={styles.optionCheck} aria-hidden="true" />}
     </button>
+  )
+}
+
+/** Stegen: frågorna eleven får, utan följdfrågorna som visas under sin fråga. */
+function steps(questions: Question[], answers: Answers): string[] {
+  const byId = new Map(questions.map((q) => [q.id, q]))
+  return visiblePath(questions, answers).filter((id) => !byId.get(id)?.show_if)
+}
+
+/** Följdfrågorna till frågan som eleven får med svaren hittills, i ordning. */
+function followUpIds(questions: Question[], answers: Answers, questionId: string): string[] {
+  const byId = new Map(questions.map((q) => [q.id, q]))
+  return visiblePath(questions, answers).filter((id) => byId.get(id)?.show_if?.question_id === questionId)
+}
+
+function followUpQuestions(questions: Question[], answers: Answers, questionId: string): Question[] {
+  const ids = new Set(followUpIds(questions, answers, questionId))
+  return questions.filter((q) => ids.has(q.id))
+}
+
+/** Följdfrågorna under frågan. Svarsfältet får fokus när en följdfråga dyker upp. */
+function FollowUps({
+  questions,
+  answers,
+  questionId,
+  reportId,
+  onChange,
+}: {
+  questions: Question[]
+  answers: Answers
+  questionId: string
+  reportId?: string
+  onChange: (questionId: string, value: AnswerValue) => void
+}) {
+  const followUps = followUpQuestions(questions, answers, questionId)
+  const ref = useRef<HTMLDivElement>(null)
+  const key = followUps.map((q) => q.id).join()
+  useEffect(() => {
+    if (key) ref.current?.querySelector<HTMLElement>('input:not([type=file]), textarea')?.focus()
+  }, [key])
+  if (followUps.length === 0) return null
+  return (
+    <div ref={ref}>
+      {followUps.map((followUp) => (
+        <div key={followUp.id} className={styles.followUp}>
+          <h3 className={styles.followUpTitle}>
+            {followUp.title}
+            {followUp.type !== 'statement' && !followUp.required && (
+              <span className={styles.followUpOptional}> · Valfri</span>
+            )}
+          </h3>
+          {followUp.description && <p className={styles.description}>{followUp.description}</p>}
+          <div className={styles.answer}>
+            <AnswerInput
+              question={followUp}
+              reportId={reportId}
+              answer={answers[followUp.id]}
+              onChange={(value) => onChange(followUp.id, value)}
+              onChoose={(value) => onChange(followUp.id, value)}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }

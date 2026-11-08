@@ -7,7 +7,7 @@ import { useMarkRead, useReport, useSupervisorReports } from '../../api/reports'
 import { Avatar, Card, Collapsible } from '../../components'
 import { NotFound } from '../NotFound'
 import { longDate } from '../reports/answers'
-import { AnswerContent, Comments } from '../reports/AnswerView'
+import { AnswerContent, Comments, FollowUpAnswers } from '../reports/AnswerView'
 import styles from './SupervisorReports.module.css'
 
 /** En redovisning för handledaren: elevens svar och kommentarer (Texas skiss, 2026-10-29). */
@@ -73,11 +73,14 @@ export function SupervisorReport() {
 
       <Card>
         <div className={styles.answers}>
-          {shown.map((question) => (
-            <Collapsible key={question.id} title={question.title}>
-              <AnswerContent question={question} answer={answers.get(question.id)} reportId={reportId} />
-            </Collapsible>
-          ))}
+          {shown
+            .filter((q) => !q.show_if)
+            .map((question) => (
+              <Collapsible key={question.id} title={question.title}>
+                <AnswerContent question={question} answer={answers.get(question.id)} reportId={reportId} />
+                <FollowUpAnswers shown={shown} parentId={question.id} answers={answers} reportId={reportId} />
+              </Collapsible>
+            ))}
         </div>
       </Card>
 

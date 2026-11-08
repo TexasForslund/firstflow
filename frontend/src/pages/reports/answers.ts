@@ -50,6 +50,16 @@ export function visiblePath(questions: Question[], answers: Answers): string[] {
   let i = 0
   while (i < questions.length) {
     const question = questions[i]
+    // En följdfråga visas bara efter rätt svar på sin fråga (Texas, 2026-11-08).
+    const rule = question.show_if
+    if (rule) {
+      const parent = questions[position.get(rule.question_id) ?? -1]
+      const answer = answers[rule.question_id]
+      if (!parent || !path.includes(parent.id) || !answer || !answerKeys(parent, answer).includes(rule.when)) {
+        i += 1
+        continue
+      }
+    }
     path.push(question.id)
     let next = i + 1
     const answer = answers[question.id]

@@ -1,0 +1,719 @@
+/* Frågorna i en kolumn (Texas skiss "Enklare frågor", 2026-11-08). Inga skuggor. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 48rem) 20rem;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@media (max-width: 72rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .preview {
+    display: none !important;
+  }
+}
+
+.column {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.cards {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.cardOpen {
+  border: 2px solid var(--color-primary);
+  padding: calc(var(--space-3) - 1px) calc(var(--space-4) - 1px) calc(var(--space-5) - 1px);
+}
+
+.dragging {
+  position: relative;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+.cardTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.grow {
+  flex: 1;
+}
+
+.handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm, 0.375rem);
+  background: transparent;
+  color: var(--color-text-faded);
+  cursor: grab;
+  touch-action: none;
+}
+
+.handle:hover {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.handle svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.typeLabel,
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.problem {
+  color: var(--color-attention);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.summary {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1) 0 0 calc(1.75rem + var(--space-2));
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.summary:hover .title {
+  text-decoration: underline;
+}
+
+.title {
+  font-weight: 600;
+  font-size: var(--font-size-md);
+}
+
+.untitled {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.summaryLines {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.goalChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.1875rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.goalChip svg {
+  width: 0.8125rem;
+  height: 0.8125rem;
+}
+
+.followUpLine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.followUpLine svg {
+  flex-shrink: 0;
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+/* Öppen fråga */
+.editor {
+  display: grid;
+  gap: var(--space-3);
+  padding-left: calc(1.75rem + var(--space-2));
+}
+
+.titleInput,
+.descriptionInput {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  resize: none;
+  field-sizing: content;
+}
+
+.titleInput {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.descriptionInput {
+  color: var(--color-text-secondary);
+}
+
+.titleInput:focus-visible,
+.descriptionInput:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.answers {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.answer {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+}
+
+.answerHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.letter {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 0.4375rem;
+  background: var(--color-bg);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.answerLabel {
+  flex: 1;
+  font-weight: 600;
+}
+
+.choiceInput {
+  flex: 1;
+  min-width: 10rem;
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.5rem);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.goalPicker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.goalPicked {
+  border: 1px solid transparent;
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font-weight: 600;
+}
+
+.goalPicker svg {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.goalPicker select {
+  max-width: 14rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.newGoal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.newGoalInput {
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.addFollowUp,
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--space-1);
+  min-height: 2.25rem;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addFollowUp svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+.followUp {
+  display: grid;
+  gap: var(--space-2);
+  margin-left: var(--space-6);
+  padding: var(--space-3);
+  border-left: 3px solid var(--color-primary-light);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--color-bg);
+}
+
+.followUpHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.followUpIcon {
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.followUpTag {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-sm, 0.375rem);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.typeSelect {
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.375rem);
+  background: var(--color-bg);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.smallCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.followUpInput {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 0.5rem);
+  font: inherit;
+  font-weight: 600;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--color-surface);
+}
+
+.iconButton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.choiceActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.oldJumps {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+  font-size: var(--font-size-sm);
+}
+
+.oldJumps ul {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.oldJumps li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.problems {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-attention);
+  font-size: var(--font-size-sm);
+}
+
+.audience {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Kopiera och Ta bort med mjuka färger (Texas, 2026-11-08). */
+.softButton,
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.softButton {
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.dangerButton {
+  background: var(--color-attention-bg);
+  color: var(--color-attention);
+}
+
+.softButton:hover {
+  background: #d8e6fc;
+}
+
+.dangerButton:hover {
+  background: #ffe0d2;
+}
+
+.softButton svg,
+.dangerButton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.softButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.addQuestion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addQuestion:hover {
+  background: var(--color-primary-light);
+}
+
+.addQuestion svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Mer-menyn i verktygsraden */
+.more {
+  position: relative;
+}
+
+.moreMenu {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  display: grid;
+  min-width: 13rem;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.moreMenu button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm, 0.375rem);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.moreMenu button:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+
+.moreMenu button:disabled {
+  color: var(--color-text-faded);
+  cursor: default;
+}
+
+.moreMenu svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Mobilen till höger */
+.preview {
+  position: sticky;
+  top: var(--space-6);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+
+.previewLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.phone {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 34rem;
+  box-sizing: border-box;
+  padding: var(--space-5) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 2rem;
+  background: var(--color-bg);
+}
+
+.segments {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.segments span {
+  flex: 1;
+  height: 0.25rem;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+
+.segments span[data-done] {
+  background: var(--color-primary);
+}
+
+.phoneCounter {
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-xs);
+}
+
+.phoneTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.phoneDescription {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.phoneOptions {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.phoneOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.phoneOption[data-selected] {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-light);
+  font-weight: 600;
+}
+
+.phoneOption svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.phoneLetter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 0.3125rem;
+  color: var(--color-primary-on-light);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.phoneInput,
+.phoneArea {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.phoneInput {
+  height: 2.75rem;
+}
+
+.phoneArea {
+  height: 5.5rem;
+}
+
+.phoneStars {
+  display: flex;
+  gap: var(--space-2);
+  color: var(--color-star-empty);
+}
+
+.phoneStars svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.phoneFollowUp {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.phoneFollowUpTitle {
+  font-weight: 600;
+}

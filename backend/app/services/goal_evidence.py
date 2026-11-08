@@ -4,6 +4,7 @@ för nya redovisningar men aldrig skriver om gamla.
 
 Följdfrågan (Texas, 2026-10-30): är nästa fråga på elevens väg en textfråga, t.ex. "Vad gjorde
 du?" efter "Har du haft kundkontakt i dag? Ja", följer elevens svar med som underlagets text.
+Har frågan egna följdfrågor (`show_if`, Texas 2026-11-08) används den första textfrågan av dem.
 """
 
 from collections.abc import Iterable, Iterator
@@ -76,11 +77,24 @@ def evidence(reports: Iterable[Report]) -> Iterator[Evidence]:
                     )
 
 
+def _text(question, values) -> FollowUp | None:
+    answer = values.get(question.id)
+    if question.type not in TEXT_TYPES or answer is None or not (answer.text or "").strip():
+        return None
+    return FollowUp(question=question.title, text=answer.text.strip())
+
+
 def _follow_up(path, i, by_id, values) -> FollowUp | None:
-    if i + 1 >= len(path):
+    parent_id = path[i]
+    own = [
+        by_id[qid]
+        for qid in path[i + 1 :]
+        if by_id[qid].show_if is not None and by_id[qid].show_if.question_id == parent_id
+    ]
+    for question in own:
+        found = _text(question, values)
+        if found:
+            return found
+    if own or i + 1 >= len(path):
         return None
-    following = by_id[path[i + 1]]
-    answer = values.get(following.id)
-    if following.type not in TEXT_TYPES or answer is None or not (answer.text or "").strip():
-        return None
-    return FollowUp(question=following.title, text=answer.text.strip())
+    return _text(by_id[path[i + 1]], values)

@@ -522,3 +522,37 @@
 .next {
   min-width: 0;
 }
+
+/* Följdfrågan under sin fråga (Texas skiss "Enklare frågor", 2026-11-08). */
+.followUp {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+  animation: followUpIn 250ms ease-out;
+}
+
+.followUpTitle {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.followUpOptional {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+@keyframes followUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .followUp {
+    animation: none;
+  }
+}

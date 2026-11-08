@@ -274,3 +274,17 @@
 .visibilityHint[data-private] {
   color: var(--color-butter);
 }
+
+/* Följdfrågor indragna under svaret (Texas skiss "Enklare frågor", 2026-11-08). */
+.followUps {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--color-primary-light);
+}
+
+.followUp {
+  display: grid;
+  gap: var(--space-1);
+}

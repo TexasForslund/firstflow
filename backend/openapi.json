@@ -9085,6 +9085,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "choice",
@@ -9172,6 +9183,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "choice",
@@ -9227,6 +9249,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type",
           "required",
           "choices",
@@ -11174,6 +11197,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "images",
@@ -11232,6 +11266,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "images",
@@ -11258,6 +11303,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type",
           "required",
           "max_images"
@@ -11773,6 +11819,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "long_text",
@@ -11822,6 +11879,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "long_text",
@@ -11840,6 +11908,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type",
           "required"
         ],
@@ -13701,6 +13770,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "rating",
@@ -13758,6 +13838,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "rating",
@@ -13784,6 +13875,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type",
           "required",
           "logic"
@@ -14480,6 +14572,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "short_text",
@@ -14529,6 +14632,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "short_text",
@@ -14547,6 +14661,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type",
           "required"
         ],
@@ -14562,6 +14677,30 @@
           "private"
         ],
         "title": "Show"
+      },
+      "ShowIf": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Question Id"
+          },
+          "when": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "When",
+            "description": "Ett alternativs id, 'yes' eller 'no', eller ett betyg '1'–'5'"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "question_id",
+          "when"
+        ],
+        "title": "ShowIf",
+        "description": "Följdfrågan visas när eleven svarar `when` på frågan `question_id`."
       },
       "SignBody": {
         "properties": {
@@ -14658,6 +14797,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "statement",
@@ -14703,6 +14853,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "statement",
@@ -14716,6 +14877,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type"
         ],
         "title": "StatementQuestion",
@@ -16774,6 +16936,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "yes_no",
@@ -16839,6 +17012,17 @@
             "title": "Tracks",
             "description": "Inriktningar som får frågan. Tom = alla elever"
           },
+          "show_if": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShowIf"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Följdfråga: visas bara efter ett visst svar. null = alltid"
+          },
           "type": {
             "type": "string",
             "const": "yes_no",
@@ -16873,6 +17057,7 @@
           "title",
           "description",
           "tracks",
+          "show_if",
           "type",
           "required",
           "logic",
