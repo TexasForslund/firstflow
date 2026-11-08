@@ -206,3 +206,8 @@ details.card:not([open]) {
     grid-template-columns: 1fr;
   }
 }
+
+/* Sökfältet i de hopfällda grupperna (Texas, 2026-11-08). */
+.search {
+  padding: var(--space-3) 0 var(--space-2);
+}

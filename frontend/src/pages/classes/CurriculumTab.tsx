@@ -15,7 +15,7 @@ import {
   type Curriculum,
   type SubjectGroup,
 } from '../../api/syllabus'
-import { Button, Card, SelectField } from '../../components'
+import { Button, Card, matches, SearchInput, SelectField } from '../../components'
 import { ClassGoals } from './ClassGoals'
 import styles from './CurriculumTab.module.css'
 import { CurriculumField, ProgramFields } from './ProgramFields'
@@ -305,7 +305,10 @@ function SubjectsForm({ classId, saved }: { classId: string; saved: ClassCurricu
 
 const OPEN: SubjectGroup['kind'][] = ['program', 'orientation']
 
-/** En grupp ämnen med kryssrutor. Yrkesutgångar och programfördjupning är hopfällda. */
+/**
+ * En grupp ämnen med kryssrutor. Yrkesutgångar och programfördjupning är hopfällda och har ett
+ * sökfält, eftersom listorna är långa (Texas, 2026-11-08). Valda ämnen syns alltid.
+ */
 function GroupCard({
   group,
   selected,
@@ -315,10 +318,12 @@ function GroupCard({
   selected: Set<string>
   onToggle: (code: string) => void
 }) {
+  const [search, setSearch] = useState('')
   const count = group.levels.filter((l) => selected.has(l.level_code)).length
+  const shown = group.levels.filter((l) => selected.has(l.level_code) || matches(levelLabel(l), search))
   const list = (
     <ul className={styles.levels}>
-      {group.levels.map((level) => (
+      {shown.map((level) => (
         <li key={level.level_code}>
           <label className={styles.level}>
             <input
@@ -353,7 +358,16 @@ function GroupCard({
               {count > 0 ? `${count} valda` : `${group.levels.length} att välja bland`}
             </span>
           </summary>
+          <div className={styles.search}>
+            <SearchInput
+              label={`Sök i ${group.title.toLowerCase()}`}
+              placeholder="Sök ämne, till exempel dator"
+              value={search}
+              onChange={setSearch}
+            />
+          </div>
           {list}
+          {shown.length === 0 && <p className={styles.muted}>Inget ämne matchar ”{search.trim()}”.</p>}
         </details>
       )}
     </Card>
