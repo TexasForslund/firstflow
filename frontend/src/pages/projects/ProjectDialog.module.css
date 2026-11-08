@@ -468,3 +468,68 @@
   background: var(--color-primary-light);
   color: var(--color-primary-on-light);
 }
+
+/* Förslag från läroplanen (idé 13, steg 4, Texas skiss 2026-11-08). */
+.goalChip {
+  display: inline-flex;
+  flex-direction: column;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.goalGroup {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 400;
+}
+
+.curriculum {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+}
+
+.curriculumTitle {
+  font-weight: 700;
+}
+
+.goalList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goalRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.goalText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.goalGroupInline {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.linkButton {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary-on-light);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

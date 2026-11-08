@@ -97,3 +97,4 @@ Väntar på: B6, D1–D7.
 - `SESSION_COOKIE_SECURE=true` och säkerhetsrubriker kontrollerade.
 - Personuppgiftsbiträdesavtal med skolan och med Broadview.
 - Sårbarhetskontroll av beroenden.
+- Skolans mål städade (Texas 2026-11-08): skolmål som har samma namn som klassens mål från läroplanen, till exempel Elsäkerhet och Ritningsläsning i demoskolan, tas bort eller byter namn. Annars syns samma namn två gånger när läraren väljer mål.

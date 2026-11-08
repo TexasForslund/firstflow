@@ -585,3 +585,15 @@ Idé 13, steg 2 (Texas, 2026-11-08, skissen "Mål från läroplanen – steg 2")
   - `PUT /api/classes/{id}/subjects/{nivå}/goals`: klassens lärare och skoladministratören.
   - `GET /api/goals?class_id=…`: klassens mål först, sedan skolans.
   - Frågorna i en klass kan använda skolans mål och klassens egna.
+
+## F43. Projektets mål från läroplanen ✅ Klar (PR #83)
+
+Idé 13, steg 4 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 4a och 4b).
+
+- Projekten skapas som förut. Det nya finns under fältet Mål.
+- **Förslag från läroplanen:** Firstflow letar efter ord i beskrivningen som också finns i klassens mål, i målets namn eller i texten ur läroplanen. Förslagen visar ordet, till exempel "Beskrivningen nämner funktionsprovning". Läraren lägger till med ett klick. Enkel ordmatchning, ingen AI.
+- Förslagen kommer från klasserna som projektets elever går i. "Visa alla klassens mål" visar hela listan.
+- Klassens mål visar ämnet under namnet i fältet Mål och ovanför målet i tabellen Mål i projektet.
+- Egna mål skrivs in som förut och blir skolans mål.
+- Handledaren ser alla mål men ändrar dem inte.
+- **Backend:** `ProjectWrite.goal_ids` (null = som förut) och `ProjectRead.class_goals`. `tags` är bara skolans mål. `GET /api/goals/for-students?student_id=…` ger klassens mål för elevernas klasser. Tas en elev bort försvinner målen från elevens klass.

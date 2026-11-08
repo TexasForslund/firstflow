@@ -3,6 +3,7 @@ import { useState, type KeyboardEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import {
+  goalNames,
   useProject,
   useProjectComments,
   useProjectImages,
@@ -93,9 +94,9 @@ export function ProjectPage() {
             {project.name}
             {project.completed_at && <span className={styles.doneBadge}>Avslutat</span>}
           </h1>
-          {project.tags.length > 0 && (
+          {goalNames(project).length > 0 && (
             <div className={styles.tags}>
-              {project.tags.map((tag) => (
+              {goalNames(project).map((tag) => (
                 <span key={tag} className={styles.tag}>
                   {tag}
                 </span>

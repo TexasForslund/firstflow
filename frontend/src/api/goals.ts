@@ -26,6 +26,22 @@ export function useGoals(enabled = true, classId?: string) {
   })
 }
 
+/** Klassens mål för klasserna som eleverna går i, för projektets förslag (idé 13, steg 4). */
+export function useGoalsForStudents(studentIds: string[], enabled = true) {
+  const ids = [...studentIds].sort()
+  return useQuery({
+    queryKey: [...goalsKey, 'students', ids],
+    enabled: enabled && ids.length > 0,
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/goals/for-students', {
+        params: { query: { student_id: ids } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
 export function useCreateGoal() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.goal import Goal
 from app.models.invitation import Notification
 from app.models.placement import Workplace
 from app.models.project import Project
@@ -529,3 +530,62 @@ def test_project_comments(client: TestClient, login: Login, w: World, c: Company
 
     login(w.other_teacher)
     assert client.get(url).status_code == 404
+
+
+def test_project_goals_from_the_curriculum(
+    client: TestClient, db: Session, login: Login, w: World, company: Company
+) -> None:
+    """Idé 13, steg 4: projektet kan ha klassens mål från läroplanen."""
+
+    def class_goal(school_class: SchoolClass, name: str) -> Goal:
+        goal = Goal(
+            school_id=school_class.school_id,
+            class_id=school_class.id,
+            name=name,
+            subject_name="Elteknik",
+            level_code="ELTE1000X",
+            level_name="Nivå 1",
+            content=f"Punkten för {name}",
+        )
+        db.add(goal)
+        db.flush()
+        return goal
+
+    drawings = class_goal(w.ee22, "Ritningsläsning")
+    other_class = SchoolClass(school_id=w.ee22.school_id, name="TE25", teachers=[w.teacher])
+    db.add(other_class)
+    db.flush()
+    elsewhere = class_goal(other_class, "Programmering")
+
+    login(w.teacher)
+    candidates = client.get("/api/goals/for-students", params={"student_id": str(w.hugo.id)})
+    assert [g["name"] for g in candidates.json()] == ["Ritningsläsning"]
+    stranger = client.get("/api/goals/for-students", params={"student_id": str(w.stranger.id)})
+    assert stranger.status_code == 404
+
+    created = client.post(
+        "/api/projects", json=with_company(w, company, goal_ids=[str(drawings.id)])
+    )
+    assert created.status_code == 201, created.text
+    project = created.json()
+    assert project["tags"] == ["Elinstallation", "Mätning"]
+    assert [(g["name"], g["group"]) for g in project["class_goals"]] == [
+        ("Ritningsläsning", "Elteknik, nivå 1")
+    ]
+    # Målet måste höra till elevernas klass.
+    wrong = body(w, goal_ids=[str(elsewhere.id)])
+    assert client.post("/api/projects", json=wrong).status_code == 422
+    url = f"/api/projects/{project['id']}"
+    matrix = client.get(f"{url}/goals").json()
+    assert {g["name"] for g in matrix["goals"]} == {"Ritningsläsning", "Elinstallation", "Mätning"}
+
+    # Handledaren ändrar texten utan att klassens mål försvinner, men kan inte ändra dem.
+    login(company.sofia)
+    text = {"name": "Laddbox", "description": None, "deadline": None, "tags": project["tags"]}
+    assert client.put(url, json=text).json()["class_goals"] == project["class_goals"]
+    assert client.put(url, json={**text, "goal_ids": []}).status_code == 403
+
+    # Tas eleverna bort försvinner klassens mål från projektet.
+    login(w.teacher)
+    saved = client.put(url, json={**text, "student_ids": []}).json()
+    assert saved["class_goals"] == []

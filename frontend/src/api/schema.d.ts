@@ -2037,6 +2037,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/goals/for-students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Goals For Students
+         * @description Klassens mål från läroplanen för klasserna som eleverna går i. Används för förslagen när
+         *     läraren väljer projektets mål (idé 13, steg 4).
+         */
+        get: operations["goals_for_students_api_goals_for_students_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/goals/{goal_id}": {
         parameters: {
             query?: never;
@@ -4189,8 +4210,16 @@ export interface components {
             description: string | null;
             /** Deadline */
             deadline: string | null;
-            /** Tags */
+            /**
+             * Tags
+             * @description Skolans mål, till exempel Kundkontakt
+             */
             tags: string[];
+            /**
+             * Class Goals
+             * @description Klassens mål från läroplanen
+             */
+            class_goals?: components["schemas"]["GoalRead"][];
             /** Students */
             students: components["schemas"]["Ref"][];
             /** @description Läraren som skapade projektet */
@@ -4614,8 +4643,16 @@ export interface components {
             description: string | null;
             /** Deadline */
             deadline: string | null;
-            /** Tags */
+            /**
+             * Tags
+             * @description Skolans mål, till exempel Kundkontakt
+             */
             tags: string[];
+            /**
+             * Class Goals
+             * @description Klassens mål från läroplanen
+             */
+            class_goals?: components["schemas"]["GoalRead"][];
             /** Students */
             students: components["schemas"]["Ref"][];
             /** @description Läraren som skapade projektet */
@@ -4704,6 +4741,11 @@ export interface components {
             deadline?: string | null;
             /** Tags */
             tags?: string[];
+            /**
+             * Goal Ids
+             * @description Klassens mål från läroplanen. null = som förut
+             */
+            goal_ids?: string[] | null;
             /** Student Ids */
             student_ids?: string[] | null;
             /** Workplace Id */
@@ -9629,6 +9671,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GoalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    goals_for_students_api_goals_for_students_get: {
+        parameters: {
+            query?: {
+                student_id?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalRead"][];
                 };
             };
             /** @description Validation Error */

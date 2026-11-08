@@ -5982,6 +5982,63 @@
         }
       }
     },
+    "/api/goals/for-students": {
+      "get": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Goals For Students",
+        "description": "Klassens mål från läroplanen för klasserna som eleverna går i. Används för förslagen när\nläraren väljer projektets mål (idé 13, steg 4).",
+        "operationId": "goals_for_students_api_goals_for_students_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "default": [],
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GoalRead"
+                  },
+                  "title": "Response Goals For Students Api Goals For Students Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/goals/{goal_id}": {
       "patch": {
         "tags": [
@@ -11223,7 +11280,16 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Tags"
+            "title": "Tags",
+            "description": "Skolans mål, till exempel Kundkontakt"
+          },
+          "class_goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRead"
+            },
+            "type": "array",
+            "title": "Class Goals",
+            "description": "Klassens mål från läroplanen"
           },
           "students": {
             "items": {
@@ -12156,7 +12222,16 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Tags"
+            "title": "Tags",
+            "description": "Skolans mål, till exempel Kundkontakt"
+          },
+          "class_goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRead"
+            },
+            "type": "array",
+            "title": "Class Goals",
+            "description": "Klassens mål från läroplanen"
           },
           "students": {
             "items": {
@@ -12360,6 +12435,23 @@
             "type": "array",
             "maxItems": 10,
             "title": "Tags"
+          },
+          "goal_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Ids",
+            "description": "Klassens mål från läroplanen. null = som förut"
           },
           "student_ids": {
             "anyOf": [

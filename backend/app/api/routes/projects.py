@@ -8,6 +8,9 @@ Beslut (Texas, 2026-10-29): projektet kan göras på ett företag, och läraren 
 företagets handledare. Handledarna ändrar namn, beskrivning, slutdatum och taggar, men inte
 vilka elever som är med. De ser projektets redovisningar.
 
+Beslut (Texas, 2026-11-08, idé 13 steg 4): projektet kan också ha klassens mål från läroplanen,
+från klasserna som projektets elever går i. `tags` är skolans mål och `class_goals` klassens.
+
 Behörighet: läraren ser och ändrar sina egna projekt. Eleverna måste vara elever läraren får se
 (samma regel som elevsidan). Handledare måste höra till projektets företag, och företaget måste
 vara ett läraren får se. En handledare ser bara projekt hen är inbjuden till. Handledare har
@@ -32,6 +35,7 @@ from app.api.routes.reports import TextAnswer, _is_late, text_answers
 from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
+from app.models.goal import Goal
 from app.models.project import Project, ProjectComment, project_students, project_supervisors
 from app.models.report import (
     CommentVisibility,
@@ -41,6 +45,7 @@ from app.models.report import (
     ReportRead,
     ReportStatus,
 )
+from app.models.school_class import class_students
 from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -67,7 +72,10 @@ class ProjectRead(BaseModel):
     name: str
     description: str | None
     deadline: date | None
-    tags: list[str]
+    tags: list[str] = Field(description="Skolans mål, till exempel Kundkontakt")
+    class_goals: list[GoalRead] = Field(
+        default_factory=list, description="Klassens mål från läroplanen"
+    )
     students: list[Ref]
     owner: Ref = Field(description="Läraren som skapade projektet")
     workplace: Ref | None = Field(description="Företaget projektet görs på")
@@ -91,6 +99,9 @@ class ProjectWrite(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
     deadline: date | None = None
     tags: list[Tag] = Field(default_factory=list, max_length=10)
+    goal_ids: list[UUID] | None = Field(
+        default=None, max_length=20, description="Klassens mål från läroplanen. null = som förut"
+    )
     student_ids: list[UUID] | None = Field(default=None, max_length=100)
     workplace_id: UUID | None = None
     clear_workplace: bool = Field(default=False, description="Tar bort företaget från projektet")
@@ -146,7 +157,8 @@ def _read(db: DbSession, user: User, projects: list[Project]) -> list[ProjectRea
             name=p.name,
             description=p.description,
             deadline=p.deadline,
-            tags=[g.name for g in p.goals],
+            tags=[g.name for g in p.goals if g.class_id is None],
+            class_goals=[read_goal(g) for g in p.goals if g.class_id is not None],
             students=[_ref(s) for s in p.students if s.is_active],
             owner=_ref(p.owner),
             workplace=Ref(id=p.workplace.id, name=p.workplace.name) if p.workplace else None,
@@ -209,6 +221,29 @@ def _students(db: DbSession, user: User, ids: list[UUID]) -> list[User]:
     return [get_student_for(db, user, student_id) for student_id in dict.fromkeys(ids)]
 
 
+def _class_goals(
+    db: DbSession, students: list[User], ids: list[UUID], strict: bool = True
+) -> list[Goal]:
+    """Klassens mål med de här id:na, i samma ordning. De måste höra till en klass som någon av
+    projektets elever går i, annars 422. Utan `strict` släpps de andra, till exempel när en elev
+    tagits bort från projektet."""
+    if not ids:
+        return []
+    classes = select(class_students.c.class_id).where(
+        class_students.c.student_id.in_([s.id for s in students])
+    )
+    found = {
+        g.id: g
+        for g in db.scalars(select(Goal).where(Goal.id.in_(ids), Goal.class_id.in_(classes)))
+    }
+    if strict and len(found) != len(set(ids)):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Målet hör inte till klassen som projektets elever går i",
+        )
+    return [found[i] for i in dict.fromkeys(ids) if i in found]
+
+
 def _set_workplace_and_supervisors(
     db: DbSession, user: User, project: Project, body: ProjectWrite
 ) -> list[User]:
@@ -267,11 +302,14 @@ def create_project(body: ProjectWrite, db: DbSession, user: Teacher) -> ProjectR
         name=body.name,
         description=body.description,
         deadline=body.deadline,
-        goals=goals_named(db, user.school_id, body.tags),
         students=_students(db, user, body.student_ids or []),
         supervisors=[],
         completed_at=time.now() if body.completed else None,
     )
+    project.goals = [
+        *_class_goals(db, project.students, body.goal_ids or []),
+        *goals_named(db, user.school_id, body.tags),
+    ]
     added = _set_workplace_and_supervisors(db, user, project, body)
     db.add(project)
     db.flush()
@@ -301,9 +339,10 @@ def update_project(
         or body.supervisor_ids is not None
         or body.completed is not None
     )
+    class_goals = [g for g in project.goals if g.class_id is not None]
     same_goals = sorted(t.strip().lower() for t in body.tags) == sorted(
-        g.name.lower() for g in project.goals
-    )
+        g.name.lower() for g in project.goals if g.class_id is None
+    ) and (body.goal_ids is None or set(body.goal_ids) == {g.id for g in class_goals})
     if not is_owner and not same_goals:
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Bara läraren ändrar projektets mål")
     if not is_owner and owner_fields:
@@ -315,9 +354,13 @@ def update_project(
     project.description = body.description
     project.deadline = body.deadline
     if is_owner:
-        project.goals = goals_named(db, project.school_id, body.tags)
         if body.student_ids is not None:
             project.students = _students(db, user, body.student_ids)
+        ids = [g.id for g in class_goals] if body.goal_ids is None else body.goal_ids
+        project.goals = [
+            *_class_goals(db, project.students, ids, strict=body.goal_ids is not None),
+            *goals_named(db, project.school_id, body.tags),
+        ]
         if body.completed is not None:
             if not body.completed:
                 project.completed_at = None

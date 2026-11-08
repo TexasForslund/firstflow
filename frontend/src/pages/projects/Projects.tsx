@@ -2,7 +2,7 @@ import { FolderKanban, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
-import { useProjects, type Project } from '../../api/projects'
+import { goalNames, useProjects, type Project } from '../../api/projects'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, matches, SearchInput } from '../../components'
 import { ProjectDialog } from './ProjectDialog'
@@ -30,7 +30,7 @@ export function Projects() {
     (p) =>
       matches(p.name, search) ||
       p.students.some((s) => matches(s.name, search)) ||
-      p.tags.some((t) => matches(t, search)) ||
+      goalNames(p).some((t) => matches(t, search)) ||
       (p.workplace != null && matches(p.workplace.name, search)),
   )
 
@@ -131,13 +131,15 @@ function ProjectRow({ project, showUnread }: { project: Project; showUnread: boo
         </span>
         <span className={styles.nameText}>
           <span className={styles.name}>{project.name}</span>
-          {project.tags.length > 0 && (
+          {goalNames(project).length > 0 && (
             <span className={styles.tags}>
-              {project.tags.slice(0, 3).map((tag) => (
-                <span key={tag} className={styles.tag}>
-                  {tag}
-                </span>
-              ))}
+              {goalNames(project)
+                .slice(0, 3)
+                .map((tag) => (
+                  <span key={tag} className={styles.tag}>
+                    {tag}
+                  </span>
+                ))}
             </span>
           )}
         </span>
