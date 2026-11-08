@@ -457,21 +457,24 @@
   font-size: var(--font-size-xs);
 }
 
+/* data-state i stället för klasser, så att kortet .missing ovanför inte gäller här. */
 .dot {
+  box-sizing: border-box;
+  flex-shrink: 0;
   width: 1.625rem;
   height: 1.625rem;
   border-radius: var(--radius-full);
 }
 
-.dot.present {
+.dot[data-state='present'] {
   background: var(--color-success-bar);
 }
 
-.dot.missing {
+.dot[data-state='missing'] {
   border: 2px dashed var(--color-text-faded);
 }
 
-.dot.future {
+.dot[data-state='future'] {
   border: 1px solid var(--color-border);
   background: var(--color-bg);
 }
