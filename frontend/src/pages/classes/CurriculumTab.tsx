@@ -16,6 +16,7 @@ import {
   type SubjectGroup,
 } from '../../api/syllabus'
 import { Button, Card, SelectField } from '../../components'
+import { ClassGoals } from './ClassGoals'
 import styles from './CurriculumTab.module.css'
 import { CurriculumField, ProgramFields } from './ProgramFields'
 import { useCurrentUser } from '../../auth/useCurrentUser'
@@ -28,6 +29,7 @@ import { useCurrentUser } from '../../auth/useCurrentUser'
  * - Inriktningen hör till eleven. Klassens inriktningar kopplas till Skolverkets.
  * - Läraren kryssar i de ämnen eleverna tränar under APL. Programmets och inriktningarnas ämnen
  *   är ikryssade från början.
+ * - Steg 2: målen från det centrala innehållet i de valda ämnena (`ClassGoals`).
  */
 export function CurriculumTab({
   classId,
@@ -54,6 +56,7 @@ export function CurriculumTab({
         ) : (
           <ChosenSubjects saved={saved} />
         ))}
+      {saved.subjects.length > 0 && <ClassGoals classId={classId} saved={saved} canEdit={canEdit} />}
     </div>
   )
 }
@@ -274,7 +277,7 @@ function SubjectsForm({ classId, saved }: { classId: string; saved: ClassCurricu
         <h2 className={styles.title}>Ämnen under APL</h2>
         <p className={styles.muted}>
           Vilka ämnen tränar eleverna under APL? Programmets och inriktningarnas ämnen är ikryssade. Ta bort det som
-          inte passar. Målen föreslås sedan utifrån ämnena.
+          inte passar. Målen väljs sedan utifrån ämnena.
         </p>
       </div>
       {groups.isPending && <p className={styles.muted}>Hämtar programmets ämnen…</p>}

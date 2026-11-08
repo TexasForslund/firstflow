@@ -25,7 +25,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import require_roles, require_same_school
-from app.api.routes.goals import EvidenceRead, GoalRead, goal_counts, goals_named
+from app.api.routes.goals import EvidenceRead, GoalRead, goal_counts, goals_named, read_goal
 from app.api.routes.invitations import notify
 from app.api.routes.placements import _get_workplace
 from app.api.routes.reports import TextAnswer, _is_late, text_answers
@@ -685,7 +685,7 @@ def project_goals_evidence(project_id: UUID, db: DbSession, user: Member) -> Pro
                 GoalCell(goal_id=goal.id, student_id=student.id, count=len(items), evidence=items)
             )
     return ProjectGoals(
-        goals=[GoalRead(id=g.id, name=g.name, curriculum=g.curriculum) for g in project.goals],
+        goals=[read_goal(g) for g in project.goals],
         students=[_ref(s) for s in students],
         cells=cells,
     )

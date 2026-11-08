@@ -12,6 +12,7 @@ import logging
 import urllib.request
 from dataclasses import dataclass
 from datetime import timedelta
+from html.parser import HTMLParser
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -191,3 +192,41 @@ def find_levels(data: dict[str, Any], codes: list[str]) -> dict[str, Level]:
     ]
     wanted = set(codes)
     return {level.level_code: level for level in _levels(every) if level.level_code in wanted}
+
+
+def subject(db: Session, code: str) -> dict[str, Any]:
+    """Ämnet i detalj, som Skolverket skickar det, med centralt innehåll per nivå eller kurs."""
+    return _cached(db, "subject", code, f"/subjects/{code}")["subject"]
+
+
+class _ListItems(HTMLParser):
+    """Texten i varje punkt i en HTML-lista. En punkt med en lista i sig blir flera punkter."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.open: list[list[str]] = []
+        self.items: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "li":
+            self.open.append([])
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "li" and self.open:
+            text = " ".join("".join(self.open.pop()).split())
+            if text:
+                self.items.append(text)
+
+    def handle_data(self, data: str) -> None:
+        if self.open:
+            self.open[-1].append(data)
+
+
+def central_content(data: dict[str, Any], level_code: str) -> list[str]:
+    """Punkterna i det centrala innehållet för en nivå (Gy25) eller kurs (Gy11), i ordning."""
+    course = next((c for c in data.get("courses", []) if c.get("code") == level_code), None)
+    if course is None:
+        return []
+    parser = _ListItems()
+    parser.feed(course.get("centralContent", {}).get("text", ""))
+    return parser.items

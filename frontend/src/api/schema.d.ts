@@ -2022,7 +2022,7 @@ export interface paths {
         };
         /**
          * List Goals
-         * @description Skolans mål i bokstavsordning.
+         * @description Skolans mål i bokstavsordning. Med `class_id` först klassens mål från läroplanen.
          */
         get: operations["list_goals_api_goals_get"];
         put?: never;
@@ -2587,6 +2587,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classes/{class_id}/subjects/{level_code}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Level Content
+         * @description Det centrala innehållet för ett av klassens ämnen, punkt för punkt, med klassens mål.
+         */
+        get: operations["get_level_content_api_classes__class_id__subjects__level_code__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/subjects/{level_code}/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Level Goals
+         * @description Klassens mål för ett ämne: en punkt i det centrala innehållet och ett kort namn per mål.
+         *     Ett mål som frågorna har använt kan inte tas bort, eftersom svaren är underlag.
+         */
+        put: operations["set_level_goals_api_classes__class_id__subjects__level_code__goals_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2976,6 +3017,13 @@ export interface components {
             /** Goals */
             goals: components["schemas"]["GoalRule"][];
         };
+        /** ChosenPoint */
+        ChosenPoint: {
+            /** Content */
+            content: string;
+            /** Name */
+            name: string;
+        };
         /** ClassAttendance */
         ClassAttendance: {
             /**
@@ -3179,6 +3227,16 @@ export interface components {
             industry?: string | null;
             /** Description */
             description?: string | null;
+        };
+        /** ContentPoint */
+        ContentPoint: {
+            /**
+             * Text
+             * @description Punkten i det centrala innehållet
+             */
+            text: string;
+            /** @description Klassens mål för punkten, om läraren valt den */
+            goal: components["schemas"]["GoalRead"] | null;
         };
         /** ContractDetail */
         ContractDetail: {
@@ -3560,6 +3618,16 @@ export interface components {
              * @description Vilken del av läroplanen målet gäller
              */
             curriculum: string | null;
+            /**
+             * Group
+             * @description Klassens mål: ämnet och nivån, t.ex. "Elteknik, nivå 1"
+             */
+            group?: string | null;
+            /**
+             * Class Id
+             * @description Saknas för skolans mål
+             */
+            class_id?: string | null;
         };
         /**
          * GoalRule
@@ -3838,6 +3906,26 @@ export interface components {
              * @default true
              */
             send_invite: boolean;
+        };
+        /** LevelContent */
+        LevelContent: {
+            /** Level Code */
+            level_code: string;
+            /**
+             * Title
+             * @description T.ex. "Elteknik, nivå 1"
+             */
+            title: string;
+            /** Points */
+            points: components["schemas"]["ContentPoint"][];
+        };
+        /** LevelGoalsWrite */
+        LevelGoalsWrite: {
+            /**
+             * Goals
+             * @description De valda punkterna, med namn
+             */
+            goals: components["schemas"]["ChosenPoint"][];
         };
         /** LevelRead */
         LevelRead: {
@@ -9492,7 +9580,9 @@ export interface operations {
     };
     list_goals_api_goals_get: {
         parameters: {
-            query?: never;
+            query?: {
+                class_id?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -9506,6 +9596,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GoalRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -10454,6 +10553,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClassCurriculum"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_level_content_api_classes__class_id__subjects__level_code__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                level_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LevelContent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_level_goals_api_classes__class_id__subjects__level_code__goals_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                level_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LevelGoalsWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LevelContent"];
                 };
             };
             /** @description Validation Error */

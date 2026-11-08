@@ -117,3 +117,39 @@ export function levelLabel(level: SubjectLevel): string {
     ? `${level.subject_name}, ${level.level_name.toLowerCase()}`
     : `${level.subject_name}: ${level.level_name}`
 }
+
+export type LevelContent = components['schemas']['LevelContent']
+
+/** Det centrala innehållet för ett av klassens ämnen, med klassens mål (idé 13, steg 2). */
+export function useLevelContent(classId: string, levelCode: string | undefined) {
+  return useQuery({
+    queryKey: ['classes', classId, 'content', levelCode],
+    enabled: Boolean(levelCode),
+    queryFn: async () => {
+      const { data, error, response } = await api.GET('/api/classes/{class_id}/subjects/{level_code}/content', {
+        params: { path: { class_id: classId, level_code: levelCode ?? '' } },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+  })
+}
+
+/** Läraren sparar klassens mål för ett ämne: de valda punkterna med korta namn. */
+export function useSaveLevelGoals(classId: string, levelCode: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (goals: { content: string; name: string }[]) => {
+      const { data, error, response } = await api.PUT('/api/classes/{class_id}/subjects/{level_code}/goals', {
+        params: { path: { class_id: classId, level_code: levelCode } },
+        body: { goals },
+      })
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['classes', classId, 'content', levelCode], data)
+      return queryClient.invalidateQueries({ queryKey: ['goals'] })
+    },
+  })
+}

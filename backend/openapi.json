@@ -5883,29 +5883,58 @@
           "goals"
         ],
         "summary": "List Goals",
-        "description": "Skolans mål i bokstavsordning.",
+        "description": "Skolans mål i bokstavsordning. Med `class_id` först klassens mål från läroplanen.",
         "operationId": "list_goals_api_goals_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Class Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/GoalRead"
                   },
-                  "type": "array",
                   "title": "Response List Goals Api Goals Get"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "APIKeyCookie": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
@@ -5914,15 +5943,20 @@
         "summary": "Create Goal",
         "description": "Lägger till ett mål på skolan. Finns det redan ett med samma namn svarar det med det.",
         "operationId": "create_goal_api_goals_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/GoalCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -5945,12 +5979,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "APIKeyCookie": []
-          }
-        ]
+        }
       }
     },
     "/api/goals/{goal_id}": {
@@ -7442,6 +7471,132 @@
           }
         }
       }
+    },
+    "/api/classes/{class_id}/subjects/{level_code}/content": {
+      "get": {
+        "tags": [
+          "syllabus"
+        ],
+        "summary": "Get Level Content",
+        "description": "Det centrala innehållet för ett av klassens ämnen, punkt för punkt, med klassens mål.",
+        "operationId": "get_level_content_api_classes__class_id__subjects__level_code__content_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "level_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Level Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LevelContent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/subjects/{level_code}/goals": {
+      "put": {
+        "tags": [
+          "syllabus"
+        ],
+        "summary": "Set Level Goals",
+        "description": "Klassens mål för ett ämne: en punkt i det centrala innehållet och ett kort namn per mål.\nEtt mål som frågorna har använt kan inte tas bort, eftersom svaren är underlag.",
+        "operationId": "set_level_goals_api_classes__class_id__subjects__level_code__goals_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "level_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Level Code"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LevelGoalsWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LevelContent"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8349,6 +8504,28 @@
         ],
         "title": "ChoiceQuestion"
       },
+      "ChosenPoint": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "name"
+        ],
+        "title": "ChosenPoint"
+      },
       "ClassAttendance": {
         "properties": {
           "from_date": {
@@ -8862,6 +9039,32 @@
           "name"
         ],
         "title": "CompanyProfile"
+      },
+      "ContentPoint": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Punkten i det centrala innehållet"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalRead"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Klassens mål för punkten, om läraren valt den"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "goal"
+        ],
+        "title": "ContentPoint"
       },
       "ContractDetail": {
         "properties": {
@@ -9768,6 +9971,31 @@
             ],
             "title": "Curriculum",
             "description": "Vilken del av läroplanen målet gäller"
+          },
+          "group": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group",
+            "description": "Klassens mål: ämnet och nivån, t.ex. \"Elteknik, nivå 1\""
+          },
+          "class_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Id",
+            "description": "Saknas för skolans mål"
           }
         },
         "type": "object",
@@ -10352,6 +10580,51 @@
           "name"
         ],
         "title": "InvitedAccountCreate"
+      },
+      "LevelContent": {
+        "properties": {
+          "level_code": {
+            "type": "string",
+            "title": "Level Code"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "T.ex. \"Elteknik, nivå 1\""
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ContentPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level_code",
+          "title",
+          "points"
+        ],
+        "title": "LevelContent"
+      },
+      "LevelGoalsWrite": {
+        "properties": {
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/ChosenPoint"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Goals",
+            "description": "De valda punkterna, med namn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goals"
+        ],
+        "title": "LevelGoalsWrite"
       },
       "LevelRead": {
         "properties": {

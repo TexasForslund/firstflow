@@ -6,7 +6,9 @@
   skoladmin byter klassens program.
 - Inriktningen hör till eleven. Klassens inriktningar kopplas till Skolverkets.
 - Läraren kryssar i de ämnen och nivåer eller kurser som eleverna tränar under APL, bland
-  förslag för programmet och klassens inriktningar. Målförslagen i steg 2 kommer därifrån.
+  förslag för programmet och klassens inriktningar.
+- Steg 2: varje punkt i det centrala innehållet för klassens ämnen är ett förslag på mål. Läraren
+  kryssar för punkter och ger målen korta namn. Målen hör till klassen.
 """
 
 import re
@@ -14,12 +16,20 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field, model_validator
-from sqlalchemy import delete, select, update
+from pydantic import BaseModel, Field, StringConstraints, model_validator
+from sqlalchemy import delete, func, select, update
 
 from app.api.deps import require_roles
 from app.api.routes.classes import CanEditClasses, CanViewClasses, get_accessible_class
+from app.api.routes.goals import (
+    GoalRead,
+    class_goals,
+    goal_ids_in_questions,
+    level_label,
+    read_goal,
+)
 from app.db.session import DbSession
+from app.models.goal import Goal
 from app.models.school_class import ClassTrack, SchoolClass
 from app.models.syllabus import ClassSubject
 from app.models.user import User, UserRole
@@ -310,5 +320,127 @@ def set_class_subjects(
     )
     db.flush()
     result = _read(db, school_class)
+    db.commit()
+    return result
+
+
+class ContentPoint(BaseModel):
+    text: str = Field(description="Punkten i det centrala innehållet")
+    goal: GoalRead | None = Field(description="Klassens mål för punkten, om läraren valt den")
+
+
+class LevelContent(BaseModel):
+    level_code: str
+    title: str = Field(description='T.ex. "Elteknik, nivå 1"')
+    points: list[ContentPoint]
+
+
+def _class_subject(db: DbSession, school_class: SchoolClass, level_code: str) -> ClassSubject:
+    row = db.get(ClassSubject, (school_class.id, level_code))
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
+    return row
+
+
+def _content(db: DbSession, row: ClassSubject) -> list[str]:
+    try:
+        data = skolverket.subject(db, row.subject_code)
+    except skolverket.SkolverketUnavailable:
+        raise _unavailable() from None
+    return skolverket.central_content(data, row.level_code)
+
+
+def _level_content(
+    db: DbSession, school_class: SchoolClass, row: ClassSubject, points: list[str]
+) -> LevelContent:
+    goals = {
+        g.content: g for g in class_goals(db, school_class.id) if g.level_code == row.level_code
+    }
+    # Ett mål vars punkt inte längre finns i läroplanen visas sist.
+    texts = points + [text for text in goals if text not in points]
+    return LevelContent(
+        level_code=row.level_code,
+        title=level_label(row.subject_name, row.level_name),
+        points=[
+            ContentPoint(text=text, goal=read_goal(goals[text]) if text in goals else None)
+            for text in texts
+        ],
+    )
+
+
+@router.get("/classes/{class_id}/subjects/{level_code}/content", response_model=LevelContent)
+def get_level_content(
+    class_id: UUID, level_code: str, db: DbSession, user: CanViewClasses
+) -> LevelContent:
+    """Det centrala innehållet för ett av klassens ämnen, punkt för punkt, med klassens mål."""
+    school_class = get_accessible_class(db, user, class_id)
+    row = _class_subject(db, school_class, level_code)
+    result = _level_content(db, school_class, row, _content(db, row))
+    db.commit()
+    return result
+
+
+GoalName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
+
+
+class ChosenPoint(BaseModel):
+    content: str = Field(min_length=1, max_length=2000)
+    name: GoalName
+
+
+class LevelGoalsWrite(BaseModel):
+    goals: list[ChosenPoint] = Field(max_length=60, description="De valda punkterna, med namn")
+
+
+@router.put("/classes/{class_id}/subjects/{level_code}/goals", response_model=LevelContent)
+def set_level_goals(
+    class_id: UUID, level_code: str, body: LevelGoalsWrite, db: DbSession, user: CanEditClasses
+) -> LevelContent:
+    """Klassens mål för ett ämne: en punkt i det centrala innehållet och ett kort namn per mål.
+    Ett mål som frågorna har använt kan inte tas bort, eftersom svaren är underlag."""
+    school_class = get_accessible_class(db, user, class_id)
+    row = _class_subject(db, school_class, level_code)
+    points = _content(db, row)
+    current = {g.content: g for g in class_goals(db, school_class.id) if g.level_code == level_code}
+    chosen = {p.content: p.name for p in body.goals}
+    if any(text not in points and text not in current for text in chosen):
+        raise _invalid("En punkt finns inte i läroplanen")
+    names = [name.lower() for name in chosen.values()]
+    if len(set(names)) != len(names):
+        raise _invalid("Två mål har samma namn")
+    taken = db.scalar(
+        select(Goal.name).where(
+            Goal.class_id == school_class.id,
+            Goal.level_code != level_code,
+            func.lower(Goal.name).in_(names),
+        )
+    )
+    if taken:
+        raise _invalid(f"Klassen har redan ett mål som heter {taken}")
+    removed = [goal for text, goal in current.items() if text not in chosen]
+    used = goal_ids_in_questions(db, school_class.id)
+    in_use = next((goal for goal in removed if goal.id in used), None)
+    if in_use:
+        raise _invalid(f"{in_use.name} har använts i frågorna och kan inte tas bort")
+    for goal in removed:
+        db.delete(goal)
+    db.flush()
+    for text, name in chosen.items():
+        if text in current:
+            current[text].name = name
+        else:
+            db.add(
+                Goal(
+                    school_id=school_class.school_id,
+                    class_id=school_class.id,
+                    name=name,
+                    subject_name=row.subject_name,
+                    level_code=row.level_code,
+                    level_name=row.level_name,
+                    content=text,
+                )
+            )
+    db.flush()
+    result = _level_content(db, school_class, row, points)
     db.commit()
     return result

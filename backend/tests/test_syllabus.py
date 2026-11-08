@@ -7,6 +7,7 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -29,7 +30,8 @@ def calls(monkeypatch: pytest.MonkeyPatch) -> list[str]:
 
     def download(path: str) -> dict[str, Any]:
         made.append(path)
-        name = "programs" if path == "/programs" else "program_" + path.rsplit("/", 1)[1]
+        parts = path.strip("/").split("/")  # programs, programs/EE25 eller subjects/ELTE
+        name = "programs" if len(parts) == 1 else f"{parts[0][:-1]}_{parts[1]}"
         return json.loads((FIXTURES / f"{name}.json").read_text())
 
     monkeypatch.setattr(skolverket, "_download", download)
@@ -216,3 +218,78 @@ def test_skolverket_down(
     response = client.get("/api/syllabus/programs", params={"curriculum": "gy25"})
     assert response.status_code == 503
     assert "Skolverket" in response.json()["detail"]
+
+
+ELTE_1 = (
+    "Enklare elarbete, till exempel losskoppling och anslutning av apparater i befintlig "
+    "gruppledning."
+)
+ELTE_2 = "Enkel funktionsprovning, till exempel av strömbrytare och uttag."
+
+
+def test_class_goals_from_central_content(
+    client: TestClient,
+    login: Login,
+    db: Session,
+    make_user: Callable[..., User],
+    teacher: User,
+    ee: SchoolClass,
+    calls: list[str],
+) -> None:
+    teacher.program_name = "El- och energiprogrammet"
+    db.flush()
+    base = f"/api/classes/{ee.id}"
+    login(teacher)
+    client.put(f"{base}/program", json={"curriculum": "gy25", "program_code": "EE25"})
+    # Bara klassens ämnen har innehåll.
+    assert client.get(f"{base}/subjects/ELTE1000X/content").status_code == 404
+    client.put(f"{base}/subjects", json={"level_codes": ["ELTE1000X"]})
+
+    content = client.get(f"{base}/subjects/ELTE1000X/content").json()
+    assert content["title"] == "Elteknik, nivå 1"
+    assert len(content["points"]) == 13
+    assert content["points"][2] == {"text": ELTE_1, "goal": None}
+
+    url = f"{base}/subjects/ELTE1000X/goals"
+    two = {"goals": [{"content": ELTE_1, "name": "Ansluta"}, {"content": ELTE_2, "name": "Prova"}]}
+    saved = client.put(url, json=two).json()
+    goal = saved["points"][2]["goal"]
+    assert goal["name"] == "Ansluta"
+    assert (goal["group"], goal["curriculum"]) == ("Elteknik, nivå 1", ELTE_1)
+    wrong = {"goals": [{"content": "Finns inte", "name": "X"}]}
+    assert client.put(url, json=wrong).status_code == 422
+    same = {"goals": [{"content": ELTE_1, "name": "A"}, {"content": ELTE_2, "name": "a"}]}
+    assert client.put(url, json=same).status_code == 422
+
+    # Klassens mål kommer först, sedan skolans. Skolans lista har inte klassens mål.
+    client.post("/api/goals", json={"name": "Kundkontakt"})
+    listed = client.get("/api/goals", params={"class_id": str(ee.id)}).json()
+    assert [g["name"] for g in listed] == ["Ansluta", "Prova", "Kundkontakt"]
+    assert [g["name"] for g in client.get("/api/goals").json()] == ["Kundkontakt"]
+
+    # Frågorna kan använda klassens mål. En annan klass kan inte.
+    question = {"id": str(uuid4()), "type": "yes_no", "title": "Anslöt du något?"}
+    question["goals"] = [{"when": "yes", "goal_id": goal["id"]}]
+    assert client.put(f"{base}/form", json={"questions": [question]}).status_code == 200
+    other = SchoolClass(school_id=ee.school_id, name="EL26", teachers=[teacher])
+    db.add(other)
+    db.flush()
+    used = client.put(f"/api/classes/{other.id}/form", json={"questions": [question]})
+    assert used.status_code == 422
+
+    # Ett mål som frågorna har använt kan bytas namn på men inte tas bort, inte heller när det
+    # bara finns i en publicerad version.
+    client.post(f"{base}/form/publish")
+    client.put(f"{base}/form", json={"questions": []})
+    only_prova = {"goals": [{"content": ELTE_2, "name": "Prova"}]}
+    blocked = client.put(url, json=only_prova)
+    assert blocked.status_code == 422
+    assert blocked.json()["detail"] == "Ansluta har använts i frågorna och kan inte tas bort"
+    renamed = {"goals": [{"content": ELTE_1, "name": "Ansluta apparater"}]}
+    saved = client.put(url, json=renamed).json()
+    assert saved["points"][2]["goal"] == {**goal, "name": "Ansluta apparater"}
+    assert saved["points"][3]["goal"] is None  # Prova användes inte och togs bort
+
+    # En annan lärare ser inte klassens innehåll.
+    login(make_user(email="per@skolan.se", role=UserRole.TEACHER))
+    assert client.get(f"{base}/subjects/ELTE1000X/content").status_code == 404
