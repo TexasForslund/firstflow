@@ -66,7 +66,7 @@ def create_track(
     class_id: UUID, body: TrackCreate, db: DbSession, user: CanEditClasses
 ) -> list[TrackRead]:
     """Skapar en inriktning och svarar med klassens alla inriktningar."""
-    get_accessible_class(db, user, class_id)
+    get_accessible_class(db, user, class_id, edit=True)
     db.add(ClassTrack(class_id=class_id, name=body.name))
     try:
         db.commit()
@@ -82,7 +82,7 @@ def create_track(
 def delete_track(class_id: UUID, track_id: UUID, db: DbSession, user: CanEditClasses) -> Response:
     """Tar bort inriktningen. Eleverna får ingen inriktning, och utkastets frågor slutar gälla
     den. Publicerade frågor ändras först när läraren publicerar igen."""
-    get_accessible_class(db, user, class_id)
+    get_accessible_class(db, user, class_id, edit=True)
     track = db.get(ClassTrack, track_id)
     if track is None or track.class_id != class_id:
         raise _not_found()
@@ -103,7 +103,7 @@ def set_student_track(
     class_id: UUID, student_id: UUID, body: StudentTrack, db: DbSession, user: CanEditClasses
 ) -> list[TrackRead]:
     """Sätter elevens inriktning i klassen. Svarar med klassens alla inriktningar."""
-    get_accessible_class(db, user, class_id)
+    get_accessible_class(db, user, class_id, edit=True)
     if body.track_id is not None:
         track = db.get(ClassTrack, body.track_id)
         if track is None or track.class_id != class_id:

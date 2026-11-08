@@ -419,7 +419,12 @@ def my_reports(db: DbSession, user: Student) -> list[DueReport]:
     classes = db.scalars(
         select(SchoolClass)
         .join(class_students, class_students.c.class_id == SchoolClass.id)
-        .where(class_students.c.student_id == user.id, SchoolClass.school_id == user.school_id)
+        .where(
+            class_students.c.student_id == user.id,
+            SchoolClass.school_id == user.school_id,
+            # En arkiverad klass ger inga nya redovisningar (idé 8).
+            SchoolClass.archived_at.is_(None),
+        )
     ).all()
     by_id = {c.id: c for c in classes}
     published = set(
@@ -468,6 +473,8 @@ def start_report(body: ReportStart, db: DbSession, user: Student) -> ReportDetai
         raise _not_found()
     if not _in_class(db, user, school_class.id):
         raise _not_found()
+    if school_class.archived_at is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="Klassen är arkiverad")
 
     existing = db.scalar(
         select(Report).where(

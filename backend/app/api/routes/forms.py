@@ -90,7 +90,7 @@ def get_form(class_id: UUID, db: DbSession, user: CanViewClasses) -> FormRead:
 @router.put("", response_model=FormRead)
 def save_draft(class_id: UUID, body: FormContent, db: DbSession, user: CanEditClasses) -> FormRead:
     """Sparar hela utkastet: frågorna i ordning. Eleverna ser inget förrän det publiceras."""
-    get_accessible_class(db, user, class_id)
+    get_accessible_class(db, user, class_id, edit=True)
     _check_types_unchanged(db, class_id, body)
     _check_tracks(db, class_id, body)
     _check_goals(db, class_id, body)
@@ -168,7 +168,7 @@ def _save(db: DbSession, class_id: UUID, questions: list[Any], user: User) -> No
 @router.post("/publish", response_model=FormRead)
 def publish(class_id: UUID, db: DbSession, user: CanEditClasses) -> FormRead:
     """Publicerar utkastet som en ny version. Nya redovisningar får den här versionen."""
-    get_accessible_class(db, user, class_id)
+    get_accessible_class(db, user, class_id, edit=True)
     # Lås klassens utkast så att två samtidiga publiceringar inte får samma versionsnummer.
     form = db.scalar(select(ClassForm).where(ClassForm.class_id == class_id).with_for_update())
     latest = latest_version(db, class_id)
@@ -197,7 +197,7 @@ def publish(class_id: UUID, db: DbSession, user: CanEditClasses) -> FormRead:
 @router.post("/discard", response_model=FormRead)
 def discard_changes(class_id: UUID, db: DbSession, user: CanEditClasses) -> FormRead:
     """Kastar ändringarna i utkastet och går tillbaka till den publicerade versionen."""
-    get_accessible_class(db, user, class_id)
+    get_accessible_class(db, user, class_id, edit=True)
     latest = latest_version(db, class_id)
     if latest is None:
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Inget är publicerat än")

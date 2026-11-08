@@ -68,6 +68,7 @@ def test_teacher_lists_own_classes(client: TestClient, login: Login, world: Worl
             "name": "EE22",
             "student_count": 1,
             "teacher_names": ["Testperson"],
+            "archived_at": None,
         }
     ]
 
@@ -503,3 +504,73 @@ def test_principal_cannot_set_apl_terms(client: TestClient, login: Login, world:
     login(world.principal)
     response = client.put(f"/api/classes/{world.ee22.id}/apl-terms", json=TERMS)
     assert response.status_code == 403
+
+
+# --- Arkivera och ta bort (idé 8, Texas 2026-11-08) -----------------------------------------
+
+
+def test_archive_and_restore_class(
+    client: TestClient, db: Session, login: Login, world: World
+) -> None:
+    url = f"/api/classes/{world.ee22.id}"
+    login(world.principal)
+    assert client.post(f"{url}/archive").status_code == 403
+    login(world.other_teacher)
+    assert client.post(f"{url}/archive").status_code == 404
+
+    login(world.teacher)
+    archived = client.post(f"{url}/archive")
+    assert archived.status_code == 200, archived.text
+    assert archived.json()["archived_at"]
+    assert client.get("/api/classes").json()[0]["archived_at"]
+    # Klassen går att läsa men inte ändra.
+    assert client.get(url).status_code == 200
+    assert client.delete(f"{url}/students/{world.student.id}").status_code == 409
+    assert client.put(f"{url}/apl-terms", json={}).status_code in (409, 422)
+    assert (
+        client.post(f"/api/classes/{world.ee22.id}/tracks", json={"name": "El"}).status_code == 409
+    )
+
+    # Eleven får inga redovisningar i klassen.
+    login(world.student)
+    assert client.get("/api/reports/mine").json() == []
+    start = {"class_id": str(world.ee22.id), "due_date": "2026-11-02"}
+    assert client.post("/api/reports", json=start).status_code == 409
+
+    # Skoladmin tar tillbaka klassen.
+    login(world.admin)
+    restored = client.post(f"{url}/restore")
+    assert restored.json()["archived_at"] is None
+    login(world.teacher)
+    assert client.delete(f"{url}/students/{world.student.id}").status_code == 204
+
+
+def test_delete_class_only_without_reports(
+    client: TestClient, db: Session, login: Login, world: World
+) -> None:
+    from datetime import date
+
+    from app.models.report import FormVersion, Report, ReportStatus
+
+    url = f"/api/classes/{world.ee22.id}"
+    login(world.teacher)
+    form = FormVersion(class_id=world.ee22.id, version=1, questions=[])
+    db.add(form)
+    db.flush()
+    db.add(
+        Report(
+            class_id=world.ee22.id,
+            student_id=world.student.id,
+            form_version_id=form.id,
+            due_date=date(2026, 10, 6),
+            status=ReportStatus.DRAFT,
+        )
+    )
+    db.flush()
+    assert client.get(url).json()["report_count"] == 1
+    assert client.delete(url).status_code == 409
+
+    empty = client.post("/api/classes", json={"name": "EL25"}).json()
+    assert client.delete(f"/api/classes/{empty['id']}").status_code == 204
+    assert client.get(f"/api/classes/{empty['id']}").status_code == 404
+    assert db.get(User, world.student.id) is not None

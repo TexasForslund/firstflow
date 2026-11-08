@@ -122,6 +122,8 @@ Det ska gå att arkivera klasser, t.ex. när terminen är slut, och att ta bort 
   - En arkiverad klass går att läsa men inte ändra. Var visas den?
   - Ta bort: vad händer med elevernas redovisningar? I dag kan en klass med redovisningar inte tas bort (`RESTRICT`), vilket är avsiktligt. Ta bort bör därför nog bara gå för tomma klasser, och resten arkiveras.
 
+- ✅ Byggt (F49, Texas skiss "Arkivera klasser" 2026-11-08): läraren och skoladmin arkiverar och tar tillbaka. En arkiverad klass går att läsa men inte ändra. Bara en klass utan redovisningar kan tas bort.
+
 Hänger ihop med: B2, B10 (mellanarkiv).
 
 ---

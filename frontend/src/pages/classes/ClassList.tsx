@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useClasses } from '../../api/classes'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { ButtonLink, Card } from '../../components'
+import { ArchivedList } from './ArchiveClass'
 import styles from './Classes.module.css'
 
 /** Skolans alla klasser, för skoladmin och rektor. */
@@ -11,6 +12,8 @@ export function ClassList() {
   const { data: user } = useCurrentUser()
   const classes = useClasses()
   const canCreate = user?.role === 'school_admin'
+  const active = (classes.data ?? []).filter((c) => !c.archived_at)
+  const archived = (classes.data ?? []).filter((c) => c.archived_at)
 
   return (
     <div className={styles.page}>
@@ -30,11 +33,11 @@ export function ClassList() {
           <p className={styles.empty}>Laddar klasser…</p>
         ) : classes.isError ? (
           <p className={styles.empty}>Det gick inte att hämta klasserna. Ladda om sidan.</p>
-        ) : classes.data.length === 0 ? (
+        ) : active.length === 0 ? (
           <p className={styles.empty}>Skolan har inga klasser än.</p>
         ) : (
           <ul className={styles.list}>
-            {classes.data.map((cls) => (
+            {active.map((cls) => (
               <li key={cls.id}>
                 <Link to={`/classes/${cls.id}`} className={`${styles.row} ${styles.rowLink}`}>
                   <span className={styles.rowText}>
@@ -50,6 +53,17 @@ export function ClassList() {
           </ul>
         )}
       </Card>
+      {archived.length > 0 && (
+        <Card aria-labelledby="archived-heading">
+          <div className={styles.cardHeader}>
+            <h2 id="archived-heading" className={styles.cardTitle}>
+              Arkiverade
+            </h2>
+            <span className={styles.count}>{archived.length}</span>
+          </div>
+          <ArchivedList classes={archived} />
+        </Card>
+      )}
     </div>
   )
 }

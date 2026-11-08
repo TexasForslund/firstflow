@@ -139,7 +139,11 @@ def teacher_overview(db: DbSession, user: Teacher) -> TeacherOverview:
         db.scalars(
             select(SchoolClass)
             .join(class_teachers, class_teachers.c.class_id == SchoolClass.id)
-            .where(class_teachers.c.teacher_id == user.id, SchoolClass.school_id == user.school_id)
+            .where(
+                class_teachers.c.teacher_id == user.id,
+                SchoolClass.school_id == user.school_id,
+                SchoolClass.archived_at.is_(None),
+            )
             .options(selectinload(SchoolClass.students))
             .order_by(SchoolClass.name)
         )

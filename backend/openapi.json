@@ -756,6 +756,46 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "classes"
+        ],
+        "summary": "Delete Class",
+        "description": "Tar bort en klass utan redovisningar. Elevkontona finns kvar. En klass med redovisningar\ngår bara att arkivera, så att elevernas arbete sparas (409).",
+        "operationId": "delete_class_api_classes__class_id__delete",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/classes/{class_id}/students": {
@@ -1014,6 +1054,104 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/archive": {
+      "post": {
+        "tags": [
+          "classes"
+        ],
+        "summary": "Archive Class",
+        "description": "Arkiverar klassen. Läraren i klassen och skoladmin får göra det. Allt finns kvar och går\natt läsa, men inget går att ändra och eleverna får inga nya redovisningar i klassen.",
+        "operationId": "archive_class_api_classes__class_id__archive_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/restore": {
+      "post": {
+        "tags": [
+          "classes"
+        ],
+        "summary": "Restore Class",
+        "description": "Tar tillbaka en arkiverad klass.",
+        "operationId": "restore_class_api_classes__class_id__restore_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -9272,6 +9410,25 @@
           },
           "apl_terms": {
             "$ref": "#/components/schemas/AplTerms"
+          },
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At",
+            "description": "Satt när klassen är arkiverad"
+          },
+          "report_count": {
+            "type": "integer",
+            "title": "Report Count",
+            "description": "Redovisningar i klassen. Bara en klass utan går att ta bort",
+            "default": 0
           }
         },
         "type": "object",
@@ -9347,6 +9504,19 @@
             },
             "type": "array",
             "title": "Teacher Names"
+          },
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At",
+            "description": "Satt när klassen är arkiverad"
           }
         },
         "type": "object",

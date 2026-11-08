@@ -13,7 +13,8 @@ import { WeekAttendance } from './WeekAttendance'
 export function Attendance() {
   const classes = useClasses()
   const [params, setParams] = useSearchParams()
-  const list = classes.data ?? []
+  // Arkiverade klasser syns inte i Närvaro (idé 8).
+  const list = (classes.data ?? []).filter((c) => !c.archived_at)
   const classId = params.get('class') ?? list[0]?.id ?? ''
 
   return (

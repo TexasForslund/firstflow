@@ -227,7 +227,7 @@ def set_class_program(
     """Ändrar klassens läroplan och program. Läraren byter bara läroplan inom samma program,
     till exempel EE (Gy11) och EE25 (Gy25). Skoladmin kan byta program. Byts koden tas
     klassens ämnen och inriktningarnas koppling bort, eftersom de hörde till den gamla."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     check_program(db, body.curriculum, body.program_code)
     if user.role == UserRole.TEACHER:
         current = (
@@ -268,7 +268,7 @@ def set_track_orientation(
 ) -> ClassCurriculum:
     """Kopplar en av klassens inriktningar till Skolverkets inriktning. Klassens lärare eller
     skoladmin."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     track = db.get(ClassTrack, track_id)
     if track is None or track.class_id != school_class.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
@@ -299,7 +299,7 @@ def set_class_subjects(
     class_id: UUID, body: SubjectsWrite, db: DbSession, user: CanEditClasses
 ) -> ClassCurriculum:
     """Läraren väljer de ämnen och nivåer eller kurser som eleverna tränar under APL."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     if not school_class.program_code:
         raise _invalid("Skoladministratören har inte valt program för klassen än")
     data = _program_data(db, school_class.program_code)
@@ -398,7 +398,7 @@ def set_level_goals(
 ) -> LevelContent:
     """Klassens mål för ett ämne: en punkt i det centrala innehållet och ett kort namn per mål.
     Ett mål som frågorna har använt kan inte tas bort, eftersom svaren är underlag."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     row = _class_subject(db, school_class, level_code)
     points = _content(db, row)
     current = {g.content: g for g in class_goals(db, school_class.id) if g.level_code == level_code}

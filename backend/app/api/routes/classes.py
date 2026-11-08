@@ -9,6 +9,7 @@ Avstängda konton visas inte i klasserna och kan inte kopplas.
 En klass som användaren inte har tillgång till svarar 404, oavsett om den finns.
 """
 
+from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -17,10 +18,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from sqlalchemy import Table, delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session, object_session, selectinload
 
 from app.api.deps import require_roles, require_same_school
+from app.core import time
 from app.db.session import DbSession
+from app.models.report import Report
 from app.models.school_class import SchoolClass, class_students, class_teachers, teacher_students
 from app.models.user import User, UserRole
 
@@ -63,6 +66,7 @@ class ClassSummary(BaseModel):
     name: str
     student_count: int
     teacher_names: list[str]
+    archived_at: datetime | None = Field(default=None, description="Satt när klassen är arkiverad")
 
 
 class AplTerms(BaseModel):
@@ -104,6 +108,10 @@ class ClassDetail(BaseModel):
     teachers: list[PersonRead]
     students: list[PersonRead]
     apl_terms: AplTerms
+    archived_at: datetime | None = Field(default=None, description="Satt när klassen är arkiverad")
+    report_count: int = Field(
+        default=0, description="Redovisningar i klassen. Bara en klass utan går att ta bort"
+    )
 
 
 class ClassCreate(BaseModel):
@@ -133,7 +141,12 @@ def _active(people: list[User]) -> list[PersonRead]:
     return [PersonRead.model_validate(p) for p in people if p.is_active]
 
 
+def _report_count(db: Session, class_id: UUID) -> int:
+    return db.scalar(select(func.count()).where(Report.class_id == class_id)) or 0
+
+
 def _detail(school_class: SchoolClass) -> ClassDetail:
+    db = object_session(school_class)
     return ClassDetail(
         id=school_class.id,
         name=school_class.name,
@@ -141,17 +154,27 @@ def _detail(school_class: SchoolClass) -> ClassDetail:
         teachers=_active(school_class.teachers),
         students=_active(school_class.students),
         apl_terms=AplTerms.model_validate(school_class),
+        archived_at=school_class.archived_at,
+        report_count=_report_count(db, school_class.id) if db else 0,
     )
 
 
-def get_accessible_class(db: DbSession, user: User, class_id: UUID) -> SchoolClass:
-    """Klassen om användaren får se den, annars 404. Rollen avgör om hen får ändra den."""
+def get_accessible_class(
+    db: DbSession, user: User, class_id: UUID, edit: bool = False
+) -> SchoolClass:
+    """Klassen om användaren får se den, annars 404. Rollen avgör om hen får ändra den.
+
+    Med `edit` svarar den 409 om klassen är arkiverad. En arkiverad klass går bara att läsa."""
     school_class = db.get(SchoolClass, class_id)
     if school_class is None:
         raise _not_found()
     require_same_school(user, school_class.school_id)
     if user.role == UserRole.TEACHER and not _teaches(user, school_class):
         raise _not_found()
+    if edit and school_class.archived_at is not None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail="Klassen är arkiverad. Ta tillbaka den för att ändra."
+        )
     return school_class
 
 
@@ -190,6 +213,7 @@ def list_classes(db: DbSession, user: CanViewClasses) -> list[ClassSummary]:
             name=c.name,
             student_count=counts.get(c.id, 0),
             teacher_names=[t.name for t in c.teachers if t.is_active],
+            archived_at=c.archived_at,
         )
         for c in classes
     ]
@@ -264,7 +288,7 @@ def add_student(class_id: UUID, body: StudentLink, db: DbSession, user: CanEditC
     Eleverna läggs in i systemet av skoladmin (POST /api/students). Läraren kan bara lägga
     elever som är kopplade till hen. Skoladmin kan lägga alla aktiva elever på skolan.
     """
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     student = db.get(User, body.student_id)
     if (
         student is None
@@ -310,7 +334,7 @@ def remove_student(
     class_id: UUID, student_id: UUID, db: DbSession, user: CanEditClasses
 ) -> Response:
     """Tar bort eleven ur klassen. Elevkontot finns kvar."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     student = next((s for s in school_class.students if s.id == student_id), None)
     if student is None:
         raise _not_found()
@@ -324,7 +348,7 @@ def assign_teacher(
     class_id: UUID, body: TeacherAssign, db: DbSession, user: CanAssignTeachers
 ) -> User:
     """Kopplar en aktiv lärare på samma skola till klassen."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     teacher = db.get(User, body.teacher_id)
     if (
         teacher is None
@@ -342,7 +366,7 @@ def assign_teacher(
 def unassign_teacher(
     class_id: UUID, teacher_id: UUID, db: DbSession, user: CanAssignTeachers
 ) -> Response:
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     teacher = next((t for t in school_class.teachers if t.id == teacher_id), None)
     if teacher is None:
         raise _not_found()
@@ -356,8 +380,46 @@ def set_apl_terms(
     class_id: UUID, body: AplTerms, db: DbSession, user: CanEditClasses
 ) -> ClassDetail:
     """Sätter klassens APL-villkor. Läraren för klassen eller skoladmin. Alla fält skrivs över."""
-    school_class = get_accessible_class(db, user, class_id)
+    school_class = get_accessible_class(db, user, class_id, edit=True)
     for field, value in body.model_dump().items():
         setattr(school_class, field, value)
     db.commit()
     return _detail(school_class)
+
+
+# --- Arkivera och ta bort (idé 8, Texas skiss "Arkivera klasser" 2026-11-08) ---------------
+
+
+@router.post("/{class_id}/archive", response_model=ClassDetail)
+def archive_class(class_id: UUID, db: DbSession, user: CanEditClasses) -> ClassDetail:
+    """Arkiverar klassen. Läraren i klassen och skoladmin får göra det. Allt finns kvar och går
+    att läsa, men inget går att ändra och eleverna får inga nya redovisningar i klassen."""
+    school_class = get_accessible_class(db, user, class_id)
+    if school_class.archived_at is None:
+        school_class.archived_at = time.now()
+        db.commit()
+    return _detail(school_class)
+
+
+@router.post("/{class_id}/restore", response_model=ClassDetail)
+def restore_class(class_id: UUID, db: DbSession, user: CanEditClasses) -> ClassDetail:
+    """Tar tillbaka en arkiverad klass."""
+    school_class = get_accessible_class(db, user, class_id)
+    school_class.archived_at = None
+    db.commit()
+    return _detail(school_class)
+
+
+@router.delete("/{class_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_class(class_id: UUID, db: DbSession, user: CanEditClasses) -> Response:
+    """Tar bort en klass utan redovisningar. Elevkontona finns kvar. En klass med redovisningar
+    går bara att arkivera, så att elevernas arbete sparas (409)."""
+    school_class = get_accessible_class(db, user, class_id)
+    if _report_count(db, school_class.id) > 0:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Klassen har redovisningar och kan bara arkiveras",
+        )
+    db.execute(delete(SchoolClass).where(SchoolClass.id == school_class.id))
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
