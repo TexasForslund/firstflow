@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.api.routes.syllabus import suggested_curriculum
 from app.models.school import School
-from app.models.school_class import SchoolClass
+from app.models.school_class import ClassTrack, SchoolClass
 from app.models.user import User, UserRole
 from app.services import skolverket
 
@@ -74,68 +74,95 @@ def test_programs_per_curriculum(
     assert calls == ["/programs"]
 
 
-def test_class_chooses_subjects(
-    client: TestClient, login: Login, teacher: User, ee: SchoolClass, calls: list[str]
-) -> None:
-    login(teacher)
-    url = f"/api/classes/{ee.id}/curriculum"
-    empty = client.get(url).json()
-    assert empty["curriculum"] is None
-    assert empty["suggested_curriculum"] == "gy25"
-    assert empty["subjects"] == []
+@pytest.fixture
+def admin(make_user: Callable[..., User]) -> User:
+    return make_user(email="admin@skolan.se", role=UserRole.SCHOOL_ADMIN)
 
+
+def test_class_created_with_program(
+    client: TestClient, login: Login, admin: User, calls: list[str]
+) -> None:
+    login(admin)
+    made = client.post(
+        "/api/classes", json={"name": "EL26", "curriculum": "gy25", "program_code": "EE25"}
+    )
+    assert made.status_code == 201, made.text
+    got = client.get(f"/api/classes/{made.json()['id']}/curriculum").json()
+    assert (got["curriculum"], got["program_name"]) == ("gy25", "El- och energiprogrammet")
+    # Programmet måste höra till läroplanen.
+    wrong = {"name": "EL27", "curriculum": "gy11", "program_code": "EE25"}
+    assert client.post("/api/classes", json=wrong).status_code == 422
+    # Utan program går det också, då väljer skoladmin senare.
+    assert client.post("/api/classes", json={"name": "EL28"}).status_code == 201
+
+
+def test_admin_sets_program_and_tracks_teacher_picks_subjects(
+    client: TestClient,
+    login: Login,
+    db: Session,
+    admin: User,
+    teacher: User,
+    ee: SchoolClass,
+    calls: list[str],
+) -> None:
+    el, aut = ClassTrack(class_id=ee.id, name="El"), ClassTrack(class_id=ee.id, name="Automation")
+    db.add_all([el, aut])
+    db.flush()
+    base = f"/api/classes/{ee.id}"
+
+    # Läraren väljer inte program och kan inte välja ämnen innan det finns.
+    login(teacher)
+    program = {"curriculum": "gy25", "program_code": "EE25"}
+    assert client.put(f"{base}/program", json=program).status_code == 403
+    assert client.put(f"{base}/subjects", json={"level_codes": []}).status_code == 422
+
+    login(admin)
+    assert client.put(f"{base}/program", json=program).status_code == 200
+    linked = client.put(
+        f"{base}/tracks/{el.id}/orientation", json={"orientation_code": "EEELK"}
+    ).json()
+    assert {(t["name"], t["orientation_name"]) for t in linked["tracks"]} == {
+        ("El", "Elteknik"),
+        ("Automation", None),
+    }
+    wrong = client.put(f"{base}/tracks/{aut.id}/orientation", json={"orientation_code": "EEELT"})
+    assert wrong.status_code == 422  # Gy11-koden finns inte i EE25
+
+    login(teacher)
+    assert (
+        client.put(f"{base}/tracks/{aut.id}/orientation", json={"orientation_code": "EEAUK"})
+    ).status_code == 403
     saved = client.put(
-        url,
-        json={
-            "curriculum": "gy25",
-            "program_code": "EE25",
-            "orientation_code": "EEELK",
-            "level_codes": ["ELTE1000X", "INST1000X", "INST2000X", "ELTE1000X"],
-        },
+        f"{base}/subjects", json={"level_codes": ["ELTE1000X", "INST1000X", "ELTE1000X"]}
     )
     assert saved.status_code == 200, saved.text
-    body = saved.json()
-    assert body["program_name"] == "El- och energiprogrammet"
-    assert [s["level_code"] for s in body["subjects"]] == ["ELTE1000X", "INST1000X", "INST2000X"]
-    assert body["subjects"][0] == {
+    assert saved.json()["subjects"][0] == {
         "subject_code": "ELTE",
         "subject_name": "Elteknik",
         "level_code": "ELTE1000X",
         "level_name": "Nivå 1",
         "points": 100,
     }
+    assert client.put(f"{base}/subjects", json={"level_codes": ["ELRELK0"]}).status_code == 422
 
     groups = client.get(
-        "/api/syllabus/programs/EE25/groups", params={"orientation": "EEELK"}
+        "/api/syllabus/programs/EE25/groups", params={"orientation": ["EEELK", "EEAUK"]}
     ).json()
-    kinds = [g["kind"] for g in groups]
-    assert kinds[:2] == ["program", "orientation"]
-    assert "outcome" in kinds and kinds[-1] == "specialization"
-    assert groups[0]["title"] == "Alla på El- och energiprogrammet"
-    assert groups[1]["title"] == "Inriktningen elteknik"
-    assert "KOMM1000X" in {lv["level_code"] for lv in groups[1]["levels"]}
+    titles = [g["title"] for g in groups]
+    assert titles[0] == "Alla på El- och energiprogrammet"
+    assert "Inriktningen elteknik" in titles and "Inriktningen automationsteknik" in titles
+    assert "Yrkesutgång: Service- och installationselektriker" in titles
+    assert titles[-1] == "Programfördjupning"
+
+    # Byter skoladmin program försvinner ämnena och kopplingarna.
+    login(admin)
+    changed = client.put(f"{base}/program", json={"curriculum": "gy11", "program_code": "EE"})
+    body = changed.json()
+    assert body["subjects"] == []
+    assert all(t["orientation_code"] is None for t in body["tracks"])
 
 
-def test_gy11_courses_and_validation(
-    client: TestClient, login: Login, teacher: User, ee: SchoolClass, calls: list[str]
-) -> None:
-    login(teacher)
-    url = f"/api/classes/{ee.id}/curriculum"
-    body = {"curriculum": "gy11", "program_code": "EE", "orientation_code": "EEELT"}
-    saved = client.put(url, json={**body, "level_codes": ["ELRELK0", "INSELI0"]}).json()
-    assert [(s["subject_name"], s["level_name"]) for s in saved["subjects"]] == [
-        ("Elektroteknik", "Elektromekanik"),
-        ("Installationsteknik", "Elinstallationer"),
-    ]
-    # Programmet måste höra till läroplanen, och ämnena till programmet.
-    wrong = {**body, "curriculum": "gy25", "level_codes": []}
-    assert client.put(url, json=wrong).status_code == 422
-    assert client.put(url, json={**body, "level_codes": ["ELTE1000X"]}).status_code == 422
-    bad = {**body, "orientation_code": "EEELK", "level_codes": []}
-    assert client.put(url, json=bad).status_code == 422
-
-
-def test_only_the_class_teacher_changes_it(
+def test_only_the_class_teacher_sees_it(
     client: TestClient,
     login: Login,
     make_user: Callable[..., User],

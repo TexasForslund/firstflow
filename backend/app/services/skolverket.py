@@ -136,9 +136,14 @@ def _levels(subjects: list[dict[str, Any]]) -> list[Level]:
     ]
 
 
-def groups(data: dict[str, Any], orientation_code: str | None) -> list[Group]:
-    """Programmets ämnen i den ordning läraren ser dem: först det alla läser, sedan
-    inriktningen, yrkesutgångarna för inriktningen och sist programfördjupningen."""
+def orientations(data: dict[str, Any]) -> dict[str, str]:
+    """Programmets inriktningar, kod till namn."""
+    return {o["code"]: o["name"] for o in data.get("orientations", [])}
+
+
+def groups(data: dict[str, Any], orientation_codes: list[str]) -> list[Group]:
+    """Programmets ämnen i den ordning läraren ser dem: först det alla läser, sedan varje
+    inriktning i klassen med dess yrkesutgångar, och sist programfördjupningen."""
     result = [
         Group(
             "program",
@@ -147,14 +152,15 @@ def groups(data: dict[str, Any], orientation_code: str | None) -> list[Group]:
         )
     ]
     for o in data.get("orientations", []):
-        if o["code"] == orientation_code:
-            result.append(
-                Group("orientation", f"Inriktningen {o['name'].lower()}", _levels(o["subjects"]))
-            )
-    for v in data.get("vocationalOutcomes", []):
-        if orientation_code and v.get("orientationCode") == orientation_code:
-            subjects = v.get("specialization", {}).get("subjects", [])
-            result.append(Group("outcome", f"Yrkesutgång: {v['name']}", _levels(subjects)))
+        if o["code"] not in orientation_codes:
+            continue
+        result.append(
+            Group("orientation", f"Inriktningen {o['name'].lower()}", _levels(o["subjects"]))
+        )
+        for v in data.get("vocationalOutcomes", []):
+            if v.get("orientationCode") == o["code"]:
+                subjects = v.get("specialization", {}).get("subjects", [])
+                result.append(Group("outcome", f"Yrkesutgång: {v['name']}", _levels(subjects)))
     result.append(
         Group(
             "specialization",

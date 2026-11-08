@@ -137,7 +137,9 @@ export function ClassPage() {
         {tab === 'reports' && <ClassReports classId={cls.id} students={cls.students} />}
         {tab === 'terms' && <AplTermsForm classId={cls.id} terms={cls.apl_terms} canEdit={canEdit} />}
         {tab === 'questions' && <FormBuilder classId={cls.id} canEdit={canEdit} />}
-        {tab === 'curriculum' && <CurriculumTab classId={cls.id} canEdit={canEdit} />}
+        {tab === 'curriculum' && (
+          <CurriculumTab classId={cls.id} className={cls.name} canEdit={canEdit} isAdmin={canAssignTeachers} />
+        )}
         {tab === 'teachers' && <TeachersCard classId={cls.id} teachers={cls.teachers} schoolId={cls.school_id} />}
       </div>
     </div>

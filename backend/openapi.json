@@ -7079,7 +7079,7 @@
           "syllabus"
         ],
         "summary": "Program Groups",
-        "description": "Programmets ämnen att välja bland: först det alla läser, sedan inriktningen, dess\nyrkesutgångar och sist programfördjupningen.",
+        "description": "Programmets ämnen att välja bland: först det alla läser, sedan inriktningarna med deras\nyrkesutgångar och sist programfördjupningen.",
         "operationId": "program_groups_api_syllabus_programs__program_code__groups_get",
         "security": [
           {
@@ -7101,14 +7101,11 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
               "title": "Orientation"
             }
           }
@@ -7147,7 +7144,7 @@
           "syllabus"
         ],
         "summary": "Get Class Curriculum",
-        "description": "Klassens läroplan, program, inriktning och ämnen, och programmets ämnen att välja bland.",
+        "description": "Klassens läroplan, program, inriktningar och valda ämnen.",
         "operationId": "get_class_curriculum_api_classes__class_id__curriculum_get",
         "security": [
           {
@@ -7188,14 +7185,16 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/classes/{class_id}/program": {
       "put": {
         "tags": [
           "syllabus"
         ],
-        "summary": "Set Class Curriculum",
-        "description": "Sparar klassens läroplan, program, inriktning och ämnen. Ämnena skrivs över.",
-        "operationId": "set_class_curriculum_api_classes__class_id__curriculum_put",
+        "summary": "Set Class Program",
+        "description": "Skoladmin ändrar klassens läroplan och program. Byts programmet tas klassens ämnen och\ninriktningarnas koppling bort, eftersom de hörde till det gamla programmet.",
+        "operationId": "set_class_program_api_classes__class_id__program_put",
         "security": [
           {
             "APIKeyCookie": []
@@ -7218,7 +7217,135 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ClassCurriculumWrite"
+                "$ref": "#/components/schemas/ProgramWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassCurriculum"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/tracks/{track_id}/orientation": {
+      "put": {
+        "tags": [
+          "syllabus"
+        ],
+        "summary": "Set Track Orientation",
+        "description": "Skoladmin kopplar en av klassens inriktningar till Skolverkets inriktning.",
+        "operationId": "set_track_orientation_api_classes__class_id__tracks__track_id__orientation_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          },
+          {
+            "name": "track_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Track Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrientationWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassCurriculum"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classes/{class_id}/subjects": {
+      "put": {
+        "tags": [
+          "syllabus"
+        ],
+        "summary": "Set Class Subjects",
+        "description": "Läraren väljer de ämnen och nivåer eller kurser som eleverna tränar under APL.",
+        "operationId": "set_class_subjects_api_classes__class_id__subjects_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "class_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Class Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubjectsWrite"
               }
             }
           }
@@ -8202,6 +8329,33 @@
             "maxLength": 50,
             "minLength": 1,
             "title": "Name"
+          },
+          "curriculum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "gy25",
+                  "gy11"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curriculum"
+          },
+          "program_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Program Code"
           }
         },
         "type": "object",
@@ -8227,15 +8381,6 @@
             ],
             "title": "Curriculum"
           },
-          "suggested_curriculum": {
-            "type": "string",
-            "enum": [
-              "gy25",
-              "gy11"
-            ],
-            "title": "Suggested Curriculum",
-            "description": "Gissad utifrån året i klassens namn: 25 eller senare blir Gy25"
-          },
           "program_code": {
             "anyOf": [
               {
@@ -8258,16 +8403,13 @@
             ],
             "title": "Program Name"
           },
-          "orientation_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Orientation Code"
+          "tracks": {
+            "items": {
+              "$ref": "#/components/schemas/TrackOrientation"
+            },
+            "type": "array",
+            "title": "Tracks",
+            "description": "Klassens inriktningar"
           },
           "subjects": {
             "items": {
@@ -8281,58 +8423,12 @@
         "type": "object",
         "required": [
           "curriculum",
-          "suggested_curriculum",
           "program_code",
           "program_name",
-          "orientation_code",
+          "tracks",
           "subjects"
         ],
         "title": "ClassCurriculum"
-      },
-      "ClassCurriculumWrite": {
-        "properties": {
-          "curriculum": {
-            "type": "string",
-            "enum": [
-              "gy25",
-              "gy11"
-            ],
-            "title": "Curriculum"
-          },
-          "program_code": {
-            "type": "string",
-            "maxLength": 10,
-            "minLength": 1,
-            "title": "Program Code"
-          },
-          "orientation_code": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 10
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Orientation Code"
-          },
-          "level_codes": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 60,
-            "title": "Level Codes"
-          }
-        },
-        "type": "object",
-        "required": [
-          "curriculum",
-          "program_code",
-          "level_codes"
-        ],
-        "title": "ClassCurriculumWrite"
       },
       "ClassDetail": {
         "properties": {
@@ -11107,6 +11203,28 @@
         ],
         "title": "OrientationRead"
       },
+      "OrientationWrite": {
+        "properties": {
+          "orientation_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orientation Code",
+            "description": "null = ingen koppling"
+          }
+        },
+        "type": "object",
+        "required": [
+          "orientation_code"
+        ],
+        "title": "OrientationWrite"
+      },
       "OverviewReport": {
         "properties": {
           "id": {
@@ -11394,6 +11512,30 @@
           "orientations"
         ],
         "title": "ProgramRead"
+      },
+      "ProgramWrite": {
+        "properties": {
+          "curriculum": {
+            "type": "string",
+            "enum": [
+              "gy25",
+              "gy11"
+            ],
+            "title": "Curriculum"
+          },
+          "program_code": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 1,
+            "title": "Program Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "curriculum",
+          "program_code"
+        ],
+        "title": "ProgramWrite"
       },
       "ProjectCard": {
         "properties": {
@@ -13439,6 +13581,23 @@
         ],
         "title": "StudentTrack"
       },
+      "SubjectsWrite": {
+        "properties": {
+          "level_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 60,
+            "title": "Level Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level_codes"
+        ],
+        "title": "SubjectsWrite"
+      },
       "SupervisedStudent": {
         "properties": {
           "placement_id": {
@@ -14206,6 +14365,49 @@
           "name"
         ],
         "title": "TrackCreate"
+      },
+      "TrackOrientation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "orientation_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orientation Code"
+          },
+          "orientation_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orientation Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "orientation_code",
+          "orientation_name"
+        ],
+        "title": "TrackOrientation"
       },
       "TrackRead": {
         "properties": {

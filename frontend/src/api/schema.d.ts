@@ -2471,7 +2471,7 @@ export interface paths {
         };
         /**
          * Program Groups
-         * @description Programmets ämnen att välja bland: först det alla läser, sedan inriktningen, dess
+         * @description Programmets ämnen att välja bland: först det alla läser, sedan inriktningarna med deras
          *     yrkesutgångar och sist programfördjupningen.
          */
         get: operations["program_groups_api_syllabus_programs__program_code__groups_get"];
@@ -2492,14 +2492,71 @@ export interface paths {
         };
         /**
          * Get Class Curriculum
-         * @description Klassens läroplan, program, inriktning och ämnen, och programmets ämnen att välja bland.
+         * @description Klassens läroplan, program, inriktningar och valda ämnen.
          */
         get: operations["get_class_curriculum_api_classes__class_id__curriculum_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/program": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         /**
-         * Set Class Curriculum
-         * @description Sparar klassens läroplan, program, inriktning och ämnen. Ämnena skrivs över.
+         * Set Class Program
+         * @description Skoladmin ändrar klassens läroplan och program. Byts programmet tas klassens ämnen och
+         *     inriktningarnas koppling bort, eftersom de hörde till det gamla programmet.
          */
-        put: operations["set_class_curriculum_api_classes__class_id__curriculum_put"];
+        put: operations["set_class_program_api_classes__class_id__program_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/tracks/{track_id}/orientation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Track Orientation
+         * @description Skoladmin kopplar en av klassens inriktningar till Skolverkets inriktning.
+         */
+        put: operations["set_track_orientation_api_classes__class_id__tracks__track_id__orientation_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/subjects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Class Subjects
+         * @description Läraren väljer de ämnen och nivåer eller kurser som eleverna tränar under APL.
+         */
+        put: operations["set_class_subjects_api_classes__class_id__subjects_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2922,42 +2979,29 @@ export interface components {
         ClassCreate: {
             /** Name */
             name: string;
+            /** Curriculum */
+            curriculum?: ("gy25" | "gy11") | null;
+            /** Program Code */
+            program_code?: string | null;
         };
         /** ClassCurriculum */
         ClassCurriculum: {
             /** Curriculum */
             curriculum: ("gy25" | "gy11") | null;
-            /**
-             * Suggested Curriculum
-             * @description Gissad utifrån året i klassens namn: 25 eller senare blir Gy25
-             * @enum {string}
-             */
-            suggested_curriculum: "gy25" | "gy11";
             /** Program Code */
             program_code: string | null;
             /** Program Name */
             program_name: string | null;
-            /** Orientation Code */
-            orientation_code: string | null;
+            /**
+             * Tracks
+             * @description Klassens inriktningar
+             */
+            tracks: components["schemas"]["TrackOrientation"][];
             /**
              * Subjects
              * @description Klassens valda ämnen
              */
             subjects: components["schemas"]["LevelRead"][];
-        };
-        /** ClassCurriculumWrite */
-        ClassCurriculumWrite: {
-            /**
-             * Curriculum
-             * @enum {string}
-             */
-            curriculum: "gy25" | "gy11";
-            /** Program Code */
-            program_code: string;
-            /** Orientation Code */
-            orientation_code?: string | null;
-            /** Level Codes */
-            level_codes: string[];
         };
         /** ClassDetail */
         ClassDetail: {
@@ -4180,6 +4224,14 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** OrientationWrite */
+        OrientationWrite: {
+            /**
+             * Orientation Code
+             * @description null = ingen koppling
+             */
+            orientation_code: string | null;
+        };
         /** OverviewReport */
         OverviewReport: {
             /**
@@ -4328,6 +4380,16 @@ export interface components {
             name: string;
             /** Orientations */
             orientations: components["schemas"]["OrientationRead"][];
+        };
+        /** ProgramWrite */
+        ProgramWrite: {
+            /**
+             * Curriculum
+             * @enum {string}
+             */
+            curriculum: "gy25" | "gy11";
+            /** Program Code */
+            program_code: string;
         };
         /** ProjectCard */
         ProjectCard: {
@@ -5226,6 +5288,11 @@ export interface components {
              */
             track_id: string | null;
         };
+        /** SubjectsWrite */
+        SubjectsWrite: {
+            /** Level Codes */
+            level_codes: string[];
+        };
         /**
          * SupervisedStudent
          * @description En elev som handledaren har just nu.
@@ -5548,6 +5615,20 @@ export interface components {
         TrackCreate: {
             /** Name */
             name: string;
+        };
+        /** TrackOrientation */
+        TrackOrientation: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Orientation Code */
+            orientation_code: string | null;
+            /** Orientation Name */
+            orientation_name: string | null;
         };
         /** TrackRead */
         TrackRead: {
@@ -10142,7 +10223,7 @@ export interface operations {
     program_groups_api_syllabus_programs__program_code__groups_get: {
         parameters: {
             query?: {
-                orientation?: string | null;
+                orientation?: string[];
             };
             header?: never;
             path: {
@@ -10203,7 +10284,7 @@ export interface operations {
             };
         };
     };
-    set_class_curriculum_api_classes__class_id__curriculum_put: {
+    set_class_program_api_classes__class_id__program_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -10214,7 +10295,78 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ClassCurriculumWrite"];
+                "application/json": components["schemas"]["ProgramWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassCurriculum"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_track_orientation_api_classes__class_id__tracks__track_id__orientation_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+                track_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrientationWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassCurriculum"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_class_subjects_api_classes__class_id__subjects_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubjectsWrite"];
             };
         };
         responses: {

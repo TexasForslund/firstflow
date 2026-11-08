@@ -9,7 +9,7 @@ Avstängda konton visas inte i klasserna och kan inte kopplas.
 En klass som användaren inte har tillgång till svarar 404, oavsett om den finns.
 """
 
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -108,6 +108,9 @@ class ClassDetail(BaseModel):
 
 class ClassCreate(BaseModel):
     name: str = Field(min_length=1, max_length=50)
+    # Läroplan och program hos Skolverket (idé 13). Kan väljas senare av skoladmin.
+    curriculum: Literal["gy25", "gy11"] | None = None
+    program_code: str | None = Field(default=None, max_length=10)
 
     @field_validator("name")
     @classmethod
@@ -203,6 +206,16 @@ def create_class(body: ClassCreate, db: DbSession, user: CanEditClasses) -> Clas
     if duplicate:
         raise _class_name_taken(body.name)
     school_class = SchoolClass(school_id=user.school_id, name=body.name)
+    if body.program_code:
+        from app.api.routes.syllabus import check_program  # undviker cirkulär import
+
+        if body.curriculum is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Välj läroplan för programmet"
+            )
+        check_program(db, body.curriculum, body.program_code)
+    school_class.curriculum = body.curriculum
+    school_class.program_code = body.program_code or None
     if user.role == UserRole.TEACHER:
         school_class.teachers.append(user)
     savepoint = db.begin_nested()

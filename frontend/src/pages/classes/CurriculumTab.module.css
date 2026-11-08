@@ -178,3 +178,31 @@ details.card:not([open]) {
   display: block;
   padding-block: var(--space-3);
 }
+
+.warning {
+  color: var(--color-warning, var(--color-error));
+  font-size: var(--font-size-sm);
+}
+
+.trackRow {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) minmax(12rem, 2fr);
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) 0;
+}
+
+.trackRow label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  .trackRow {
+    grid-template-columns: 1fr;
+  }
+}
