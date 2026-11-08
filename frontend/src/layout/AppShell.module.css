@@ -511,3 +511,30 @@
     transition: none;
   }
 }
+
+/* Utskrift, t.ex. underlaget inför betyg: bara sidans innehåll (idé 13, steg 8). */
+@media print {
+  .mobileBar,
+  .sidebar,
+  .tabBar,
+  .backdrop {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+    background: #fff;
+  }
+
+  .shell::before,
+  .shell::after {
+    display: none;
+  }
+
+  .main {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+}

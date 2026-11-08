@@ -5394,6 +5394,54 @@
         }
       }
     },
+    "/api/students/{student_id}/grade-basis": {
+      "get": {
+        "tags": [
+          "grade basis"
+        ],
+        "summary": "Grade Basis",
+        "operationId": "grade_basis_api_students__student_id__grade_basis_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeBasis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/contracts": {
       "get": {
         "tags": [
@@ -6514,7 +6562,7 @@
           "goals"
         ],
         "summary": "Student Goals Overview",
-        "description": "Elevens mål ordnade efter ämne och nivå: alla klassens mål från läroplanen, även de utan\nunderlag, och skolans mål som eleven har underlag för eller har i ett projekt. Varje mål visar\nredovisningarna, projekten och vad eleven själv tycker.",
+        "description": "Elevens mål ordnade efter ämne och nivå, med redovisningar, projekt och vad eleven själv\ntycker (idé 13, steg 7).",
         "operationId": "student_goals_overview_api_students__student_id__goals_overview_get",
         "security": [
           {
@@ -8551,6 +8599,40 @@
         ],
         "title": "AttentionReason"
       },
+      "BasisComment": {
+        "properties": {
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "author_role": {
+            "type": "string",
+            "title": "Author Role"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_name",
+          "author_name",
+          "author_role",
+          "body",
+          "created_at"
+        ],
+        "title": "BasisComment"
+      },
       "Body_create_contract_api_contracts_post": {
         "properties": {
           "file": {
@@ -9897,6 +9979,32 @@
         ],
         "title": "ConversationRead"
       },
+      "Criterion": {
+        "properties": {
+          "grade": {
+            "type": "string",
+            "title": "Grade",
+            "description": "E, C eller A"
+          },
+          "paragraphs": {
+            "items": {
+              "items": {
+                "$ref": "#/components/schemas/TextPart"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Paragraphs",
+            "description": "Ett stycke per förmåga"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grade",
+          "paragraphs"
+        ],
+        "title": "Criterion"
+      },
       "Day": {
         "properties": {
           "weekday": {
@@ -10642,6 +10750,107 @@
         },
         "type": "object",
         "title": "GoalUpdate"
+      },
+      "GradeBasis": {
+        "properties": {
+          "student_name": {
+            "type": "string",
+            "title": "Student Name"
+          },
+          "class_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Name"
+          },
+          "track_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Name"
+          },
+          "subjects": {
+            "items": {
+              "$ref": "#/components/schemas/GradeSubject"
+            },
+            "type": "array",
+            "title": "Subjects",
+            "description": "Klassens ämnen med mål"
+          },
+          "other_goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalOverview"
+            },
+            "type": "array",
+            "title": "Other Goals",
+            "description": "Skolans mål, utan koppling"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/BasisComment"
+            },
+            "type": "array",
+            "title": "Comments",
+            "description": "Kommentarer om projekten som eleven ser"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student_name",
+          "class_name",
+          "track_name",
+          "subjects",
+          "other_goals",
+          "comments"
+        ],
+        "title": "GradeBasis"
+      },
+      "GradeSubject": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "T.ex. \"Elteknik, nivå 1\""
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/components/schemas/Criterion"
+            },
+            "type": "array",
+            "title": "Criteria",
+            "description": "Tom om Skolverket inte svarar"
+          },
+          "criteria_missing": {
+            "type": "boolean",
+            "title": "Criteria Missing",
+            "description": "Kriterierna kunde inte hämtas"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalOverview"
+            },
+            "type": "array",
+            "title": "Goals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "criteria",
+          "criteria_missing",
+          "goals"
+        ],
+        "title": "GradeSubject"
       },
       "GroupRead": {
         "properties": {
@@ -15504,6 +15713,24 @@
           "text"
         ],
         "title": "TextAnswer"
+      },
+      "TextPart": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "bold": {
+            "type": "boolean",
+            "title": "Bold"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "bold"
+        ],
+        "title": "TextPart"
       },
       "TodayStudent": {
         "properties": {

@@ -235,7 +235,7 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 5. **Frågor:** till varje mål finns färdiga mallar för frågor, till exempel "Läste du ritningen själv i dag?" som ja/nej där Ja är kopplat till målet. Läraren lägger till med ett klick och ändrar. ✅ Steg 5 byggt i #84: fliken "Från målen" när läraren lägger till en fråga.
 6. **Projektets sammanfattning** (idé 12:6, steg 2): när projektet är klart svarar eleven på fyra korta frågor, bland annat vilka av projektets mål eleven tycker att den visade. ✅ Steg 6 byggt i #85.
 7. **Elevsidan och historiken:** målen ordnas efter ämne och nivå, eller kurs. Varje del av läroplanen visar redovisningarna och projekten som visar den. Delar utan underlag syns tydligt. Varje avslutat projekt visas med elevens sammanfattning (stjärnor, mening, bilder och de mål eleven valde), bredvid redovisningarna för samma del av läroplanen. ✅ Steg 7 byggt i #86: elevsidan visar målen efter ämne och nivå, med redovisningar, projekt och elevens egen bedömning. Mål utan underlag är gula.
-8. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera.
+8. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera. ✅ Steg 8 byggt i #87: en sida som öppnas med Exportera på elevsidan, och webbläsarens utskrift ger PDF (Texas 2026-11-08: både och).
 
 **Skolverkets API (provat 2026-11-08 med Elteknik ELTE och Elektroteknik ELR):**
 - `GET https://api.skolverket.se/syllabus/v1/subjects` ger alla ämnen, med kod, namn, typ och datum. `GRADE_SUBJECT_SYLLABUS` och `reform: GY25` är Gy25 (från 2025-07-01). `SUBJECT_SYLLABUS` och `reform: GY11` är Gy11 (gäller till 2030-06-30). Yrkesämnen är märkta `VOCATIONAL`.
@@ -249,7 +249,6 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 - **El- och energiprogrammet i Gy25 (EE25), inriktning elteknik (EEELK):** programgemensamt Automationsteknik, Dator- och kommunikationsteknik, Elteknik och Energiteknik (nivå 1). Inriktningen: Ellära 1, Installationsteknik 1–2, Kommunikationsnät 1 och Säkerhetssystem 1. Yrkesutgångar finns, till exempel Service- och installationselektriker.
 
 **Öppna frågor:**
-- Vilket format ska underlaget inför betyg ha: en sida i Firstflow, en PDF eller båda?
 - Ska AI användas senare för förslag på frågor och för att koppla mål till projekt? I så fall utan elevdata och med ett personuppgiftsbiträdesavtal.
 
 **Hänger ihop med:** idé 10 (taggar och läroplan) och idé 12:6 (projektets sammanfattning och elevens mål).

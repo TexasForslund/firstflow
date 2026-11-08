@@ -1907,6 +1907,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/students/{student_id}/grade-basis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Grade Basis */
+        get: operations["grade_basis_api_students__student_id__grade_basis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contracts": {
         parameters: {
             query?: never;
@@ -2228,9 +2245,8 @@ export interface paths {
         };
         /**
          * Student Goals Overview
-         * @description Elevens mål ordnade efter ämne och nivå: alla klassens mål från läroplanen, även de utan
-         *     underlag, och skolans mål som eleven har underlag för eller har i ett projekt. Varje mål visar
-         *     redovisningarna, projekten och vad eleven själv tycker.
+         * @description Elevens mål ordnade efter ämne och nivå, med redovisningar, projekt och vad eleven själv
+         *     tycker (idé 13, steg 7).
          */
         get: operations["student_goals_overview_api_students__student_id__goals_overview_get"];
         put?: never;
@@ -2976,6 +2992,22 @@ export interface components {
          * @enum {string}
          */
         AttentionReason: "missing_check_ins" | "missing_reports" | "no_placement" | "unsigned_contract" | "unconfirmed_days" | "attendance_conflict";
+        /** BasisComment */
+        BasisComment: {
+            /** Project Name */
+            project_name: string;
+            /** Author Name */
+            author_name: string;
+            /** Author Role */
+            author_role: string;
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** Body_create_contract_api_contracts_post */
         Body_create_contract_api_contracts_post: {
             /**
@@ -3536,6 +3568,19 @@ export interface components {
             /** Unread */
             unread: number;
         };
+        /** Criterion */
+        Criterion: {
+            /**
+             * Grade
+             * @description E, C eller A
+             */
+            grade: string;
+            /**
+             * Paragraphs
+             * @description Ett stycke per förmåga
+             */
+            paragraphs: components["schemas"]["TextPart"][][];
+        };
         /** Day */
         Day: {
             /**
@@ -3880,6 +3925,50 @@ export interface components {
         GoalUpdate: {
             /** Curriculum */
             curriculum?: string | null;
+        };
+        /** GradeBasis */
+        GradeBasis: {
+            /** Student Name */
+            student_name: string;
+            /** Class Name */
+            class_name: string | null;
+            /** Track Name */
+            track_name: string | null;
+            /**
+             * Subjects
+             * @description Klassens ämnen med mål
+             */
+            subjects: components["schemas"]["GradeSubject"][];
+            /**
+             * Other Goals
+             * @description Skolans mål, utan koppling
+             */
+            other_goals: components["schemas"]["GoalOverview"][];
+            /**
+             * Comments
+             * @description Kommentarer om projekten som eleven ser
+             */
+            comments: components["schemas"]["BasisComment"][];
+        };
+        /** GradeSubject */
+        GradeSubject: {
+            /**
+             * Title
+             * @description T.ex. "Elteknik, nivå 1"
+             */
+            title: string;
+            /**
+             * Criteria
+             * @description Tom om Skolverket inte svarar
+             */
+            criteria: components["schemas"]["Criterion"][];
+            /**
+             * Criteria Missing
+             * @description Kriterierna kunde inte hämtas
+             */
+            criteria_missing: boolean;
+            /** Goals */
+            goals: components["schemas"]["GoalOverview"][];
         };
         /** GroupRead */
         GroupRead: {
@@ -6055,6 +6144,13 @@ export interface components {
             question: string;
             /** Text */
             text: string;
+        };
+        /** TextPart */
+        TextPart: {
+            /** Text */
+            text: string;
+            /** Bold */
+            bold: boolean;
         };
         /**
          * TodayStudent
@@ -9608,6 +9704,37 @@ export interface operations {
                 };
                 content: {
                     "image/webp": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    grade_basis_api_students__student_id__grade_basis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GradeBasis"];
                 };
             };
             /** @description Validation Error */

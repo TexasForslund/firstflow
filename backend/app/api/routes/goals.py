@@ -284,16 +284,19 @@ class GoalGroup(BaseModel):
     goals: list[GoalOverview]
 
 
-@student_router.get("/overview", response_model=list[GoalGroup])
-def student_goals_overview(student_id: UUID, db: DbSession, user: Teacher) -> list[GoalGroup]:
+UNLINKED = "Utan koppling"
+
+
+def overview_groups(
+    db: Session, user: User, student: User
+) -> list[tuple[str, list[tuple[Goal, GoalOverview]]]]:
     """Elevens mål ordnade efter ämne och nivå: alla klassens mål från läroplanen, även de utan
-    underlag, och skolans mål som eleven har underlag för eller har i ett projekt. Varje mål visar
-    redovisningarna, projekten och vad eleven själv tycker."""
+    underlag, och skolans mål som eleven har underlag för eller har i ett projekt. Skolans mål
+    sist. Används av elevsidan och underlaget inför betyg."""
     # Undviker cirkulär import: projects importerar goals.
     from app.api.routes.reports import _teaches_student_now
     from app.models.project import Project, ProjectSummary, project_students
 
-    student = get_student_for(db, user, student_id)
     taught = select(class_teachers.c.class_id).where(class_teachers.c.teacher_id == user.id)
     in_class = true() if _teaches_student_now(db, user, student.id) else Report.class_id.in_(taught)
     reports = list(
@@ -333,7 +336,7 @@ def student_goals_overview(student_id: UUID, db: DbSession, user: Teacher) -> li
         .order_by(Goal.class_id.is_(None), Goal.subject_name, func.lower(Goal.name))
     )
 
-    groups: dict[str, list[GoalOverview]] = {}
+    groups: dict[str, list[tuple[Goal, GoalOverview]]] = {}
     for goal in goals:
         read = read_goal(goal)
         goal_projects = []
@@ -351,15 +354,24 @@ def student_goals_overview(student_id: UUID, db: DbSession, user: Teacher) -> li
                 )
             )
         items = found.get(goal.id, [])
-        groups.setdefault(read.group or "Utan koppling", []).append(
-            GoalOverview(
-                goal=read,
-                count=len(items),
-                evidence=items,
-                projects=goal_projects,
-                claimed=any(p.claimed for p in goal_projects),
-            )
+        overview = GoalOverview(
+            goal=read,
+            count=len(items),
+            evidence=items,
+            projects=goal_projects,
+            claimed=any(p.claimed for p in goal_projects),
         )
+        groups.setdefault(read.group or UNLINKED, []).append((goal, overview))
     # Skolans mål sist.
-    ordered = sorted(groups.items(), key=lambda item: item[0] == "Utan koppling")
-    return [GoalGroup(title=title, goals=items) for title, items in ordered]
+    return sorted(groups.items(), key=lambda item: item[0] == UNLINKED)
+
+
+@student_router.get("/overview", response_model=list[GoalGroup])
+def student_goals_overview(student_id: UUID, db: DbSession, user: Teacher) -> list[GoalGroup]:
+    """Elevens mål ordnade efter ämne och nivå, med redovisningar, projekt och vad eleven själv
+    tycker (idé 13, steg 7)."""
+    student = get_student_for(db, user, student_id)
+    return [
+        GoalGroup(title=title, goals=[o for _, o in items])
+        for title, items in overview_groups(db, user, student)
+    ]
