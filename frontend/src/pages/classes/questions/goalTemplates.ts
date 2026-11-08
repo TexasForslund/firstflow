@@ -31,9 +31,11 @@ const base = (title: string) => ({
  */
 export function goalTemplates(goal: Goal, sameSubject: Goal[]): GoalTemplate[] {
   const topic = goal.name.charAt(0).toLowerCase() + goal.name.slice(1)
-  const yesNoTitle = `Har du jobbat med ${topic} i dag?`
-  const howTitle = `Hur gick det med ${topic} i dag?`
-  const how = ['Jag gjorde det själv', 'Med hjälp av handledaren', 'Inte i dag']
+  // Eleverna redovisar en eller ett par gånger i veckan, så frågorna gäller tiden sedan förra
+  // redovisningen (Texas, 2026-11-08).
+  const yesNoTitle = `Har du tränat på ${topic} sedan förra redovisningen?`
+  const howTitle = `Hur gick det med ${topic}?`
+  const how = ['Jag gjorde det själv', 'Med hjälp av handledaren', 'Inte den här gången']
   const templates: GoalTemplate[] = [
     {
       id: 'yes_no',
@@ -85,14 +87,14 @@ export function goalTemplates(goal: Goal, sameSubject: Goal[]): GoalTemplate[] {
       id: 'subject',
       type: 'choice',
       kind: 'Flerval, flera svar',
-      title: 'Vad gjorde du i dag?',
+      title: 'Vad har du gjort sedan förra redovisningen?',
       answers: all.map((g) => ({ label: g.name, goal: g.name })),
       note: 'Ett alternativ per mål i ämnet. Eleven kryssar i det hen gjorde.',
       build: () => {
         const choices = all.map((g) => ({ id: newId(), label: g.name }))
         return [
           {
-            ...base('Vad gjorde du i dag?'),
+            ...base('Vad har du gjort sedan förra redovisningen?'),
             type: 'choice',
             multiple: true,
             allow_other: false,
