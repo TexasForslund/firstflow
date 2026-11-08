@@ -140,6 +140,7 @@ export function StudentPage() {
 
       <div className={own.columns}>
         <div className={own.main}>
+          {isTeacher && <StudentGoalsCard studentId={student.id} firstName={student.name.split(' ')[0]} />}
           {isTeacher ? (
             <ReportsSection studentId={student.id} />
           ) : (
@@ -152,7 +153,6 @@ export function StudentPage() {
           <AttentionBox studentId={student.id} />
           <AttendanceCard studentId={student.id} />
           <PlacementCard studentId={student.id} />
-          {isTeacher && <StudentGoalsCard studentId={student.id} />}
           {isTeacher && <NotesCard studentId={student.id} />}
           <ProjectsCard studentId={student.id} />
           {isAdmin &&

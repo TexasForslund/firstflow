@@ -66,13 +66,13 @@ export function goalGroups(goals: Goal[]): { title: string | null; goals: Goal[]
   return groups
 }
 
-/** Elevens underlag per mål, flest först. */
-export function useStudentGoals(studentId: string, enabled = true) {
+/** Elevens mål ordnade efter ämne, med underlag och projekt (idé 13, steg 7). */
+export function useStudentGoalsOverview(studentId: string, enabled = true) {
   return useQuery({
-    queryKey: ['students', studentId, 'goals'],
+    queryKey: ['students', studentId, 'goals', 'overview'],
     enabled,
     queryFn: async () => {
-      const { data, error, response } = await api.GET('/api/students/{student_id}/goals', {
+      const { data, error, response } = await api.GET('/api/students/{student_id}/goals/overview', {
         params: { path: { student_id: studentId } },
       })
       if (!data) throw new ApiError(error, response.status)

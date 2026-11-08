@@ -666,3 +666,64 @@ def test_project_summary(
     # En annan lärare ser inte sammanfattningarna.
     login(w.other_teacher)
     assert client.get(f"{url}/summaries").status_code == 404
+
+
+def test_student_goals_overview(client: TestClient, db: Session, login: Login, w: World) -> None:
+    """Idé 13, steg 7: elevsidan visar klassens mål efter ämne, även utan underlag."""
+
+    def class_goal(name: str, subject: str, level: str) -> Goal:
+        goal = Goal(
+            school_id=w.ee22.school_id,
+            class_id=w.ee22.id,
+            name=name,
+            subject_name=subject,
+            level_code=f"{subject[:4].upper()}1000X",
+            level_name=level,
+            content=f"Punkten för {name}",
+        )
+        db.add(goal)
+        db.flush()
+        return goal
+
+    drawings = class_goal("Ritningsläsning", "Elteknik", "Nivå 1")
+    class_goal("Elsäkerhet", "Elteknik", "Nivå 1")
+    class_goal("Förlägga kabel", "Installationsteknik", "Nivå 1")
+
+    login(w.teacher)
+    project = client.post(
+        "/api/projects",
+        json=body(w, tags=["Kundkontakt"], goal_ids=[str(drawings.id)], completed=True),
+    ).json()
+    login(w.hugo)
+    client.put(
+        f"/api/me/project-summaries/{project['id']}",
+        json={"rating": 5, "best": "Ritningen", "goal_ids": [str(drawings.id)]},
+    )
+
+    login(w.teacher)
+    groups = client.get(f"/api/students/{w.hugo.id}/goals/overview").json()
+    assert [(g["title"], [x["goal"]["name"] for x in g["goals"]]) for g in groups] == [
+        ("Elteknik, nivå 1", ["Ritningsläsning", "Elsäkerhet"]),
+        ("Installationsteknik, nivå 1", ["Förlägga kabel"]),
+        ("Utan koppling", ["Kundkontakt"]),
+    ]
+    first = groups[0]["goals"][0]
+    assert first["claimed"] is True
+    assert first["projects"] == [
+        {
+            "id": project["id"],
+            "name": "Elinstallation i villa",
+            "rating": 5,
+            "best": "Ritningen",
+            "claimed": True,
+        }
+    ]
+    assert groups[0]["goals"][1] == {
+        **groups[0]["goals"][1],
+        "count": 0,
+        "projects": [],
+        "claimed": False,
+    }
+    # Bara lärare som får se eleven.
+    login(w.other_teacher)
+    assert client.get(f"/api/students/{w.hugo.id}/goals/overview").status_code == 404

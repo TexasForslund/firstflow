@@ -256,3 +256,110 @@ def student_goals(student_id: UUID, db: DbSession, user: Teacher) -> list[GoalCo
         for (goal_id, _), items in found.items()
     ]
     return sorted(result, key=lambda c: (-c.count, c.goal.name.lower()))
+
+
+# --- Elevsidan: målen ordnade efter ämne (idé 13, steg 7, Texas skiss 2026-11-08) ---------
+
+
+class GoalProject(BaseModel):
+    """Ett av elevens projekt som har målet, med elevens sammanfattning om den finns."""
+
+    id: UUID
+    name: str
+    rating: int | None = Field(description="Elevens stjärnor, 1–5")
+    best: str | None = Field(description="Det eleven är mest nöjd med")
+    claimed: bool = Field(description="Eleven tycker att den visade målet i projektet")
+
+
+class GoalOverview(BaseModel):
+    goal: GoalRead
+    count: int = Field(description="Antal redovisningar som visar målet")
+    evidence: list[EvidenceRead] = Field(description="Redovisningarna, senaste först")
+    projects: list[GoalProject]
+    claimed: bool = Field(description="Eleven valde målet i någon sammanfattning")
+
+
+class GoalGroup(BaseModel):
+    title: str = Field(description='Ämnet och nivån, eller "Utan koppling" för skolans mål')
+    goals: list[GoalOverview]
+
+
+@student_router.get("/overview", response_model=list[GoalGroup])
+def student_goals_overview(student_id: UUID, db: DbSession, user: Teacher) -> list[GoalGroup]:
+    """Elevens mål ordnade efter ämne och nivå: alla klassens mål från läroplanen, även de utan
+    underlag, och skolans mål som eleven har underlag för eller har i ett projekt. Varje mål visar
+    redovisningarna, projekten och vad eleven själv tycker."""
+    # Undviker cirkulär import: projects importerar goals.
+    from app.api.routes.reports import _teaches_student_now
+    from app.models.project import Project, ProjectSummary, project_students
+
+    student = get_student_for(db, user, student_id)
+    taught = select(class_teachers.c.class_id).where(class_teachers.c.teacher_id == user.id)
+    in_class = true() if _teaches_student_now(db, user, student.id) else Report.class_id.in_(taught)
+    reports = list(
+        db.scalars(_submitted(select(Report).where(Report.student_id == student.id, in_class)))
+    )
+    found = {g: items for (g, _), items in goal_counts(db, reports).items()}
+
+    projects = db.scalars(
+        select(Project)
+        .join(project_students, project_students.c.project_id == Project.id)
+        .where(project_students.c.student_id == student.id, Project.school_id == user.school_id)
+        .options(selectinload(Project.goals))
+        .order_by(Project.created_at.desc())
+    ).all()
+    summaries = {
+        s.project_id: s
+        for s in db.scalars(
+            select(ProjectSummary)
+            .where(ProjectSummary.student_id == student.id)
+            .options(selectinload(ProjectSummary.goals))
+        )
+    }
+
+    classes = select(class_students.c.class_id).where(class_students.c.student_id == student.id)
+    goals = list(
+        db.scalars(
+            select(Goal)
+            .where(Goal.class_id.in_(classes))
+            .order_by(Goal.subject_name, Goal.level_code, Goal.created_at)
+        )
+    )
+    known = {g.id for g in goals}
+    other_ids = (set(found) | {g.id for p in projects for g in p.goals}) - known
+    goals += db.scalars(
+        select(Goal)
+        .where(Goal.id.in_(other_ids), Goal.school_id == student.school_id)
+        .order_by(Goal.class_id.is_(None), Goal.subject_name, func.lower(Goal.name))
+    )
+
+    groups: dict[str, list[GoalOverview]] = {}
+    for goal in goals:
+        read = read_goal(goal)
+        goal_projects = []
+        for project in projects:
+            if goal not in project.goals:
+                continue
+            summary = summaries.get(project.id)
+            goal_projects.append(
+                GoalProject(
+                    id=project.id,
+                    name=project.name,
+                    rating=summary.rating if summary else None,
+                    best=summary.best if summary else None,
+                    claimed=bool(summary and goal in summary.goals),
+                )
+            )
+        items = found.get(goal.id, [])
+        groups.setdefault(read.group or "Utan koppling", []).append(
+            GoalOverview(
+                goal=read,
+                count=len(items),
+                evidence=items,
+                projects=goal_projects,
+                claimed=any(p.claimed for p in goal_projects),
+            )
+        )
+    # Skolans mål sist.
+    ordered = sorted(groups.items(), key=lambda item: item[0] == "Utan koppling")
+    return [GoalGroup(title=title, goals=items) for title, items in ordered]

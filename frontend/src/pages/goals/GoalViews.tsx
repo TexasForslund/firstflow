@@ -1,9 +1,9 @@
-import { Target } from 'lucide-react'
+import { ChevronDown, Target } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
-import { HelpPopover } from '../../components'
-import { useProjectGoals, useStudentGoals, type GoalEvidence } from '../../api/goals'
+import { HelpPopover, StarRating } from '../../components'
+import { useProjectGoals, useStudentGoalsOverview, type GoalEvidence } from '../../api/goals'
 import { longDate } from '../reports/answers'
 import styles from './GoalViews.module.css'
 
@@ -226,44 +226,120 @@ export function StudentProjectGoals({
   )
 }
 
-/** Elevens underlag per mål på elevsidan (idé 10). */
-export function StudentGoalsCard({ studentId }: { studentId: string }) {
-  const query = useStudentGoals(studentId)
+/**
+ * Elevens mål på elevsidan, ordnade efter ämne och nivå (idé 13 steg 7, Texas skiss
+ * 2026-11-08). Alla klassens mål syns, även de utan underlag, som är gula. Varje mål visar
+ * redovisningarna, projekten och vad eleven själv tycker.
+ */
+export function StudentGoalsCard({ studentId, firstName }: { studentId: string; firstName: string }) {
+  const query = useStudentGoalsOverview(studentId)
   const [open, setOpen] = useState<string | null>(null)
-  const goals = query.data ?? []
-  if (query.isSuccess && goals.length === 0) return null
+  const groups = query.data ?? []
+  if (query.isSuccess && groups.length === 0) return null
   return (
     <section className={styles.card} aria-labelledby="student-goals-title">
       <div className={styles.head}>
         <span className={styles.iconBox}>
           <Target aria-hidden="true" />
         </span>
-        <h2 id="student-goals-title" className={styles.title}>
-          Mål
-        </h2>
+        <div>
+          <h2 id="student-goals-title" className={styles.title}>
+            Mål från läroplanen <HelpPopover topic="goals" />
+          </h2>
+          <p className={styles.muted}>
+            Varje mål visar redovisningarna och projekten som visar det, och vad {firstName} själv tycker.
+          </p>
+        </div>
       </div>
       {query.isPending && <p className={styles.muted}>Laddar…</p>}
-      <ul className={styles.goalList}>
-        {goals.map((g) => (
-          <li key={g.goal.id}>
-            <button
-              type="button"
-              className={styles.goalRow}
-              aria-expanded={open === g.goal.id}
-              onClick={() => setOpen(open === g.goal.id ? null : g.goal.id)}
-            >
-              <span className={styles.goalName}>{g.goal.name}</span>
-              <span className={styles.muted}>{plural(g.count, 'gång', 'gånger')}</span>
-            </button>
-            {open === g.goal.id && (
-              <div className={styles.goalDetail}>
-                {g.goal.curriculum && <p className={styles.muted}>{g.goal.curriculum}</p>}
-                <EvidenceList items={g.evidence} reportPath={(id) => `/reports/${id}`} />
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+      {groups.map((group) => {
+        const covered = group.goals.filter((g) => g.count > 0 || g.projects.length > 0).length
+        const linked = group.title !== 'Utan koppling'
+        return (
+          <section key={group.title} className={styles.subject} aria-label={group.title}>
+            <div className={styles.subjectHead}>
+              <h3 className={styles.subjectTitle}>{group.title}</h3>
+              {linked && (
+                <span className={styles.coverage}>
+                  <span className={styles.coverageBar} aria-hidden="true">
+                    <span style={{ width: `${(100 * covered) / group.goals.length}%` }} />
+                  </span>
+                  {covered} av {group.goals.length} mål har underlag
+                </span>
+              )}
+            </div>
+            <ul className={styles.overviewList}>
+              {group.goals.map((g) => {
+                const missing = g.count === 0 && g.projects.length === 0
+                const isOpen = open === g.goal.id
+                return (
+                  <li key={g.goal.id} className={styles.overviewItem} data-missing={missing ? '' : undefined}>
+                    <button
+                      type="button"
+                      className={styles.overviewRow}
+                      aria-expanded={isOpen}
+                      onClick={() => setOpen(isOpen ? null : g.goal.id)}
+                    >
+                      <span className={styles.overviewText}>
+                        <span className={styles.goalName}>{g.goal.name}</span>
+                        {g.goal.curriculum && <span className={styles.quote}>”{g.goal.curriculum}”</span>}
+                      </span>
+                      <span className={styles.pills}>
+                        {missing && <span className={styles.pillMissing}>Inget underlag än</span>}
+                        {g.count > 0 && (
+                          <span className={styles.pillReports}>{plural(g.count, 'redovisning', 'redovisningar')}</span>
+                        )}
+                        {g.projects.length > 0 && (
+                          <span className={styles.pillProjects}>{g.projects.length} projekt</span>
+                        )}
+                        {g.claimed && <span className={styles.pillClaimed}>{firstName}: visade det</span>}
+                      </span>
+                      <ChevronDown aria-hidden="true" className={styles.chevron} />
+                    </button>
+                    {isOpen && (
+                      <div className={styles.goalDetail}>
+                        {g.count > 0 && (
+                          <>
+                            <h4 className={styles.detailTitle}>Redovisningar</h4>
+                            <EvidenceList items={g.evidence} reportPath={(id) => `/reports/${id}`} />
+                          </>
+                        )}
+                        {g.projects.length > 0 && (
+                          <>
+                            <h4 className={styles.detailTitle}>Projekt</h4>
+                            <ul className={styles.overviewProjects}>
+                              {g.projects.map((p) => (
+                                <li key={p.id}>
+                                  <Link to={`/projects/${p.id}?elev=${studentId}`} className={styles.overviewProject}>
+                                    <span className={styles.overviewText}>
+                                      <span className={styles.goalName}>{p.name}</span>
+                                      <span className={styles.muted}>
+                                        {p.best ? `Sammanfattning: ”${p.best}”` : 'Ingen sammanfattning än'}
+                                      </span>
+                                    </span>
+                                    {p.rating && <StarRating value={p.rating} label="Hur projektet gick" />}
+                                    {p.claimed && <span className={styles.pillClaimed}>{firstName}: visade det</span>}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                        {missing && (
+                          <p className={styles.muted}>
+                            Inget underlag än. Lägg till en fråga från målet under klassens Frågor, eller koppla målet
+                            till ett projekt.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        )
+      })}
     </section>
   )
 }
