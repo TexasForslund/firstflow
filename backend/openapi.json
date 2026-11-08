@@ -6508,6 +6508,59 @@
         }
       }
     },
+    "/api/students/{student_id}/goals/overview": {
+      "get": {
+        "tags": [
+          "goals"
+        ],
+        "summary": "Student Goals Overview",
+        "description": "Elevens mål ordnade efter ämne och nivå: alla klassens mål från läroplanen, även de utan\nunderlag, och skolans mål som eleven har underlag för eller har i ett projekt. Varje mål visar\nredovisningarna, projekten och vad eleven själv tycker.",
+        "operationId": "student_goals_overview_api_students__student_id__goals_overview_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Student Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GoalGroup"
+                  },
+                  "title": "Response Student Goals Overview Api Students  Student Id  Goals Overview Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/import/template": {
       "get": {
         "tags": [
@@ -10377,6 +10430,121 @@
           "name"
         ],
         "title": "GoalCreate"
+      },
+      "GoalGroup": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Ämnet och nivån, eller \"Utan koppling\" för skolans mål"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalOverview"
+            },
+            "type": "array",
+            "title": "Goals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "goals"
+        ],
+        "title": "GoalGroup"
+      },
+      "GoalOverview": {
+        "properties": {
+          "goal": {
+            "$ref": "#/components/schemas/GoalRead"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Antal redovisningar som visar målet"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRead"
+            },
+            "type": "array",
+            "title": "Evidence",
+            "description": "Redovisningarna, senaste först"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/GoalProject"
+            },
+            "type": "array",
+            "title": "Projects"
+          },
+          "claimed": {
+            "type": "boolean",
+            "title": "Claimed",
+            "description": "Eleven valde målet i någon sammanfattning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goal",
+          "count",
+          "evidence",
+          "projects",
+          "claimed"
+        ],
+        "title": "GoalOverview"
+      },
+      "GoalProject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating",
+            "description": "Elevens stjärnor, 1–5"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best",
+            "description": "Det eleven är mest nöjd med"
+          },
+          "claimed": {
+            "type": "boolean",
+            "title": "Claimed",
+            "description": "Eleven tycker att den visade målet i projektet"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "rating",
+          "best",
+          "claimed"
+        ],
+        "title": "GoalProject",
+        "description": "Ett av elevens projekt som har målet, med elevens sammanfattning om den finns."
       },
       "GoalRead": {
         "properties": {

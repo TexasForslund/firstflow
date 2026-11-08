@@ -2219,6 +2219,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/students/{student_id}/goals/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Student Goals Overview
+         * @description Elevens mål ordnade efter ämne och nivå: alla klassens mål från läroplanen, även de utan
+         *     underlag, och skolans mål som eleven har underlag för eller har i ett projekt. Varje mål visar
+         *     redovisningarna, projekten och vad eleven själv tycker.
+         */
+        get: operations["student_goals_overview_api_students__student_id__goals_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/import/template": {
         parameters: {
             query?: never;
@@ -3753,6 +3775,65 @@ export interface components {
             name: string;
             /** Curriculum */
             curriculum?: string | null;
+        };
+        /** GoalGroup */
+        GoalGroup: {
+            /**
+             * Title
+             * @description Ämnet och nivån, eller "Utan koppling" för skolans mål
+             */
+            title: string;
+            /** Goals */
+            goals: components["schemas"]["GoalOverview"][];
+        };
+        /** GoalOverview */
+        GoalOverview: {
+            goal: components["schemas"]["GoalRead"];
+            /**
+             * Count
+             * @description Antal redovisningar som visar målet
+             */
+            count: number;
+            /**
+             * Evidence
+             * @description Redovisningarna, senaste först
+             */
+            evidence: components["schemas"]["EvidenceRead"][];
+            /** Projects */
+            projects: components["schemas"]["GoalProject"][];
+            /**
+             * Claimed
+             * @description Eleven valde målet i någon sammanfattning
+             */
+            claimed: boolean;
+        };
+        /**
+         * GoalProject
+         * @description Ett av elevens projekt som har målet, med elevens sammanfattning om den finns.
+         */
+        GoalProject: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Rating
+             * @description Elevens stjärnor, 1–5
+             */
+            rating: number | null;
+            /**
+             * Best
+             * @description Det eleven är mest nöjd med
+             */
+            best: string | null;
+            /**
+             * Claimed
+             * @description Eleven tycker att den visade målet i projektet
+             */
+            claimed: boolean;
         };
         /** GoalRead */
         GoalRead: {
@@ -10195,6 +10276,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GoalCount"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    student_goals_overview_api_students__student_id__goals_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalGroup"][];
                 };
             };
             /** @description Validation Error */

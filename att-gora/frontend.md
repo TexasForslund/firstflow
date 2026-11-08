@@ -623,3 +623,13 @@ Idé 12:6 steg 2 och idé 13 steg 6 (Texas, 2026-11-07 och 2026-11-08, skissen "
 - **Påminnelse efter tre dagar** (Texas 2026-11-08), en gång. Firstflow har inga schemalagda jobb, så påminnelsen skapas första gången läraren eller handledaren öppnar projektet efter tre dagar. Eleven får en notis.
 - **Projektsidan:** under Alla visar "Sammanfattningar" en rad per elev, med stjärnor och meningen, eller "har inte sammanfattat än" och när påminnelsen skickades. Med en elev vald visas elevens sammanfattning, och målen visar "jag visade det" bredvid underlaget.
 - **Backend:** `project_summaries`, `project_summary_goals`, `project_summary_images` och `project_summary_reminders` (migrering). Endpoints under `/api/me/project-summaries` för eleven och `/api/projects/{id}/summaries` för läraren och handledaren.
+
+## F46. Elevsidan: målen efter ämne ✅ Klar (PR #86)
+
+Idé 13, steg 7 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 7).
+
+- Kortet "Mål från läroplanen" ligger i elevsidans huvudkolumn och ersätter den tidigare listan med mål i sidokolumnen. Bara elevens lärare ser det.
+- Målen är ordnade efter ämne och nivå, med skolans mål sist under "Utan koppling". Varje ämne visar till exempel "2 av 3 mål har underlag".
+- Alla klassens mål syns, även de utan underlag. De är gula och har etiketten "Inget underlag än".
+- Varje mål visar antal redovisningar och projekt, och "visade det" om eleven valde målet i en sammanfattning. Klick visar redovisningarna och projekten med elevens stjärnor och sammanfattning.
+- **Backend:** `GET /api/students/{id}/goals/overview`.
