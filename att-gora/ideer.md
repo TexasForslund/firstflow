@@ -221,6 +221,9 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 - **Både Gy25 och det gamla systemet.** Gy25 (från hösten 2025) har ämnen med nivåer och betyg per nivå. Elever som började tidigare läser kurser (Gy11). Ett mål ska därför kunna pekas mot ämne och nivå eller mot kurs.
 - **Läraren äger sina mål**, inte ämneslaget eller skolan.
 - **Firstflow föreslår aldrig ett betyg.** Läraren sätter alltid betyget själv. Firstflow samlar bara underlaget.
+- **Läroplanen följer klassen, inte skolan.** Under några år har skolor både Gy25 och Gy11. När en klass skapas väljs Gy25 om klassen startar hösten 2025 eller senare, annars Gy11. Läraren eller skoladministratören kan ändra det. Undantag för en enskild elev byggs inte från början.
+- **Målen pekar på punkter i det centrala innehållet**, inte på betygskriterierna. Läraren kopplar inte målen till ämnets förmågor i första versionen. Betygskriterierna (E, C och A) visas bredvid underlaget som stöd. Om lärarna i piloten saknar underlaget per förmåga lägger vi till det.
+- **Piloten börjar med El- och energiprogrammet.**
 
 **Flödet:**
 1. **Ämnen och nivåer:** klassen har program och inriktning (finns i dag). Läraren väljer vilka ämnen och nivåer, eller kurser, som APL-perioden ska träna.
@@ -232,10 +235,18 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 7. **Elevsidan och historiken:** målen ordnas efter ämne och nivå, eller kurs. Varje del av läroplanen visar redovisningarna och projekten som visar den. Delar utan underlag syns tydligt. Varje avslutat projekt visas med elevens sammanfattning (stjärnor, mening, bilder och de mål eleven valde), bredvid redovisningarna för samma del av läroplanen.
 8. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera.
 
+**Skolverkets API (provat 2026-11-08 med Elteknik ELTE och Elektroteknik ELR):**
+- `GET https://api.skolverket.se/syllabus/v1/subjects` ger alla ämnen, med kod, namn, typ och datum. `GRADE_SUBJECT_SYLLABUS` och `reform: GY25` är Gy25 (från 2025-07-01). `SUBJECT_SYLLABUS` och `reform: GY11` är Gy11 (gäller till 2030-06-30). Yrkesämnen är märkta `VOCATIONAL`.
+- `GET …/v1/subjects/{kod}` ger ämnet i detalj. Gy25 och Gy11 har samma uppbyggnad. Under `courses` finns nivåerna (Gy25, till exempel `ELTE1000X` "Nivå 1") eller kurserna (Gy11, till exempel `ELRELK0` "Elektromekanik").
+- Varje nivå eller kurs har **centralt innehåll** som en HTML-lista. Varje punkt blir ett målförslag.
+- **Ämnets syfte** har en lista med förmågor (5 för Elteknik, 7 för Elektroteknik). **Betygskriterierna** har ett stycke per förmåga för E, C och A, och orden som skiljer nivåerna är fetstilta (till exempel "visst", "gott" och "mycket gott" handlag). I Gy25 gäller de för ämnet, i Gy11 per kurs.
+- `GET …/v1/programs` ger alla program. Gy11 och Gy25 finns som par: **EE** (Gy11, `PROGRAM`, gäller till 2030-06-30) och **EE25** (Gy25, `PROGRAM25`, från 2025-07-01). Inriktningarna har olika koder i de två, till exempel elteknik `EEELT` och `EEELK`.
+- `GET …/v1/programs/EE` och `…/EE25` ger programmet i detalj, med samma uppbyggnad i Gy11 och Gy25 (i Gy25 heter delarna "Nivå 1", "Nivå 2" och så vidare): programgemensamma ämnen, inriktningarnas ämnen och kurser, yrkesutgångar (till exempel Installationselektriker) och programfördjupning. Det räcker för att föreslå kurser utifrån klassens program och inriktning. Kedjan blir: **klass (program och inriktning) → föreslagna kurser eller nivåer → centralt innehåll → målförslag.**
+- Firstflow sparar läroplanen själv, hämtad när läraren väljer ett ämne och uppdaterad regelbundet. Målet sparar också texten från när det skapades, eftersom läroplanen kan få nya versioner.
+
+- **El- och energiprogrammet i Gy25 (EE25), inriktning elteknik (EEELK):** programgemensamt Automationsteknik, Dator- och kommunikationsteknik, Elteknik och Energiteknik (nivå 1). Inriktningen: Ellära 1, Installationsteknik 1–2, Kommunikationsnät 1 och Säkerhetssystem 1. Yrkesutgångar finns, till exempel Service- och installationselektriker.
+
 **Öppna frågor:**
-- Ska målet pekas mot centralt innehåll (vad eleven gör), mot betygskriterierna (hur bra) eller mot båda? Claude föreslår centralt innehåll först, eftersom APL handlar om vad eleven får göra på arbetsplatsen.
-- Vad finns exakt i Skolverkets API för Gy25 och Gy11: centralt innehåll, betygskriterier, nivåer? Det behöver provas innan vi bestämmer modellen.
-- Hur vet Firstflow om en elev läser Gy25 eller Gy11? Genom klassen, startåret eller att läraren väljer?
 - Vilket format ska underlaget inför betyg ha: en sida i Firstflow, en PDF eller båda?
 - Ska AI användas senare för förslag på frågor och för att koppla mål till projekt? I så fall utan elevdata och med ett personuppgiftsbiträdesavtal.
 
