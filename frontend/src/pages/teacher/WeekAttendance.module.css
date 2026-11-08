@@ -133,65 +133,68 @@
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
-  color: var(--color-text-secondary);
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.legendGroup {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+}
+
+.legendTitle {
   font-size: var(--font-size-xs);
-}
-
-.legend li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.swatch {
-  position: relative;
-  display: inline-flex;
-  box-sizing: border-box;
-  align-items: center;
-  justify-content: center;
-  width: 1.125rem;
-  height: 1.125rem;
-  border-radius: var(--radius-full);
-}
-
-.swatch[data-state='confirmed'] {
-  background: var(--color-mint-bg);
-}
-
-.swatch[data-state='pending'] {
-  border: 2px solid var(--color-sky);
-}
-
-.swatch[data-state='added'] {
-  background: var(--color-mint);
-  color: var(--color-bg);
-  font-size: 0.5625rem;
   font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.swatch[data-state='not_present'] {
-  background: var(--color-attention-bg);
+.legendTitle[data-tone='ok'] {
+  color: var(--color-mint);
 }
 
-.swatch[data-state='conflict'] {
-  border: 2px solid var(--color-sky);
+.legendTitle[data-tone='wait'] {
+  color: var(--color-sky);
 }
 
-.swatch[data-state='conflict']::after {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border: 2px solid var(--color-bg);
-  border-radius: var(--radius-full);
-  background: var(--color-error-bar);
-  content: '';
+.legendTitle[data-tone='away'] {
+  color: var(--color-attention);
 }
 
-.swatch[data-state='missing'] {
-  border: 1.5px dashed var(--color-text-faded);
+.legendList {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.legendText {
+  display: grid;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legendText strong {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+/* Dagar på plats av APL-dagarna (Texas skiss, 2026-11-08). */
+.presentCol {
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: right;
 }
 
 /* Skriv i gruppen för praktikplatsen (B11). */

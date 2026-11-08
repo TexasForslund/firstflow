@@ -74,9 +74,9 @@ export const HELP = {
   },
   attendanceLegend: {
     title: 'Färgerna',
-    body: 'Varje ring visar en APL-dag. En blå ring med röd prick betyder att eleven checkade in men att handledaren säger att eleven inte var på plats. Prata då med eleven och handledaren.',
+    body: 'Varje ring visar en APL-dag. Grönt betyder att eleven var där, blått och gult att något väntar och rött att eleven inte var där. Gul med utropstecken betyder att eleven checkade in men att handledaren säger att eleven inte var på plats. Prata då med eleven och handledaren.',
     example:
-      'Liam checkade in 07:40 på torsdagen, men Gustav svarade Inte på plats. Ringen får en röd prick, så att du ser att något behöver redas ut.',
+      'Liam checkade in 07:40 på torsdagen, men Gustav svarade Inte på plats. Ringen blir gul med ett utropstecken, så att du ser att något behöver redas ut.',
   },
   sharedCompany: {
     title: 'En profil för alla skolor',

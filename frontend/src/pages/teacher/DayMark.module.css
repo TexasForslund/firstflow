@@ -9,12 +9,18 @@
 .mark {
   position: relative;
   display: inline-flex;
+  flex-shrink: 0;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.125rem;
+  height: 2.125rem;
   border-radius: var(--radius-full);
+}
+
+.mark[data-small] {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .mark svg {
@@ -23,30 +29,48 @@
   stroke-width: 3;
 }
 
-.mark[data-state='confirmed'] {
-  background: var(--color-mint-bg);
-  color: var(--color-mint);
-}
-
-.mark[data-state='pending'],
-.mark[data-state='conflict'] {
-  border: 2px solid var(--color-sky);
-  color: var(--color-sky);
-}
-
-.mark[data-state='pending'] svg,
-.mark[data-state='conflict'] svg {
+.mark[data-small] svg {
   width: 0.875rem;
   height: 0.875rem;
 }
 
+/* Mjuka färger (Texas, 2026-11-08), men tydligt olika i ljushet och form. */
+.mark[data-state='confirmed'] {
+  background: #c6ebd1;
+  color: var(--color-mint);
+}
+
+.mark[data-state='pending'] {
+  border: 2px solid #8fb3ea;
+  background: var(--color-sky-bg);
+  color: var(--color-sky);
+}
+
+.mark[data-state='pending'] svg {
+  stroke-width: 2.5;
+}
+
+.mark[data-state='conflict'] {
+  border: 2px solid var(--color-butter-border);
+  background: var(--color-butter-bg);
+  color: var(--color-butter);
+}
+
+.excl {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .mark[data-state='not_present'] {
-  background: var(--color-attention-bg);
+  background: #ffd5c7;
   color: var(--color-attention);
 }
 
 .mark[data-state='missing'] {
-  border: 1.5px dashed var(--color-text-faded);
+  border: 2px dashed #eba98f;
+  background: var(--color-bg);
+  color: #c4603d;
 }
 
 .added {
@@ -56,8 +80,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1rem;
-  height: 1rem;
+  width: 1.0625rem;
+  height: 1.0625rem;
   border: 2px solid var(--color-bg);
   border-radius: var(--radius-full);
   background: var(--color-mint);
@@ -66,24 +90,13 @@
   font-weight: 700;
 }
 
-.dot {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  width: 0.625rem;
-  height: 0.625rem;
-  border: 2px solid var(--color-bg);
-  border-radius: var(--radius-full);
-  background: var(--color-error-bar);
-}
-
 .time {
   color: var(--color-sky);
   font-size: 0.6875rem;
 }
 
 .time[data-conflict] {
-  color: var(--color-attention);
+  color: var(--color-butter);
 }
 
 /* Handledarens förklaring under en dag eleven inte var på plats. * betyder att det finns en

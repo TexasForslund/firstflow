@@ -154,7 +154,7 @@ export function dayStateText(state: DayState, checkedInAt?: string | null) {
   const time = checkedInAt ? ` ${clockTime(checkedInAt)}` : ''
   switch (state) {
     case 'confirmed':
-      return checkedInAt ? `Incheckad${time}, bekräftad` : 'Glömde checka in, handledaren lade till dagen'
+      return checkedInAt ? `Incheckad${time}, bekräftad` : 'Eleven glömde checka in, handledaren lade till dagen'
     case 'pending':
       return `Incheckad${time}, väntar på handledaren`
     case 'not_present':
