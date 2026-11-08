@@ -601,11 +601,11 @@
   align-content: start;
   gap: var(--space-3);
   width: 100%;
-  min-height: 34rem;
+  min-height: 28rem;
   box-sizing: border-box;
   padding: var(--space-5) var(--space-4);
   border: 1px solid var(--color-border);
-  border-radius: 2rem;
+  border-radius: var(--radius-md);
   background: var(--color-bg);
 }
 
