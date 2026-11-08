@@ -49,6 +49,10 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True)
     name: Mapped[str] = mapped_column(String(200))
+    # Lärarens program, till exempel "El- och energiprogrammet". Skoladmin väljer det, och
+    # lärarens nya klasser får programmet (idé 13, Texas 2026-11-08). Namnet, inte Skolverkets
+    # kod, eftersom programmet har olika koder i Gy11 och Gy25 (EE och EE25).
+    program_name: Mapped[str | None] = mapped_column(String(200))
     role: Mapped[UserRole] = mapped_column(
         SAEnum(UserRole, name="user_role", values_callable=lambda e: [r.value for r in e])
     )

@@ -1,8 +1,10 @@
 """Klassens läroplan och ämnen (idé 13, steg 1, Texas 2026-11-08).
 
-- Läroplan (Gy25 eller Gy11) och program väljs när klassen skapas. Sedan ändrar bara
-  skoladmin dem, eftersom det är skolan som lägger upp klasserna.
-- Inriktningen hör till eleven. Skoladmin kopplar klassens inriktningar till Skolverkets.
+- Skoladmin kopplar varje lärare till ett program. Lärarens nya klasser får programmet, och
+  läroplanen (Gy25 eller Gy11) gissas utifrån året i klassens namn.
+- Läraren ändrar sina egna klasser: läroplan inom samma program, inriktningar och ämnen. Bara
+  skoladmin byter klassens program.
+- Inriktningen hör till eleven. Klassens inriktningar kopplas till Skolverkets.
 - Läraren kryssar i de ämnen och nivåer eller kurser som eleverna tränar under APL, bland
   förslag för programmet och klassens inriktningar. Målförslagen i steg 2 kommer därifrån.
 """
@@ -16,12 +18,7 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import delete, select, update
 
 from app.api.deps import require_roles
-from app.api.routes.classes import (
-    CanAssignTeachers,
-    CanEditClasses,
-    CanViewClasses,
-    get_accessible_class,
-)
+from app.api.routes.classes import CanEditClasses, CanViewClasses, get_accessible_class
 from app.db.session import DbSession
 from app.models.school_class import ClassTrack, SchoolClass
 from app.models.syllabus import ClassSubject
@@ -63,6 +60,15 @@ def check_program(db: DbSession, curriculum: str, program_code: str) -> None:
         raise _unavailable() from None
     if program_code not in {p.code for p in found}:
         raise _invalid("Programmet finns inte i läroplanen")
+
+
+def _program_name(db: DbSession, curriculum: str, code: str) -> str | None:
+    """Programmets namn utifrån läroplanen och koden, ur listan över program."""
+    try:
+        found = skolverket.programs(db, curriculum)
+    except skolverket.SkolverketUnavailable:
+        raise _unavailable() from None
+    return next((p.name for p in found if p.code == code), None)
 
 
 def suggested_curriculum(name: str) -> Curriculum:
@@ -206,12 +212,23 @@ class ProgramWrite(BaseModel):
 
 @router.put("/classes/{class_id}/program", response_model=ClassCurriculum)
 def set_class_program(
-    class_id: UUID, body: ProgramWrite, db: DbSession, user: CanAssignTeachers
+    class_id: UUID, body: ProgramWrite, db: DbSession, user: CanEditClasses
 ) -> ClassCurriculum:
-    """Skoladmin ändrar klassens läroplan och program. Byts programmet tas klassens ämnen och
-    inriktningarnas koppling bort, eftersom de hörde till det gamla programmet."""
+    """Ändrar klassens läroplan och program. Läraren byter bara läroplan inom samma program,
+    till exempel EE (Gy11) och EE25 (Gy25). Skoladmin kan byta program. Byts koden tas
+    klassens ämnen och inriktningarnas koppling bort, eftersom de hörde till den gamla."""
     school_class = get_accessible_class(db, user, class_id)
     check_program(db, body.curriculum, body.program_code)
+    if user.role == UserRole.TEACHER:
+        current = (
+            _program_name(db, school_class.curriculum, school_class.program_code)
+            if school_class.curriculum and school_class.program_code
+            else user.program_name
+        )
+        if _program_name(db, body.curriculum, body.program_code) != current:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN, detail="Bara skoladministratören byter program"
+            )
     if body.program_code != school_class.program_code:
         db.execute(delete(ClassSubject).where(ClassSubject.class_id == school_class.id))
         db.execute(
@@ -237,9 +254,10 @@ def set_track_orientation(
     track_id: UUID,
     body: OrientationWrite,
     db: DbSession,
-    user: CanAssignTeachers,
+    user: CanEditClasses,
 ) -> ClassCurriculum:
-    """Skoladmin kopplar en av klassens inriktningar till Skolverkets inriktning."""
+    """Kopplar en av klassens inriktningar till Skolverkets inriktning. Klassens lärare eller
+    skoladmin."""
     school_class = get_accessible_class(db, user, class_id)
     track = db.get(ClassTrack, track_id)
     if track is None or track.class_id != school_class.id:

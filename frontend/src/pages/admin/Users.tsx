@@ -1,7 +1,14 @@
 import { Plus } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 
-import { useCreateStaff, useSchoolUsers, type SchoolUser, type StaffRole } from '../../api/schools'
+import {
+  useCreateStaff,
+  useSchoolUsers,
+  useSetTeacherProgram,
+  type SchoolUser,
+  type StaffRole,
+} from '../../api/schools'
+import { usePrograms } from '../../api/syllabus'
 import { roleLabel, type Role } from '../../auth/roles'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, Card, SelectField, TextField } from '../../components'
@@ -20,12 +27,25 @@ export function Users() {
   const [filter, setFilter] = useState<Filter>('all')
   const [adding, setAdding] = useState(false)
   const canCreate = user?.role === 'school_admin'
+  // Programmen lärarna kan kopplas till, från Skolverket. Namnen är desamma i Gy25 och Gy11.
+  const gy25 = usePrograms('gy25')
+  const gy11 = usePrograms('gy11')
+  const programNames = useMemo(
+    () =>
+      [...new Set([...(gy25.data ?? []), ...(gy11.data ?? [])].map((p) => p.name))].sort((a, b) =>
+        a.localeCompare(b, 'sv'),
+      ),
+    [gy25.data, gy11.data],
+  )
+  const setProgram = useSetTeacherProgram(user?.school_id)
 
   const staff = useMemo(
     () =>
       (users.data ?? [])
         .filter((u) => STAFF_ROLES.includes(u.role))
-        .sort((a, b) => STAFF_ROLES.indexOf(a.role) - STAFF_ROLES.indexOf(b.role) || a.name.localeCompare(b.name, 'sv')),
+        .sort(
+          (a, b) => STAFF_ROLES.indexOf(a.role) - STAFF_ROLES.indexOf(b.role) || a.name.localeCompare(b.name, 'sv'),
+        ),
     [users.data],
   )
   const shown = filter === 'all' ? staff : staff.filter((u) => u.role === filter)
@@ -75,24 +95,47 @@ export function Users() {
         ) : (
           <ul className={styles.list}>
             {shown.map((person) => (
-              <StaffRow key={person.id} person={person} isMe={person.id === user?.id} />
+              <StaffRow
+                key={person.id}
+                person={person}
+                isMe={person.id === user?.id}
+                canEdit={canCreate}
+                programs={programNames}
+                onProgram={(name) => setProgram.mutate({ userId: person.id, programName: name })}
+              />
             ))}
           </ul>
         )}
       </Card>
       <p className={styles.hint}>
-        Elever läggs in under Elever. Nya konton kan logga in när inbjudningar finns: då får personen en länk och
-        väljer sitt lösenord.
+        Elever läggs in under Elever. Nya konton kan logga in när inbjudningar finns: då får personen en länk och väljer
+        sitt lösenord.
       </p>
     </div>
   )
 }
 
 function plural(role: Role) {
-  return { school_admin: 'Skoladmin', principal: 'Rektorer', syv: 'SYV', teacher: 'Lärare' }[role as string] ?? roleLabel[role]
+  return (
+    { school_admin: 'Skoladmin', principal: 'Rektorer', syv: 'SYV', teacher: 'Lärare' }[role as string] ??
+    roleLabel[role]
+  )
 }
 
-function StaffRow({ person, isMe }: { person: SchoolUser; isMe: boolean }) {
+function StaffRow({
+  person,
+  isMe,
+  canEdit,
+  programs,
+  onProgram,
+}: {
+  person: SchoolUser
+  isMe: boolean
+  canEdit: boolean
+  programs: string[]
+  onProgram: (name: string | null) => void
+}) {
+  const isTeacher = person.role === 'teacher'
   return (
     <li className={styles.row}>
       <span className={styles.rowLink}>
@@ -103,8 +146,27 @@ function StaffRow({ person, isMe }: { person: SchoolUser; isMe: boolean }) {
             {isMe && <span className={styles.meta}> (du)</span>}
           </span>
           <span className={styles.meta}>{person.email}</span>
+          {isTeacher && !canEdit && <span className={styles.meta}>{person.program_name ?? 'Inget program valt'}</span>}
         </span>
       </span>
+      {isTeacher && canEdit && (
+        <select
+          className={styles.programSelect}
+          aria-label={`Program för ${person.name}`}
+          value={person.program_name ?? ''}
+          onChange={(e) => onProgram(e.target.value || null)}
+        >
+          <option value="">Välj program</option>
+          {person.program_name && !programs.includes(person.program_name) && (
+            <option value={person.program_name}>{person.program_name}</option>
+          )}
+          {programs.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+      )}
       <span className={styles.roleChip}>{roleLabel[person.role]}</span>
     </li>
   )

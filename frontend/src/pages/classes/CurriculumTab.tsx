@@ -17,13 +17,15 @@ import {
 } from '../../api/syllabus'
 import { Button, Card, SelectField } from '../../components'
 import styles from './CurriculumTab.module.css'
-import { ProgramFields } from './ProgramFields'
+import { CurriculumField, ProgramFields } from './ProgramFields'
+import { useCurrentUser } from '../../auth/useCurrentUser'
 
 /**
  * Klassens läroplan och ämnen (idé 13, steg 1, Texas skiss "Mål från läroplanen", 2026-11-08).
  *
- * - Läroplan och program väljs när klassen skapas. Bara skoladmin ändrar dem här.
- * - Inriktningen hör till eleven. Skoladmin kopplar klassens inriktningar till Skolverkets.
+ * - Skoladmin kopplar läraren till ett program, och lärarens klasser får programmet. Läraren
+ *   väljer läroplan (Gy25 eller Gy11). Bara skoladmin byter klassens program.
+ * - Inriktningen hör till eleven. Klassens inriktningar kopplas till Skolverkets.
  * - Läraren kryssar i de ämnen eleverna tränar under APL. Programmets och inriktningarnas ämnen
  *   är ikryssade från början.
  */
@@ -44,8 +46,8 @@ export function CurriculumTab({
   const saved = query.data
   return (
     <div className={styles.stack}>
-      <ProgramCard classId={classId} className={className} saved={saved} isAdmin={isAdmin} />
-      {saved.program_code && <TracksOrientationCard classId={classId} saved={saved} isAdmin={isAdmin} />}
+      <ProgramCard classId={classId} className={className} saved={saved} isAdmin={isAdmin} canEdit={canEdit} />
+      {saved.program_code && <TracksOrientationCard classId={classId} saved={saved} canEdit={canEdit} />}
       {saved.program_code &&
         (canEdit ? (
           <SubjectsForm key={saved.program_code} classId={classId} saved={saved} />
@@ -61,18 +63,27 @@ function ProgramCard({
   className,
   saved,
   isAdmin,
+  canEdit,
 }: {
   classId: string
   className: string
   saved: ClassCurriculum
   isAdmin: boolean
+  canEdit: boolean
 }) {
+  const { data: user } = useCurrentUser()
   // Utan vald läroplan gissas den utifrån året i klassens namn.
   const [curriculum, setCurriculum] = useState<Curriculum>(saved.curriculum ?? suggestCurriculum(className))
   const [program, setProgram] = useState(saved.program_code ?? '')
   const save = useSaveClassProgram(classId)
-  const changed = curriculum !== saved.curriculum || program !== (saved.program_code ?? '')
-  const lostWork = saved.program_code && program !== saved.program_code && saved.subjects.length > 0
+  // Läraren byter bara läroplan inom sitt program. Koden skiljer sig mellan Gy11 och Gy25
+  // (EE och EE25), så den hittas utifrån programmets namn.
+  const programName = saved.program_name ?? user?.program_name ?? null
+  const programs = usePrograms(curriculum)
+  const teacherCode = programs.data?.find((p) => p.name === programName)?.code ?? ''
+  const target = isAdmin ? program : teacherCode
+  const changed = curriculum !== saved.curriculum || target !== (saved.program_code ?? '')
+  const lostWork = saved.program_code && target !== saved.program_code && saved.subjects.length > 0
 
   return (
     <Card>
@@ -87,27 +98,39 @@ function ProgramCard({
             </h2>
             <p className={styles.muted}>
               {isAdmin
-                ? 'Väljs när klassen skapas. Programmets ämnen hämtas från Skolverket.'
-                : saved.program_code
-                  ? `${CURRICULUM_LABEL[saved.curriculum!]} · ${saved.program_name}. Skoladministratören ändrar läroplan och program.`
-                  : 'Skoladministratören har inte valt läroplan och program för klassen än.'}
+                ? 'Lärarens klasser får lärarens program. Här kan du byta program för klassen.'
+                : programName
+                  ? `${programName}. Skoladministratören har kopplat programmet. Programmets ämnen hämtas från Skolverket.`
+                  : 'Skoladministratören har inte kopplat ett program till klassen eller till dig än.'}
             </p>
           </div>
         </div>
-        {isAdmin && (
-          <>
-            <ProgramFields
+        {isAdmin ? (
+          <ProgramFields
+            curriculum={curriculum}
+            program={program}
+            hint={saved.curriculum ? undefined : 'Gissat utifrån klassens namn.'}
+            onChange={(c, p) => {
+              setCurriculum(c)
+              setProgram(p)
+            }}
+          />
+        ) : canEdit && programName ? (
+          <div className={styles.fields}>
+            <CurriculumField
               curriculum={curriculum}
-              program={program}
               hint={saved.curriculum ? undefined : 'Gissat utifrån klassens namn.'}
-              onChange={(c, p) => {
-                setCurriculum(c)
-                setProgram(p)
-              }}
+              onChange={setCurriculum}
             />
+          </div>
+        ) : (
+          saved.curriculum && <p className={styles.muted}>Läroplan: {CURRICULUM_LABEL[saved.curriculum]}</p>
+        )}
+        {(isAdmin || (canEdit && programName)) && (
+          <>
             {lostWork && (
               <p className={styles.warning}>
-                Byter du program tas klassens valda ämnen och inriktningarnas koppling bort.
+                Byter du läroplan eller program tas klassens valda ämnen och inriktningarnas koppling bort.
               </p>
             )}
             {save.isError && <p className={styles.error}>{save.error.message}</p>}
@@ -115,10 +138,10 @@ function ProgramCard({
               <div>
                 <Button
                   variant="primary"
-                  disabled={!program || save.isPending}
-                  onClick={() => save.mutate({ curriculum, program_code: program })}
+                  disabled={!target || save.isPending}
+                  onClick={() => save.mutate({ curriculum, program_code: target })}
                 >
-                  {save.isPending ? 'Sparar…' : 'Spara läroplan och program'}
+                  {save.isPending ? 'Sparar…' : isAdmin ? 'Spara läroplan och program' : 'Spara läroplan'}
                 </Button>
               </div>
             )}
@@ -129,15 +152,15 @@ function ProgramCard({
   )
 }
 
-/** Klassens inriktningar kopplade till Skolverkets. Skoladmin kopplar, läraren ser. */
+/** Klassens inriktningar kopplade till Skolverkets. Klassens lärare eller skoladmin kopplar. */
 function TracksOrientationCard({
   classId,
   saved,
-  isAdmin,
+  canEdit,
 }: {
   classId: string
   saved: ClassCurriculum
-  isAdmin: boolean
+  canEdit: boolean
 }) {
   const programs = usePrograms(saved.curriculum ?? undefined)
   const save = useSaveTrackOrientation(classId)
@@ -151,9 +174,7 @@ function TracksOrientationCard({
             Inriktningar i klassen
           </h2>
           <p className={styles.muted}>
-            {isAdmin
-              ? 'Koppla klassens inriktningar till Skolverkets, så får läraren förslag på ämnen för dem.'
-              : 'Läraren får förslag på ämnen för inriktningarna. Skoladministratören kopplar dem.'}
+            Koppla klassens inriktningar till Skolverkets, så kommer förslag på ämnen för dem.
           </p>
         </div>
         {saved.tracks.length === 0 ? (
@@ -163,7 +184,7 @@ function TracksOrientationCard({
             {saved.tracks.map((track) => (
               <li key={track.id} className={styles.trackRow}>
                 <span className={styles.levelName}>{track.name}</span>
-                {isAdmin ? (
+                {canEdit ? (
                   <SelectField
                     label={`Skolverkets inriktning för ${track.name}`}
                     value={track.orientation_code ?? ''}

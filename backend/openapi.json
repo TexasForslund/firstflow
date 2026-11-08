@@ -506,6 +506,75 @@
         }
       }
     },
+    "/api/schools/{school_id}/users/{user_id}/program": {
+      "put": {
+        "tags": [
+          "schools"
+        ],
+        "summary": "Set Teacher Program",
+        "description": "Skoladmin kopplar en lärare till ett program. Lärarens nya klasser får programmet\n(idé 13, Texas 2026-11-08). En lärare hör till ett program.",
+        "operationId": "set_teacher_program_api_schools__school_id__users__user_id__program_put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "school_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "School Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeacherProgram"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/schools/{school_id}/users/{user_id}/invite": {
       "post": {
         "tags": [
@@ -7193,7 +7262,7 @@
           "syllabus"
         ],
         "summary": "Set Class Program",
-        "description": "Skoladmin ändrar klassens läroplan och program. Byts programmet tas klassens ämnen och\ninriktningarnas koppling bort, eftersom de hörde till det gamla programmet.",
+        "description": "Ändrar klassens läroplan och program. Läraren byter bara läroplan inom samma program,\ntill exempel EE (Gy11) och EE25 (Gy25). Skoladmin kan byta program. Byts koden tas\nklassens ämnen och inriktningarnas koppling bort, eftersom de hörde till den gamla.",
         "operationId": "set_class_program_api_classes__class_id__program_put",
         "security": [
           {
@@ -7252,7 +7321,7 @@
           "syllabus"
         ],
         "summary": "Set Track Orientation",
-        "description": "Skoladmin kopplar en av klassens inriktningar till Skolverkets inriktning.",
+        "description": "Kopplar en av klassens inriktningar till Skolverkets inriktning. Klassens lärare eller\nskoladmin.",
         "operationId": "set_track_orientation_api_classes__class_id__tracks__track_id__orientation_put",
         "security": [
           {
@@ -10523,6 +10592,18 @@
             "type": "boolean",
             "title": "Has Password",
             "description": "Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan."
+          },
+          "program_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Program Name",
+            "description": "Lärarens program, till exempel El- och energiprogrammet"
           },
           "preferences": {
             "$ref": "#/components/schemas/DisplayPreferences-Output"
@@ -14082,6 +14163,28 @@
         ],
         "title": "TeacherOverview"
       },
+      "TeacherProgram": {
+        "properties": {
+          "program_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Program Name",
+            "description": "null = inget program"
+          }
+        },
+        "type": "object",
+        "required": [
+          "program_name"
+        ],
+        "title": "TeacherProgram"
+      },
       "TeacherReport": {
         "properties": {
           "id": {
@@ -14496,6 +14599,18 @@
             "type": "boolean",
             "title": "Has Password",
             "description": "Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan."
+          },
+          "program_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Program Name",
+            "description": "Lärarens program, till exempel El- och energiprogrammet"
           }
         },
         "type": "object",

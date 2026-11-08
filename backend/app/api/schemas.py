@@ -21,6 +21,9 @@ class UserRead(BaseModel):
     has_password: bool = Field(
         description="Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan."
     )
+    program_name: str | None = Field(
+        default=None, description="Lärarens program, till exempel El- och energiprogrammet"
+    )
 
 
 class DisplayPreferences(BaseModel):

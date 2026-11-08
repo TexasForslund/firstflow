@@ -540,13 +540,15 @@ Texas, 2026-11-07, skissen "Sammanfattning av projekt", steg 1 av idé 12:6. Ste
 
 Idé 13, steg 1 (Texas, 2026-11-08, skissen "Mål från läroplanen", bild 1).
 
-- **Läroplan och program väljs när klassen skapas** ("Ny klass"). Läroplanen gissas utifrån året i namnet (EE23 blir Gy11, EL25 blir Gy25) tills den som skapar klassen väljer själv. Sedan ändrar bara skoladministratören dem, under fliken Läroplan.
-- **Inriktningen hör till eleven** (Texas valde B). Skoladministratören kopplar klassens inriktningar, till exempel "El", till Skolverkets, till exempel Elteknik. Läraren ser kopplingen.
+- **Skoladministratören kopplar varje lärare till ett program** på sidan Användare. En lärare har ett program.
+- **Läraren skapar klassen.** Programmet kommer från läraren. Läroplanen (Gy25 eller Gy11) gäller per klass och gissas utifrån året i namnet (EE23 blir Gy11, EL25 blir Gy25). Läraren kan ändra läroplanen för sina klasser. Klasser som läraren skapade innan programmet kopplades får programmet när skoladministratören kopplar det.
+- **Bara skoladministratören byter en klass program.** Skoladministratören kan ändra allt.
+- **Inriktningen hör till eleven** (Texas valde B). Läraren kopplar klassens inriktningar, till exempel "El", till Skolverkets, till exempel Elteknik.
 - **Fliken Läroplan på klassidan:**
   - Läraren kryssar i de ämnen eleverna tränar under APL.
   - Programmets ämnen och ämnena för klassens alla kopplade inriktningar är ikryssade från början.
   - Yrkesutgångarna för inriktningarna och programfördjupningen är hopfällda.
-- **Byter skoladministratören program** tas klassens ämnen och inriktningarnas koppling bort, med en varning först.
+- **Byts läroplan eller program** tas klassens ämnen och inriktningarnas koppling bort, med en varning först.
 - **Rektorn** ser allt men kan inte ändra.
 - **Backend:**
   - Endpoints:

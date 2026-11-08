@@ -17,13 +17,7 @@ export function ProgramFields({
   const programs = usePrograms(curriculum)
   return (
     <div className={styles.fields}>
-      <div>
-        <SelectField label="Läroplan" value={curriculum} onChange={(v) => onChange(v as Curriculum, '')}>
-          <option value="gy25">Gy25</option>
-          <option value="gy11">Gy11</option>
-        </SelectField>
-        <p className={styles.hint}>Gy25 om klassen började hösten 2025 eller senare.{hint && ` ${hint}`}</p>
-      </div>
+      <CurriculumField curriculum={curriculum} hint={hint} onChange={(c) => onChange(c, '')} />
       <div>
         <SelectField label="Program" value={program} onChange={(v) => onChange(curriculum, v)}>
           <option value="">{programs.isPending ? 'Hämtar program…' : 'Välj program'}</option>
@@ -35,6 +29,27 @@ export function ProgramFields({
         </SelectField>
         {programs.isError && <p className={styles.error}>{programs.error.message}</p>}
       </div>
+    </div>
+  )
+}
+
+/** Gy25 eller Gy11. Läraren väljer bara läroplan, programmet kommer från skoladmin. */
+export function CurriculumField({
+  curriculum,
+  onChange,
+  hint,
+}: {
+  curriculum: Curriculum
+  onChange: (curriculum: Curriculum) => void
+  hint?: string
+}) {
+  return (
+    <div>
+      <SelectField label="Läroplan" value={curriculum} onChange={(v) => onChange(v as Curriculum)}>
+        <option value="gy25">Gy25</option>
+        <option value="gy11">Gy11</option>
+      </SelectField>
+      <p className={styles.hint}>Gy25 om klassen började hösten 2025 eller senare.{hint && ` ${hint}`}</p>
     </div>
   )
 }

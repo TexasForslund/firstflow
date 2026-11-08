@@ -109,6 +109,12 @@ def programs(db: Session, curriculum: str) -> list[Program]:
     return sorted(found, key=lambda p: p.name)
 
 
+def program_code_for(db: Session, curriculum: str, name: str) -> str | None:
+    """Programmets kod i läroplanen, utifrån namnet. El- och energiprogrammet är EE i Gy11 och
+    EE25 i Gy25."""
+    return next((p.code for p in programs(db, curriculum) if p.name == name), None)
+
+
 def program(db: Session, code: str) -> dict[str, Any]:
     """Programmet i detalj, som Skolverket skickar det."""
     return _cached(db, "program", code, f"/programs/{code}")["program"]

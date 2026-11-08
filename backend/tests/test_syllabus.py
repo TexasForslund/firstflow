@@ -79,24 +79,51 @@ def admin(make_user: Callable[..., User]) -> User:
     return make_user(email="admin@skolan.se", role=UserRole.SCHOOL_ADMIN)
 
 
-def test_class_created_with_program(
+def test_admin_sets_teacher_program_and_teacher_creates_class(
+    client: TestClient, login: Login, admin: User, teacher: User, school: School, calls: list[str]
+) -> None:
+    # En klass som läraren skapade innan hen hade ett program får programmet sedan.
+    login(teacher)
+    early = client.post("/api/classes", json={"name": "EL23"}).json()
+    login(admin)
+    url = f"/api/schools/{school.id}/users/{teacher.id}/program"
+    assert client.put(url, json={"program_name": "Finns inte"}).status_code == 422
+    got = client.put(url, json={"program_name": "El- och energiprogrammet"})
+    assert got.json()["program_name"] == "El- och energiprogrammet"
+    early_body = client.get(f"/api/classes/{early['id']}/curriculum").json()
+    assert (early_body["curriculum"], early_body["program_code"]) == ("gy11", "EE")
+    # Bara lärare har program.
+    other = client.put(f"/api/schools/{school.id}/users/{admin.id}/program", json=got.json())
+    assert other.status_code == 404
+
+    # Lärarens klasser får programmet. Läroplanen gissas utifrån namnet.
+    login(teacher)
+    for name, curriculum, code in [("EL26", "gy25", "EE25"), ("EL24", "gy11", "EE")]:
+        made = client.post("/api/classes", json={"name": name}).json()
+        body = client.get(f"/api/classes/{made['id']}/curriculum").json()
+        assert (body["curriculum"], body["program_code"]) == (curriculum, code)
+    # Läraren kan inte välja ett annat program.
+    made = client.post(
+        "/api/classes", json={"name": "TE26", "curriculum": "gy25", "program_code": "TE25"}
+    ).json()
+    body = client.get(f"/api/classes/{made['id']}/curriculum").json()
+    assert body["program_code"] == "EE25"
+
+
+def test_admin_creates_class_with_any_program(
     client: TestClient, login: Login, admin: User, calls: list[str]
 ) -> None:
     login(admin)
     made = client.post(
-        "/api/classes", json={"name": "EL26", "curriculum": "gy25", "program_code": "EE25"}
+        "/api/classes", json={"name": "TE26", "curriculum": "gy25", "program_code": "TE25"}
     )
     assert made.status_code == 201, made.text
-    got = client.get(f"/api/classes/{made.json()['id']}/curriculum").json()
-    assert (got["curriculum"], got["program_name"]) == ("gy25", "El- och energiprogrammet")
-    # Programmet måste höra till läroplanen.
-    wrong = {"name": "EL27", "curriculum": "gy11", "program_code": "EE25"}
+    wrong = {"name": "TE27", "curriculum": "gy11", "program_code": "TE25"}
     assert client.post("/api/classes", json=wrong).status_code == 422
-    # Utan program går det också, då väljer skoladmin senare.
-    assert client.post("/api/classes", json={"name": "EL28"}).status_code == 201
+    assert client.post("/api/classes", json={"name": "Utan program"}).status_code == 201
 
 
-def test_admin_sets_program_and_tracks_teacher_picks_subjects(
+def test_teacher_sets_up_own_class(
     client: TestClient,
     login: Login,
     db: Session,
@@ -107,16 +134,16 @@ def test_admin_sets_program_and_tracks_teacher_picks_subjects(
 ) -> None:
     el, aut = ClassTrack(class_id=ee.id, name="El"), ClassTrack(class_id=ee.id, name="Automation")
     db.add_all([el, aut])
+    teacher.program_name = "El- och energiprogrammet"
     db.flush()
     base = f"/api/classes/{ee.id}"
 
-    # Läraren väljer inte program och kan inte välja ämnen innan det finns.
     login(teacher)
-    program = {"curriculum": "gy25", "program_code": "EE25"}
-    assert client.put(f"{base}/program", json=program).status_code == 403
     assert client.put(f"{base}/subjects", json={"level_codes": []}).status_code == 422
-
-    login(admin)
+    # Läraren väljer läroplan inom sitt program, men inte ett annat program.
+    te = {"curriculum": "gy25", "program_code": "TE25"}
+    assert client.put(f"{base}/program", json=te).status_code == 403
+    program = {"curriculum": "gy25", "program_code": "EE25"}
     assert client.put(f"{base}/program", json=program).status_code == 200
     linked = client.put(
         f"{base}/tracks/{el.id}/orientation", json={"orientation_code": "EEELK"}
@@ -128,10 +155,6 @@ def test_admin_sets_program_and_tracks_teacher_picks_subjects(
     wrong = client.put(f"{base}/tracks/{aut.id}/orientation", json={"orientation_code": "EEELT"})
     assert wrong.status_code == 422  # Gy11-koden finns inte i EE25
 
-    login(teacher)
-    assert (
-        client.put(f"{base}/tracks/{aut.id}/orientation", json={"orientation_code": "EEAUK"})
-    ).status_code == 403
     saved = client.put(
         f"{base}/subjects", json={"level_codes": ["ELTE1000X", "INST1000X", "ELTE1000X"]}
     )
@@ -154,12 +177,17 @@ def test_admin_sets_program_and_tracks_teacher_picks_subjects(
     assert "Yrkesutgång: Service- och installationselektriker" in titles
     assert titles[-1] == "Programfördjupning"
 
-    # Byter skoladmin program försvinner ämnena och kopplingarna.
-    login(admin)
+    # Byter läraren till Gy11 försvinner ämnena och kopplingarna.
     changed = client.put(f"{base}/program", json={"curriculum": "gy11", "program_code": "EE"})
     body = changed.json()
     assert body["subjects"] == []
     assert all(t["orientation_code"] is None for t in body["tracks"])
+
+    # Skoladmin kan byta program, även till ett annat än lärarens.
+    teacher.program_name = "Teknikprogrammet"
+    db.flush()
+    login(admin)
+    assert client.put(f"{base}/program", json=program).status_code == 200
 
 
 def test_only_the_class_teacher_sees_it(

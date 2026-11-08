@@ -195,6 +195,29 @@ def list_classes(db: DbSession, user: CanViewClasses) -> list[ClassSummary]:
     ]
 
 
+def _set_program(db: DbSession, user: User, school_class: SchoolClass, body: ClassCreate) -> None:
+    """Läroplan och program för en ny klass (idé 13). Lärarens klass får lärarens program.
+    Skoladmin väljer program själv. Utan läroplan gissas den utifrån året i namnet."""
+    from app.api.routes.syllabus import check_program, suggested_curriculum
+    from app.services import skolverket
+
+    curriculum = body.curriculum or suggested_curriculum(body.name)
+    if user.role == UserRole.TEACHER:
+        if not user.program_name:
+            return
+        try:
+            code = skolverket.program_code_for(db, curriculum, user.program_name)
+        except skolverket.SkolverketUnavailable:
+            return  # klassen skapas ändå, programmet kan väljas senare
+        school_class.curriculum = curriculum if code else None
+        school_class.program_code = code
+        return
+    if body.program_code:
+        check_program(db, curriculum, body.program_code)
+        school_class.curriculum = curriculum
+        school_class.program_code = body.program_code
+
+
 @router.post("", response_model=ClassDetail, status_code=status.HTTP_201_CREATED)
 def create_class(body: ClassCreate, db: DbSession, user: CanEditClasses) -> ClassDetail:
     """Skapar en klass på användarens skola. En lärare kopplas automatiskt till klassen."""
@@ -206,16 +229,7 @@ def create_class(body: ClassCreate, db: DbSession, user: CanEditClasses) -> Clas
     if duplicate:
         raise _class_name_taken(body.name)
     school_class = SchoolClass(school_id=user.school_id, name=body.name)
-    if body.program_code:
-        from app.api.routes.syllabus import check_program  # undviker cirkulär import
-
-        if body.curriculum is None:
-            raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Välj läroplan för programmet"
-            )
-        check_program(db, body.curriculum, body.program_code)
-    school_class.curriculum = body.curriculum
-    school_class.program_code = body.program_code or None
+    _set_program(db, user, school_class, body)
     if user.role == UserRole.TEACHER:
         school_class.teachers.append(user)
     savepoint = db.begin_nested()

@@ -6,7 +6,7 @@ import { suggestCurriculum, type Curriculum } from '../../api/syllabus'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Button, Card, TextField } from '../../components'
 import styles from './Classes.module.css'
-import { ProgramFields } from './ProgramFields'
+import { CurriculumField, ProgramFields } from './ProgramFields'
 
 export function NewClass() {
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ export function NewClass() {
   function submit(event: FormEvent) {
     event.preventDefault()
     create.mutate(
-      { name, curriculum, program_code: program || null },
+      { name, curriculum, program_code: user?.role === 'teacher' ? null : program || null },
       { onSuccess: (created) => navigate(`/classes/${created.id}`) },
     )
   }
@@ -53,15 +53,30 @@ export function NewClass() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <ProgramFields
-              curriculum={curriculum}
-              program={program}
-              hint={picked ? undefined : 'Gissat utifrån klassens namn.'}
-              onChange={(c, p) => {
-                setPicked(c)
-                setProgram(p)
-              }}
-            />
+            {user?.role === 'teacher' ? (
+              <>
+                <CurriculumField
+                  curriculum={curriculum}
+                  hint={picked ? undefined : 'Gissat utifrån klassens namn.'}
+                  onChange={setPicked}
+                />
+                <p className={styles.formHint}>
+                  {user.program_name
+                    ? `Program: ${user.program_name}. Skoladministratören har kopplat dig till programmet.`
+                    : 'Skoladministratören har inte kopplat dig till ett program än. Klassen får programmet när det är gjort.'}
+                </p>
+              </>
+            ) : (
+              <ProgramFields
+                curriculum={curriculum}
+                program={program}
+                hint={picked ? undefined : 'Gissat utifrån klassens namn.'}
+                onChange={(c, p) => {
+                  setPicked(c)
+                  setProgram(p)
+                }}
+              />
+            )}
             <div>
               <Button type="submit" variant="primary" disabled={create.isPending || !name.trim()}>
                 Skapa klass

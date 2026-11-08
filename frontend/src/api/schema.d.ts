@@ -184,6 +184,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schools/{school_id}/users/{user_id}/program": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Teacher Program
+         * @description Skoladmin kopplar en lärare till ett program. Lärarens nya klasser får programmet
+         *     (idé 13, Texas 2026-11-08). En lärare hör till ett program.
+         */
+        put: operations["set_teacher_program_api_schools__school_id__users__user_id__program_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schools/{school_id}/users/{user_id}/invite": {
         parameters: {
             query?: never;
@@ -2513,8 +2534,9 @@ export interface paths {
         get?: never;
         /**
          * Set Class Program
-         * @description Skoladmin ändrar klassens läroplan och program. Byts programmet tas klassens ämnen och
-         *     inriktningarnas koppling bort, eftersom de hörde till det gamla programmet.
+         * @description Ändrar klassens läroplan och program. Läraren byter bara läroplan inom samma program,
+         *     till exempel EE (Gy11) och EE25 (Gy25). Skoladmin kan byta program. Byts koden tas
+         *     klassens ämnen och inriktningarnas koppling bort, eftersom de hörde till den gamla.
          */
         put: operations["set_class_program_api_classes__class_id__program_put"];
         post?: never;
@@ -2534,7 +2556,8 @@ export interface paths {
         get?: never;
         /**
          * Set Track Orientation
-         * @description Skoladmin kopplar en av klassens inriktningar till Skolverkets inriktning.
+         * @description Kopplar en av klassens inriktningar till Skolverkets inriktning. Klassens lärare eller
+         *     skoladmin.
          */
         put: operations["set_track_orientation_api_classes__class_id__tracks__track_id__orientation_put"];
         post?: never;
@@ -3939,6 +3962,11 @@ export interface components {
              * @description Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan.
              */
             has_password: boolean;
+            /**
+             * Program Name
+             * @description Lärarens program, till exempel El- och energiprogrammet
+             */
+            program_name?: string | null;
             preferences: components["schemas"]["DisplayPreferences-Output"];
         };
         /** MessagePage */
@@ -5501,6 +5529,14 @@ export interface components {
              */
             reports: components["schemas"]["OverviewReport"][];
         };
+        /** TeacherProgram */
+        TeacherProgram: {
+            /**
+             * Program Name
+             * @description null = inget program
+             */
+            program_name: string | null;
+        };
         /** TeacherReport */
         TeacherReport: {
             /**
@@ -5671,6 +5707,11 @@ export interface components {
              * @description Har valt lösenord. Annars väntar kontot på att personen öppnar inbjudan.
              */
             has_password: boolean;
+            /**
+             * Program Name
+             * @description Lärarens program, till exempel El- och energiprogrammet
+             */
+            program_name?: string | null;
         };
         /**
          * UserRole
@@ -6212,6 +6253,42 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_teacher_program_api_schools__school_id__users__user_id__program_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                school_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeacherProgram"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

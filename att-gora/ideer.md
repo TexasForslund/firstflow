@@ -221,8 +221,8 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 - **Både Gy25 och det gamla systemet.** Gy25 (från hösten 2025) har ämnen med nivåer och betyg per nivå. Elever som började tidigare läser kurser (Gy11). Ett mål ska därför kunna pekas mot ämne och nivå eller mot kurs.
 - **Läraren äger sina mål**, inte ämneslaget eller skolan.
 - **Firstflow föreslår aldrig ett betyg.** Läraren sätter alltid betyget själv. Firstflow samlar bara underlaget.
-- **Läroplanen följer klassen, inte skolan.** Under några år har skolor både Gy25 och Gy11. Läroplan och program väljs när klassen skapas (gissas utifrån året i namnet), och sedan ändrar bara skoladministratören dem (Texas 2026-11-08). Undantag för en enskild elev byggs inte från början.
-- **Inriktningen hör till eleven** (Texas valde B, 2026-11-08). Skoladministratören kopplar klassens inriktningar till Skolverkets. Läraren får ämnesförslag för klassens alla inriktningar. Senare kan mål gälla bara en inriktning, som frågorna redan kan.
+- **Läroplanen följer klassen, inte skolan.** Under några år har skolor både Gy25 och Gy11. Skoladministratören kopplar varje lärare till ett program. Klassen får lärarens program, och läroplanen gissas utifrån året i namnet. Läraren kan ändra läroplanen för sina klasser, men bara skoladministratören byter program (Texas 2026-11-08). Undantag för en enskild elev byggs inte från början.
+- **Inriktningen hör till eleven** (Texas valde B, 2026-11-08). Läraren kopplar klassens inriktningar till Skolverkets. Läraren får ämnesförslag för klassens alla inriktningar. Senare kan mål gälla bara en inriktning, som frågorna redan kan.
 - **Målen pekar på punkter i det centrala innehållet**, inte på betygskriterierna. Läraren kopplar inte målen till ämnets förmågor i första versionen. Betygskriterierna (E, C och A) visas bredvid underlaget som stöd. Om lärarna i piloten saknar underlaget per förmåga lägger vi till det.
 - **Piloten börjar med El- och energiprogrammet.**
 
