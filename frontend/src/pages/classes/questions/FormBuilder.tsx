@@ -1,4 +1,4 @@
-import { BookmarkPlus, CircleCheck, Eye, LayoutTemplate, LoaderCircle, Plus } from 'lucide-react'
+import { BookmarkPlus, ChevronDown, CircleCheck, Eye, LayoutTemplate, LoaderCircle, Plus, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
@@ -17,12 +17,17 @@ import { AddQuestionDialog } from './AddQuestionDialog'
 import { useGoals } from '../../../api/goals'
 import { useClassTracks } from '../../../api/tracks'
 import styles from './FormBuilder.module.css'
-import { QuestionCanvas } from './QuestionCanvas'
-import { QuestionList } from './QuestionList'
-import { QuestionSettings } from './QuestionSettings'
+import { PhonePreview } from './PhonePreview'
+import { QuestionCards } from './QuestionCards'
+import cardStyles from './QuestionCards.module.css'
 import { SaveTemplateDialog, UseTemplateDialog } from './TemplateDialogs'
 import {
+  convertJump,
   duplicateQuestion,
+  flatten,
+  jumpAsFollowUps,
+  groupQuestions,
+  type Group,
   newQuestion,
   QUESTION_TYPES,
   questionProblems,
@@ -60,7 +65,8 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
 
   const [questions, setQuestions] = useState(initial)
   const [selectedId, setSelectedId] = useState<string | null>(initial[0]?.id ?? null)
-  const [focusTitle, setFocusTitle] = useState(false)
+  const [focusId, setFocusId] = useState<string | null>(null)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [adding, setAdding] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
@@ -128,7 +134,6 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     dirtyRef.current = true
     setQuestions(clean)
     setDirty(true)
-    setFocusTitle(false)
     publish.reset()
   }
 
@@ -136,20 +141,29 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     update(questions.map((q) => (q.id === question.id ? question : q)))
   }
 
+  const groups = groupQuestions(questions)
+
+  /** Platsen efter den valda frågan och dess följdfrågor, annars sist. */
+  function insertAt() {
+    const group = groups.find((g) => g.question.id === selectedId)
+    if (!group) return questions.length
+    const last = group.followUps.at(-1) ?? group.question
+    return questions.findIndex((q) => q.id === last.id) + 1
+  }
+
   function addQuestion(type: QuestionType) {
     const question = newQuestion(type)
-    const at = selectedId ? questions.findIndex((q) => q.id === selectedId) + 1 : questions.length
     const next = [...questions]
-    next.splice(at, 0, question)
+    next.splice(insertAt(), 0, question)
     update(next)
     setSelectedId(question.id)
-    setFocusTitle(true)
+    setFocusId(question.id)
     setAdding(false)
   }
 
   /** Färdiga frågor från ett mål (idé 13, steg 5). Läggs efter den valda frågan. */
   function addQuestions(build: (nextId: string | null) => Question[]) {
-    const at = selectedId ? questions.findIndex((q) => q.id === selectedId) + 1 : questions.length
+    const at = insertAt()
     const added = build(questions[at]?.id ?? null)
     const next = [...questions]
     next.splice(at, 0, ...added)
@@ -158,24 +172,46 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     setAdding(false)
   }
 
-  function move(index: number, direction: -1 | 1) {
+  /** En följdfråga om ett svar, sist bland frågans följdfrågor (Texas, 2026-11-08). */
+  function addFollowUp(parentId: string, when: string) {
+    const group = groups.find((g) => g.question.id === parentId)!
+    const last = group.followUps.at(-1) ?? group.question
+    const followUp = { ...newQuestion('long_text'), show_if: { question_id: parentId, when } }
     const next = [...questions]
-    const [question] = next.splice(index, 1)
-    next.splice(index + direction, 0, question)
+    next.splice(questions.findIndex((q) => q.id === last.id) + 1, 0, followUp)
     update(next)
   }
 
-  function remove(index: number) {
-    const next = questions.filter((_, i) => i !== index)
-    update(next)
-    setSelectedId(next[Math.min(index, next.length - 1)]?.id ?? null)
+  /** Tar bort frågan. En fråga tas bort med sina följdfrågor. */
+  function remove(id: string) {
+    const index = groups.findIndex((g) => g.question.id === id)
+    if (index < 0) {
+      update(questions.filter((q) => q.id !== id))
+      return
+    }
+    const rest = groups.filter((_, i) => i !== index)
+    update(flatten(rest))
+    setSelectedId(rest[Math.min(index, rest.length - 1)]?.question.id ?? null)
   }
 
-  function duplicate(index: number) {
-    const copy = duplicateQuestion(questions[index])
-    const next = [...questions]
-    next.splice(index + 1, 0, copy)
-    update(next)
+  /** Kopia av frågan och dess följdfrågor, direkt efter. */
+  function duplicate(id: string) {
+    const index = groups.findIndex((g) => g.question.id === id)
+    const group = groups[index]
+    const copy = duplicateQuestion(group.question)
+    // Följdfrågorna följer med och pekar på kopian och kopians alternativ.
+    const choiceIds = new Map<string, string>()
+    if (group.question.type === 'choice' && copy.type === 'choice') {
+      group.question.choices.forEach((c, i) => choiceIds.set(c.id, copy.choices[i].id))
+      copy.goals = group.question.goals.map((g) => ({ ...g, when: choiceIds.get(g.when) ?? g.when }))
+    }
+    const followUps = group.followUps.map((f) => ({
+      ...duplicateQuestion(f),
+      show_if: { question_id: copy.id, when: choiceIds.get(f.show_if!.when) ?? f.show_if!.when },
+    }))
+    const next: Group[] = [...groups]
+    next.splice(index + 1, 0, { question: copy, followUps })
+    update(flatten(next))
     setSelectedId(copy.id)
   }
 
@@ -213,8 +249,7 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     setNotice(`Frågorna från mallen ${name} finns nu i utkastet. Ändra dem om du vill och publicera när du är klar.`)
   }
 
-  const index = questions.findIndex((q) => q.id === selectedId)
-  const selected = index >= 0 ? questions[index] : null
+  const selectedGroup = groups.find((g) => g.question.id === selectedId) ?? null
   const hasChanges = dirty || meta.has_unpublished_changes
   const problemCount = questions.filter((q) => questionProblems(q).length > 0).length
 
@@ -235,28 +270,50 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
           />
         </div>
         <div className={styles.barActions}>
-          <Button icon={<LayoutTemplate aria-hidden="true" />} onClick={() => setTemplateDialog('use')}>
-            Använd mall
-          </Button>
-          <Button
-            icon={<BookmarkPlus aria-hidden="true" />}
-            onClick={() => setTemplateDialog('save')}
-            disabled={questions.length === 0}
-          >
-            Spara som mall
-          </Button>
-          <Button
-            icon={<Eye aria-hidden="true" />}
-            onClick={() => setPreviewing(true)}
-            disabled={questions.length === 0 || !valid}
-          >
-            Förhandsgranska
-          </Button>
-          {meta.published_version && hasChanges && !confirmDiscard && (
-            <Button onClick={() => setConfirmDiscard(true)} disabled={discard.isPending}>
-              Kasta ändringar
+          <div className={cardStyles.more}>
+            <Button
+              icon={<ChevronDown aria-hidden="true" />}
+              aria-expanded={moreOpen}
+              onClick={() => setMoreOpen(!moreOpen)}
+            >
+              Mer
             </Button>
-          )}
+            {moreOpen && (
+              <div className={cardStyles.moreMenu} role="group" aria-label="Mer">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMoreOpen(false)
+                    setTemplateDialog('use')
+                  }}
+                >
+                  <LayoutTemplate aria-hidden="true" /> Använd mall
+                </button>
+                <button
+                  type="button"
+                  disabled={questions.length === 0}
+                  onClick={() => {
+                    setMoreOpen(false)
+                    setTemplateDialog('save')
+                  }}
+                >
+                  <BookmarkPlus aria-hidden="true" /> Spara som mall
+                </button>
+                {meta.published_version && hasChanges && (
+                  <button
+                    type="button"
+                    disabled={discard.isPending}
+                    onClick={() => {
+                      setMoreOpen(false)
+                      setConfirmDiscard(true)
+                    }}
+                  >
+                    <Undo2 aria-hidden="true" /> Kasta ändringar
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
           {confirmDiscard && (
             <span className={styles.confirm} role="group" aria-label="Bekräfta">
               <span>Ta bort alla ändringar sedan publiceringen?</span>
@@ -264,6 +321,13 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
               <Button onClick={() => setConfirmDiscard(false)}>Avbryt</Button>
             </span>
           )}
+          <Button
+            icon={<Eye aria-hidden="true" />}
+            onClick={() => setPreviewing(true)}
+            disabled={questions.length === 0 || !valid}
+          >
+            Förhandsgranska
+          </Button>
           <Button
             variant="primary"
             onClick={publishNow}
@@ -285,53 +349,52 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
         {notice && <p className={styles.notice}>{notice}</p>}
       </div>
 
-      <div className={styles.columns}>
-        <QuestionList
-          questions={questions}
-          selectedId={selectedId}
-          onSelect={(id) => {
-            setSelectedId(id)
-            setFocusTitle(false)
-          }}
-          onReorder={update}
-          onAdd={() => setAdding(true)}
-          tracks={tracks}
-        />
-
-        {selected ? (
-          <>
-            <QuestionCanvas
-              question={selected}
-              number={index + 1}
-              total={questions.length}
-              focusTitle={focusTitle}
-              onChange={updateQuestion}
-            />
-            <QuestionSettings
-              question={selected}
-              questions={questions}
-              index={index}
-              onChange={updateQuestion}
-              onMove={(direction) => move(index, direction)}
-              onDuplicate={() => duplicate(index)}
-              onDelete={() => remove(index)}
-              tracks={tracks}
+      {groups.length === 0 ? (
+        <section className={`${styles.canvas} ${styles.emptyCanvas}`}>
+          <h2 className={styles.emptyTitle}>Inga frågor än</h2>
+          <p className={styles.settingsHint}>
+            Eleverna svarar på frågorna vid varje redovisning. Börja med en fritextfråga, till exempel "Vad har du gjort
+            i dag?", eller välj färdiga frågor från klassens mål.
+          </p>
+          <Button variant="primary" icon={<Plus aria-hidden="true" />} onClick={() => setAdding(true)}>
+            Lägg till fråga
+          </Button>
+        </section>
+      ) : (
+        <div className={cardStyles.layout}>
+          <div className={cardStyles.column}>
+            <QuestionCards
+              groups={groups}
+              selectedId={selectedId}
+              focusId={focusId}
               goals={goals}
+              tracks={tracks}
+              onSelect={(id) => {
+                setSelectedId(id)
+                setFocusId(null)
+              }}
+              onChange={updateQuestion}
+              onReorder={(next) => update(flatten(next))}
+              onAddFollowUp={addFollowUp}
+              onRemove={remove}
+              onDuplicate={duplicate}
+              canConvertJump={(id) => jumpAsFollowUps(questions, id) !== null}
+              onConvertJump={(id) => update(convertJump(questions, id))}
             />
-          </>
-        ) : (
-          <section className={`${styles.canvas} ${styles.emptyCanvas}`}>
-            <h2 className={styles.emptyTitle}>Inga frågor än</h2>
-            <p className={styles.settingsHint}>
-              Eleverna svarar på frågorna en i taget vid varje redovisning. Börja med en fritextfråga, till exempel "Vad
-              har du gjort i dag?".
-            </p>
-            <Button variant="primary" icon={<Plus aria-hidden="true" />} onClick={() => setAdding(true)}>
-              Lägg till fråga
-            </Button>
-          </section>
-        )}
-      </div>
+            <button type="button" className={cardStyles.addQuestion} onClick={() => setAdding(true)}>
+              <Plus aria-hidden="true" /> Lägg till fråga
+            </button>
+          </div>
+          {selectedGroup && (
+            <PhonePreview
+              question={selectedGroup.question}
+              followUps={selectedGroup.followUps}
+              number={groups.indexOf(selectedGroup) + 1}
+              total={groups.length}
+            />
+          )}
+        </div>
+      )}
 
       {adding && (
         <AddQuestionDialog

@@ -3214,6 +3214,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -3262,6 +3264,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -4120,6 +4124,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -4159,6 +4165,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -4400,6 +4408,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -4430,6 +4440,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5264,6 +5276,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5296,6 +5310,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5600,6 +5616,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5630,6 +5648,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5646,6 +5666,22 @@ export interface components {
          * @enum {string}
          */
         Show: "all" | "unread" | "late" | "comments" | "private";
+        /**
+         * ShowIf
+         * @description Följdfrågan visas när eleven svarar `when` på frågan `question_id`.
+         */
+        ShowIf: {
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /**
+             * When
+             * @description Ett alternativs id, 'yes' eller 'no', eller ett betyg '1'–'5'
+             */
+            when: string;
+        };
         /** SignBody */
         SignBody: {
             /**
@@ -5691,6 +5727,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5719,6 +5757,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -6564,6 +6604,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks?: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if?: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -6598,6 +6640,8 @@ export interface components {
              * @description Inriktningar som får frågan. Tom = alla elever
              */
             tracks: string[];
+            /** @description Följdfråga: visas bara efter ett visst svar. null = alltid */
+            show_if: components["schemas"]["ShowIf"] | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}

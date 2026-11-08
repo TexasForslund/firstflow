@@ -7,7 +7,7 @@ import { useMarkRead, useReport } from '../../api/reports'
 import { ButtonLink, Card, Collapsible } from '../../components'
 import { NotFound } from '../NotFound'
 import { longDate, reportTitle } from '../reports/answers'
-import { AnswerContent, Comments } from '../reports/AnswerView'
+import { AnswerContent, Comments, FollowUpAnswers } from '../reports/AnswerView'
 import { ReportSide } from './ReportSide'
 import side from './ReportSide.module.css'
 import { WeeklyReport } from './WeeklyReport'
@@ -82,11 +82,14 @@ function TeacherReport({ reportId }: { reportId: string }) {
             </span>
           </div>
           <div className={styles.answers}>
-            {shown.map((question) => (
-              <Collapsible key={question.id} title={question.title}>
-                <AnswerContent question={question} answer={answers.get(question.id)} reportId={reportId} />
-              </Collapsible>
-            ))}
+            {shown
+              .filter((q) => !q.show_if)
+              .map((question) => (
+                <Collapsible key={question.id} title={question.title}>
+                  <AnswerContent question={question} answer={answers.get(question.id)} reportId={reportId} />
+                  <FollowUpAnswers shown={shown} parentId={question.id} answers={answers} reportId={reportId} />
+                </Collapsible>
+              ))}
           </div>
         </Card>
 

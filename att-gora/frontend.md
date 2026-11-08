@@ -687,3 +687,17 @@ Texas skiss "Tydligare närvaro" (2026-11-08), med mjuka färger.
 - Ny kolumn **På plats**, till exempel "4 av 5". Incheckade dagar som väntar på handledaren räknas med.
 - Rutan Närvaro på elevsidan (lärarens och handledarens) visar veckan med samma markeringar.
 
+## F52. Enklare frågor, steg 1: en kolumn och följdfrågor ✅ Klar
+
+Texas skiss "Enklare frågor" (2026-11-08). Steg 2 är förslagssidan med frågor från klassens mål.
+
+- **Frågorna i en kolumn.** Läraren klickar på en fråga och ändrar den på plats. Ordningen ändras genom att dra. Listan till vänster och panelen till höger är borta.
+- **Svaren visar vad de leder till:** målet ("Koppla mål" eller målets namn) och följdfrågorna. "+ Följdfråga om Ja" lägger till en följdfråga under svaret. Det finns inga nya "gå till"-regler.
+- **Gamla hopp** visas som "Hopp från en tidigare version". Där Nej hoppar över en eller två frågor finns "Gör om till följdfråga om Ja".
+- **Kopiera** och **Ta bort** har mjuka färger. "Visas för" syns när klassen har inriktningar.
+- **Verktygsraden:** Mer (Använd mall, Spara som mall, Kasta ändringar), Förhandsgranska och Publicera.
+- **Till höger** visas frågan som eleven ser den.
+- **Eleven** ser följdfrågan på samma skärm, under svaret. Ja/Nej går inte vidare av sig själv när en följdfråga visas.
+- **Läraren och handledaren** ser följdfrågan indragen under svaret i redovisningen.
+- **Backend:** frågor har `show_if` (`question_id`, `when`). En följdfråga ligger direkt efter sin fråga och kan inte ha egna följdfrågor. Underlaget för ett mål tar texten från frågans egen följdfråga. Gamla versioner med regler fungerar som förut.
+

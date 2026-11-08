@@ -63,7 +63,7 @@ export function newId(): string {
 }
 
 export function newQuestion(type: QuestionType): Question {
-  const base = { id: newId(), title: '', description: '', tracks: [] as string[] }
+  const base = { id: newId(), title: '', description: '', tracks: [] as string[], show_if: null }
   switch (type) {
     case 'short_text':
     case 'long_text':
@@ -145,7 +145,17 @@ export function sanitizeLogic(questions: Question[]): { questions: Question[]; r
     if (!changed) return question
     return goals ? { ...question, logic, goals } : { ...question, logic }
   })
-  return { questions: result, removed }
+  // En följdfråga till ett alternativ som har tagits bort tas bort. En följdfråga vars fråga
+  // inte finns blir en vanlig fråga.
+  const byId = new Map(result.map((q) => [q.id, q]))
+  const cleaned = result.flatMap((question, i) => {
+    const rule = question.show_if
+    if (!rule) return [question]
+    const parent = byId.get(rule.question_id)
+    if (!parent || parent.show_if || (position.get(parent.id) ?? i) >= i) return [{ ...question, show_if: null }]
+    return answerOptions(parent).some((o) => o.value === rule.when) ? [question] : []
+  })
+  return { questions: cleaned, removed }
 }
 
 /** Det som måste rättas innan utkastet kan sparas. Tom lista = allt är i ordning. */
@@ -161,4 +171,53 @@ export function questionProblems(question: Question): string[] {
 
 export function questionTitle(question: Question): string {
   return question.title.trim() || 'Utan rubrik'
+}
+
+/** En fråga med sina följdfrågor. Följdfrågorna ligger direkt efter frågan i listan. */
+export type Group = { question: Question; followUps: Question[] }
+
+export function groupQuestions(questions: Question[]): Group[] {
+  const groups: Group[] = []
+  for (const q of questions) {
+    const parent = q.show_if ? groups.find((g) => g.question.id === q.show_if!.question_id) : undefined
+    if (parent) parent.followUps.push(q)
+    else groups.push({ question: q, followUps: [] })
+  }
+  return groups
+}
+
+export function flatten(groups: Group[]): Question[] {
+  return groups.flatMap((g) => [g.question, ...g.followUps])
+}
+
+/**
+ * Ett äldre hopp som kan bli följdfrågor: en Ja/Nej-fråga där Nej hoppar över en eller två
+ * frågor. Då blir de överhoppade frågorna följdfrågor om Ja. Ger frågorna som blir följdfrågor,
+ * eller null om hoppet inte går att göra om.
+ */
+export function jumpAsFollowUps(questions: Question[], id: string): Question[] | null {
+  const i = questions.findIndex((q) => q.id === id)
+  const question = questions[i]
+  if (!question || question.type !== 'yes_no' || question.show_if) return null
+  if (question.logic.length !== 1 || question.logic[0].when !== 'no') return null
+  const goto = question.logic[0].goto
+  const end = goto === null ? questions.length : questions.findIndex((q) => q.id === goto)
+  const skipped = questions.slice(i + 1, end)
+  if (skipped.length < 1 || skipped.length > 2) return null
+  const plain = skipped.every(
+    (q) => !q.show_if && (!('logic' in q) || q.logic.length === 0) && q.type !== 'statement' && q.tracks.length === 0,
+  )
+  return plain ? skipped : null
+}
+
+/** Gör om hoppet till följdfrågor om Ja (se jumpAsFollowUps). */
+export function convertJump(questions: Question[], id: string): Question[] {
+  const skipped = jumpAsFollowUps(questions, id)
+  if (!skipped) return questions
+  const ids = new Set(skipped.map((q) => q.id))
+  return questions.map((q) => {
+    if (q.id === id && q.type === 'yes_no') return { ...q, logic: [] }
+    if (ids.has(q.id)) return { ...q, show_if: { question_id: id, when: 'yes' } }
+    return q
+  })
 }

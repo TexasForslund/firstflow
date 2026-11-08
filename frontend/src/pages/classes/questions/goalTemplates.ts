@@ -16,7 +16,14 @@ export type GoalTemplate = {
   build: (nextId: string | null) => Question[]
 }
 
-const base = (title: string) => ({ id: newId(), title, description: '', tracks: [] as string[], required: true })
+const base = (title: string) => ({
+  id: newId(),
+  title,
+  description: '',
+  tracks: [] as string[],
+  required: true,
+  show_if: null,
+})
 
 /**
  * Färdiga frågor för ett av klassens mål, där svaret redan är kopplat till målet (idé 13, steg 5,
@@ -37,16 +44,18 @@ export function goalTemplates(goal: Goal, sameSubject: Goal[]): GoalTemplate[] {
         { label: 'Ja', goal: goal.name },
         { label: 'Nej', goal: null },
       ],
-      note: 'Sedan fritexten ”Berätta vad du gjorde.” Nej hoppar över den. Svaret följer med som beskrivning av underlaget.',
-      build: (nextId) => [
-        {
-          ...base(yesNoTitle),
-          type: 'yes_no',
-          logic: [{ when: 'no', goto: nextId }],
-          goals: [{ when: 'yes', goal_id: goal.id }],
-        },
-        { ...base('Berätta vad du gjorde.'), type: 'long_text' },
-      ],
+      note: 'Om Ja kommer följdfrågan ”Berätta vad du gjorde.” Svaret följer med som beskrivning av underlaget.',
+      build: () => {
+        const parent = base(yesNoTitle)
+        return [
+          { ...parent, type: 'yes_no', logic: [], goals: [{ when: 'yes', goal_id: goal.id }] },
+          {
+            ...base('Berätta vad du gjorde.'),
+            type: 'long_text',
+            show_if: { question_id: parent.id, when: 'yes' },
+          },
+        ]
+      },
     },
     {
       id: 'how',

@@ -24,17 +24,20 @@ export function AnswerView({ report }: { report: ReportDetail }) {
 
   return (
     <dl className={styles.answers}>
-      {shown.map((question) => {
-        const answer = answers.get(question.id)
-        return (
-          <div key={question.id} className={styles.item}>
-            <dt className={styles.question}>{question.title}</dt>
-            <dd className={styles.answer}>
-              <AnswerContent question={question} answer={answer} reportId={report.id} />
-            </dd>
-          </div>
-        )
-      })}
+      {shown
+        .filter((q) => !q.show_if)
+        .map((question) => {
+          const answer = answers.get(question.id)
+          return (
+            <div key={question.id} className={styles.item}>
+              <dt className={styles.question}>{question.title}</dt>
+              <dd className={styles.answer}>
+                <AnswerContent question={question} answer={answer} reportId={report.id} />
+                <FollowUpAnswers shown={shown} parentId={question.id} answers={answers} reportId={report.id} />
+              </dd>
+            </div>
+          )
+        })}
     </dl>
   )
 }
@@ -75,6 +78,35 @@ export function AnswerContent({
         <p className={styles.text}>{answer.text}</p>
       )}
     </>
+  )
+}
+
+/**
+ * Följdfrågorna till en fråga, indragna under svaret (Texas skiss "Enklare frågor",
+ * 2026-11-08). `shown` är frågorna på elevens väg.
+ */
+export function FollowUpAnswers({
+  shown,
+  parentId,
+  answers,
+  reportId,
+}: {
+  shown: Question[]
+  parentId: string
+  answers: Map<string, AnswerRead>
+  reportId: string
+}) {
+  const followUps = shown.filter((q) => q.show_if?.question_id === parentId)
+  if (followUps.length === 0) return null
+  return (
+    <div className={styles.followUps}>
+      {followUps.map((q) => (
+        <div key={q.id} className={styles.followUp}>
+          <span className={styles.question}>{q.title}</span>
+          <AnswerContent question={q} answer={answers.get(q.id)} reportId={reportId} />
+        </div>
+      ))}
+    </div>
   )
 }
 
