@@ -241,11 +241,12 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 - Varje nivå eller kurs har **centralt innehåll** som en HTML-lista. Varje punkt blir ett målförslag.
 - **Ämnets syfte** har en lista med förmågor (5 för Elteknik, 7 för Elektroteknik). **Betygskriterierna** har ett stycke per förmåga för E, C och A, och orden som skiljer nivåerna är fetstilta (till exempel "visst", "gott" och "mycket gott" handlag). I Gy25 gäller de för ämnet, i Gy11 per kurs.
 - `GET …/v1/programs` ger alla program. Gy11 och Gy25 finns som par: **EE** (Gy11, `PROGRAM`, gäller till 2030-06-30) och **EE25** (Gy25, `PROGRAM25`, från 2025-07-01). Inriktningarna har olika koder i de två, till exempel elteknik `EEELT` och `EEELK`.
-- `GET …/v1/programs/EE` ger programmet i detalj: programgemensamma ämnen, inriktningarnas ämnen och kurser, yrkesutgångar (till exempel Installationselektriker) och programfördjupning. Det räcker för att föreslå kurser utifrån klassens program och inriktning. Kedjan blir: **klass (program och inriktning) → föreslagna kurser eller nivåer → centralt innehåll → målförslag.**
+- `GET …/v1/programs/EE` och `…/EE25` ger programmet i detalj, med samma uppbyggnad i Gy11 och Gy25 (i Gy25 heter delarna "Nivå 1", "Nivå 2" och så vidare): programgemensamma ämnen, inriktningarnas ämnen och kurser, yrkesutgångar (till exempel Installationselektriker) och programfördjupning. Det räcker för att föreslå kurser utifrån klassens program och inriktning. Kedjan blir: **klass (program och inriktning) → föreslagna kurser eller nivåer → centralt innehåll → målförslag.**
 - Firstflow sparar läroplanen själv, hämtad när läraren väljer ett ämne och uppdaterad regelbundet. Målet sparar också texten från när det skapades, eftersom läroplanen kan få nya versioner.
 
+- **El- och energiprogrammet i Gy25 (EE25), inriktning elteknik (EEELK):** programgemensamt Automationsteknik, Dator- och kommunikationsteknik, Elteknik och Energiteknik (nivå 1). Inriktningen: Ellära 1, Installationsteknik 1–2, Kommunikationsnät 1 och Säkerhetssystem 1. Yrkesutgångar finns, till exempel Service- och installationselektriker.
+
 **Öppna frågor:**
-- Vilka ämnen och nivåer har El- och energiprogrammet i Gy25 (`…/v1/programs/EE25`)? Gy11-versionen (EE) är hämtad.
 - Vilket format ska underlaget inför betyg ha: en sida i Firstflow, en PDF eller båda?
 - Ska AI användas senare för förslag på frågor och för att koppla mål till projekt? I så fall utan elevdata och med ett personuppgiftsbiträdesavtal.
 
