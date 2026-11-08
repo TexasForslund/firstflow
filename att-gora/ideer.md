@@ -205,7 +205,7 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
       - Frivilligt: en påminnelse, sedan ligger kortet kvar. I ett grupprojekt svarar varje elev själv.
       - Frågorna är fasta tills vidare. Läraren ändrar dem inte.
       - ✅ Byggt i #85 (2026-11-08): påminnelsen kommer efter tre dagar (Texas). Handledaren kan också markera projektet som klart.
-    - **Steg 3:** eleven ser sin egen vy av projektet i Min APL, med samma flikar och utan att kunna ändra något. Där ser eleven också kommentarerna som alla ser.
+    - **Steg 3:** eleven ser sin egen vy av projektet i Min APL, med samma flikar och utan att kunna ändra något. Där ser eleven också kommentarerna som alla ser. ✅ Byggt (F48, 2026-11-08).
     - **Väntar:** kopplingen till Skolverket (idé 10).
 - **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP. ✅ Byggt i #77 (2026-11-07).
 

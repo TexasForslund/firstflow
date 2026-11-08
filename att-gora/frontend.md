@@ -645,3 +645,15 @@ Idé 13, steg 8 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 8a oc
 - Sist skolans mål utan koppling och kommentarerna från handledaren och läraren som eleven ser.
 - **"Skriv ut eller spara som PDF"** använder webbläsarens utskrift. Utskriften har ingen meny eller knappar och slutar med datum och "Underlaget är hämtat ur Firstflow. Läraren sätter betyget."
 - **Backend:** `GET /api/students/{id}/grade-basis`. Kriterierna hämtas från Skolverket (ämnet i Gy25, kursen i Gy11). Svarar inte Skolverket visas underlaget ändå, utan kriterier.
+
+## F48. Elevens projektvy med flikar ✅ Klar
+
+Idé 12:6, steg 3 (Texas, 2026-11-08, skissen "Sammanfattning av projekt", 7 och 8). Mobilen först.
+
+- Elevens projektsida har flikarna **Översikt, Redovisningar, Bilder och Kommentarer**. Eleven ser bara sitt eget och kan inte ändra något här, utom sin sammanfattning.
+- **Översikt:** när projektet är klart visas elevens sammanfattning (stjärnor, meningen, bilderna och "Ändra"), eller knappen "Sammanfatta projektet". Sedan projektets mål med elevens antal redovisningar och "Du: visade det" för målen eleven valde i sammanfattningen. Sist fakta: slutdatum, företag, lärare, handledare och beskrivning.
+- **Redovisningar:** samma lista som förut.
+- **Bilder:** elevens bilder från sammanfattningen och redovisningarna. Ett tryck visar bilden stor.
+- **Kommentarer:** bara det läraren och handledaren har skrivit om eleven med "Alla ser". Eleven svarar inte här.
+- **Backend:** `GET /api/me/projects/{id}` har nu `goals`, `images`, `comments` och `summary`.
+

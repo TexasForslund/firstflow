@@ -435,6 +435,9 @@ def test_student_opens_own_project(client: TestClient, db: Session, login: Login
     # Bara Hugos egna redovisningar, senaste först. Majas syns inte.
     assert [r["excerpt"]["text"] for r in project["reports"]] == ["Svar 9", "Svar 6"]
     assert "email" not in project["students"][0]
+    assert project["summary"] is None
+    assert project["images"] == []
+    assert project["comments"] == []
 
     # En elev som inte är med i projektet får 404, och läraren använder sin egen endpoint.
     login(w.stranger)
@@ -727,3 +730,68 @@ def test_student_goals_overview(client: TestClient, db: Session, login: Login, w
     # Bara lärare som får se eleven.
     login(w.other_teacher)
     assert client.get(f"/api/students/{w.hugo.id}/goals/overview").status_code == 404
+
+
+def test_student_project_tabs(
+    client: TestClient, db: Session, login: Login, w: World, company: Company
+) -> None:
+    """Idé 12:6 steg 3: eleven ser sina bilder, kommentarerna om sig och sin sammanfattning."""
+    login(w.teacher)
+    project = client.post("/api/projects", json=with_company(w, company)).json()
+    pid = project["id"]
+    form = FormVersion(
+        class_id=w.ee22.id,
+        version=1,
+        questions=[{"id": str(QUESTION), "type": "images", "title": "Bilder", "max_images": 4}],
+    )
+    db.add(form)
+    db.flush()
+    for student in [w.hugo, w.maja]:
+        report = Report(
+            class_id=w.ee22.id,
+            student_id=student.id,
+            form_version_id=form.id,
+            due_date=date(2026, 10, 6),
+            project_id=pid,
+            status=ReportStatus.SUBMITTED,
+            submitted_at=datetime(2026, 10, 6, 15, tzinfo=UTC),
+        )
+        db.add(report)
+        db.flush()
+        image = ReportImage(
+            report_id=report.id, question_id=QUESTION, width=1, height=1, size=1, data=b"x"
+        )
+        db.add(image)
+        db.flush()
+        db.add(ReportAnswer(report_id=report.id, question_id=QUESTION, image_ids=[image.id]))
+        if student is w.hugo:
+            hugo_image = image
+    db.flush()
+    url = f"/api/projects/{pid}/comments"
+    client.post(url, json={"student_id": str(w.hugo.id), "body": "Bra jobbat."})
+    client.post(url, json={"student_id": str(w.hugo.id), "body": "Privat.", "visibility": "staff"})
+    client.post(url, json={"student_id": str(w.maja.id), "body": "Till Maja."})
+    client.put(
+        f"/api/projects/{pid}",
+        json={"name": project["name"], "tags": project["tags"], "completed": True},
+    )
+
+    login(w.hugo)
+    me = f"/api/me/project-summaries/{pid}"
+    goal_ids = [g["id"] for g in client.get(me).json()["goals"]]
+    shot = client.post(f"{me}/images", files={"file": ("a.png", png(), "image/png")}).json()
+    answer = {"rating": 5, "best": "Kabeln", "goal_ids": goal_ids[:1], "image_ids": [shot["id"]]}
+    assert client.put(me, json=answer).status_code == 200
+
+    got = client.get(f"/api/me/projects/{pid}").json()
+    assert got["summary"] == {"rating": 5, "best": "Kabeln", "image_ids": [shot["id"]]}
+    # Sammanfattningens bild först, sedan Hugos egen. Majas syns inte.
+    assert [(i["image_id"], i["report_id"] is None) for i in got["images"]] == [
+        (shot["id"], True),
+        (str(hugo_image.id), False),
+    ]
+    # Bara kommentaren om Hugo som alla får se.
+    assert [c["body"] for c in got["comments"]] == ["Bra jobbat."]
+    assert got["comments"][0]["author_role"] == "teacher"
+    shown = {g["goal"]["id"]: g["shown"] for g in got["goals"]}
+    assert shown == {gid: gid in goal_ids[:1] for gid in goal_ids}
