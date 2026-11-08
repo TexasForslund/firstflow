@@ -209,3 +209,34 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
 - **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP. ✅ Byggt i #77 (2026-11-07).
 
 Hänger ihop med: B4 (närvaro), B11 (meddelanden), projekt (idé 2), B5 (frågor), idé 7 (kalender).
+
+---
+
+## 13. Från läroplan till betyg (Texas, 2026-11-08)
+
+Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar → projekt ↔ frågor som läraren skapar. Projekten ger elevens sammanfattning och frågorna ger redovisningar. Båda samlas i historiken och på elevsidan.** På elevsidan sammanfattar Firstflow mål, redovisningar och projekt mot läroplanen, så att läraren får hjälp att sätta betyg. Texas projektleder delen tillsammans med Claude.
+
+**Beslutat 2026-11-08:**
+- **Ingen AI i Firstflow än.** Förslagen byggs direkt på läroplanen.
+- **Både Gy25 och det gamla systemet.** Gy25 (från hösten 2025) har ämnen med nivåer och betyg per nivå. Elever som började tidigare läser kurser (Gy11). Ett mål ska därför kunna pekas mot ämne och nivå eller mot kurs.
+- **Läraren äger sina mål**, inte ämneslaget eller skolan.
+- **Firstflow föreslår aldrig ett betyg.** Läraren sätter alltid betyget själv. Firstflow samlar bara underlaget.
+
+**Flödet:**
+1. **Ämnen och nivåer:** klassen har program och inriktning (finns i dag). Läraren väljer vilka ämnen och nivåer, eller kurser, som APL-perioden ska träna.
+2. **Anropet:** Firstflow hämtar läroplanen från Skolverkets öppna API (`api.skolverket.se/syllabus`, med ämnen, kurser och läroplaner).
+3. **Målförslag:** varje punkt i det centrala innehållet blir ett förslag. Läraren bockar för de som passar och skriver om dem till vanlig svenska. Målet visar alltid vilken del av läroplanen det kommer från. Det ersätter dagens fria text på målet.
+4. **Projekt:** när läraren skapar ett projekt föreslår Firstflow mål genom att söka på orden i beskrivningen. Läraren väljer.
+5. **Frågor:** till varje mål finns färdiga mallar för frågor, till exempel "Läste du ritningen själv i dag?" som ja/nej där Ja är kopplat till målet. Läraren lägger till med ett klick och ändrar.
+6. **Projektets sammanfattning** (idé 12:6, steg 2): när projektet är klart svarar eleven på fyra korta frågor, bland annat vilka av projektets mål eleven tycker att den visade.
+7. **Elevsidan och historiken:** målen ordnas efter ämne och nivå, eller kurs. Varje del av läroplanen visar redovisningarna och projekten som visar den. Delar utan underlag syns tydligt. Varje avslutat projekt visas med elevens sammanfattning (stjärnor, mening, bilder och de mål eleven valde), bredvid redovisningarna för samma del av läroplanen.
+8. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera.
+
+**Öppna frågor:**
+- Ska målet pekas mot centralt innehåll (vad eleven gör), mot betygskriterierna (hur bra) eller mot båda? Claude föreslår centralt innehåll först, eftersom APL handlar om vad eleven får göra på arbetsplatsen.
+- Vad finns exakt i Skolverkets API för Gy25 och Gy11: centralt innehåll, betygskriterier, nivåer? Det behöver provas innan vi bestämmer modellen.
+- Hur vet Firstflow om en elev läser Gy25 eller Gy11? Genom klassen, startåret eller att läraren väljer?
+- Vilket format ska underlaget inför betyg ha: en sida i Firstflow, en PDF eller båda?
+- Ska AI användas senare för förslag på frågor och för att koppla mål till projekt? I så fall utan elevdata och med ett personuppgiftsbiträdesavtal.
+
+**Hänger ihop med:** idé 10 (taggar och läroplan) och idé 12:6 (projektets sammanfattning och elevens mål).
