@@ -36,7 +36,13 @@ from app.api.routes.students import CanViewStudent, get_student_for
 from app.core import time
 from app.db.session import DbSession
 from app.models.goal import Goal
-from app.models.project import Project, ProjectComment, project_students, project_supervisors
+from app.models.project import (
+    Project,
+    ProjectComment,
+    ProjectSummary,
+    project_students,
+    project_supervisors,
+)
 from app.models.report import (
     CommentVisibility,
     Report,
@@ -631,10 +637,46 @@ class MyProjectReport(BaseModel):
     excerpt: TextAnswer | None = Field(description="Första textsvaret, förkortat")
 
 
+class MyProjectGoal(BaseModel):
+    goal: GoalRead
+    count: int = Field(description="Elevens redovisningar som visar målet")
+    shown: bool = Field(description="Eleven tycker själv att den visade målet (sammanfattningen)")
+
+
+class MyProjectImage(BaseModel):
+    image_id: UUID
+    report_id: UUID | None = Field(
+        description="Redovisningen bilden kommer från. null = från sammanfattningen"
+    )
+    day: date
+
+
+class MyProjectComment(BaseModel):
+    id: UUID
+    author: Ref
+    author_role: UserRole
+    body: str
+    created_at: datetime
+
+
+class MySummary(BaseModel):
+    rating: int
+    best: str
+    image_ids: list[UUID]
+
+
 class MyProject(ProjectRead):
     reports: list[MyProjectReport] = Field(
         description="Elevens egna inskickade redovisningar i projektet, senaste först"
     )
+    goals: list[MyProjectGoal] = Field(description="Projektets mål, klassens mål först")
+    images: list[MyProjectImage] = Field(
+        description="Elevens egna bilder, sammanfattningen först och sedan senaste redovisningen"
+    )
+    comments: list[MyProjectComment] = Field(
+        description="Det läraren och handledarna har skrivit om eleven och som eleven får se"
+    )
+    summary: MySummary | None = Field(description="Elevens sammanfattning, om den finns")
 
 
 MY_PROJECT_EXCERPT_LENGTH = 200
@@ -647,7 +689,10 @@ def my_project(
     user: Annotated[User, Depends(require_roles(UserRole.STUDENT))],
 ) -> MyProject:
     """Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,
-    2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404."""
+    2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.
+
+    Flikarna Översikt, Bilder och Kommentarer (idé 12:6 steg 3, Texas skiss 2026-11-08): målen
+    med elevens eget underlag, elevens bilder och kommentarerna om eleven som alla får se."""
     project = db.scalar(
         select(Project)
         .join(project_students, project_students.c.project_id == Project.id)
@@ -681,7 +726,13 @@ def my_project(
         .order_by(Report.submitted_at.desc())
     ).all()
     reports = []
+    images: list[MyProjectImage] = []
     for report, count in rows:
+        for answer in report.answers:
+            images += [
+                MyProjectImage(image_id=i, report_id=report.id, day=report.due_date)
+                for i in answer.image_ids or []
+            ]
         excerpt = text_answers(report, limit=1, length=MY_PROJECT_EXCERPT_LENGTH)
         reports.append(
             MyProjectReport(
@@ -692,8 +743,58 @@ def my_project(
                 excerpt=excerpt[0] if excerpt else None,
             )
         )
+    summary = db.scalar(
+        select(ProjectSummary)
+        .where(ProjectSummary.project_id == project.id, ProjectSummary.student_id == user.id)
+        .options(selectinload(ProjectSummary.goals), selectinload(ProjectSummary.images))
+    )
+    if summary is not None:
+        day = summary.updated_at.date()
+        images = [
+            MyProjectImage(image_id=i.id, report_id=None, day=day) for i in summary.images
+        ] + images
+    shown = {g.id for g in summary.goals} if summary else set()
+    found = goal_counts(db, [r for r, _ in rows], {g.id for g in project.goals})
+    goals = [
+        MyProjectGoal(
+            goal=read_goal(g),
+            count=len(found.get((g.id, user.id), [])),
+            shown=g.id in shown,
+        )
+        for g in sorted(project.goals, key=lambda g: (g.class_id is None, g.name.lower()))
+    ]
+    comments = db.scalars(
+        select(ProjectComment)
+        .where(
+            ProjectComment.project_id == project.id,
+            ProjectComment.student_id == user.id,
+            ProjectComment.visibility == CommentVisibility.ALL,
+        )
+        .options(selectinload(ProjectComment.author))
+        .order_by(ProjectComment.created_at.desc())
+    ).all()
     (read,) = _read(db, user, [project])
-    return MyProject(**read.model_dump(), reports=reports)
+    return MyProject(
+        **read.model_dump(),
+        reports=reports,
+        goals=goals,
+        images=images,
+        comments=[
+            MyProjectComment(
+                id=c.id,
+                author=_ref(c.author),
+                author_role=c.author.role,
+                body=c.body,
+                created_at=c.created_at,
+            )
+            for c in comments
+        ],
+        summary=MySummary(
+            rating=summary.rating, best=summary.best, image_ids=[i.id for i in summary.images]
+        )
+        if summary
+        else None,
+    )
 
 
 # --- Underlag för projektets mål (idé 10, Texas 2026-10-30) --------------------------------

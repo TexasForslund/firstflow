@@ -1776,6 +1776,9 @@ export interface paths {
          * My Project
          * @description Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,
          *     2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.
+         *
+         *     Flikarna Översikt, Bilder och Kommentarer (idé 12:6 steg 3, Texas skiss 2026-11-08): målen
+         *     med elevens eget underlag, elevens bilder och kommentarerna om eleven som alla får se.
          */
         get: operations["my_project_api_me_projects__project_id__get"];
         put?: never;
@@ -4567,6 +4570,72 @@ export interface components {
              * @description Elevens egna inskickade redovisningar i projektet, senaste först
              */
             reports: components["schemas"]["MyProjectReport"][];
+            /**
+             * Goals
+             * @description Projektets mål, klassens mål först
+             */
+            goals: components["schemas"]["MyProjectGoal"][];
+            /**
+             * Images
+             * @description Elevens egna bilder, sammanfattningen först och sedan senaste redovisningen
+             */
+            images: components["schemas"]["MyProjectImage"][];
+            /**
+             * Comments
+             * @description Det läraren och handledarna har skrivit om eleven och som eleven får se
+             */
+            comments: components["schemas"]["MyProjectComment"][];
+            /** @description Elevens sammanfattning, om den finns */
+            summary: components["schemas"]["MySummary"] | null;
+        };
+        /** MyProjectComment */
+        MyProjectComment: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            author: components["schemas"]["Ref"];
+            author_role: components["schemas"]["UserRole"];
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** MyProjectGoal */
+        MyProjectGoal: {
+            goal: components["schemas"]["GoalRead"];
+            /**
+             * Count
+             * @description Elevens redovisningar som visar målet
+             */
+            count: number;
+            /**
+             * Shown
+             * @description Eleven tycker själv att den visade målet (sammanfattningen)
+             */
+            shown: boolean;
+        };
+        /** MyProjectImage */
+        MyProjectImage: {
+            /**
+             * Image Id
+             * Format: uuid
+             */
+            image_id: string;
+            /**
+             * Report Id
+             * @description Redovisningen bilden kommer från. null = från sammanfattningen
+             */
+            report_id: string | null;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
         };
         /** MyProjectReport */
         MyProjectReport: {
@@ -4589,6 +4658,15 @@ export interface components {
             comment_count: number;
             /** @description Första textsvaret, förkortat */
             excerpt: components["schemas"]["TextAnswer"] | null;
+        };
+        /** MySummary */
+        MySummary: {
+            /** Rating */
+            rating: number;
+            /** Best */
+            best: string;
+            /** Image Ids */
+            image_ids: string[];
         };
         /** NoteAuthor */
         NoteAuthor: {

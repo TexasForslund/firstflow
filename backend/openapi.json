@@ -4994,7 +4994,7 @@
           "projects"
         ],
         "summary": "My Project",
-        "description": "Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,\n2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.",
+        "description": "Ett projekt eleven är med i, med elevens egna redovisningar i projektet (Texas,\n2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.\n\nFlikarna Översikt, Bilder och Kommentarer (idé 12:6 steg 3, Texas skiss 2026-11-08): målen\nmed elevens eget underlag, elevens bilder och kommentarerna om eleven som alla får se.",
         "operationId": "my_project_api_me_projects__project_id__get",
         "security": [
           {
@@ -12126,6 +12126,41 @@
             "type": "array",
             "title": "Reports",
             "description": "Elevens egna inskickade redovisningar i projektet, senaste först"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/MyProjectGoal"
+            },
+            "type": "array",
+            "title": "Goals",
+            "description": "Projektets mål, klassens mål först"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/MyProjectImage"
+            },
+            "type": "array",
+            "title": "Images",
+            "description": "Elevens egna bilder, sammanfattningen först och sedan senaste redovisningen"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/MyProjectComment"
+            },
+            "type": "array",
+            "title": "Comments",
+            "description": "Det läraren och handledarna har skrivit om eleven och som eleven får se"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MySummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Elevens sammanfattning, om den finns"
           }
         },
         "type": "object",
@@ -12145,9 +12180,104 @@
           "unread_count",
           "is_owner",
           "can_edit_students",
-          "reports"
+          "reports",
+          "goals",
+          "images",
+          "comments",
+          "summary"
         ],
         "title": "MyProject"
+      },
+      "MyProjectComment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "author": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "author_role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "author",
+          "author_role",
+          "body",
+          "created_at"
+        ],
+        "title": "MyProjectComment"
+      },
+      "MyProjectGoal": {
+        "properties": {
+          "goal": {
+            "$ref": "#/components/schemas/GoalRead"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Elevens redovisningar som visar målet"
+          },
+          "shown": {
+            "type": "boolean",
+            "title": "Shown",
+            "description": "Eleven tycker själv att den visade målet (sammanfattningen)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goal",
+          "count",
+          "shown"
+        ],
+        "title": "MyProjectGoal"
+      },
+      "MyProjectImage": {
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Image Id"
+          },
+          "report_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Id",
+            "description": "Redovisningen bilden kommer från. null = från sammanfattningen"
+          },
+          "day": {
+            "type": "string",
+            "format": "date",
+            "title": "Day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "image_id",
+          "report_id",
+          "day"
+        ],
+        "title": "MyProjectImage"
       },
       "MyProjectReport": {
         "properties": {
@@ -12191,6 +12321,33 @@
           "excerpt"
         ],
         "title": "MyProjectReport"
+      },
+      "MySummary": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "title": "Rating"
+          },
+          "best": {
+            "type": "string",
+            "title": "Best"
+          },
+          "image_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Image Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating",
+          "best",
+          "image_ids"
+        ],
+        "title": "MySummary"
       },
       "NoteAuthor": {
         "properties": {

@@ -1,16 +1,24 @@
-import { ChevronLeft, ChevronRight, FolderKanban } from 'lucide-react'
+import { CalendarDays, Check, ChevronLeft, ChevronRight, FolderKanban, MapPin, User } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
-import { goalNames, useMyProject, type MyProject as Project } from '../../api/projects'
-import { useCurrentUser } from '../../auth/useCurrentUser'
-import { Avatar } from '../../components'
+import { mySummaryImageUrl } from '../../api/projectSummaries'
+import { useMyProject, type MyProject as Project } from '../../api/projects'
+import { reportImageUrl } from '../../api/reportImages'
+import { Avatar, ButtonLink, Card, StarRating } from '../../components'
 import { NotFound } from '../NotFound'
 import { projectTone } from '../projects/projectText'
 import { longDate } from '../reports/answers'
+import { Gallery } from '../reports/ImageGallery'
 import styles from './MyProject.module.css'
 
-type Tab = 'reports' | 'about'
+type Tab = 'overview' | 'reports' | 'images' | 'comments'
+const TABS: [Tab, string][] = [
+  ['overview', 'Översikt'],
+  ['reports', 'Redovisningar'],
+  ['images', 'Bilder'],
+  ['comments', 'Kommentarer'],
+]
 
 function shortDay(iso: string) {
   return new Date(`${iso}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
@@ -22,12 +30,16 @@ function plural(count: number, one: string, many: string) {
 
 /**
  * Elevens projekt (F21) enligt skiss B, "Firstflow – Elevens projekt skiss" (Texas, 2026-10-29):
- * en färgad topp och flikarna Mina redovisningar och Om projektet. Mobilen först.
+ * en färgad topp. Mobilen först.
+ *
+ * Flikarna Översikt, Redovisningar, Bilder och Kommentarer (idé 12:6 steg 3, Texas skiss
+ * "Sammanfattning av projekt" 7 och 8, 2026-11-08). Eleven ser bara sitt eget och kan inte ändra
+ * något här, utom sin sammanfattning.
  */
 export function MyProject() {
   const { projectId = '' } = useParams()
   const query = useMyProject(projectId)
-  const [tab, setTab] = useState<Tab>('reports')
+  const [tab, setTab] = useState<Tab>('overview')
 
   if (query.isPending) return <p className={styles.state}>Laddar projektet…</p>
   if (query.isError) return <NotFound what="Projektet" />
@@ -52,12 +64,7 @@ export function MyProject() {
       </header>
 
       <div className={styles.tabs} role="tablist" aria-label="Projektet">
-        {(
-          [
-            ['reports', 'Mina redovisningar'],
-            ['about', 'Om projektet'],
-          ] as const
-        ).map(([value, label]) => (
+        {TABS.map(([value, label]) => (
           <button
             key={value}
             type="button"
@@ -74,7 +81,10 @@ export function MyProject() {
       </div>
 
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className={styles.panel}>
-        {tab === 'reports' ? <Reports project={project} /> : <About project={project} />}
+        {tab === 'overview' && <Overview project={project} />}
+        {tab === 'reports' && <Reports project={project} />}
+        {tab === 'images' && <Images project={project} />}
+        {tab === 'comments' && <Comments project={project} />}
       </div>
     </div>
   )
@@ -113,50 +123,146 @@ function Reports({ project }: { project: Project }) {
   )
 }
 
-function About({ project }: { project: Project }) {
-  const { data: me } = useCurrentUser()
-  // Eleven själv visas inte bland de andra eleverna.
+/** Sammanfattningen, målen och fakta om projektet. */
+function Overview({ project }: { project: Project }) {
+  const summaryPath = `/my-projects/${project.id}/summary`
+  const summary = project.summary
   const people = [
     { id: project.owner.id, name: project.owner.name, role: 'Lärare' },
     ...project.supervisors.map((s) => ({ id: s.id, name: s.name, role: 'Handledare' })),
-    ...project.students.filter((s) => s.id !== me?.id).map((s) => ({ id: s.id, name: s.name, role: 'Elev' })),
   ]
   return (
-    <div className={styles.about}>
-      <section className={styles.section} aria-labelledby="about-heading">
-        <h2 id="about-heading" className={styles.sectionTitle}>
-          Om projektet
-        </h2>
-        <p className={styles.description}>{project.description || 'Läraren har inte skrivit någon beskrivning än.'}</p>
-        {project.completed_at && (
-          <Link to={`/my-projects/${project.id}/summary`} className={styles.summaryLink}>
-            Projektet är klart. Sammanfatta eller ändra din sammanfattning
-          </Link>
-        )}
-        {goalNames(project).length > 0 && (
-          <ul className={styles.tags} aria-label="Mål">
-            {goalNames(project).map((tag) => (
-              <li key={tag} className={styles.tag}>
-                {tag}
+    <div className={styles.overview}>
+      {project.completed_at &&
+        (summary ? (
+          <Card className={styles.card} aria-labelledby="summary-heading">
+            <div className={styles.cardHead}>
+              <h2 id="summary-heading" className={styles.sectionTitle}>
+                Din sammanfattning
+              </h2>
+              <Link to={summaryPath} className={styles.edit}>
+                Ändra
+              </Link>
+            </div>
+            <StarRating value={summary.rating} label="Hur det gick" />
+            <p className={styles.best}>”{summary.best}”</p>
+            {summary.image_ids.length > 0 && (
+              <Gallery images={summary.image_ids.map((id) => ({ id, src: mySummaryImageUrl(project.id, id) }))} />
+            )}
+          </Card>
+        ) : (
+          <Card className={styles.card} aria-labelledby="summary-heading">
+            <h2 id="summary-heading" className={styles.sectionTitle}>
+              Projektet är klart!
+            </h2>
+            <p className={styles.meta}>Berätta hur det gick. Det tar en minut.</p>
+            <ButtonLink to={summaryPath}>Sammanfatta projektet</ButtonLink>
+          </Card>
+        ))}
+
+      {project.goals.length > 0 && (
+        <Card className={styles.card} aria-labelledby="goals-heading">
+          <h2 id="goals-heading" className={styles.sectionTitle}>
+            Mål i projektet
+          </h2>
+          <ul className={styles.list}>
+            {project.goals.map(({ goal, count, shown }) => (
+              <li key={goal.id} className={styles.goal}>
+                <span className={styles.rowText}>
+                  <span className={styles.goalName}>{goal.name}</span>
+                  <span className={styles.meta}>
+                    {[goal.group, plural(count, 'redovisning', 'redovisningar')].filter(Boolean).join(' · ')}
+                  </span>
+                </span>
+                {shown && (
+                  <span className={styles.shown}>
+                    <Check aria-hidden="true" /> Du: visade det
+                  </span>
+                )}
               </li>
             ))}
           </ul>
-        )}
-      </section>
-      <section className={styles.section} aria-labelledby="people-heading">
-        <h2 id="people-heading" className={styles.sectionTitle}>
-          Med i projektet
+        </Card>
+      )}
+
+      <Card className={styles.card} aria-labelledby="about-heading">
+        <h2 id="about-heading" className={styles.sectionTitle}>
+          Om projektet
         </h2>
-        <ul className={styles.people}>
+        <ul className={styles.factList}>
+          {project.deadline && (
+            <li>
+              <CalendarDays aria-hidden="true" /> Klart senast {shortDay(project.deadline)}
+            </li>
+          )}
+          {project.workplace && (
+            <li>
+              <MapPin aria-hidden="true" /> {project.workplace.name}
+            </li>
+          )}
           {people.map((p) => (
-            <li key={`${p.role}-${p.id}`} className={styles.person}>
-              <Avatar name={p.name} size="sm" />
-              <span className={styles.personName}>{p.name}</span>
-              <span className={styles.meta}>{p.role}</span>
+            <li key={`${p.role}-${p.id}`}>
+              <User aria-hidden="true" /> {p.role}: {p.name}
             </li>
           ))}
         </ul>
-      </section>
+        <p className={styles.description}>{project.description || 'Läraren har inte skrivit någon beskrivning än.'}</p>
+      </Card>
     </div>
+  )
+}
+
+/** Elevens egna bilder från redovisningarna och sammanfattningen. */
+function Images({ project }: { project: Project }) {
+  if (project.images.length === 0) {
+    return <p className={styles.empty}>Inga bilder än. Bilderna du lägger till i dina redovisningar visas här.</p>
+  }
+  return (
+    <section aria-label="Bilder" className={styles.overview}>
+      <p className={styles.meta}>Dina bilder från redovisningar och sammanfattningen. Tryck för att se större.</p>
+      <Gallery
+        large
+        images={project.images.map((image) => ({
+          id: image.image_id,
+          src: image.report_id
+            ? reportImageUrl(image.report_id, image.image_id)
+            : mySummaryImageUrl(project.id, image.image_id),
+          caption: image.report_id ? (
+            <>
+              {longDate(image.day)} · <Link to={`/my-reports/${image.report_id}`}>Öppna redovisningen</Link>
+            </>
+          ) : (
+            'Från din sammanfattning'
+          ),
+        }))}
+      />
+    </section>
+  )
+}
+
+/** Det läraren och handledaren har skrivit om eleven och valt att visa. */
+function Comments({ project }: { project: Project }) {
+  if (project.comments.length === 0) {
+    return <p className={styles.empty}>Inga kommentarer än. Här visas det läraren och handledaren skriver om dig.</p>
+  }
+  return (
+    <section aria-label="Kommentarer" className={styles.overview}>
+      <p className={styles.meta}>Det läraren och handledaren har skrivit om dig i projektet.</p>
+      {project.comments.map((c) => (
+        <Card key={c.id} className={styles.card}>
+          <div className={styles.commentHead}>
+            <Avatar name={c.author.name} size="sm" />
+            <span className={styles.rowText}>
+              <span className={styles.goalName}>{c.author.name}</span>
+              <span className={styles.meta}>
+                {c.author_role === 'supervisor' ? 'Handledare' : 'Lärare'} · {shortDay(c.created_at.slice(0, 10))}
+              </span>
+            </span>
+          </div>
+          <p className={styles.description}>{c.body}</p>
+        </Card>
+      ))}
+      <p className={styles.meta}>Vill du fråga något? Skriv i Meddelanden.</p>
+    </section>
   )
 }
