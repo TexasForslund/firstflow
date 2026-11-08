@@ -60,7 +60,7 @@ export function SupervisorReport() {
         <Avatar name={detail.student.name} />
         <span className={styles.who}>
           <h1 className={styles.reportTitle}>
-            <Link to={`/my-students/${detail.student.id}`} className={styles.nameLink}>
+            <Link to={`/supervised-students/${detail.student.id}`} className={styles.nameLink}>
               {detail.student.name}
             </Link>
           </h1>

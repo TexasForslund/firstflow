@@ -297,7 +297,7 @@ function StudentOverview({
   const reports = useProjectReports(project.id, student.id)
   const latest = reports.data?.[0]
   const firstName = student.name.split(' ')[0]
-  const studentPage = user?.role === 'supervisor' ? `/my-students/${student.id}` : `/students/${student.id}`
+  const studentPage = user?.role === 'supervisor' ? `/supervised-students/${student.id}` : `/students/${student.id}`
   const summaries = useProjectSummaries(project.id, Boolean(project.completed_at))
   const summary = summaries.data?.find((r) => r.student.id === student.id)
   return (

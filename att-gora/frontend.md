@@ -668,3 +668,12 @@ Idé 8 (Texas, 2026-11-08, skissen "Arkivera klasser").
 - **Ta bort** finns bara för en klass utan redovisningar. Elevkontona finns kvar.
 - **Backend:** `school_classes.archived_at`, `POST /api/classes/{id}/archive`, `POST /api/classes/{id}/restore` och `DELETE /api/classes/{id}` (409 om klassen har redovisningar). Ändringar i en arkiverad klass svarar 409. Elevens redovisningar, lärarens översikt och redovisningslistan hoppar över arkiverade klasser.
 
+## F50. Handledarens elever och anteckningar ✅ Klar
+
+Texas skiss "Handledarens elever" (2026-11-08).
+
+- **Nytt menyval "Mina elever"** under Elever i handledarens meny (`/supervised-students`). En rad per elev med period, närvaro, redovisningar (och nya) och senaste anteckningen. Grupperat i Pågår, Kommande och Avslutade (hopfälld). Sök elev. I mobilen under Mer.
+- **Elevens sida** heter nu `/supervised-students/{id}`. Den gamla adressen `/my-students/{id}` skickas vidare. Bakåtlänken leder till Mina elever.
+- **Anteckningar om eleven** ligger överst i högerkolumnen och visar de två senaste, med "Visa alla". I mobilen kommer de direkt efter dagens närvaro.
+- **Backend:** `GET /api/supervisor/student-list`.
+

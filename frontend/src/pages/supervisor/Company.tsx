@@ -269,7 +269,7 @@ function HoursCard({ workplace }: { workplace: SupervisorWorkplace }) {
             <ul className={styles.list}>
               {students.map((s) => (
                 <li key={s.placement_id} className={styles.row}>
-                  <Link to={`/my-students/${s.student.id}`} className={styles.rowLink}>
+                  <Link to={`/supervised-students/${s.student.id}`} className={styles.rowLink}>
                     <Avatar name={s.student.name} size="sm" />
                     <span className={styles.rowText}>
                       <span className={styles.name}>{s.student.name}</span>

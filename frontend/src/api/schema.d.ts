@@ -2692,6 +2692,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/supervisor/student-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Supervisor Student List
+         * @description Alla elever som har, har haft eller ska ha praktik hos handledaren. En rad per elev med
+         *     den pågående placeringen, annars den kommande, annars den senaste.
+         */
+        get: operations["supervisor_student_list_api_supervisor_student_list_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/syllabus/programs": {
         parameters: {
             query?: never;
@@ -4291,6 +4312,15 @@ export interface components {
              * @default true
              */
             send_invite: boolean;
+        };
+        /** LatestNote */
+        LatestNote: {
+            tag: components["schemas"]["NoteTag"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** LevelContent */
         LevelContent: {
@@ -6098,6 +6128,43 @@ export interface components {
              * @description Redovisningsdagar hos handledaren före i dag utan inskickad redovisning, senaste först
              */
             missing_days: string[];
+        };
+        /** SupervisorStudentRow */
+        SupervisorStudentRow: {
+            student: components["schemas"]["Ref"];
+            /** School Name */
+            school_name: string | null;
+            /** Class Name */
+            class_name: string | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ongoing" | "upcoming" | "ended";
+            /**
+             * Attendance Percent
+             * @description Närvaro under perioden hittills
+             */
+            attendance_percent: number | null;
+            /** Report Count */
+            report_count: number;
+            /**
+             * Unread Count
+             * @description Redovisningar handledaren inte har läst
+             */
+            unread_count: number;
+            /** @description Handledarens senaste anteckning */
+            latest_note: components["schemas"]["LatestNote"] | null;
         };
         /** SupervisorWorkplace */
         SupervisorWorkplace: {
@@ -11331,6 +11398,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    supervisor_student_list_api_supervisor_student_list_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupervisorStudentRow"][];
                 };
             };
         };

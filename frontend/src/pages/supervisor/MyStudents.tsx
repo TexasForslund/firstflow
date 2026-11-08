@@ -172,7 +172,7 @@ export function MyStudents() {
               const contract = toSign.some((c) => c.student.id === s.student.id)
               return (
                 <li key={s.placement_id}>
-                  <Link to={`/my-students/${s.student.id}`} className={styles.row}>
+                  <Link to={`/supervised-students/${s.student.id}`} className={styles.row}>
                     <span className={styles.person}>
                       <Avatar name={s.student.name} />
                       <span className={styles.personText}>

@@ -18,6 +18,9 @@ import { ScheduleCard } from './ScheduleCard'
 import styles from './SupervisorStudent.module.css'
 import { weekDays } from './weekDays'
 
+// De senaste anteckningarna visas. Resten finns bakom Visa alla.
+const NOTES_SHOWN = 2
+
 /** Knappar för dagens närvaro, samma som i Närvaro. */
 function TodayButtons({ item, today }: { item: ReviewItem; today: string }) {
   const review = useReview()
@@ -77,6 +80,7 @@ export function SupervisorStudent() {
   const review = useReviewList()
   const contracts = useContracts()
   const projects = useProjects()
+  const [allNotes, setAllNotes] = useState(false)
 
   if (student.isPending) return <p className={styles.state}>Laddar eleven…</p>
   if (!row) return <NotFound what="Eleven" />
@@ -93,8 +97,8 @@ export function SupervisorStudent() {
 
   return (
     <div className={styles.page}>
-      <Link to="/my-students" className={styles.back}>
-        <ChevronLeft aria-hidden="true" /> Översikt
+      <Link to="/supervised-students" className={styles.back}>
+        <ChevronLeft aria-hidden="true" /> Mina elever
       </Link>
       <header className={styles.header}>
         <Avatar name={row.student.name} size="md" />
@@ -119,7 +123,7 @@ export function SupervisorStudent() {
       <div className={styles.columns}>
         <div className={styles.stack}>
           {today && (
-            <Card>
+            <Card className={styles.todayCardWrap}>
               <section className={styles.todayCard} aria-label="Närvaro i dag">
                 <span className={styles.todayLabel}>I dag</span>
                 <TodayButtons item={today} today={review.data?.today ?? today.date} />
@@ -127,7 +131,11 @@ export function SupervisorStudent() {
             </Card>
           )}
           <ReportsSection studentId={studentId} supervisor />
-          <Card>
+        </div>
+
+        <div className={styles.stack}>
+          {/* Anteckningarna överst till höger, i mobilen först (Texas skiss 2026-11-08). */}
+          <Card className={styles.notesCard}>
             <section className={styles.notes} aria-labelledby="notes-heading">
               <div>
                 <h2 id="notes-heading" className={styles.sectionTitle}>
@@ -140,14 +148,16 @@ export function SupervisorStudent() {
               {notes.isSuccess && notes.data.length === 0 && (
                 <p className={styles.muted}>Du har inte skrivit några anteckningar om {firstName} än.</p>
               )}
-              {(notes.data ?? []).map((note) => (
+              {(allNotes ? (notes.data ?? []) : (notes.data ?? []).slice(0, NOTES_SHOWN)).map((note) => (
                 <NoteItem key={note.id} note={note} studentId={studentId} />
               ))}
+              {!allNotes && (notes.data?.length ?? 0) > NOTES_SHOWN && (
+                <button type="button" className={styles.linkButton} onClick={() => setAllNotes(true)}>
+                  Visa alla {notes.data?.length} anteckningar
+                </button>
+              )}
             </section>
           </Card>
-        </div>
-
-        <div className={styles.stack}>
           <AttendanceCard studentId={studentId} supervisor />
           <Card>
             <section className={styles.side} aria-labelledby="placement-heading">

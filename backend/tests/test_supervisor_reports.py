@@ -294,3 +294,35 @@ def test_supervisor_student_page_only_own_students(
 
     login(w.teacher)
     assert client.get(f"/api/supervisor/students/{w.hugo.id}").status_code == 403
+
+
+def test_supervisor_student_list(
+    client: TestClient, db: Session, login: Login, w: World, nov5: None
+) -> None:
+    """Mina elever (Texas skiss 2026-11-08): en rad per elev, pågående, kommande och avslutade."""
+    from app.models.note import NoteTag, StudentNote
+
+    db.add(StudentNote(student_id=w.maja.id, author_id=w.sofia.id, tag=NoteTag.PRAISE, body="Bra"))
+    db.add(StudentNote(student_id=w.maja.id, author_id=w.gustav.id, tag=NoteTag.OTHER, body="X"))
+    db.flush()
+
+    login(w.sofia)
+    rows = {r["student"]["id"]: r for r in client.get("/api/supervisor/student-list").json()}
+    hugo, maja = rows[str(w.hugo.id)], rows[str(w.maja.id)]
+    assert hugo["status"] == "ended"
+    assert hugo["report_count"] == 1
+    assert hugo["latest_note"] is None
+    assert maja["status"] == "ongoing"
+    assert maja["class_name"] == "EE22"
+    assert maja["report_count"] == 1
+    assert maja["unread_count"] == 1
+    # Bara Sofias egen anteckning.
+    assert maja["latest_note"]["tag"] == "praise"
+    assert maja["attendance_percent"] is not None
+
+    login(w.gustav)
+    assert [r["student"]["id"] for r in client.get("/api/supervisor/student-list").json()] == [
+        str(w.hugo.id)
+    ]
+    login(w.teacher)
+    assert client.get("/api/supervisor/student-list").status_code == 403

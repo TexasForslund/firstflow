@@ -71,6 +71,7 @@ export const navByRole: Record<Role, NavItem[]> = {
     { group: 'I dag', to: '/my-students', label: 'Översikt', icon: overview, tab: true },
     { group: 'I dag', to: '/attendance-review', label: 'Närvaro', icon: checkIn, tab: true },
     { group: 'I dag', to: '/messages', label: 'Meddelanden', icon: messages, tab: true },
+    { group: 'Elever', to: '/supervised-students', label: 'Mina elever', icon: students },
     { group: 'Elever', to: '/student-reports', label: 'Redovisningar', icon: reports, tab: true },
     { group: 'Elever', to: '/projects', label: 'Projekt', icon: projects },
     { group: 'Elever', to: '/contracts', label: 'Kontrakt', icon: contracts },
