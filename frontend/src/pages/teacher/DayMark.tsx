@@ -1,14 +1,31 @@
-import { Check, Minus } from 'lucide-react'
+import { Check, Clock, Minus, X } from 'lucide-react'
 
 import { clockTime, dayStateText, type DayState } from '../../api/attendance'
 import { absenceLabel, type AbsenceReason } from '../supervisor/absence'
 import styles from './DayMark.module.css'
 
 /**
- * Dagens läge som en rund markering (Texas skiss, 2026-10-29): grön = bekräftad, blå ring =
- * väntar på handledaren, röd = inte på plats, streckad = ej incheckad. "H" betyder att
- * handledaren lade till dagen, och en röd prick att incheckningen och handledaren inte stämmer.
+ * Dagens läge som en rund markering, i tre färggrupper (Texas skiss "Tydligare närvaro",
+ * 2026-11-08): grön bock = på plats, blå klocka = väntar på handledaren, gul ! = stämmer inte,
+ * röd kryss = inte på plats och streckad röd ring = ej incheckad. "H" betyder att handledaren
+ * lade till dagen.
  */
+export type MarkState = DayState | 'conflict'
+
+/** Bara själva ringen, utan text. Används också i förklaringen under tabellen. */
+export function Mark({ state, added = false, small = false }: { state: MarkState; added?: boolean; small?: boolean }) {
+  return (
+    <span className={styles.mark} data-state={state} data-small={small ? '' : undefined} aria-hidden="true">
+      {state === 'confirmed' && <Check />}
+      {state === 'pending' && <Clock />}
+      {state === 'conflict' && <span className={styles.excl}>!</span>}
+      {state === 'not_present' && <X />}
+      {state === 'missing' && <Minus />}
+      {added && <span className={styles.added}>H</span>}
+    </span>
+  )
+}
+
 export function DayMark({
   state,
   checkedInAt,
@@ -31,12 +48,7 @@ export function DayMark({
   return (
     <span className={styles.wrap} title={text}>
       <span className="sr-only">{text}</span>
-      <span className={styles.mark} data-state={conflict ? 'conflict' : state} aria-hidden="true">
-        {(state === 'confirmed' || state === 'pending' || conflict) && <Check />}
-        {state === 'not_present' && !conflict && <Minus />}
-        {added && <span className={styles.added}>H</span>}
-        {conflict && <span className={styles.dot} />}
-      </span>
+      <Mark state={conflict ? 'conflict' : state} added={added} />
       {showTime && checkedInAt && (state === 'pending' || conflict) && (
         <span className={styles.time} data-conflict={conflict ? '' : undefined} aria-hidden="true">
           {clockTime(checkedInAt)}

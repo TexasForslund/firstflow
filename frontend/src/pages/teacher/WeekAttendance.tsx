@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import { useClassWeek, useRemindSupervisors, type ClassWeek } from '../../api/attendance'
@@ -7,7 +7,7 @@ import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar, Button, HelpPopover } from '../../components'
 import { todayIso } from '../placements/period'
 import { parseDay } from '../reports/answers'
-import { DayMark } from './DayMark'
+import { DayMark, Mark } from './DayMark'
 import { shortWeekday, weekdayOf } from '../classes/aplTerms'
 import styles from './WeekAttendance.module.css'
 
@@ -107,6 +107,9 @@ export function WeekAttendance({ classId }: { classId: string }) {
                     {shortWeekday(weekdayOf(day))}
                   </th>
                 ))}
+                <th scope="col" className={styles.presentCol}>
+                  På plats
+                </th>
                 <th scope="col" className={styles.supervisorCol}>
                   Handledare
                 </th>
@@ -140,6 +143,7 @@ export function WeekAttendance({ classId }: { classId: string }) {
                       )}
                     </td>
                   ))}
+                  <td className={styles.presentCol}>{presentText(row.days, week.today)}</td>
                   <td className={styles.supervisorCol}>
                     {row.supervisor ? (
                       <span className={styles.supervisorCell}>
@@ -164,32 +168,72 @@ export function WeekAttendance({ classId }: { classId: string }) {
         </div>
       )}
 
-      <ul className={styles.legend} aria-label="Förklaring">
-        <li>
-          <HelpPopover topic="attendanceLegend" />
-        </li>
-        <li>
-          <span className={styles.swatch} data-state="confirmed" /> Bekräftad av handledaren
-        </li>
-        <li>
-          <span className={styles.swatch} data-state="pending" /> Incheckad, väntar på handledaren
-        </li>
-        <li>
-          <span className={styles.swatch} data-state="added">
-            H
-          </span>{' '}
-          Eleven glömde, handledaren lade till
-        </li>
-        <li>
-          <span className={styles.swatch} data-state="not_present" /> Inte på plats
-        </li>
-        <li>
-          <span className={styles.swatch} data-state="conflict" /> Incheckad, men handledaren säger inte på plats
-        </li>
-        <li>
-          <span className={styles.swatch} data-state="missing" /> Ej incheckad
-        </li>
-      </ul>
+      <div className={styles.legend} aria-label="Förklaring" role="group">
+        <LegendGroup title="Var där" tone="ok">
+          <LegendItem mark={<Mark state="confirmed" small />} title="På plats" text="Bekräftad av handledaren" />
+          <LegendItem
+            mark={<Mark state="confirmed" added small />}
+            title="På plats, H"
+            text="Eleven glömde checka in, handledaren lade till"
+          />
+        </LegendGroup>
+        <LegendGroup title="Väntar" tone="wait">
+          <LegendItem
+            mark={<Mark state="pending" small />}
+            title="Incheckad"
+            text="Handledaren har inte bekräftat än"
+          />
+          <LegendItem
+            mark={<Mark state="conflict" small />}
+            title="Stämmer inte"
+            text="Incheckad, men handledaren säger inte på plats"
+          />
+        </LegendGroup>
+        <LegendGroup title="Var inte där" tone="away">
+          <LegendItem
+            mark={<Mark state="not_present" small />}
+            title="Inte på plats"
+            text="Enligt handledaren, med förklaring"
+          />
+          <LegendItem
+            mark={<Mark state="missing" small />}
+            title="Ej incheckad"
+            text="Ingen incheckning och ingen bekräftelse"
+          />
+        </LegendGroup>
+        <HelpPopover topic="attendanceLegend" />
+      </div>
     </section>
+  )
+}
+
+/** Dagar på plats av APL-dagarna hittills i veckan. Incheckade dagar som väntar räknas med. */
+function presentText(days: { on_apl: boolean; date: string; state: string }[], today: string) {
+  const counted = days.filter((d) => d.on_apl && d.date <= today)
+  if (counted.length === 0) return '–'
+  const present = counted.filter((d) => d.state === 'confirmed' || d.state === 'pending').length
+  return `${present} av ${counted.length}`
+}
+
+function LegendGroup({ title, tone, children }: { title: string; tone: 'ok' | 'wait' | 'away'; children: ReactNode }) {
+  return (
+    <div className={styles.legendGroup}>
+      <span className={styles.legendTitle} data-tone={tone}>
+        {title}
+      </span>
+      <ul className={styles.legendList}>{children}</ul>
+    </div>
+  )
+}
+
+function LegendItem({ mark, title, text }: { mark: ReactNode; title: string; text: string }) {
+  return (
+    <li className={styles.legendItem}>
+      {mark}
+      <span className={styles.legendText}>
+        <strong>{title}</strong>
+        <span>{text}</span>
+      </span>
+    </li>
   )
 }
