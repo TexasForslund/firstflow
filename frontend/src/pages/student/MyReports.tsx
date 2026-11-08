@@ -5,6 +5,7 @@ import { useMyReports, useReport, useStartReport, type DueReport } from '../../a
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { Avatar } from '../../components'
 import { answerText, longDate, parseDay, relativeDay, reportTitle } from '../reports/answers'
+import { ProjectDoneCards } from './ProjectSummary'
 import styles from './Student.module.css'
 
 /**
@@ -47,6 +48,8 @@ export function MyReports() {
               : `Du har ${todo.length} redovisningar att lämna.`}
         </p>
       </header>
+
+      <ProjectDoneCards />
 
       {reports.isPending && <p className={styles.state}>Laddar…</p>}
       {reports.isError && <p className={styles.state}>Redovisningarna gick inte att hämta. Ladda om sidan.</p>}

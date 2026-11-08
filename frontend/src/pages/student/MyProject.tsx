@@ -128,6 +128,11 @@ function About({ project }: { project: Project }) {
           Om projektet
         </h2>
         <p className={styles.description}>{project.description || 'Läraren har inte skrivit någon beskrivning än.'}</p>
+        {project.completed_at && (
+          <Link to={`/my-projects/${project.id}/summary`} className={styles.summaryLink}>
+            Projektet är klart. Sammanfatta eller ändra din sammanfattning
+          </Link>
+        )}
         {goalNames(project).length > 0 && (
           <ul className={styles.tags} aria-label="Mål">
             {goalNames(project).map((tag) => (

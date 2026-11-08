@@ -1602,8 +1602,8 @@ export interface paths {
         /**
          * Update Project
          * @description Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar
-         *     namn, beskrivning och slutdatum, och får 403 om hen skickar något annat. Handledaren ser
-         *     målen men ändrar dem inte (Texas, 2026-11-07).
+         *     namn, beskrivning och slutdatum och kan markera projektet som klart, och får 403 om hen
+         *     skickar något annat. Handledaren ser målen men ändrar dem inte (Texas, 2026-11-07).
          */
         put: operations["update_project_api_projects__project_id__put"];
         post?: never;
@@ -1778,6 +1778,127 @@ export interface paths {
          *     2026-10-29). Andra elevers redovisningar syns inte. Är eleven inte med svarar den 404.
          */
         get: operations["my_project_api_me_projects__project_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/summaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Summaries
+         * @description Varje elevs sammanfattning, eller att eleven inte har svarat än och när påminnelsen
+         *     skickades.
+         */
+        get: operations["project_summaries_api_projects__project_id__summaries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/{project_id}/summary-images/{image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Summary Image */
+        get: operations["get_summary_image_api_projects__project_id__summary_images__image_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/project-summaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pending Summaries
+         * @description Klara projekt som eleven inte har sammanfattat, senast klara först. Visas som kortet
+         *     "Projektet är klart!".
+         */
+        get: operations["pending_summaries_api_me_project_summaries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/project-summaries/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Summary
+         * @description Frågorna för projektet, med elevens svar om hen redan har sammanfattat.
+         */
+        get: operations["my_summary_api_me_project_summaries__project_id__get"];
+        /**
+         * Save Summary
+         * @description Sparar elevens sammanfattning. Eleven kan ändra den efteråt.
+         */
+        put: operations["save_summary_api_me_project_summaries__project_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/project-summaries/{project_id}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Summary Image
+         * @description Laddar upp en bild på slutresultatet. Bilden görs mindre och sparas som WebP utan
+         *     platsdata. Den hör till sammanfattningen när eleven skickar den med bildens id.
+         */
+        post: operations["upload_summary_image_api_me_project_summaries__project_id__images_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/project-summaries/{project_id}/images/{image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Summary Image */
+        get: operations["get_my_summary_image_api_me_project_summaries__project_id__images__image_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2929,6 +3050,14 @@ export interface components {
             /**
              * File
              * @description PNG, JPEG eller WebP, högst 1 MB
+             */
+            file: string;
+        };
+        /** Body_upload_summary_image_api_me_project_summaries__project_id__images_post */
+        Body_upload_summary_image_api_me_project_summaries__project_id__images_post: {
+            /**
+             * File
+             * @description En bild, högst 20 MB
              */
             file: string;
         };
@@ -4416,6 +4545,21 @@ export interface components {
              */
             days?: components["schemas"]["Day"][] | null;
         };
+        /** PendingSummary */
+        PendingSummary: {
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Project Name */
+            project_name: string;
+            /**
+             * Completed At
+             * Format: date-time
+             */
+            completed_at: string;
+        };
         /** Person */
         Person: {
             /**
@@ -5438,6 +5582,16 @@ export interface components {
              */
             answers: components["schemas"]["TextAnswer"][];
         };
+        /** StudentSummary */
+        StudentSummary: {
+            student: components["schemas"]["Ref"];
+            summary: components["schemas"]["SummaryRead"] | null;
+            /**
+             * Reminded At
+             * @description När eleven fick påminnelsen
+             */
+            reminded_at: string | null;
+        };
         /** StudentTrack */
         StudentTrack: {
             /**
@@ -5450,6 +5604,63 @@ export interface components {
         SubjectsWrite: {
             /** Level Codes */
             level_codes: string[];
+        };
+        /** SummaryForm */
+        SummaryForm: {
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Project Name */
+            project_name: string;
+            /**
+             * Completed
+             * @description Eleven kan sammanfatta när projektet är klart
+             */
+            completed: boolean;
+            /**
+             * Goals
+             * @description Projektets mål, klassens mål först
+             */
+            goals: components["schemas"]["GoalRead"][];
+            summary: components["schemas"]["SummaryRead"] | null;
+        };
+        /** SummaryRead */
+        SummaryRead: {
+            /**
+             * Rating
+             * @description 1–5 stjärnor
+             */
+            rating: number;
+            /**
+             * Best
+             * @description Det eleven är mest nöjd med
+             */
+            best: string;
+            /**
+             * Goal Ids
+             * @description Målen eleven tycker att den visade
+             */
+            goal_ids: string[];
+            /** Image Ids */
+            image_ids: string[];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** SummaryWrite */
+        SummaryWrite: {
+            /** Rating */
+            rating: number;
+            /** Best */
+            best: string;
+            /** Goal Ids */
+            goal_ids?: string[];
+            /** Image Ids */
+            image_ids?: string[];
         };
         /**
          * SupervisedStudent
@@ -9100,6 +9311,222 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MyProject"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_summaries_api_projects__project_id__summaries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_summary_image_api_projects__project_id__summary_images__image_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pending_summaries_api_me_project_summaries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingSummary"][];
+                };
+            };
+        };
+    };
+    my_summary_api_me_project_summaries__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryForm"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_summary_api_me_project_summaries__project_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SummaryWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_summary_image_api_me_project_summaries__project_id__images_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_summary_image_api_me_project_summaries__project_id__images_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_summary_image_api_me_project_summaries__project_id__images__image_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                image_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
                 };
             };
             /** @description Validation Error */

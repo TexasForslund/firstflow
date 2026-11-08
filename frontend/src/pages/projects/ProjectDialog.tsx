@@ -151,7 +151,7 @@ export function ProjectDialog({
           supervisor_ids: workplaceId ? supervisorIds : [],
           completed: project ? completed : null,
         }
-      : text
+      : { ...text, completed: project ? completed : null }
     save.mutate(body, { onSuccess: onClose })
   }
 
@@ -367,11 +367,11 @@ export function ProjectDialog({
               </fieldset>
             )}
 
-            {isOwner && project && (
+            {project && (
               <div className={styles.switch}>
                 <Switch
                   label="Projektet är avslutat"
-                  description="Avslutade projekt visas under Avslutade i listan."
+                  description="Eleverna får då frågor om att sammanfatta projektet. Avslutade projekt visas under Avslutade i listan."
                   checked={completed}
                   onChange={setCompleted}
                 />

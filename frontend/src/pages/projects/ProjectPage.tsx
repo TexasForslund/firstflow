@@ -11,10 +11,12 @@ import {
   type Project,
   type ProjectReport,
 } from '../../api/projects'
+import { useProjectSummaries } from '../../api/projectSummaries'
 import { Avatar, Button, ButtonLink, CompanyLogo } from '../../components'
 import { useCurrentUser } from '../../auth/useCurrentUser'
 import { ProjectGoalsTable, StudentProjectGoals } from '../goals/GoalViews'
 import { CommentsTab, ImagesTab } from './ProjectTabs'
+import { SummaryCard, SummaryList } from './Summaries'
 import { ProjectDialog } from './ProjectDialog'
 import styles from './ProjectPage.module.css'
 import { daysLeftText, longDate, projectTone, reportsWord } from './projectText'
@@ -232,6 +234,7 @@ function Overview({
   return (
     <>
       <Facts project={project} />
+      <SummaryList project={project} onStudent={onStudent} />
       <ProjectGoalsTable projectId={project.id} reportPath={reportPath} onStudent={onStudent} />
       <div className={styles.boxes}>
         <About project={project} />
@@ -295,6 +298,8 @@ function StudentOverview({
   const latest = reports.data?.[0]
   const firstName = student.name.split(' ')[0]
   const studentPage = user?.role === 'supervisor' ? `/my-students/${student.id}` : `/students/${student.id}`
+  const summaries = useProjectSummaries(project.id, Boolean(project.completed_at))
+  const summary = summaries.data?.find((r) => r.student.id === student.id)
   return (
     <>
       <div className={styles.studentHead}>
@@ -310,11 +315,13 @@ function StudentOverview({
         </span>
         <ButtonLink to={studentPage}>Elevens sida</ButtonLink>
       </div>
+      {summary && <SummaryCard project={project} row={summary} />}
       <StudentProjectGoals
         projectId={project.id}
         studentId={student.id}
         firstName={firstName}
         reportPath={reportPath}
+        claimed={summary?.summary?.goal_ids}
       />
       <About project={project} />
     </>

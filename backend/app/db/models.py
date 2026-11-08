@@ -21,7 +21,11 @@ from app.models.placement import (  # noqa: F401
 from app.models.project import (  # noqa: F401
     Project,
     ProjectComment,
+    ProjectSummary,
+    ProjectSummaryImage,
+    ProjectSummaryReminder,
     project_students,
+    project_summary_goals,
     project_supervisors,
 )
 from app.models.report import (  # noqa: F401
