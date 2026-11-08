@@ -221,13 +221,14 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 - **Både Gy25 och det gamla systemet.** Gy25 (från hösten 2025) har ämnen med nivåer och betyg per nivå. Elever som började tidigare läser kurser (Gy11). Ett mål ska därför kunna pekas mot ämne och nivå eller mot kurs.
 - **Läraren äger sina mål**, inte ämneslaget eller skolan.
 - **Firstflow föreslår aldrig ett betyg.** Läraren sätter alltid betyget själv. Firstflow samlar bara underlaget.
-- **Läroplanen följer klassen, inte skolan.** Under några år har skolor både Gy25 och Gy11. När en klass skapas väljs Gy25 om klassen startar hösten 2025 eller senare, annars Gy11. Läraren eller skoladministratören kan ändra det. Undantag för en enskild elev byggs inte från början.
+- **Läroplanen följer klassen, inte skolan.** Under några år har skolor både Gy25 och Gy11. Skoladministratören kopplar varje lärare till ett program. Klassen får lärarens program, och läroplanen gissas utifrån året i namnet. Läraren kan ändra läroplanen för sina klasser, men bara skoladministratören byter program (Texas 2026-11-08). Undantag för en enskild elev byggs inte från början.
+- **Inriktningen hör till eleven** (Texas valde B, 2026-11-08). Läraren kopplar klassens inriktningar till Skolverkets. Läraren får ämnesförslag för klassens alla inriktningar. Senare kan mål gälla bara en inriktning, som frågorna redan kan.
 - **Målen pekar på punkter i det centrala innehållet**, inte på betygskriterierna. Läraren kopplar inte målen till ämnets förmågor i första versionen. Betygskriterierna (E, C och A) visas bredvid underlaget som stöd. Om lärarna i piloten saknar underlaget per förmåga lägger vi till det.
 - **Piloten börjar med El- och energiprogrammet.**
 
 **Flödet:**
-1. **Ämnen och nivåer:** klassen har program och inriktning (finns i dag). Läraren väljer vilka ämnen och nivåer, eller kurser, som APL-perioden ska träna.
-2. **Anropet:** Firstflow hämtar läroplanen från Skolverkets öppna API (`api.skolverket.se/syllabus`, med ämnen, kurser och läroplaner).
+1. **Ämnen och nivåer:** klassen har program och inriktning (finns i dag). Läraren väljer vilka ämnen och nivåer, eller kurser, som APL-perioden ska träna. ✅ Steg 1 byggt i #81 (fliken Läroplan på klassidan).
+2. **Anropet:** Firstflow hämtar läroplanen från Skolverkets öppna API (`api.skolverket.se/syllabus`, med ämnen, kurser och läroplaner). ✅ Program och ämnen i #81. Det centrala innehållet hämtas i steg 2.
 3. **Målförslag:** varje punkt i det centrala innehållet blir ett förslag. Läraren bockar för de som passar och skriver om dem till vanlig svenska. Målet visar alltid vilken del av läroplanen det kommer från. Det ersätter dagens fria text på målet.
 4. **Projekt:** när läraren skapar ett projekt föreslår Firstflow mål genom att söka på orden i beskrivningen. Läraren väljer.
 5. **Frågor:** till varje mål finns färdiga mallar för frågor, till exempel "Läste du ritningen själv i dag?" som ja/nej där Ja är kopplat till målet. Läraren lägger till med ett klick och ändrar.

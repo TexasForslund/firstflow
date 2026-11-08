@@ -98,3 +98,22 @@ export function useCreateSchoolAdmin(schoolId: string) {
       queryClient.invalidateQueries({ queryKey: ["schools", schoolId] }),
   });
 }
+
+/** Skoladmin kopplar en lärare till ett program (idé 13, Texas 2026-11-08). */
+export function useSetTeacherProgram(schoolId: string | null | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, programName }: { userId: string; programName: string | null }) => {
+      const { data, error, response } = await api.PUT(
+        "/api/schools/{school_id}/users/{user_id}/program",
+        {
+          params: { path: { school_id: schoolId!, user_id: userId } },
+          body: { program_name: programName },
+        },
+      );
+      if (!data) throw new ApiError(error, response.status);
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["schools", schoolId, "users"] }),
+  });
+}

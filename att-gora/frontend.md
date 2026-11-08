@@ -536,3 +536,30 @@ Texas, 2026-11-07, skissen "Sammanfattning av projekt", steg 1 av idé 12:6. Ste
   - `GET` och `POST /api/projects/{id}/comments` och `DELETE /api/projects/{id}/comments/{comment_id}` (bara egna kommentarer).
   - `GET /api/projects/{id}/images`.
 
+## F41. Läroplan och ämnen per klass ✅ Klar (PR #81)
+
+Idé 13, steg 1 (Texas, 2026-11-08, skissen "Mål från läroplanen", bild 1).
+
+- **Skoladministratören kopplar varje lärare till ett program** på sidan Användare. En lärare har ett program.
+- **Läraren skapar klassen.** Programmet kommer från läraren. Läroplanen (Gy25 eller Gy11) gäller per klass och gissas utifrån året i namnet (EE23 blir Gy11, EL25 blir Gy25). Läraren kan ändra läroplanen för sina klasser. Klasser som läraren skapade innan programmet kopplades får programmet när skoladministratören kopplar det.
+- **Bara skoladministratören byter en klass program.** Skoladministratören kan ändra allt.
+- **Inriktningen hör till eleven** (Texas valde B). Läraren kopplar klassens inriktningar, till exempel "El", till Skolverkets, till exempel Elteknik.
+- **Fliken Läroplan på klassidan:**
+  - Läraren kryssar i de ämnen eleverna tränar under APL.
+  - Programmets ämnen och ämnena för klassens alla kopplade inriktningar är ikryssade från början.
+  - Yrkesutgångarna för inriktningarna och programfördjupningen är hopfällda.
+- **Byts läroplan eller program** tas klassens ämnen och inriktningarnas koppling bort, med en varning först.
+- **Rektorn** ser allt men kan inte ändra.
+- **Backend:**
+  - Endpoints:
+    - `GET /api/syllabus/programs?curriculum=gy25|gy11`
+    - `GET /api/syllabus/programs/{kod}/groups?orientation=…` (flera)
+    - `GET /api/classes/{id}/curriculum`
+    - `PUT /api/classes/{id}/program`: skoladministratören.
+    - `PUT /api/classes/{id}/tracks/{track_id}/orientation`: skoladministratören.
+    - `PUT /api/classes/{id}/subjects`: klassens lärare och skoladministratören.
+    - `POST /api/classes` tar emot `curriculum` och `program_code`.
+  - `school_classes.curriculum`, `school_classes.program_code` och `class_tracks.orientation_code`.
+  - Skolverkets svar sparas i `syllabus_cache` och hämtas om efter sju dagar. Svarar inte Skolverket används det sparade svaret, och utan sparat svar blir det 503.
+  - `class_subjects` sparar klassens nivåer och kurser med namn.
+  - Testerna använder Skolverkets riktiga svar från 2026-11-08 i `backend/tests/fixtures/skolverket`.

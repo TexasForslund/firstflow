@@ -58,8 +58,8 @@ export function useSchoolTeachers(schoolId: string | null | undefined, enabled: 
 export function useCreateClass() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (name: string) => {
-      const { data, error, response } = await api.POST('/api/classes', { body: { name } })
+    mutationFn: async (body: components['schemas']['ClassCreate']) => {
+      const { data, error, response } = await api.POST('/api/classes', { body })
       if (!data) throw new ApiError(error, response.status)
       return data
     },

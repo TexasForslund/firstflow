@@ -28,6 +28,7 @@ def test_login_sets_cookie_and_me_returns_user(
         "school_id": str(school.id),
         "school_name": "Testskolan",
         "has_password": True,
+        "program_name": None,
         "preferences": {
             "text_size": "normal",
             "high_contrast": False,

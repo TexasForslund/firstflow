@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import require_roles, require_same_school
@@ -66,6 +67,61 @@ def create_school_user(
     if body.send_invite:
         invite_account(db, user, created)
     return created
+
+
+class TeacherProgram(BaseModel):
+    program_name: str | None = Field(max_length=200, description="null = inget program")
+
+
+@router.put("/{school_id}/users/{user_id}/program", response_model=UserRead)
+def set_teacher_program(
+    school_id: UUID, user_id: UUID, body: TeacherProgram, db: DbSession, user: CanCreateSchoolUsers
+) -> User:
+    """Skoladmin kopplar en lärare till ett program. Lärarens nya klasser får programmet
+    (idé 13, Texas 2026-11-08). En lärare hör till ett program."""
+    from app.services import skolverket
+
+    _require_school(db, user, school_id)
+    teacher = db.get(User, user_id)
+    if teacher is None or teacher.school_id != school_id or teacher.role != UserRole.TEACHER:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")
+    if body.program_name is not None:
+        try:
+            names = {p.name for c in ("gy25", "gy11") for p in skolverket.programs(db, c)}
+        except skolverket.SkolverketUnavailable:
+            raise HTTPException(
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Skolverket svarar inte just nu. Försök igen om en stund.",
+            ) from None
+        if body.program_name not in names:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Programmet finns inte"
+            )
+    teacher.program_name = body.program_name
+    if body.program_name:
+        _give_classes_program(db, teacher, body.program_name)
+    db.commit()
+    return teacher
+
+
+def _give_classes_program(db: DbSession, teacher: User, program_name: str) -> None:
+    """Lärarens klasser som saknar program får det nu. Läroplanen gissas utifrån året i
+    klassens namn, om den inte redan är vald."""
+    from app.api.routes.syllabus import suggested_curriculum
+    from app.models.school_class import SchoolClass, class_teachers
+    from app.services import skolverket
+
+    classes = db.scalars(
+        select(SchoolClass)
+        .join(class_teachers, class_teachers.c.class_id == SchoolClass.id)
+        .where(class_teachers.c.teacher_id == teacher.id, SchoolClass.program_code.is_(None))
+    ).all()
+    for school_class in classes:
+        curriculum = school_class.curriculum or suggested_curriculum(school_class.name)
+        code = skolverket.program_code_for(db, curriculum, program_name)
+        if code:
+            school_class.curriculum = curriculum
+            school_class.program_code = code
 
 
 @router.post("/{school_id}/users/{user_id}/invite", response_model=UserRead)

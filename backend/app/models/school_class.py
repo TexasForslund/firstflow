@@ -65,6 +65,7 @@ class SchoolClass(Base):
         ),
         # Redovisningsdagarna väljs bland APL-dagarna (Texas, 2026-10-30).
         CheckConstraint("report_due_weekdays <@ apl_weekdays", name="report_due_on_apl_days"),
+        CheckConstraint("curriculum IN ('gy25', 'gy11')", name="curriculum_values"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -73,6 +74,11 @@ class SchoolClass(Base):
     )
     name: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # Läroplanen klassen följer, gy25 eller gy11, och programmet hos Skolverket, till exempel
+    # EE25 (idé 13, Texas 2026-11-08). Väljs när klassen skapas. Bara skoladmin ändrar dem sedan.
+    curriculum: Mapped[str | None] = mapped_column(String(4))
+    program_code: Mapped[str | None] = mapped_column(String(10))
 
     # APL-villkor för hela klassen. Veckodagar: 0 = måndag … 6 = söndag.
     # APL-dagar: dagarna eleverna är på APL och checkar in, även helger för t.ex.
@@ -106,4 +112,7 @@ class ClassTrack(Base):
         ForeignKey("school_classes.id", ondelete="CASCADE"), index=True
     )
     name: Mapped[str] = mapped_column(String(50))
+    # Inriktningen hos Skolverket, till exempel EEELK för elteknik i EE25. Skoladmin kopplar den
+    # (idé 13, Texas 2026-11-08). Läraren får ämnesförslag för klassens inriktningar.
+    orientation_code: Mapped[str | None] = mapped_column(String(10))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
