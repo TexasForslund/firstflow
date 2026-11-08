@@ -597,3 +597,14 @@ Idé 13, steg 4 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 4a oc
 - Egna mål skrivs in som förut och blir skolans mål.
 - Handledaren ser alla mål men ändrar dem inte.
 - **Backend:** `ProjectWrite.goal_ids` (null = som förut) och `ProjectRead.class_goals`. `tags` är bara skolans mål. `GET /api/goals/for-students?student_id=…` ger klassens mål för elevernas klasser. Tas en elev bort försvinner målen från elevens klass.
+
+## F44. Frågor från målen ✅ Klar (PR #84)
+
+Idé 13, steg 5 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 5a och 5b).
+
+- "Lägg till fråga" får fliken **Från målen** när klassen har mål från läroplanen. Läraren väljer ett mål, ordnat efter ämne, och ser texten ur läroplanen och tre färdiga frågor där svaret redan är kopplat till målet:
+  1. **Ja/Nej:** "Har du jobbat med … i dag?" Ja ger målet. Sedan fritexten "Berätta vad du gjorde.", och Nej hoppar över den.
+  2. **Flerval:** "Hur gick det med … i dag?" "Jag gjorde det själv" ger målet.
+  3. **Flera svar för hela ämnet:** "Vad gjorde du i dag?" med ett alternativ per mål i ämnet. Visas när ämnet har minst två mål.
+- Frågorna läggs efter den valda frågan i utkastet, med mål och logik klara. Läraren ändrar texten och publicerar som vanligt.
+- Mallarna byggs på målets namn i frontend (`goalTemplates.ts`). Ingen AI och inget nytt i backend.

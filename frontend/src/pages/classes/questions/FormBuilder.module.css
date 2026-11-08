@@ -1003,3 +1003,167 @@
   width: 1.25rem;
   height: 1.25rem;
 }
+
+/* Lägg till fråga från målen (idé 13, steg 5, Texas skiss 2026-11-08). Inga skuggor. */
+.dialogWide {
+  width: min(100% - 2rem, 64rem);
+}
+
+.addTabs {
+  display: inline-flex;
+  justify-self: start;
+  gap: var(--space-1);
+  margin: var(--space-4) var(--space-6) 0;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.addTab {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addTab[aria-pressed='true'] {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.fromGoals {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.fromGoalsLayout {
+  display: grid;
+  grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.goalNav {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.goalNavGroup {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.goalNavItem {
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.goalNavItem:hover {
+  background: var(--color-sidebar);
+}
+
+.goalNavItem[aria-current='true'] {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-weight: 600;
+}
+
+.templates {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.goalSourceBox {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+  font-size: var(--font-size-sm);
+}
+
+.goalSourceTitle {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.template {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.templateHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.templateKind {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.templateTitle {
+  flex: 1 1 14rem;
+  font-weight: 700;
+}
+
+.templateAnswers {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.templateAnswer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.templateGoal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.templateGoal svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+@media (max-width: 640px) {
+  .fromGoalsLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

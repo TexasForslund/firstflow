@@ -147,6 +147,17 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
     setAdding(false)
   }
 
+  /** Färdiga frågor från ett mål (idé 13, steg 5). Läggs efter den valda frågan. */
+  function addQuestions(build: (nextId: string | null) => Question[]) {
+    const at = selectedId ? questions.findIndex((q) => q.id === selectedId) + 1 : questions.length
+    const added = build(questions[at]?.id ?? null)
+    const next = [...questions]
+    next.splice(at, 0, ...added)
+    update(next)
+    setSelectedId(added[0].id)
+    setAdding(false)
+  }
+
   function move(index: number, direction: -1 | 1) {
     const next = [...questions]
     const [question] = next.splice(index, 1)
@@ -322,7 +333,14 @@ function Editor({ classId, initial }: { classId: string; initial: Question[] }) 
         )}
       </div>
 
-      {adding && <AddQuestionDialog onPick={addQuestion} onClose={() => setAdding(false)} />}
+      {adding && (
+        <AddQuestionDialog
+          goals={goals}
+          onPick={addQuestion}
+          onAddMany={addQuestions}
+          onClose={() => setAdding(false)}
+        />
+      )}
       {templateDialog === 'use' && (
         <UseTemplateDialog
           classId={classId}
