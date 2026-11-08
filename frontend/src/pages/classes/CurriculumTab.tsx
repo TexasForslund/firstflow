@@ -15,7 +15,7 @@ import {
   type Curriculum,
   type SubjectGroup,
 } from '../../api/syllabus'
-import { Button, Card, matches, SearchInput, SelectField } from '../../components'
+import { Button, Card, HelpPopover, matches, SearchInput, SelectField } from '../../components'
 import { ClassGoals } from './ClassGoals'
 import styles from './CurriculumTab.module.css'
 import { CurriculumField, ProgramFields } from './ProgramFields'
@@ -97,7 +97,7 @@ function ProgramCard({
           </span>
           <div>
             <h2 id="curriculum-title" className={styles.title}>
-              Läroplan och program
+              Läroplan och program <HelpPopover topic="curriculum" />
             </h2>
             <p className={styles.muted}>
               {isAdmin
@@ -174,7 +174,7 @@ function TracksOrientationCard({
       <section className={styles.card} aria-labelledby="orientations-title">
         <div>
           <h2 id="orientations-title" className={styles.groupTitle}>
-            Inriktningar i klassen
+            Inriktningar i klassen <HelpPopover topic="orientations" />
           </h2>
           <p className={styles.muted}>
             Koppla klassens inriktningar till Skolverkets, så kommer förslag på ämnen för dem.
@@ -274,7 +274,9 @@ function SubjectsForm({ classId, saved }: { classId: string; saved: ClassCurricu
   return (
     <>
       <div>
-        <h2 className={styles.title}>Ämnen under APL</h2>
+        <h2 className={styles.title}>
+          Ämnen under APL <HelpPopover topic="subjects" />
+        </h2>
         <p className={styles.muted}>
           Vilka ämnen tränar eleverna under APL? Programmets och inriktningarnas ämnen är ikryssade. Ta bort det som
           inte passar. Målen väljs sedan utifrån ämnena.

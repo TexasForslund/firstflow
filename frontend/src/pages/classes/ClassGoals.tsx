@@ -9,7 +9,7 @@ import {
   type ClassCurriculum,
   type LevelContent,
 } from '../../api/syllabus'
-import { Button, Card } from '../../components'
+import { Button, Card, HelpPopover } from '../../components'
 import styles from './ClassGoals.module.css'
 
 const MAX_NAME = 40
@@ -29,7 +29,7 @@ export function ClassGoals({ classId, saved, canEdit }: { classId: string; saved
     <section className={styles.section} aria-labelledby="class-goals-title">
       <div>
         <h2 id="class-goals-title" className={styles.title}>
-          Mål från läroplanen
+          Mål från läroplanen <HelpPopover topic="curriculumGoals" />
         </h2>
         <p className={styles.muted}>
           Varje punkt är en del av det centrala innehållet. Kryssa för det eleverna gör på APL och ge målet ett kort

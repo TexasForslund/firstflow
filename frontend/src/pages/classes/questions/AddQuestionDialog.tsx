@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import type { Question, QuestionType } from '../../../api/forms'
 import { goalGroups, type Goal } from '../../../api/goals'
+import { HelpPopover } from '../../../components'
 import styles from './FormBuilder.module.css'
 import { goalTemplates } from './goalTemplates'
 import { QUESTION_TYPES, TYPE_GROUPS } from './questionTypes'
@@ -124,7 +125,8 @@ function FromGoals({
   return (
     <div className={styles.fromGoals}>
       <p className={styles.settingsHint}>
-        Färdiga frågor där svaret redan är kopplat till målet. Ändra texten som du vill efteråt.
+        Färdiga frågor där svaret redan är kopplat till målet. Ändra texten som du vill efteråt.{' '}
+        <HelpPopover topic="goalQuestions" />
       </p>
       <div className={styles.fromGoalsLayout}>
         <nav className={styles.goalNav} aria-label="Klassens mål">

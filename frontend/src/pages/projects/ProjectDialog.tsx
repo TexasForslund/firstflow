@@ -271,7 +271,7 @@ export function ProjectDialog({
                     <section className={styles.curriculum} aria-labelledby="curriculum-goals-title">
                       <div>
                         <h3 id="curriculum-goals-title" className={styles.curriculumTitle}>
-                          Förslag från läroplanen
+                          Förslag från läroplanen <HelpPopover topic="projectGoals" />
                         </h3>
                         <p className={styles.hint}>
                           {goalSuggestions.length > 0

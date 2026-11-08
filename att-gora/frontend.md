@@ -549,6 +549,7 @@ Idé 13, steg 1 (Texas, 2026-11-08, skissen "Mål från läroplanen", bild 1).
   - Programmets ämnen och ämnena för klassens alla kopplade inriktningar är ikryssade från början.
   - Yrkesutgångarna för inriktningarna och programfördjupningen är hopfällda.
   - De hopfällda grupperna har ett sökfält: "dat" visar till exempel alla datorämnen. Valda ämnen syns alltid (Texas, 2026-11-08).
+  - "Vad är det här?" vid Läroplan och program, Inriktningar i klassen, Ämnen under APL, Mål från läroplanen, frågor Från målen och förslagen i projektet. Texterna säger vad valet styr längre fram (Texas, 2026-11-08).
 - **Byts läroplan eller program** tas klassens ämnen och inriktningarnas koppling bort, med en varning först.
 - **Rektorn** ser allt men kan inte ändra.
 - **Backend:**
