@@ -1,4 +1,5 @@
 import {
+  Archive,
   ChevronDown,
   Ellipsis,
   GraduationCap,
@@ -52,6 +53,8 @@ interface AppShellProps {
   nav: NavItem[]
   /** Lärarens klasser i sidomenyn. Utelämna för roller utan egna klasser. */
   classes?: SidebarClass[]
+  /** Antal arkiverade klasser. Visar länken Arkiverade under klasserna. */
+  archivedClasses?: number
   onLogout: () => void
   /** Flikrad längst ned i mobilen, som i appar. Används i elevens vy. */
   tabBar?: boolean
@@ -69,7 +72,16 @@ function readCollapsed() {
   }
 }
 
-export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBar, top }: AppShellProps) {
+export function AppShell({
+  userName,
+  userSubtitle,
+  nav,
+  classes,
+  archivedClasses = 0,
+  onLogout,
+  tabBar,
+  top,
+}: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   // Fälls ihop på stor skärm så att bara ikonerna syns. Valet sparas i webbläsaren.
   const [collapsed, setCollapsed] = useState(readCollapsed)
@@ -156,7 +168,7 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
                         <span className={styles.navMeta}>{item.meta}</span>
                       ) : null}
                     </NavLink>
-                    {item.classesAfter && classes && <ClassList classes={classes} />}
+                    {item.classesAfter && classes && <ClassList classes={classes} archived={archivedClasses} />}
                   </li>
                 ))}
               </ul>
@@ -215,7 +227,7 @@ export function AppShell({ userName, userSubtitle, nav, classes, onLogout, tabBa
 const CLASSES_OPEN_KEY = 'firstflow-sidebar-classes-open'
 
 /** Lärarens klasser under Redovisningar. Går att fälla ihop, valet sparas i webbläsaren. */
-function ClassList({ classes }: { classes: SidebarClass[] }) {
+function ClassList({ classes, archived }: { classes: SidebarClass[]; archived: number }) {
   const [open, setOpen] = useState(() => {
     try {
       return localStorage.getItem(CLASSES_OPEN_KEY) !== '0'
@@ -269,6 +281,22 @@ function ClassList({ classes }: { classes: SidebarClass[] }) {
               Ny klass
             </Link>
           </li>
+          {archived > 0 && (
+            <li>
+              <NavLink
+                to="/classes/archived"
+                className={({ isActive }) => `${styles.classItem} ${isActive ? styles.active : ''}`}
+              >
+                <span className={styles.archivedLink}>
+                  <Archive aria-hidden="true" />
+                  Arkiverade
+                </span>
+                <span className={styles.classCount} aria-label={`${archived} arkiverade klasser`}>
+                  {archived}
+                </span>
+              </NavLink>
+            </li>
+          )}
         </ul>
       )}
     </div>

@@ -109,8 +109,13 @@ export function RequireAuth() {
         return item
       })}
       classes={
-        isTeacher ? (classes.data ?? []).map((c) => ({ id: c.id, name: c.name, count: c.student_count })) : undefined
+        isTeacher
+          ? (classes.data ?? [])
+              .filter((c) => !c.archived_at)
+              .map((c) => ({ id: c.id, name: c.name, count: c.student_count }))
+          : undefined
       }
+      archivedClasses={isTeacher ? (classes.data ?? []).filter((c) => c.archived_at).length : 0}
       onLogout={() => logout.mutate()}
       tabBar={user.role === 'student' || user.role === 'supervisor'}
       top={user.role === 'student' ? <CheckInPrompt firstName={user.name.split(' ')[0]} /> : undefined}

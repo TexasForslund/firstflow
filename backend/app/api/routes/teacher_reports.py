@@ -106,6 +106,9 @@ def _taught_classes(db: Session, user: User, class_id: UUID | None) -> list[Scho
     )
     if class_id is not None:
         query = query.where(SchoolClass.id == class_id)
+    else:
+        # Arkiverade klasser läses på klassens sida, inte i den vanliga listan (idé 8).
+        query = query.where(SchoolClass.archived_at.is_(None))
     classes = list(db.scalars(query).unique())
     if class_id is not None and not classes:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Hittades inte")

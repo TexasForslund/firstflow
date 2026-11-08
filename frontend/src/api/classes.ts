@@ -151,3 +151,40 @@ export function useSetAplTerms(classId: string) {
     onSuccess: (updated) => queryClient.setQueryData(['classes', classId], updated),
   })
 }
+
+/** Arkivera eller ta tillbaka en klass (idé 8). Klasslistan och översikten hämtas om. */
+export function useArchiveClass(classId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (archive: boolean) => {
+      const params = { params: { path: { class_id: classId } } }
+      const { data, error, response } = archive
+        ? await api.POST('/api/classes/{class_id}/archive', params)
+        : await api.POST('/api/classes/{class_id}/restore', params)
+      if (!data) throw new ApiError(error, response.status)
+      return data
+    },
+    onSuccess: (saved) => {
+      queryClient.setQueryData(keys.class(classId), saved)
+      queryClient.invalidateQueries({ queryKey: keys.classes, exact: true })
+      queryClient.invalidateQueries({ queryKey: ['teacher', 'overview'] })
+    },
+  })
+}
+
+/** Tar bort en klass utan redovisningar. */
+export function useDeleteClass(classId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE('/api/classes/{class_id}', {
+        params: { path: { class_id: classId } },
+      })
+      if (!response.ok) throw new ApiError(error, response.status)
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: keys.class(classId) })
+      queryClient.invalidateQueries({ queryKey: keys.classes, exact: true })
+    },
+  })
+}

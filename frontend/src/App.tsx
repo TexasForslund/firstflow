@@ -9,6 +9,7 @@ import { Import } from './pages/admin/Import'
 import { Users } from './pages/admin/Users'
 import { AcceptInvite } from './pages/auth/AcceptInvite'
 import { Login } from './pages/auth/Login'
+import { ArchivedClasses } from './pages/classes/ArchiveClass'
 import { ClassList } from './pages/classes/ClassList'
 import { ClassPage } from './pages/classes/ClassPage'
 import { NewClass } from './pages/classes/NewClass'
@@ -75,6 +76,7 @@ const routes: RouteObject[] = [
       // Klasser och elever (B2/F3)
       { path: 'classes', element: only(['school_admin', 'principal'], <ClassList />) },
       { path: 'classes/new', element: only(['teacher', 'school_admin'], <NewClass />) },
+      { path: 'classes/archived', element: only(['teacher'], <ArchivedClasses />) },
       {
         path: 'classes/:classId',
         element: only(['teacher', 'school_admin', 'principal', 'superadmin'], <ClassPage />),

@@ -74,6 +74,9 @@ class SchoolClass(Base):
     )
     name: Mapped[str] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Satt när klassen är arkiverad (idé 8, Texas 2026-11-08). En arkiverad klass går att läsa
+    # men inte ändra, och eleverna får inga nya redovisningar i den.
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Läroplanen klassen följer, gy25 eller gy11, och programmet hos Skolverket, till exempel
     # EE25 (idé 13, Texas 2026-11-08). Väljs när klassen skapas. Bara skoladmin ändrar dem sedan.

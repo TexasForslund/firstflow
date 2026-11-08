@@ -29,6 +29,7 @@ import {
 import { NotFound } from '../NotFound'
 import { currentPlacement } from '../placements/period'
 import { AplTermsForm } from './AplTermsForm'
+import { ArchivedBanner, ClassActions } from './ArchiveClass'
 import { ClassReports } from './ClassReports'
 import { CurriculumTab } from './CurriculumTab'
 import { FormBuilder } from './questions/FormBuilder'
@@ -54,7 +55,9 @@ export function ClassPage() {
   if (query.isError) return <NotFound what="Klassen" />
 
   const cls = query.data
-  const canEdit = user?.role === 'teacher' || user?.role === 'school_admin'
+  const isStaffEditor = user?.role === 'teacher' || user?.role === 'school_admin'
+  // En arkiverad klass går bara att läsa (idé 8).
+  const canEdit = isStaffEditor && !cls.archived_at
   const canAssignTeachers = user?.role === 'school_admin'
   const teacherNames = cls.teachers.map((t) => t.name).join(', ')
 
@@ -71,14 +74,18 @@ export function ClassPage() {
 
   return (
     <div className={`${styles.page} ${tab === 'questions' && canEdit ? styles.pageWide : ''}`}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{cls.name}</h1>
-        <p className={styles.subtitle}>
-          {cls.students.length} {cls.students.length === 1 ? 'elev' : 'elever'}
-          {teacherNames ? ` · ${teacherNames}` : ' · Ingen lärare kopplad'}
-          {aplSummary(cls.apl_terms) && ` · ${aplSummary(cls.apl_terms)}`}
-        </p>
-      </header>
+      <div className={styles.titleRow}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>{cls.name}</h1>
+          <p className={styles.subtitle}>
+            {cls.students.length} {cls.students.length === 1 ? 'elev' : 'elever'}
+            {teacherNames ? ` · ${teacherNames}` : ' · Ingen lärare kopplad'}
+            {aplSummary(cls.apl_terms) && ` · ${aplSummary(cls.apl_terms)}`}
+          </p>
+        </header>
+        {isStaffEditor && <ClassActions cls={cls} />}
+      </div>
+      <ArchivedBanner cls={cls} canRestore={isStaffEditor} />
 
       <div className={styles.tabs} role="tablist" aria-label="Klassens delar">
         {tabs.map((t) => (

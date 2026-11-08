@@ -87,7 +87,7 @@ export function Reports() {
             value={classId}
             onChange={(id) => update({ class: id, student: '' })}
             placeholder="Alla klasser"
-            options={(classes.data ?? []).map((c) => ({ id: c.id, label: c.name }))}
+            options={(classes.data ?? []).filter((c) => !c.archived_at).map((c) => ({ id: c.id, label: c.name }))}
           />
         </div>
         <div className={styles.filterField}>

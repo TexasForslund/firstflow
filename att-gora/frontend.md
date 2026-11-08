@@ -657,3 +657,13 @@ Idé 12:6, steg 3 (Texas, 2026-11-08, skissen "Sammanfattning av projekt", 7 och
 - **Kommentarer:** bara det läraren och handledaren har skrivit om eleven med "Alla ser". Eleven svarar inte här.
 - **Backend:** `GET /api/me/projects/{id}` har nu `goals`, `images`, `comments` och `summary`.
 
+## F49. Arkivera och ta bort klasser ✅ Klar
+
+Idé 8 (Texas, 2026-11-08, skissen "Arkivera klasser").
+
+- **Arkivera klass** överst på klassens sida, för läraren i klassen och skoladmin. En ruta säger vad som händer: eleverna får inga nya redovisningar i klassen, klassen syns inte i Översikt och Närvaro, och elevkontona finns kvar.
+- **En arkiverad klass** har en gul ruta "Arkiverad {datum}" och går bara att läsa. Läraren och skoladmin kan ta tillbaka den.
+- **Menyn:** lärarens arkiverade klasser ligger under "Arkiverade" i Mina klasser (`/classes/archived`). Skoladmin ser dem under Klasser.
+- **Ta bort** finns bara för en klass utan redovisningar. Elevkontona finns kvar.
+- **Backend:** `school_classes.archived_at`, `POST /api/classes/{id}/archive`, `POST /api/classes/{id}/restore` och `DELETE /api/classes/{id}` (409 om klassen har redovisningar). Ändringar i en arkiverad klass svarar 409. Elevens redovisningar, lärarens översikt och redovisningslistan hoppar över arkiverade klasser.
+

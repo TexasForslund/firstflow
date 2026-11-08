@@ -263,7 +263,12 @@ export interface paths {
         get: operations["get_class_api_classes__class_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Class
+         * @description Tar bort en klass utan redovisningar. Elevkontona finns kvar. En klass med redovisningar
+         *     går bara att arkivera, så att elevernas arbete sparas (409).
+         */
+        delete: operations["delete_class_api_classes__class_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -363,6 +368,47 @@ export interface paths {
          */
         put: operations["set_apl_terms_api_classes__class_id__apl_terms_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Class
+         * @description Arkiverar klassen. Läraren i klassen och skoladmin får göra det. Allt finns kvar och går
+         *     att läsa, men inget går att ändra och eleverna får inga nya redovisningar i klassen.
+         */
+        post: operations["archive_class_api_classes__class_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classes/{class_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore Class
+         * @description Tar tillbaka en arkiverad klass.
+         */
+        post: operations["restore_class_api_classes__class_id__restore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3300,6 +3346,17 @@ export interface components {
             /** Students */
             students: components["schemas"]["PersonRead"][];
             apl_terms: components["schemas"]["AplTerms"];
+            /**
+             * Archived At
+             * @description Satt när klassen är arkiverad
+             */
+            archived_at?: string | null;
+            /**
+             * Report Count
+             * @description Redovisningar i klassen. Bara en klass utan går att ta bort
+             * @default 0
+             */
+            report_count: number;
         };
         /** ClassPlanRead */
         ClassPlanRead: {
@@ -3329,6 +3386,11 @@ export interface components {
             student_count: number;
             /** Teacher Names */
             teacher_names: string[];
+            /**
+             * Archived At
+             * @description Satt när klassen är arkiverad
+             */
+            archived_at?: string | null;
         };
         /** ClassToday */
         ClassToday: {
@@ -7019,6 +7081,35 @@ export interface operations {
             };
         };
     };
+    delete_class_api_classes__class_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_student_api_classes__class_id__students_post: {
         parameters: {
             query?: never;
@@ -7163,6 +7254,68 @@ export interface operations {
                 "application/json": components["schemas"]["AplTerms"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_class_api_classes__class_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_class_api_classes__class_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
