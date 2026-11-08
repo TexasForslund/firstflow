@@ -132,9 +132,15 @@ export function StudentPage() {
               Skicka meddelande
             </ButtonLink>
           )}
-          <Button icon={<Download aria-hidden="true" />} disabled title="Kommer snart">
-            Exportera
-          </Button>
+          {isTeacher ? (
+            <ButtonLink to={`/students/${student.id}/underlag`} icon={<Download aria-hidden="true" />}>
+              Exportera
+            </ButtonLink>
+          ) : (
+            <Button icon={<Download aria-hidden="true" />} disabled title="Kommer snart">
+              Exportera
+            </Button>
+          )}
         </div>
       </header>
 

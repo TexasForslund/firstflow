@@ -9,6 +9,7 @@ uppbyggnad: programmet har ämnen, och varje ämne har kurser (Gy11) eller nivå
 
 import json
 import logging
+import re
 import urllib.request
 from dataclasses import dataclass
 from datetime import timedelta
@@ -230,3 +231,53 @@ def central_content(data: dict[str, Any], level_code: str) -> list[str]:
     parser = _ListItems()
     parser.feed(course.get("centralContent", {}).get("text", ""))
     return parser.items
+
+
+@dataclass(frozen=True)
+class TextPart:
+    text: str
+    bold: bool
+
+
+class _Paragraphs(HTMLParser):
+    """Styckena i betygskriterierna. Fetstil behålls, eftersom de fetstilta orden skiljer
+    betygsstegen åt (till exempel "visst", "gott" och "mycket gott" handlag)."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.paragraphs: list[list[TextPart]] = []
+        self.current: list[TextPart] | None = None
+        self.bold = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "p":
+            self.current = []
+        elif tag in ("strong", "b"):
+            self.bold += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "p" and self.current is not None:
+            if any(part.text.strip() for part in self.current):
+                self.paragraphs.append(self.current)
+            self.current = None
+        elif tag in ("strong", "b"):
+            self.bold = max(0, self.bold - 1)
+
+    def handle_data(self, data: str) -> None:
+        if self.current is not None and data:
+            # Mellanslagen runt fetstilen behålls, så att orden inte går ihop.
+            self.current.append(TextPart(re.sub(r"\s+", " ", data), self.bold > 0))
+
+
+def criteria(data: dict[str, Any], level_code: str) -> dict[str, list[list[TextPart]]]:
+    """Betygskriterierna för E, C och A. I Gy25 gäller de ämnet, i Gy11 kursen."""
+    course = next((c for c in data.get("courses", []) if c.get("code") == level_code), {})
+    found = course.get("knowledgeRequirements") or data.get("knowledgeRequirements") or []
+    result: dict[str, list[list[TextPart]]] = {}
+    for item in found:
+        grade = item.get("gradeStep")
+        if grade in ("E", "C", "A"):
+            parser = _Paragraphs()
+            parser.feed(item.get("text", ""))
+            result[grade] = parser.paragraphs
+    return result

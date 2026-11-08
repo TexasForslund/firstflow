@@ -1,0 +1,245 @@
+/* Underlag inför betyg (Texas skiss 2026-11-08, steg 8b). Inga skuggor. */
+.page {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.state,
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.muted {
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.75rem;
+  color: var(--color-primary-on-light);
+  font-weight: 600;
+}
+
+.breadcrumb svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.heading {
+  display: grid;
+  flex: 1 1 20rem;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-2xl, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.subjects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.subjectButton {
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.subjectButton[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.box {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.boxHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.boxTitle {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+}
+
+.goals,
+.comments {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comments {
+  gap: var(--space-2);
+}
+
+.goal {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  border-top: 1px solid var(--color-border);
+  break-inside: avoid;
+}
+
+.goal[data-missing] {
+  background: #fffdf5;
+}
+
+.goalHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.goalName {
+  font-weight: 700;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.pillMissing,
+.pillReports,
+.pillProjects,
+.pillClaimed {
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pillMissing {
+  background: #fff5d6;
+  color: #8a5a00;
+}
+
+.pillReports {
+  background: var(--color-mint-bg);
+  color: var(--color-mint);
+}
+
+.pillProjects {
+  background: #e7f0fe;
+  color: #1f5fbf;
+}
+
+.pillClaimed {
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+}
+
+.evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.evidence svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.date {
+  font-weight: 600;
+}
+
+.criterion {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.grade {
+  flex: none;
+  width: 1.25rem;
+  font-weight: 700;
+}
+
+.criterionText {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.footer {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 64rem) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media print {
+  .breadcrumb,
+  .header button,
+  .subjects {
+    display: none;
+  }
+
+  .page {
+    gap: var(--space-3);
+  }
+
+  .columns {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .box {
+    break-inside: avoid-page;
+  }
+
+  .goal a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

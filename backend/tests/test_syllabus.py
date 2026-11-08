@@ -293,3 +293,41 @@ def test_class_goals_from_central_content(
     # En annan lärare ser inte klassens innehåll.
     login(make_user(email="per@skolan.se", role=UserRole.TEACHER))
     assert client.get(f"{base}/subjects/ELTE1000X/content").status_code == 404
+
+
+def test_grade_basis(
+    client: TestClient,
+    login: Login,
+    db: Session,
+    make_user: Callable[..., User],
+    teacher: User,
+    ee: SchoolClass,
+    calls: list[str],
+) -> None:
+    """Idé 13, steg 8: underlaget inför betyg visar målen per ämne och betygskriterierna."""
+    hugo = make_user(email="hugo@skolan.se", role=UserRole.STUDENT)
+    ee.students.append(hugo)
+    teacher.program_name = "El- och energiprogrammet"
+    db.flush()
+    base = f"/api/classes/{ee.id}"
+    login(teacher)
+    client.put(f"{base}/program", json={"curriculum": "gy25", "program_code": "EE25"})
+    client.put(f"{base}/subjects", json={"level_codes": ["ELTE1000X"]})
+    goals = {
+        "goals": [{"content": ELTE_1, "name": "Ansluta"}, {"content": ELTE_2, "name": "Prova"}]
+    }
+    client.put(f"{base}/subjects/ELTE1000X/goals", json=goals)
+
+    basis = client.get(f"/api/students/{hugo.id}/grade-basis")
+    assert basis.status_code == 200, basis.text
+    body = basis.json()
+    assert (body["class_name"], body["other_goals"], body["comments"]) == ("EL25", [], [])
+    (subject,) = body["subjects"]
+    assert subject["title"] == "Elteknik, nivå 1"
+    assert [g["goal"]["name"] for g in subject["goals"]] == ["Ansluta", "Prova"]
+    assert [c["grade"] for c in subject["criteria"]] == ["E", "C", "A"]
+    drawings = subject["criteria"][0]["paragraphs"][2]
+    assert {"text": "viss säkerhet", "bold": True} in drawings
+
+    login(make_user(email="per@skolan.se", role=UserRole.TEACHER))
+    assert client.get(f"/api/students/{hugo.id}/grade-basis").status_code == 404

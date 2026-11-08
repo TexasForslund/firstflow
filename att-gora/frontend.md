@@ -633,3 +633,15 @@ Idé 13, steg 7 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 7).
 - Alla klassens mål syns, även de utan underlag. De är gula och har etiketten "Inget underlag än".
 - Varje mål visar antal redovisningar och projekt, och "visade det" om eleven valde målet i en sammanfattning. Klick visar redovisningarna och projekten med elevens stjärnor och sammanfattning.
 - **Backend:** `GET /api/students/{id}/goals/overview`.
+
+## F47. Underlag inför betyg ✅ Klar (PR #87)
+
+Idé 13, steg 8 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 8a och 8b).
+
+- **Exportera** på elevsidan öppnar sidan Underlag inför betyg (`/students/{id}/underlag`). Bara elevens lärare.
+- Överst eleven, klassen, inriktningen, APL-perioden och företaget. Knappar för klassens ämnen och "Alla ämnen".
+- **Per ämne:** målen med texten ur det centrala innehållet, elevens egna ord från redovisningarna med datum och projekten med stjärnor och sammanfattning. Mål utan underlag är gula.
+- **Bredvid:** Skolverkets betygskriterier för E, C och A, med fetstilen kvar. "Firstflow föreslår inget betyg. Du sätter betyget."
+- Sist skolans mål utan koppling och kommentarerna från handledaren och läraren som eleven ser.
+- **"Skriv ut eller spara som PDF"** använder webbläsarens utskrift. Utskriften har ingen meny eller knappar och slutar med datum och "Underlaget är hämtat ur Firstflow. Läraren sätter betyget."
+- **Backend:** `GET /api/students/{id}/grade-basis`. Kriterierna hämtas från Skolverket (ämnet i Gy25, kursen i Gy11). Svarar inte Skolverket visas underlaget ändå, utan kriterier.

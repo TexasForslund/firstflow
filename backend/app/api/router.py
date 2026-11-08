@@ -7,6 +7,7 @@ from app.api.routes import (
     contracts,
     forms,
     goals,
+    grade_basis,
     health,
     hours,
     imports,
@@ -66,6 +67,7 @@ api_router.include_router(projects.student_router)
 api_router.include_router(projects.me_router)
 api_router.include_router(project_summaries.router)
 api_router.include_router(project_summaries.me_router)
+api_router.include_router(grade_basis.router)
 api_router.include_router(contracts.router)
 api_router.include_router(notes.router)
 api_router.include_router(tracks.router)

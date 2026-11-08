@@ -24,6 +24,7 @@ import { MyApl } from './pages/student/MyApl'
 import { MyReports } from './pages/student/MyReports'
 import { MyProject } from './pages/student/MyProject'
 import { ProjectSummaryPage } from './pages/student/ProjectSummary'
+import { GradeBasis } from './pages/students/GradeBasis'
 import { ReportPost } from './pages/student/ReportPost'
 import { Company } from './pages/supervisor/Company'
 import { MyStudents } from './pages/supervisor/MyStudents'
@@ -83,6 +84,7 @@ const routes: RouteObject[] = [
         path: 'students/:studentId',
         element: only(['teacher', 'school_admin', 'principal', 'syv', 'superadmin'], <StudentPage />),
       },
+      { path: 'students/:studentId/underlag', element: only(['teacher'], <GradeBasis />) },
 
       // Flera roller
       { path: 'messages', element: only(['teacher', 'student', 'supervisor', 'syv'], <Messages />) },
