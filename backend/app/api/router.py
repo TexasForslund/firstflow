@@ -16,6 +16,7 @@ from app.api.routes import (
     notes,
     overview,
     placements,
+    project_summaries,
     projects,
     reports,
     schools,
@@ -63,6 +64,8 @@ api_router.include_router(overview.student_router)
 api_router.include_router(projects.router)
 api_router.include_router(projects.student_router)
 api_router.include_router(projects.me_router)
+api_router.include_router(project_summaries.router)
+api_router.include_router(project_summaries.me_router)
 api_router.include_router(contracts.router)
 api_router.include_router(notes.router)
 api_router.include_router(tracks.router)

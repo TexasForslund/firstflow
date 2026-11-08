@@ -1,13 +1,15 @@
 """Projekt (B12): läraren skapar projekt, kopplar elever, och redovisningar visar projektet."""
 
+import io
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from PIL import Image
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.models.goal import Goal
@@ -248,7 +250,6 @@ def test_supervisor_edits_text_but_not_students(
         ("student_ids", []),
         ("supervisor_ids", []),
         ("workplace_id", str(company.workplace.id)),
-        ("completed", True),
     ]:
         sent = client.put(f"/api/projects/{project_id}", json={**text, field: value})
         assert sent.status_code == 403, field
@@ -589,3 +590,79 @@ def test_project_goals_from_the_curriculum(
     login(w.teacher)
     saved = client.put(url, json={**text, "student_ids": []}).json()
     assert saved["class_goals"] == []
+
+
+def png() -> bytes:
+    out = io.BytesIO()
+    Image.new("RGB", (40, 30), (200, 120, 40)).save(out, "PNG")
+    return out.getvalue()
+
+
+def test_project_summary(
+    client: TestClient, db: Session, login: Login, w: World, company: Company
+) -> None:
+    """Idé 12:6, steg 2: eleven sammanfattar projektet när det är klart."""
+    login(w.teacher)
+    project = client.post("/api/projects", json=with_company(w, company)).json()
+    url = f"/api/projects/{project['id']}"
+    me = f"/api/me/project-summaries/{project['id']}"
+
+    login(w.hugo)
+    assert client.get("/api/me/project-summaries").json() == []
+    form = client.get(me).json()
+    assert form["completed"] is False
+    goal_ids = [g["id"] for g in form["goals"]]
+    answer = {"rating": 4, "best": " Mätningen ", "goal_ids": goal_ids[:1]}
+    assert client.put(me, json=answer).status_code == 409
+
+    # Handledaren markerar projektet som klart. Eleverna får en notis.
+    login(company.sofia)
+    text = {"name": project["name"], "description": None, "deadline": None, "tags": project["tags"]}
+    assert client.put(url, json={**text, "completed": True}).json()["completed_at"]
+    notes = db.scalars(select(Notification).where(Notification.user_id == w.hugo.id)).all()
+    assert [n.link for n in notes] == [f"/my-projects/{project['id']}/summary"]
+
+    login(w.hugo)
+    pending = client.get("/api/me/project-summaries").json()
+    assert [p["project_name"] for p in pending] == ["Elinstallation i villa"]
+    image = client.post(f"{me}/images", files={"file": ("a.png", png(), "image/png")}).json()
+    unused = client.post(f"{me}/images", files={"file": ("b.png", png(), "image/png")}).json()
+    saved = client.put(me, json={**answer, "image_ids": [image["id"]]})
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["best"] == "Mätningen"
+    assert saved.json()["image_ids"] == [image["id"]]
+    assert client.get(f"{me}/images/{unused['id']}").status_code == 404
+    assert client.get("/api/me/project-summaries").json() == []
+    wrong = {**answer, "goal_ids": [str(uuid.uuid4())]}
+    assert client.put(me, json=wrong).status_code == 422
+    assert client.put(me, json={**answer, "rating": 6}).status_code == 422
+    # Maja ser inte Hugos bild.
+    login(w.maja)
+    assert client.get(f"{me}/images/{image['id']}").status_code == 404
+
+    # Läraren ser Hugos svar. Maja har inte svarat och påminns efter tre dagar.
+    login(w.teacher)
+    by_id = {r["student"]["id"]: r for r in client.get(f"{url}/summaries").json()}
+    assert by_id[str(w.hugo.id)]["summary"]["goal_ids"] == goal_ids[:1]
+    assert by_id[str(w.maja.id)] == {
+        "student": {"id": str(w.maja.id), "name": w.maja.name},
+        "summary": None,
+        "reminded_at": None,
+    }
+    image_url = f"{url}/summary-images/{image['id']}"
+    assert client.get(image_url).headers["content-type"] == "image/webp"
+    db.execute(
+        update(Project)
+        .where(Project.id == project["id"])
+        .values(completed_at=Project.completed_at - timedelta(days=3))
+    )
+    db.expire_all()
+    by_id = {r["student"]["id"]: r for r in client.get(f"{url}/summaries").json()}
+    assert by_id[str(w.maja.id)]["reminded_at"] is not None
+    assert by_id[str(w.hugo.id)]["reminded_at"] is None
+    client.get(f"{url}/summaries")
+    reminders = db.scalars(select(Notification).where(Notification.user_id == w.maja.id)).all()
+    assert [n.text.startswith("Påminnelse") for n in reminders] == [False, True]
+    # En annan lärare ser inte sammanfattningarna.
+    login(w.other_teacher)
+    assert client.get(f"{url}/summaries").status_code == 404

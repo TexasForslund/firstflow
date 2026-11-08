@@ -204,6 +204,7 @@ Texas vill gå igenom de här punkterna vid nästa arbetspass innan något byggs
       - Eleven får kortet "Projektet är klart!" med fyra korta frågor: hur det gick (1–5 stjärnor), vad eleven är mest nöjd med (en mening), vilka av projektets mål eleven tycker att den visade (knappar) och bilder på slutresultatet (valfritt, högst 4).
       - Frivilligt: en påminnelse, sedan ligger kortet kvar. I ett grupprojekt svarar varje elev själv.
       - Frågorna är fasta tills vidare. Läraren ändrar dem inte.
+      - ✅ Byggt i #85 (2026-11-08): påminnelsen kommer efter tre dagar (Texas). Handledaren kan också markera projektet som klart.
     - **Steg 3:** eleven ser sin egen vy av projektet i Min APL, med samma flikar och utan att kunna ändra något. Där ser eleven också kommentarerna som alla ser.
     - **Väntar:** kopplingen till Skolverket (idé 10).
 - **Fråga med bilder:** läraren ska kunna lägga till en fråga där eleven delar bilder. Bilderna komprimeras, t.ex. till WebP. ✅ Byggt i #77 (2026-11-07).
@@ -232,7 +233,7 @@ Texas skiss på papper: **Läroplanen → (anrop) → mål som läraren skapar �
 3. **Målförslag:** varje punkt i det centrala innehållet blir ett förslag. Läraren bockar för de som passar och skriver om dem till vanlig svenska. Målet visar alltid vilken del av läroplanen det kommer från. Det ersätter dagens fria text på målet. ✅ Steg 2 byggt i #82: målen hör till klassen (Texas 2026-11-08). Skolans mål utan koppling, till exempel Kundkontakt, finns kvar och används i projekten tills steg 4.
 4. **Projekt:** när läraren skapar ett projekt föreslår Firstflow mål genom att söka på orden i beskrivningen. Läraren väljer. ✅ Steg 4 byggt i #83: förslagen kommer från klassens mål för klasserna som projektets elever går i.
 5. **Frågor:** till varje mål finns färdiga mallar för frågor, till exempel "Läste du ritningen själv i dag?" som ja/nej där Ja är kopplat till målet. Läraren lägger till med ett klick och ändrar. ✅ Steg 5 byggt i #84: fliken "Från målen" när läraren lägger till en fråga.
-6. **Projektets sammanfattning** (idé 12:6, steg 2): när projektet är klart svarar eleven på fyra korta frågor, bland annat vilka av projektets mål eleven tycker att den visade.
+6. **Projektets sammanfattning** (idé 12:6, steg 2): när projektet är klart svarar eleven på fyra korta frågor, bland annat vilka av projektets mål eleven tycker att den visade. ✅ Steg 6 byggt i #85.
 7. **Elevsidan och historiken:** målen ordnas efter ämne och nivå, eller kurs. Varje del av läroplanen visar redovisningarna och projekten som visar den. Delar utan underlag syns tydligt. Varje avslutat projekt visas med elevens sammanfattning (stjärnor, mening, bilder och de mål eleven valde), bredvid redovisningarna för samma del av läroplanen.
 8. **Underlag inför betyg:** en sammanställning per elev och ämne som läraren kan läsa och skriva ut eller exportera.
 

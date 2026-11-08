@@ -158,11 +158,14 @@ export function StudentProjectGoals({
   studentId,
   firstName,
   reportPath,
+  claimed = [],
 }: {
   projectId: string
   studentId: string
   firstName: string
   reportPath: (id: string) => string
+  /** Målen eleven själv tycker att den visade, från sammanfattningen (idé 12:6). */
+  claimed?: string[]
 }) {
   const query = useProjectGoals(projectId)
   const [open, setOpen] = useState<string | null>(null)
@@ -196,6 +199,7 @@ export function StudentProjectGoals({
                   <span className={styles.goalName}>{g.name}</span>
                   {g.curriculum && <span className={styles.muted}>Läroplanen: {g.curriculum}</span>}
                 </span>
+                {claimed.includes(g.id) && <span className={styles.claimed}>{firstName}: jag visade det</span>}
                 {count === 0 ? (
                   <span className={styles.muted}>Inget underlag än</span>
                 ) : (

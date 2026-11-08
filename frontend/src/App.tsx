@@ -23,6 +23,7 @@ import { CheckIn } from './pages/student/CheckIn'
 import { MyApl } from './pages/student/MyApl'
 import { MyReports } from './pages/student/MyReports'
 import { MyProject } from './pages/student/MyProject'
+import { ProjectSummaryPage } from './pages/student/ProjectSummary'
 import { ReportPost } from './pages/student/ReportPost'
 import { Company } from './pages/supervisor/Company'
 import { MyStudents } from './pages/supervisor/MyStudents'
@@ -98,6 +99,7 @@ const routes: RouteObject[] = [
       { path: 'my-reports', element: only(['student'], <MyReports />) },
       { path: 'my-reports/:reportId', element: only(['student'], <ReportPost />) },
       { path: 'my-projects/:projectId', element: only(['student'], <MyProject />) },
+      { path: 'my-projects/:projectId/summary', element: only(['student'], <ProjectSummaryPage />) },
       { path: 'my-reports/:reportId/answer', element: only(['student'], <AnswerReport />) },
       { path: 'my-apl', element: only(['student'], <MyApl />) },
       { path: 'check-in', element: only(['student'], <CheckIn />) },

@@ -8,12 +8,16 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
+    LargeBinary,
+    SmallInteger,
     String,
     Table,
     Text,
+    UniqueConstraint,
     func,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, deferred, mapped_column, relationship
 
 from app.db.base import Base
 from app.models.goal import Goal, project_goals
@@ -98,3 +102,80 @@ class ProjectComment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     author: Mapped[User] = relationship(foreign_keys=[author_id])
+
+
+# Målen eleven tycker att den visade i projektet (idé 12:6, steg 2).
+project_summary_goals = Table(
+    "project_summary_goals",
+    Base.metadata,
+    Column("summary_id", ForeignKey("project_summaries.id", ondelete="CASCADE"), primary_key=True),
+    Column("goal_id", ForeignKey("goals.id", ondelete="CASCADE"), primary_key=True, index=True),
+)
+
+
+class ProjectSummary(Base):
+    """Elevens sammanfattning när projektet är klart (idé 12:6 steg 2, Texas 2026-11-07 och
+    2026-11-08). Fyra korta frågor: hur det gick (1–5 stjärnor), vad eleven är mest nöjd med (en
+    mening), vilka av projektets mål eleven tycker att den visade och bilder (valfritt). Frivilligt.
+    I ett grupprojekt svarar varje elev själv."""
+
+    __tablename__ = "project_summaries"
+    __table_args__ = (
+        UniqueConstraint("project_id", "student_id"),
+        CheckConstraint("rating BETWEEN 1 AND 5", name="rating_range"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"))
+    student_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    rating: Mapped[int] = mapped_column(SmallInteger)
+    best: Mapped[str] = mapped_column(String(300))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    goals: Mapped[list[Goal]] = relationship(secondary=project_summary_goals)
+    images: Mapped[list["ProjectSummaryImage"]] = relationship(
+        order_by="ProjectSummaryImage.created_at", viewonly=True
+    )
+
+
+class ProjectSummaryImage(Base):
+    """En bild på slutresultatet, högst 4 per elev. Komprimerad som redovisningarnas bilder
+    (WebP, längsta sidan 1600 px, utan platsdata). Bilden laddas upp innan sammanfattningen
+    skickas och hör till den först då (`summary_id`). Bilder som inte används tas bort."""
+
+    __tablename__ = "project_summary_images"
+    __table_args__ = (
+        Index("ix_project_summary_images_project_id_student_id", "project_id", "student_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"))
+    student_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    summary_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("project_summaries.id", ondelete="CASCADE"), index=True
+    )
+    width: Mapped[int] = mapped_column(Integer)
+    height: Mapped[int] = mapped_column(Integer)
+    size: Mapped[int] = mapped_column(Integer)
+    data: Mapped[bytes] = deferred(mapped_column(LargeBinary, nullable=False))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ProjectSummaryReminder(Base):
+    """När eleven fick påminnelsen om att sammanfatta projektet. En påminnelse, tre dagar efter
+    att projektet blev klart (Texas 2026-11-08)."""
+
+    __tablename__ = "project_summary_reminders"
+
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    student_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    reminded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

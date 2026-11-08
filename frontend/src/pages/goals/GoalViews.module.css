@@ -244,3 +244,14 @@
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: 500;
 }
+
+/* Målen eleven själv tycker att den visade (idé 12:6, steg 2). */
+.claimed {
+  flex: none;
+  padding: 0.125rem var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-on-light);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}

@@ -4465,7 +4465,7 @@
           "projects"
         ],
         "summary": "Update Project",
-        "description": "Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar\nnamn, beskrivning och slutdatum, och får 403 om hen skickar något annat. Handledaren ser\nmålen men ändrar dem inte (Texas, 2026-11-07).",
+        "description": "Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar\nnamn, beskrivning och slutdatum och kan markera projektet som klart, och får 403 om hen\nskickar något annat. Handledaren ser målen men ändrar dem inte (Texas, 2026-11-07).",
         "operationId": "update_project_api_projects__project_id__put",
         "security": [
           {
@@ -5022,6 +5022,363 @@
                   "$ref": "#/components/schemas/MyProject"
                 }
               }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/summaries": {
+      "get": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "Project Summaries",
+        "description": "Varje elevs sammanfattning, eller att eleven inte har svarat än och när påminnelsen\nskickades.",
+        "operationId": "project_summaries_api_projects__project_id__summaries_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StudentSummary"
+                  },
+                  "title": "Response Project Summaries Api Projects  Project Id  Summaries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{project_id}/summary-images/{image_id}": {
+      "get": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "Get Summary Image",
+        "operationId": "get_summary_image_api_projects__project_id__summary_images__image_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/webp": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/project-summaries": {
+      "get": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "Pending Summaries",
+        "description": "Klara projekt som eleven inte har sammanfattat, senast klara först. Visas som kortet\n\"Projektet är klart!\".",
+        "operationId": "pending_summaries_api_me_project_summaries_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PendingSummary"
+                  },
+                  "type": "array",
+                  "title": "Response Pending Summaries Api Me Project Summaries Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ]
+      }
+    },
+    "/api/me/project-summaries/{project_id}": {
+      "get": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "My Summary",
+        "description": "Frågorna för projektet, med elevens svar om hen redan har sammanfattat.",
+        "operationId": "my_summary_api_me_project_summaries__project_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryForm"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "Save Summary",
+        "description": "Sparar elevens sammanfattning. Eleven kan ändra den efteråt.",
+        "operationId": "save_summary_api_me_project_summaries__project_id__put",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummaryWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/project-summaries/{project_id}/images": {
+      "post": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "Upload Summary Image",
+        "description": "Laddar upp en bild på slutresultatet. Bilden görs mindre och sparas som WebP utan\nplatsdata. Den hör till sammanfattningen när eleven skickar den med bildens id.",
+        "operationId": "upload_summary_image_api_me_project_summaries__project_id__images_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_summary_image_api_me_project_summaries__project_id__images_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/project-summaries/{project_id}/images/{image_id}": {
+      "get": {
+        "tags": [
+          "project summaries"
+        ],
+        "summary": "Get My Summary Image",
+        "operationId": "get_my_summary_image_api_me_project_summaries__project_id__images__image_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "image_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Image Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "image/webp": {}
             }
           },
           "422": {
@@ -8357,6 +8714,21 @@
           "file"
         ],
         "title": "Body_upload_logo_api_supervisor_workplaces__workplace_id__logo_put"
+      },
+      "Body_upload_summary_image_api_me_project_summaries__project_id__images_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "En bild, högst 20 MB"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_summary_image_api_me_project_summaries__project_id__images_post"
       },
       "Choice": {
         "properties": {
@@ -11732,6 +12104,31 @@
         "type": "object",
         "title": "OwnHours"
       },
+      "PendingSummary": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "project_name",
+          "completed_at"
+        ],
+        "title": "PendingSummary"
+      },
       "Person": {
         "properties": {
           "id": {
@@ -14005,6 +14402,43 @@
         ],
         "title": "StudentReportSummary"
       },
+      "StudentSummary": {
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/Ref"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SummaryRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminded At",
+            "description": "När eleven fick påminnelsen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "student",
+          "summary",
+          "reminded_at"
+        ],
+        "title": "StudentSummary"
+      },
       "StudentTrack": {
         "properties": {
           "track_id": {
@@ -14043,6 +14477,136 @@
           "level_codes"
         ],
         "title": "SubjectsWrite"
+      },
+      "SummaryForm": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "description": "Eleven kan sammanfatta när projektet är klart"
+          },
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalRead"
+            },
+            "type": "array",
+            "title": "Goals",
+            "description": "Projektets mål, klassens mål först"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SummaryRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "project_name",
+          "completed",
+          "goals",
+          "summary"
+        ],
+        "title": "SummaryForm"
+      },
+      "SummaryRead": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "title": "Rating",
+            "description": "1–5 stjärnor"
+          },
+          "best": {
+            "type": "string",
+            "title": "Best",
+            "description": "Det eleven är mest nöjd med"
+          },
+          "goal_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Goal Ids",
+            "description": "Målen eleven tycker att den visade"
+          },
+          "image_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Image Ids"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating",
+          "best",
+          "goal_ids",
+          "image_ids",
+          "created_at"
+        ],
+        "title": "SummaryRead"
+      },
+      "SummaryWrite": {
+        "properties": {
+          "rating": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Rating"
+          },
+          "best": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Best"
+          },
+          "goal_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 30,
+            "title": "Goal Ids"
+          },
+          "image_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "title": "Image Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rating",
+          "best"
+        ],
+        "title": "SummaryWrite"
       },
       "SupervisedStudent": {
         "properties": {

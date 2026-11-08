@@ -328,8 +328,8 @@ def update_project(
     project_id: UUID, body: ProjectWrite, db: DbSession, user: Member
 ) -> ProjectRead:
     """Ändrar projektet. Läraren som skapade det ändrar allt. En inbjuden handledare ändrar
-    namn, beskrivning och slutdatum, och får 403 om hen skickar något annat. Handledaren ser
-    målen men ändrar dem inte (Texas, 2026-11-07)."""
+    namn, beskrivning och slutdatum och kan markera projektet som klart, och får 403 om hen
+    skickar något annat. Handledaren ser målen men ändrar dem inte (Texas, 2026-11-07)."""
     project = _project_for(db, user, project_id)
     is_owner = project.owner_id == user.id
     owner_fields = (
@@ -337,7 +337,6 @@ def update_project(
         or body.workplace_id is not None
         or body.clear_workplace
         or body.supervisor_ids is not None
-        or body.completed is not None
     )
     class_goals = [g for g in project.goals if g.class_id is not None]
     same_goals = sorted(t.strip().lower() for t in body.tags) == sorted(
@@ -361,14 +360,25 @@ def update_project(
             *_class_goals(db, project.students, ids, strict=body.goal_ids is not None),
             *goals_named(db, project.school_id, body.tags),
         ]
-        if body.completed is not None:
-            if not body.completed:
-                project.completed_at = None
-            elif project.completed_at is None:
-                project.completed_at = time.now()
         _notify_added(db, user, project, _set_workplace_and_supervisors(db, user, project, body))
+    _set_completed(db, project, body.completed)
     db.commit()
     return _read(db, user, [project])[0]
+
+
+def _set_completed(db: DbSession, project: Project, completed: bool | None) -> None:
+    """Läraren eller handledaren markerar projektet som klart (Texas 2026-11-07). Eleverna får
+    då en notis om att sammanfatta det."""
+    # Undviker cirkulär import: project_summaries importerar projects.
+    from app.api.routes.project_summaries import notify_completed
+
+    if completed is None:
+        return
+    if not completed:
+        project.completed_at = None
+    elif project.completed_at is None:
+        project.completed_at = time.now()
+        notify_completed(db, project)
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)

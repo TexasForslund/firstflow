@@ -608,3 +608,18 @@ Idé 13, steg 5 (Texas, 2026-11-08, skissen "Mål från läroplanen", steg 5a oc
   3. **Flera svar för hela ämnet:** "Vad gjorde du i dag?" med ett alternativ per mål i ämnet. Visas när ämnet har minst två mål.
 - Frågorna läggs efter den valda frågan i utkastet, med mål och logik klara. Läraren ändrar texten och publicerar som vanligt.
 - Mallarna byggs på målets namn i frontend (`goalTemplates.ts`). Ingen AI och inget nytt i backend.
+
+## F45. Projektets sammanfattning ✅ Klar (PR #85)
+
+Idé 12:6 steg 2 och idé 13 steg 6 (Texas, 2026-11-07 och 2026-11-08, skissen "Mål från läroplanen", steg 6a och 6b).
+
+- **Läraren eller handledaren markerar projektet som klart** i Ändra projekt. Eleverna får en notis.
+- **Eleven** får kortet "Projektet är klart!" på startsidan, med "Sammanfatta projektet" och "Inte nu". Fyra korta frågor, en i taget:
+  1. Hur gick projektet? 1–5 stjärnor.
+  2. Vad är du mest nöjd med? En mening, högst 300 tecken.
+  3. Vilka mål tycker du att du visade? Projektets mål, med ämnet för läroplanens mål. Hoppas över om projektet inte har mål.
+  4. Bild på slutresultatet. Valfri, högst 4 bilder, komprimerade som redovisningarnas.
+- Eleven kan ändra sin sammanfattning från projektets sida i Min APL.
+- **Påminnelse efter tre dagar** (Texas 2026-11-08), en gång. Firstflow har inga schemalagda jobb, så påminnelsen skapas första gången läraren eller handledaren öppnar projektet efter tre dagar. Eleven får en notis.
+- **Projektsidan:** under Alla visar "Sammanfattningar" en rad per elev, med stjärnor och meningen, eller "har inte sammanfattat än" och när påminnelsen skickades. Med en elev vald visas elevens sammanfattning, och målen visar "jag visade det" bredvid underlaget.
+- **Backend:** `project_summaries`, `project_summary_goals`, `project_summary_images` och `project_summary_reminders` (migrering). Endpoints under `/api/me/project-summaries` för eleven och `/api/projects/{id}/summaries` för läraren och handledaren.

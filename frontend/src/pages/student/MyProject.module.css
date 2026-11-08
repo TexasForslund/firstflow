@@ -223,3 +223,12 @@
   flex: 1;
   min-width: 0;
 }
+
+/* Länken till sammanfattningen när projektet är klart (idé 12:6, steg 2). */
+.summaryLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--color-primary-on-light);
+  font-weight: 600;
+}

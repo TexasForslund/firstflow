@@ -458,3 +458,99 @@ button.person:hover .personName {
   color: var(--color-primary);
   text-decoration: underline;
 }
+
+/* Elevernas sammanfattningar (idé 12:6, steg 2). */
+.summaryHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.summaryHead > :first-child {
+  flex: 1;
+}
+
+.summaryBest {
+  font-size: var(--font-size-md);
+}
+
+.summaryImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summaryImages img {
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.summaryMissing {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-sidebar);
+  color: var(--color-text-secondary);
+}
+
+.summaryMissing strong {
+  color: var(--color-text);
+}
+
+.summaryRows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summaryRows li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.summaryRow:hover .summaryName {
+  text-decoration: underline;
+}
+
+.summaryName {
+  min-width: 9rem;
+  font-weight: 600;
+}
+
+.summaryExcerpt {
+  flex: 1 1 14rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.summaryHead svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.summaryRow svg {
+  width: 1rem;
+  height: 1rem;
+}
