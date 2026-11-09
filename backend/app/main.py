@@ -4,7 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 from app.core.config import settings
 
-app = FastAPI(title="Firstflow API", version="0.1.0")
+# API-dokumentationen visas inte i produktion. Schemat finns i backend/openapi.json.
+_docs: dict[str, None] = (
+    {"docs_url": None, "redoc_url": None, "openapi_url": None} if settings.is_production else {}
+)
+app = FastAPI(title="Firstflow API", version="0.1.0", **_docs)
 
 app.add_middleware(
     CORSMiddleware,

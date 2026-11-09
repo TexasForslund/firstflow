@@ -187,6 +187,10 @@ Skissen [larare-veckoredovisning.png](../docs/design/larare-veckoredovisning.png
   - Sker automatiskt via databassessionen, så nya endpoints loggas utan extra kod. `get_current_user` sätter vem som gör ändringen. Skript som `seed_demo` loggas inte.
 - **Konton per skola** (punkten "administratörsroll eller skript") fanns redan: skoladmin (B1b), `create_user` och importen (B20).
 
+**Säkerhetsgenomgång (Hannes + Claude, 2026-11-09):**
+- Byggt: API:t vägrar starta i produktion utan `SESSION_COOKIE_SECURE=true` och https i `FRONTEND_URL` och `CORS_ORIGINS`. `/docs` och `/openapi.json` är avstängda i produktion. Bilder över 40 miljoner pixlar avvisas innan de packas upp. CI kör `pip-audit` och `npm audit` och har bara läsrätt. Databasen i `docker-compose.yml` lyssnar bara på den egna datorn.
+- Kvar: säkerhetsrubriker i proxyn (D1), `VALIDATE CONSTRAINT ck_users_school_matches_role` (D8), och tre beslut om elevdata: hur länge handledaren ser eleven efter APL:en, gallring och inloggningstid.
+
 **Inte byggt, att ta senare:**
 - Hur länge loggen sparas (gallring, se B5) och vem som får läsa den, t.ex. en vy för superadmin eller ett utdrag till skolan.
 - Läsningar av elevdata loggas inte, bara ändringar.
