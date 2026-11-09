@@ -1,3 +1,6 @@
+from typing import Self
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,6 +39,26 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = "Firstflow <noreply@firstflow.se>"
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
+
+    @model_validator(mode="after")
+    def check_production(self) -> Self:
+        """I produktion vägrar API:t starta med inställningar som bara passar utveckling."""
+        if not self.is_production:
+            return self
+        problems = []
+        if not self.session_cookie_secure:
+            problems.append("SESSION_COOKIE_SECURE måste vara true")
+        if not self.frontend_url.startswith("https://"):
+            problems.append("FRONTEND_URL måste börja med https://")
+        if not self.cors_origins or any(not o.startswith("https://") for o in self.cors_origins):
+            problems.append("CORS_ORIGINS får bara innehålla https-adresser")
+        if problems:
+            raise ValueError("Fel inställningar för produktion: " + "; ".join(problems))
+        return self
 
 
 settings = Settings()
